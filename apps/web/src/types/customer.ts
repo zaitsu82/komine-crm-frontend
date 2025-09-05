@@ -37,10 +37,10 @@ export interface Customer {
     calculationType: string; // 計算区分 (セレクトボックス)
     taxType: string; // 税区分 (セレクトボックス)
     billingType: string; // 請求区分 (セレクトボックス)
-    billingYears: number; // 請求年数
+    billingYears: string; // 請求年数
     area: string; // 面積 例: 10㎡
-    unitPrice: number; // 単価 例: 10000
-    usageFee: number; // 使用料 例: 200000
+    unitPrice: string; // 単価 例: 10000
+    usageFee: string; // 使用料 例: 200000
     paymentMethod: string; // 支払い方法 (セレクトボックス)
   };
   
@@ -49,11 +49,11 @@ export interface Customer {
     calculationType: string; // 計算区分 (セレクトボックス)
     taxType: string; // 税区分 (セレクトボックス)  
     billingType: string; // 請求区分 (セレクトボックス)
-    billingYears: number; // 請求年数
+    billingYears: string; // 請求年数
     area: string; // 面積 例: 10㎡
-    billingMonth: number; // 請求月 (1-12)
-    managementFee: number; // 管理料 例: 5000
-    unitPrice: number; // 単価 例: 500
+    billingMonth: string; // 請求月 (1-12)
+    managementFee: string; // 管理料 例: 5000
+    unitPrice: string; // 単価 例: 500
     lastBillingMonth: string; // 最終請求月 ----年--月
     paymentMethod: string; // 支払方法 (セレクトボックス)
   };
@@ -136,7 +136,7 @@ export interface Customer {
     section: string; // 区域
     usage: 'in_use' | 'available' | 'reserved'; // 利用状況
     size: string; // 面積
-    price: number; // 金額
+    price: string; // 金額
     contractDate: Date | null; // 契約日
   } | null;
   

@@ -33,7 +33,7 @@ export default function CustomerManagement() {
   const [currentView, setCurrentView] = useState<'registry' | 'search' | 'details' | 'register' | 'edit'>('registry');
   const [isLoading, setIsLoading] = useState(false);
   const [editingTab, setEditingTab] = useState<string | null>(null);
-  const [editFormData, setEditFormData] = useState<Partial<Customer>>({});
+  const [editFormData, setEditFormData] = useState<any>({});
 
   const handleCustomerSelect = (customer: Customer) => {
     setSelectedCustomer(customer);
@@ -95,7 +95,7 @@ export default function CustomerManagement() {
       setEditFormData({
         ...selectedCustomer,
         emergencyContact: selectedCustomer.emergencyContact || { name: '', relationship: '', phoneNumber: '' },
-        plotInfo: selectedCustomer.plotInfo || { plotNumber: '', section: '', usage: 'available', size: '', price: 0, contractDate: '' }
+        plotInfo: selectedCustomer.plotInfo || { plotNumber: '', section: '', usage: 'available', size: '', price: '', contractDate: null }
       });
     }
   };
@@ -811,17 +811,17 @@ export default function CustomerManagement() {
                           <div>
                             <Label className="text-sm font-medium">勤務先名称</Label>
                             <Input 
-                              value={editingTab === 'basic-info-2' ? (editFormData.workplaceName || selectedCustomer.workInfo?.name || '') : selectedCustomer.workInfo?.name || ''} 
+                              value={editingTab === 'basic-info-2' ? (editFormData.workInfo?.companyName || selectedCustomer.workInfo?.companyName || '') : selectedCustomer.workInfo?.companyName || ''} 
                               className={editingTab === 'basic-info-2' ? 'bg-white' : 'bg-yellow-50'} 
                               readOnly={editingTab !== 'basic-info-2'}
                               placeholder="株式会社○○"
-                              onChange={(e) => editingTab === 'basic-info-2' && setEditFormData({...editFormData, workplaceName: e.target.value})}
+                              onChange={(e) => editingTab === 'basic-info-2' && setEditFormData({...editFormData, workInfo: {...(editFormData.workInfo || selectedCustomer.workInfo || {}), companyName: e.target.value} as any})}
                             />
                           </div>
                           <div>
                             <Label className="text-sm font-medium">勤務先仮名</Label>
                             <Input 
-                              value={editingTab === 'basic-info-2' ? (editFormData.workplaceKana || selectedCustomer.workInfo?.kana || '') : selectedCustomer.workInfo?.kana || ''} 
+                              value={editingTab === 'basic-info-2' ? (editFormData.workplaceKana || selectedCustomer.workInfo?.companyNameKana || '') : selectedCustomer.workInfo?.companyNameKana || ''} 
                               className={editingTab === 'basic-info-2' ? 'bg-white' : 'bg-yellow-50'} 
                               readOnly={editingTab !== 'basic-info-2'}
                               placeholder="かぶしきがいしゃまるまる"
