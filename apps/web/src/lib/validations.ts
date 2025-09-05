@@ -14,10 +14,7 @@ export const customerFormSchema = z.object({
   name: z.string().min(1, "氏名は必須です"),
   nameKana: z.string().min(1, "振り仮名は必須です"),
   birthDate: z.string().optional(),
-  gender: z.union([
-    z.enum(["male", "female"]),
-    z.literal("").transform(() => undefined)
-  ]).refine((val) => val !== undefined, {
+  gender: z.enum(["", "male", "female"]).refine((val) => val !== "", {
     message: "性別を選択してください",
   }),
   phoneNumber: z.string().min(1, "電話番号は必須です"),
@@ -137,12 +134,7 @@ export const customerFormSchema = z.object({
     faxNumber: z.string().optional(),
     email: z.string().email("正しいメールアドレスを入力してください").optional().or(z.literal("")),
     registeredAddress: z.string().optional(),
-    mailingType: z.union([
-      z.enum(["home", "work", "other"]),
-      z.literal("").transform(() => undefined)
-    ]).refine((val) => val !== undefined, {
-      message: "送付先区分を選択してください",
-    }),
+    mailingType: z.enum(["", "home", "work", "other"]),
     companyName: z.string().optional(),
     companyNameKana: z.string().optional(),
     companyAddress: z.string().optional(),
@@ -160,12 +152,7 @@ export const customerFormSchema = z.object({
   buriedPersons: z.array(z.object({
     id: z.string(),
     name: z.string().min(1, "氏名は必須です"),
-    gender: z.union([
-      z.enum(["male", "female"]),
-      z.literal("").transform(() => undefined)
-    ]).refine((val) => val !== undefined, {
-      message: "性別を選択してください",
-    }),
+    gender: z.enum(["", "male", "female"]),
     burialDate: z.string().min(1, "埋葬日は必須です"),
     memo: z.string().optional(),
   })).optional(),
