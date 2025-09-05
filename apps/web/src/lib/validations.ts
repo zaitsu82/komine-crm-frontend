@@ -70,19 +70,19 @@ export const customerFormSchema = z.object({
     calculationType: z.string().optional(),
     taxType: z.string().optional(),
     billingType: z.string().optional(),
-    billingYears: z.union([
-      z.string().length(0).transform(() => undefined),
-      z.coerce.number().min(1, "請求年数は1以上を入力してください")
-    ]).optional(),
+    billingYears: z.preprocess(
+      (val) => val === "" || val === null || val === undefined ? undefined : Number(val),
+      z.number().min(1, "請求年数は1以上を入力してください").optional()
+    ),
     area: z.string().optional(),
-    unitPrice: z.union([
-      z.string().length(0).transform(() => undefined),
-      z.coerce.number().min(0, "単価は0以上を入力してください")
-    ]).optional(),
-    usageFee: z.union([
-      z.string().length(0).transform(() => undefined),
-      z.coerce.number().min(0, "使用料は0以上を入力してください")
-    ]).optional(),
+    unitPrice: z.preprocess(
+      (val) => val === "" || val === null || val === undefined ? undefined : Number(val),
+      z.number().min(0, "単価は0以上を入力してください").optional()
+    ),
+    usageFee: z.preprocess(
+      (val) => val === "" || val === null || val === undefined ? undefined : Number(val),
+      z.number().min(0, "使用料は0以上を入力してください").optional()
+    ),
     paymentMethod: z.string().optional(),
   }).optional(),
   
@@ -91,23 +91,23 @@ export const customerFormSchema = z.object({
     calculationType: z.string().optional(),
     taxType: z.string().optional(),
     billingType: z.string().optional(),
-    billingYears: z.union([
-      z.string().length(0).transform(() => undefined),
-      z.coerce.number().min(1, "請求年数は1以上を入力してください")
-    ]).optional(),
+    billingYears: z.preprocess(
+      (val) => val === "" || val === null || val === undefined ? undefined : Number(val),
+      z.number().min(1, "請求年数は1以上を入力してください").optional()
+    ),
     area: z.string().optional(),
-    billingMonth: z.union([
-      z.string().length(0).transform(() => undefined),
-      z.coerce.number().min(1, "請求月は1以上を入力してください").max(12, "請求月は12以下を入力してください")
-    ]).optional(),
-    managementFee: z.union([
-      z.string().length(0).transform(() => undefined),
-      z.coerce.number().min(0, "管理料は0以上を入力してください")
-    ]).optional(),
-    unitPrice: z.union([
-      z.string().length(0).transform(() => undefined),
-      z.coerce.number().min(0, "単価は0以上を入力してください")
-    ]).optional(),
+    billingMonth: z.preprocess(
+      (val) => val === "" || val === null || val === undefined ? undefined : Number(val),
+      z.number().min(1, "請求月は1以上を入力してください").max(12, "請求月は12以下を入力してください").optional()
+    ),
+    managementFee: z.preprocess(
+      (val) => val === "" || val === null || val === undefined ? undefined : Number(val),
+      z.number().min(0, "管理料は0以上を入力してください").optional()
+    ),
+    unitPrice: z.preprocess(
+      (val) => val === "" || val === null || val === undefined ? undefined : Number(val),
+      z.number().min(0, "単価は0以上を入力してください").optional()
+    ),
     lastBillingMonth: z.string().optional(),
     paymentMethod: z.string().optional(),
   }).optional(),
@@ -162,10 +162,10 @@ export const customerFormSchema = z.object({
     section: z.string().optional(),
     usage: z.enum(["in_use", "available", "reserved"]).optional(),
     size: z.string().optional(),
-    price: z.union([
-      z.string().length(0).transform(() => undefined),
-      z.coerce.number().min(0, "金額は0以上である必要があります")
-    ]).optional(),
+    price: z.preprocess(
+      (val) => val === "" || val === null || val === undefined ? undefined : Number(val),
+      z.number().min(0, "金額は0以上である必要があります").optional()
+    ),
     contractDate: z.string().optional(),
   }).optional(),
   
