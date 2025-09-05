@@ -1,0 +1,177 @@
+export interface Customer {
+  id: string;
+  
+  // 顧客基本情報
+  customerCode: string; // 顧客コード A-56など *必須
+  plotNumber?: string; // 区画番号 例: A-56
+  section?: string; // 区域 (東区、西区など)
+  
+  // 申込者情報
+  applicantInfo?: {
+    applicationDate: Date | null; // 申込日
+    staffName: string; // 担当者氏名
+    name: string; // 氏名
+    nameKana: string; // 振り仮名（ひらがな）
+    postalCode: string; // 郵便番号 例: 123-4567
+    phoneNumber: string; // 電話番号 例: 090-1234-5678
+    address: string; // 住所
+  };
+
+  // 契約者情報
+  reservationDate: Date | null; // 予約日
+  acceptanceNumber?: string; // 承諾書番号
+  permitDate: Date | null; // 許可日
+  startDate: Date | null; // 開始年月日
+  name: string; // 氏名 *必須
+  nameKana: string; // 振り仮名（ひらがな） *必須
+  birthDate: Date | null; // 生年月日
+  gender: 'male' | 'female' | undefined; // 性別 *必須
+  phoneNumber: string; // 電話番号 *必須 例: 090-1234-5678
+  faxNumber?: string; // ファックス 例: 03-1234-5678
+  email?: string; // メール 例: example@email.com
+  address: string; // 住所 *必須
+  registeredAddress?: string; // 本籍地住所
+  
+  // 使用料
+  usageFee?: {
+    calculationType: string; // 計算区分 (セレクトボックス)
+    taxType: string; // 税区分 (セレクトボックス)
+    billingType: string; // 請求区分 (セレクトボックス)
+    billingYears: number; // 請求年数
+    area: string; // 面積 例: 10㎡
+    unitPrice: number; // 単価 例: 10000
+    usageFee: number; // 使用料 例: 200000
+    paymentMethod: string; // 支払い方法 (セレクトボックス)
+  };
+  
+  // 管理料
+  managementFee?: {
+    calculationType: string; // 計算区分 (セレクトボックス)
+    taxType: string; // 税区分 (セレクトボックス)  
+    billingType: string; // 請求区分 (セレクトボックス)
+    billingYears: number; // 請求年数
+    area: string; // 面積 例: 10㎡
+    billingMonth: number; // 請求月 (1-12)
+    managementFee: number; // 管理料 例: 5000
+    unitPrice: number; // 単価 例: 500
+    lastBillingMonth: string; // 最終請求月 ----年--月
+    paymentMethod: string; // 支払方法 (セレクトボックス)
+  };
+  
+  // 墓石
+  gravestoneInfo?: {
+    gravestoneBase: string; // 墓石台
+    enclosurePosition: string; // 包囲位置
+    gravestoneDealer: string; // 墓石取扱い
+    gravestoneType: string; // 墓石タイプ
+    surroundingArea: string; // 周辺設備
+    establishmentDeadline: Date | null; // 設立期限
+    establishmentDate: Date | null; // 設立日
+  };
+  
+  // 家族・連絡先（複数対応） - 後方互換性のため残す
+  familyContacts?: {
+    id: string;
+    name: string; // 氏名
+    birthDate: Date | null; // 生年月日
+    relationship: string; // 続柄
+    address: string; // 住所
+    phoneNumber: string; // 電話番号
+    faxNumber?: string; // ファックス
+    email?: string; // イーメール
+    registeredAddress?: string; // 本籍住所
+    mailingType: 'home' | 'work' | 'other' | undefined; // 送付先区分（初期状態は未選択）
+    companyName?: string; // 勤務先名称
+    companyNameKana?: string; // 勤務先かな
+    companyAddress?: string; // 勤務先住所
+    companyPhone?: string; // 勤務先電話番号
+    notes?: string; // 備考
+  }[];
+
+  // 緊急連絡先（後方互換性のため残す）
+  emergencyContact?: {
+    name: string;
+    relationship: string;
+    phoneNumber: string;
+  } | null;
+  
+  // 埋葬者一覧（複数対応） - 後方互換性のため残す
+  buriedPersons?: {
+    id: string;
+    name: string; // 氏名
+    nameKana?: string; // 氏名カナ
+    relationship?: string; // 続柄
+    deathDate?: Date | null; // 死亡日
+    age?: number; // 年齢
+    gender: 'male' | 'female' | undefined; // 性別（初期状態は未選択）
+    burialDate?: Date | null; // 埋葬日（後方互換性のため残す）
+    memo?: string; // メモ（後方互換性のため残す）
+  }[];
+
+  // 勤務先・連絡情報 - 後方互換性のため残す
+  workInfo?: {
+    companyName: string; // 勤務先名称
+    companyNameKana: string; // 勤務先仮名
+    workAddress: string; // 就職先住所
+    workPostalCode: string; // 郵便番号
+    workPhoneNumber: string; // 電話番号
+    dmSetting: 'allow' | 'deny' | 'limited'; // DM設定
+    addressType: 'home' | 'work' | 'other'; // 宛先区分
+    notes: string; // 備考
+  };
+
+  // 請求情報 - 後方互換性のため残す
+  billingInfo?: {
+    billingType: 'individual' | 'corporate' | 'bank_transfer'; // 請求種別
+    bankName: string; // 銀行名称
+    branchName: string; // 支店名称
+    accountType: 'ordinary' | 'current' | 'savings'; // 口座科目
+    accountNumber: string; // 記号番号
+    accountHolder: string; // 口座名義
+  };
+
+  // 墓地区画情報 - 後方互換性のため残す
+  plotInfo?: {
+    plotNumber: string; // 区画番号
+    section: string; // 区域
+    usage: 'in_use' | 'available' | 'reserved'; // 利用状況
+    size: string; // 面積
+    price: number; // 金額
+    contractDate: Date | null; // 契約日
+  } | null;
+  
+  // システム情報
+  createdAt: Date;
+  updatedAt: Date;
+  status: 'active' | 'inactive'; // 契約ステータス
+  
+  // 後方互換性のため残すフィールド
+  postalCode?: string; 
+  prefecture?: string;
+  city?: string;
+}
+
+// 台帳表示用の契約ステータス型
+export type ContractStatus = 'active' | 'attention' | 'overdue';
+
+// ステータス表示情報
+export interface CustomerStatusDisplay {
+  status: ContractStatus;
+  label: string;
+  icon: string;
+  className: string;
+}
+
+// あいう順タブ定義
+export interface AiueoTab {
+  key: string;
+  label: string;
+  shortLabel: string;
+}
+
+// 台帳フィルター設定
+export interface RegistryFilter {
+  searchQuery: string;
+  aiueoTab: string;
+  statusFilter?: ContractStatus[];
+}
