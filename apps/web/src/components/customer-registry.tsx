@@ -35,6 +35,21 @@ export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, o
   const [customers] = useState<Customer[]>(mockCustomers);
   const [focusedTabIndex, setFocusedTabIndex] = useState(0);
 
+  // 検索実行
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      // 検索時は「全て」タブに切り替えて検索結果を表示
+      setActiveTab('全');
+    }
+  };
+
+  // Enterキーでも検索実行
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
   // フィルタされた顧客リスト
   const filteredCustomers = useMemo(() => {
     let filtered = customers;
@@ -92,6 +107,7 @@ export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, o
           <Input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyPress={handleKeyPress}
             placeholder="検索キーワードを入力..."
             className="flex-1 text-sm h-8 border border-gray-300"
           />
@@ -103,11 +119,18 @@ export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, o
           >
             クリア
           </Button>
+          <Button 
+            onClick={handleSearch}
+            size="sm"
+            className="px-3 py-1 text-xs bg-blue-600 hover:bg-blue-700"
+          >
+            検索
+          </Button>
           {onNewCustomer && (
             <Button 
               onClick={onNewCustomer}
               size="sm"
-              className="px-3 py-1 text-xs bg-blue-600 hover:bg-blue-700"
+              className="px-3 py-1 text-xs bg-green-600 hover:bg-green-700"
             >
               新規登録
             </Button>
