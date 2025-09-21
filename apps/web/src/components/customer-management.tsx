@@ -12,6 +12,7 @@ import { CustomerFormData } from '@/lib/validations';
 import CustomerSearch from '@/components/customer-search';
 import CustomerForm from '@/components/customer-form';
 import CustomerRegistry from '@/components/customer-registry';
+import CollectiveBurialManagement from '@/components/collective-burial-management';
 
 const menuItems = [
   '台帳問合せ',
@@ -21,6 +22,7 @@ const menuItems = [
   '名義変更',
   '住所変更',
   '埋葬情報更新',
+  '合祀管理',
   '個人票印刷',
   '許可証印刷',
   '封筒印刷',
@@ -30,7 +32,7 @@ const menuItems = [
 
 export default function CustomerManagement() {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-  const [currentView, setCurrentView] = useState<'registry' | 'search' | 'details' | 'register' | 'edit'>('registry');
+  const [currentView, setCurrentView] = useState<'registry' | 'search' | 'details' | 'register' | 'edit' | 'collective-burial'>('registry');
   const [isLoading, setIsLoading] = useState(false);
   const [editingTab, setEditingTab] = useState<string | null>(null);
   const [editFormData, setEditFormData] = useState<any>({});
@@ -138,12 +140,16 @@ export default function CustomerManagement() {
                     } else {
                       alert('編集する顧客を選択してください');
                     }
+                  } else if (item === '合祀管理') {
+                    setCurrentView('collective-burial');
+                    setSelectedCustomer(null);
                   }
                   // 他のメニューアイテムも必要に応じて実装
                 }}
                 className={`w-full text-left px-3 py-2 text-senior-sm rounded border border-gray-400 bg-gray-100 hover:bg-blue-100 hover:border-blue-300 transition-colors btn-senior ${
                   (item === '台帳問合せ' && (currentView === 'registry' || currentView === 'search')) || 
-                  (item === '契約訂正' && currentView === 'edit') ? 'bg-blue-100 border-blue-300' : ''
+                  (item === '契約訂正' && currentView === 'edit') ||
+                  (item === '合祀管理' && currentView === 'collective-burial') ? 'bg-blue-100 border-blue-300' : ''
                 }`}
               >
                 {item}
@@ -230,6 +236,10 @@ export default function CustomerManagement() {
               />
             </div>
           </>
+        ) : currentView === 'collective-burial' ? (
+          <div className="flex-1 overflow-auto">
+            <CollectiveBurialManagement />
+          </div>
         ) : selectedCustomer && (
           <>
             {/* Customer Info Header */}
@@ -265,11 +275,12 @@ export default function CustomerManagement() {
             {/* Customer Details Tabs Interface */}
             <div className="flex-1 p-6">
               <Tabs defaultValue="basic-info-1" className="w-full">
-                <TabsList className="grid w-full grid-cols-6 h-auto">
+                <TabsList className="grid w-full grid-cols-7 h-auto">
                   <TabsTrigger value="basic-info-1" className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">基本情報①</TabsTrigger>
                   <TabsTrigger value="basic-info-2" className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">基本情報②</TabsTrigger>
                   <TabsTrigger value="contacts" className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">連絡先/家族</TabsTrigger>
                   <TabsTrigger value="burial-info" className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">埋葬情報</TabsTrigger>
+                  <TabsTrigger value="collective-burial" className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">合祀</TabsTrigger>
                   <TabsTrigger value="construction" className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">工事情報</TabsTrigger>
                   <TabsTrigger value="history" className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">履歴情報</TabsTrigger>
                 </TabsList>
@@ -1313,6 +1324,326 @@ export default function CustomerManagement() {
                           </div>
                         ) : (
                           <p className="text-gray-500 text-center py-8">埋葬者情報が登録されていません</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="collective-burial" className="mt-6">
+                  <div className="space-y-6">
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-lg font-semibold">合祀</h3>
+                      {editingTab === 'collective-burial' ? (
+                        <div className="flex space-x-2">
+                          <Button size="sm" variant="outline" onClick={handleTabCancel}>キャンセル</Button>
+                          <Button size="sm" onClick={() => handleTabSave('合祀')}>保存</Button>
+                        </div>
+                      ) : (
+                        <Button size="sm" onClick={() => handleTabEdit('collective-burial')}>編集</Button>
+                      )}
+                    </div>
+                    
+                    <div className="grid grid-cols-1 gap-6">
+                      {/* 合祀概要情報 */}
+                      <div className="bg-orange-50 p-4 rounded border">
+                        <h4 className="font-semibold border-b pb-2 mb-3">合祀概要</h4>
+                        <div className="grid grid-cols-3 gap-4">
+                          <div>
+                            <Label className="text-sm font-medium">合祀種別</Label>
+                            <Input 
+                              value={selectedCustomer.collectiveBurialInfo && selectedCustomer.collectiveBurialInfo.length > 0 ? 
+                                (selectedCustomer.collectiveBurialInfo[0].type === 'family' ? '家族合祀' :
+                                 selectedCustomer.collectiveBurialInfo[0].type === 'relative' ? '親族合祀' : 'その他') : ''
+                              }
+                              className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
+                              readOnly={editingTab !== 'collective-burial'}
+                              placeholder="例: 家族合祀"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-sm font-medium">主たる代表者</Label>
+                            <Input 
+                              value={selectedCustomer.collectiveBurialInfo && selectedCustomer.collectiveBurialInfo.length > 0 ? 
+                                selectedCustomer.collectiveBurialInfo[0].mainRepresentative : ''
+                              }
+                              className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
+                              readOnly={editingTab !== 'collective-burial'}
+                              placeholder="例: 長男、配偶者"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-sm font-medium">合祀料金総額</Label>
+                            <Input 
+                              value={selectedCustomer.collectiveBurialInfo && selectedCustomer.collectiveBurialInfo.length > 0 && selectedCustomer.collectiveBurialInfo[0].totalFee ? 
+                                `${selectedCustomer.collectiveBurialInfo[0].totalFee.toLocaleString()}円` : ''
+                              }
+                              className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
+                              readOnly={editingTab !== 'collective-burial'}
+                              placeholder="例: 500000円"
+                            />
+                          </div>
+                        </div>
+                        <div className="mt-4">
+                          <Label className="text-sm font-medium">特別な要望・配慮事項（宗教的配慮含む）</Label>
+                          <textarea 
+                            rows={3}
+                            value={selectedCustomer.collectiveBurialInfo && selectedCustomer.collectiveBurialInfo.length > 0 ? 
+                              selectedCustomer.collectiveBurialInfo[0].specialRequests || '' : ''
+                            }
+                            className={`w-full px-3 py-2 border rounded ${editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}`}
+                            readOnly={editingTab !== 'collective-burial'}
+                            placeholder="宗教的配慮、特別な要望事項などを記載してください"
+                          />
+                        </div>
+                      </div>
+
+                      {/* 合祀対象者一覧 */}
+                      <div className="bg-purple-50 p-4 rounded border">
+                        <div className="flex justify-between items-center border-b pb-2 mb-3">
+                          <h4 className="font-semibold">合祀対象者一覧</h4>
+                          <Button size="sm" variant="outline">+ 対象者追加</Button>
+                        </div>
+                        
+                        {selectedCustomer.collectiveBurialInfo && selectedCustomer.collectiveBurialInfo.length > 0 ? (
+                          <div className="space-y-3">
+                            {selectedCustomer.collectiveBurialInfo.map((burialInfo) => 
+                              burialInfo.persons.map((person) => (
+                                <div key={person.id} className="grid grid-cols-8 gap-2 bg-white p-3 rounded border">
+                                  <div>
+                                    <Label className="text-sm font-medium">故人氏名</Label>
+                                    <Input 
+                                      value={person.name}
+                                      className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
+                                      readOnly={editingTab !== 'collective-burial'}
+                                      placeholder="故人氏名"
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label className="text-sm font-medium">氏名カナ</Label>
+                                    <Input 
+                                      value={person.nameKana}
+                                      className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
+                                      readOnly={editingTab !== 'collective-burial'}
+                                      placeholder="ふりがな"
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label className="text-sm font-medium">続柄</Label>
+                                    <Input 
+                                      value={person.relationship}
+                                      className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
+                                      readOnly={editingTab !== 'collective-burial'}
+                                      placeholder="続柄"
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label className="text-sm font-medium">死亡日</Label>
+                                    <Input 
+                                      value={person.deathDate ? formatDateWithEra(person.deathDate) : ''}
+                                      className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
+                                      readOnly={editingTab !== 'collective-burial'}
+                                      placeholder="令和○年○月○日"
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label className="text-sm font-medium">享年</Label>
+                                    <Input 
+                                      value={person.age ? `${person.age}歳` : ''}
+                                      className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
+                                      readOnly={editingTab !== 'collective-burial'}
+                                      placeholder="○○歳"
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label className="text-sm font-medium">元の墓所</Label>
+                                    <Input 
+                                      value={person.originalPlotNumber || ''}
+                                      className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
+                                      readOnly={editingTab !== 'collective-burial'}
+                                      placeholder="区画番号"
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label className="text-sm font-medium">移転日</Label>
+                                    <Input 
+                                      value={person.transferDate ? formatDateWithEra(person.transferDate) : ''}
+                                      className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
+                                      readOnly={editingTab !== 'collective-burial'}
+                                      placeholder="令和○年○月○日"
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label className="text-sm font-medium">改葬許可証</Label>
+                                    <Input 
+                                      value={person.certificateNumber || ''}
+                                      className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
+                                      readOnly={editingTab !== 'collective-burial'}
+                                      placeholder="許可証番号"
+                                    />
+                                  </div>
+                                </div>
+                              ))
+                            )}
+                          </div>
+                        ) : (
+                          <p className="text-gray-500 text-center py-8">合祀対象者が登録されていません</p>
+                        )}
+                      </div>
+
+                      {/* 合祀実施記録 */}
+                      <div className="bg-green-50 p-4 rounded border">
+                        <div className="flex justify-between items-center border-b pb-2 mb-3">
+                          <h4 className="font-semibold">合祀実施記録</h4>
+                          <Button size="sm" variant="outline">+ 実施記録追加</Button>
+                        </div>
+                        
+                        {selectedCustomer.collectiveBurialInfo && selectedCustomer.collectiveBurialInfo.length > 0 ? (
+                          <div className="space-y-3">
+                            {selectedCustomer.collectiveBurialInfo.map((burialInfo) => 
+                              burialInfo.ceremonies.map((ceremony) => (
+                                <div key={ceremony.id} className="grid grid-cols-6 gap-4 bg-white p-3 rounded border">
+                                  <div>
+                                    <Label className="text-sm font-medium">実施日</Label>
+                                    <Input 
+                                      value={ceremony.date ? formatDateWithEra(ceremony.date) : ''}
+                                      className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
+                                      readOnly={editingTab !== 'collective-burial'}
+                                      placeholder="令和○年○月○日"
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label className="text-sm font-medium">導師・執行者</Label>
+                                    <Input 
+                                      value={ceremony.officiant}
+                                      className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
+                                      readOnly={editingTab !== 'collective-burial'}
+                                      placeholder="僧侶・神職名"
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label className="text-sm font-medium">宗派</Label>
+                                    <Input 
+                                      value={ceremony.religion}
+                                      className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
+                                      readOnly={editingTab !== 'collective-burial'}
+                                      placeholder="宗派"
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label className="text-sm font-medium">参列者数</Label>
+                                    <Input 
+                                      value={`${ceremony.participants}名`}
+                                      className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
+                                      readOnly={editingTab !== 'collective-burial'}
+                                      placeholder="○名"
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label className="text-sm font-medium">実施場所</Label>
+                                    <Input 
+                                      value={ceremony.location}
+                                      className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
+                                      readOnly={editingTab !== 'collective-burial'}
+                                      placeholder="実施場所"
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label className="text-sm font-medium">実施状況</Label>
+                                    <Input 
+                                      value={burialInfo.status === 'completed' ? '完了' : burialInfo.status === 'planned' ? '予定' : '中止'}
+                                      className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
+                                      readOnly={editingTab !== 'collective-burial'}
+                                      placeholder="実施状況"
+                                    />
+                                  </div>
+                                  {ceremony.memo && (
+                                    <div className="col-span-6">
+                                      <Label className="text-sm font-medium">備考</Label>
+                                      <Input 
+                                        value={ceremony.memo}
+                                        className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
+                                        readOnly={editingTab !== 'collective-burial'}
+                                        placeholder="備考"
+                                      />
+                                    </div>
+                                  )}
+                                </div>
+                              ))
+                            )}
+                          </div>
+                        ) : (
+                          <p className="text-gray-500 text-center py-8">合祀実施記録が登録されていません</p>
+                        )}
+                      </div>
+
+                      {/* 関連書類管理 */}
+                      <div className="bg-blue-50 p-4 rounded border">
+                        <div className="flex justify-between items-center border-b pb-2 mb-3">
+                          <h4 className="font-semibold">関連書類管理</h4>
+                          <Button size="sm" variant="outline">+ 書類追加</Button>
+                        </div>
+                        
+                        {selectedCustomer.collectiveBurialInfo && selectedCustomer.collectiveBurialInfo.length > 0 ? (
+                          <div className="space-y-3">
+                            {selectedCustomer.collectiveBurialInfo.map((burialInfo) => 
+                              burialInfo.documents && burialInfo.documents.map((document) => (
+                                <div key={document.id} className="grid grid-cols-5 gap-4 bg-white p-3 rounded border">
+                                  <div>
+                                    <Label className="text-sm font-medium">書類種別</Label>
+                                    <Input 
+                                      value={
+                                        document.type === 'permit' ? '改葬許可証' :
+                                        document.type === 'certificate' ? '証明書' :
+                                        document.type === 'agreement' ? '同意書' : 'その他'
+                                      }
+                                      className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
+                                      readOnly={editingTab !== 'collective-burial'}
+                                      placeholder="書類種別"
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label className="text-sm font-medium">書類名</Label>
+                                    <Input 
+                                      value={document.name}
+                                      className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
+                                      readOnly={editingTab !== 'collective-burial'}
+                                      placeholder="書類名"
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label className="text-sm font-medium">発行日</Label>
+                                    <Input 
+                                      value={document.issuedDate ? formatDateWithEra(document.issuedDate) : ''}
+                                      className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
+                                      readOnly={editingTab !== 'collective-burial'}
+                                      placeholder="令和○年○月○日"
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label className="text-sm font-medium">有効期限</Label>
+                                    <Input 
+                                      value={document.expiryDate ? formatDateWithEra(document.expiryDate) : ''}
+                                      className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
+                                      readOnly={editingTab !== 'collective-burial'}
+                                      placeholder="令和○年○月○日"
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label className="text-sm font-medium">備考</Label>
+                                    <Input 
+                                      value={document.memo || ''}
+                                      className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
+                                      readOnly={editingTab !== 'collective-burial'}
+                                      placeholder="備考"
+                                    />
+                                  </div>
+                                </div>
+                              ))
+                            )}
+                          </div>
+                        ) : (
+                          <p className="text-gray-500 text-center py-8">関連書類が登録されていません</p>
                         )}
                       </div>
                     </div>

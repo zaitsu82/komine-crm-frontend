@@ -108,6 +108,48 @@ export interface Customer {
     memo?: string; // メモ（後方互換性のため残す）
   }[];
 
+  // 合祀情報（複数の故人を一つの墓所に祀る管理）
+  collectiveBurialInfo?: {
+    id: string;
+    type: 'family' | 'relative' | 'other'; // 合祀種別（家族・親族・その他）
+    ceremonies: {
+      id: string;
+      date: Date | null; // 合祀実施日
+      officiant: string; // 導師・執行者
+      religion: string; // 宗派
+      participants: number; // 参列者数
+      location: string; // 実施場所
+      memo?: string; // 備考
+    }[];
+    persons: {
+      id: string;
+      name: string; // 故人氏名
+      nameKana: string; // 故人氏名カナ
+      relationship: string; // 続柄
+      deathDate: Date | null; // 死亡日
+      age?: number; // 享年
+      gender: 'male' | 'female' | undefined; // 性別
+      originalPlotNumber?: string; // 元の墓所・区画番号
+      transferDate?: Date | null; // 移転日
+      certificateNumber?: string; // 改葬許可証番号
+      memo?: string; // 備考
+    }[];
+    mainRepresentative: string; // 主たる代表者（契約者との関係）
+    totalFee?: number; // 合祀料金総額
+    documents?: {
+      id: string;
+      type: 'permit' | 'certificate' | 'agreement' | 'other'; // 書類種別
+      name: string; // 書類名
+      issuedDate?: Date | null; // 発行日
+      expiryDate?: Date | null; // 有効期限
+      memo?: string; // 備考
+    }[];
+    specialRequests?: string; // 特別な要望・配慮事項（宗教的配慮含む）
+    status: 'planned' | 'completed' | 'cancelled'; // 実施状況
+    createdAt: Date;
+    updatedAt: Date;
+  }[];
+
   // 勤務先・連絡情報 - 後方互換性のため残す
   workInfo?: {
     companyName: string; // 勤務先名称
