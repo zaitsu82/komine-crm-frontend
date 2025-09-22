@@ -12,7 +12,7 @@ import { CustomerFormData } from '@/lib/validations';
 import CustomerSearch from '@/components/customer-search';
 import CustomerForm from '@/components/customer-form';
 import CustomerRegistry from '@/components/customer-registry';
-import CollectiveBurialManagement from '@/components/collective-burial-management';
+import CemeteryManagementList from '@/components/cemetery-management-list';
 
 const menuItems = [
   '台帳問合せ',
@@ -238,7 +238,7 @@ export default function CustomerManagement() {
           </>
         ) : currentView === 'collective-burial' ? (
           <div className="flex-1 overflow-auto">
-            <CollectiveBurialManagement />
+            <CemeteryManagementList />
           </div>
         ) : selectedCustomer && (
           <>
