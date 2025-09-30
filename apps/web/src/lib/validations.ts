@@ -152,3 +152,54 @@ export const customerFormSchema = z.object({
 });
 
 export type CustomerFormData = z.infer<typeof customerFormSchema>;
+
+export const collectiveBurialApplicationSchema = z.object({
+  applicationDate: z.string().min(1, '申込日は必須です'),
+  desiredDate: z.string().optional(),
+  burialType: z.enum(['family', 'relative', 'other'], {
+    required_error: '合祀種別を選択してください'
+  }),
+  mainRepresentative: z.string().min(1, '主たる代表者は必須です'),
+  applicantName: z.string().min(1, '申込者氏名は必須です'),
+  applicantNameKana: z.string().min(1, '申込者氏名（カナ）は必須です'),
+  applicantPhone: z.string().min(1, '連絡先電話番号は必須です'),
+  applicantEmail: z.string().email('正しいメールアドレスを入力してください').optional().or(z.literal('')),
+  applicantPostalCode: z.string().optional(),
+  applicantAddress: z.string().min(1, '住所は必須です'),
+  plotSection: z.string().min(1, '区域は必須です'),
+  plotNumber: z.string().min(1, '区画番号は必須です'),
+  specialRequests: z.string().optional(),
+  totalFee: z.string().optional(),
+  depositAmount: z.string().optional(),
+  paymentMethod: z.string().optional(),
+  paymentDueDate: z.string().optional(),
+  persons: z.array(z.object({
+    name: z.string().min(1, '氏名は必須です'),
+    nameKana: z.string().min(1, '氏名（カナ）は必須です'),
+    relationship: z.string().min(1, '続柄は必須です'),
+    deathDate: z.string().min(1, '死亡日は必須です'),
+    age: z.string().optional(),
+    gender: z.enum(['', 'male', 'female']).optional(),
+    originalPlotNumber: z.string().optional(),
+    certificateNumber: z.string().optional(),
+    memo: z.string().optional(),
+  })).min(1, '合祀対象者を1名以上登録してください'),
+  ceremonies: z.array(z.object({
+    date: z.string().optional(),
+    officiant: z.string().optional(),
+    religion: z.string().optional(),
+    participants: z.string().optional(),
+    location: z.string().optional(),
+    memo: z.string().optional(),
+  })).optional(),
+  documents: z.array(z.object({
+    type: z.enum(['permit', 'certificate', 'agreement', 'other'], {
+      required_error: '書類種別を選択してください'
+    }),
+    name: z.string().min(1, '書類名は必須です'),
+    issuedDate: z.string().optional(),
+    memo: z.string().optional(),
+  })).optional(),
+});
+
+export type CollectiveBurialApplicationFormValues = z.infer<typeof collectiveBurialApplicationSchema>;
