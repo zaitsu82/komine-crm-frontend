@@ -15,19 +15,12 @@ import CustomerRegistry from '@/components/customer-registry';
 import CemeteryManagementList from '@/components/cemetery-management-list';
 
 const menuItems = [
-  '台帳問合せ',
-  '契約訂正',
-  '予約入力',
-  '契約前入力',
-  '名義変更',
-  '住所変更',
-  '埋葬情報更新',
+  '台帳問い合わせ',
+  '台帳編集',
+  '新規登録',
+  '区画管理',
   '合祀管理',
-  '個人票印刷',
-  '許可証印刷',
-  '封筒印刷',
-  '墓所移動',
-  '解約入力'
+  '契約訂正'
 ];
 
 export default function CustomerManagement() {
@@ -129,25 +122,33 @@ export default function CustomerManagement() {
               <button
                 key={index}
                 onClick={() => {
-                  if (item === '台帳問合せ') {
+                  if (item === '台帳問い合わせ') {
                     setCurrentView('registry');
-                    setSelectedCustomer(null); // 台帳表示では選択をクリア
-                  } else if (item === '契約前入力') {
+                    setSelectedCustomer(null);
+                  } else if (item === '台帳編集') {
+                    if (selectedCustomer) {
+                      setCurrentView('edit');
+                    } else {
+                      alert('編集する顧客を選択してください');
+                    }
+                  } else if (item === '新規登録') {
                     handleNewCustomer();
+                  } else if (item === '区画管理') {
+                    alert('区画管理機能は準備中です');
+                  } else if (item === '合祀管理') {
+                    setCurrentView('collective-burial');
+                    setSelectedCustomer(null);
                   } else if (item === '契約訂正') {
                     if (selectedCustomer) {
                       setCurrentView('edit');
                     } else {
                       alert('編集する顧客を選択してください');
                     }
-                  } else if (item === '合祀管理') {
-                    setCurrentView('collective-burial');
-                    setSelectedCustomer(null);
                   }
-                  // 他のメニューアイテムも必要に応じて実装
                 }}
                 className={`w-full text-left px-3 py-2 text-senior-sm rounded border border-gray-400 bg-gray-100 hover:bg-blue-100 hover:border-blue-300 transition-colors btn-senior ${
-                  (item === '台帳問合せ' && (currentView === 'registry' || currentView === 'search')) || 
+                  (item === '台帳問い合わせ' && (currentView === 'registry' || currentView === 'search')) ||
+                  (item === '台帳編集' && currentView === 'edit') ||
                   (item === '契約訂正' && currentView === 'edit') ||
                   (item === '合祀管理' && currentView === 'collective-burial') ? 'bg-blue-100 border-blue-300' : ''
                 }`}
