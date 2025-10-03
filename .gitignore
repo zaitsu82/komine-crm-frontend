@@ -2,17 +2,25 @@
 node_modules/
 .pnp
 .pnp.js
+.yarn/
 
 # Testing
 coverage/
+test-results/
+test-results 2/
+playwright-report/
+.playwright/
 
 # Next.js
 .next/
 out/
+*.tsbuildinfo
+next-env.d.ts
 
 # Production
-build
-dist
+build/
+dist/
+.turbo/
 
 # Environment variables
 .env*
@@ -24,16 +32,32 @@ dist
 # IDE
 .vscode/
 .idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.sublime-workspace
+*.sublime-project
 
 # OS
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
+Desktop.ini
 
 # Logs
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
 # Runtime data
 pids
@@ -41,7 +65,42 @@ pids
 *.seed
 *.pid.lock
 
-# Exclude all files in root except apps/
-/*
-!/apps/
-!.gitignore
+# Debug
+debug.log
+
+# Local cache
+.cache/
+.parcel-cache/
+.eslintcache
+
+# Lock files (keep only one package manager)
+# package-lock.json  # npmを使用する場合はコメントアウト
+# pnpm-lock.yaml     # pnpmを使用する場合はコメントアウト
+# yarn.lock          # yarnを使用する場合はコメントアウト
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Storybook
+storybook-static/
+
+# Sentry
+.sentryclirc
+
+# Project-specific files (not needed in repository)
+/.claude/
+/.serena/
+/.specstory/
+/images/
+/.mcp.json
+/AGENTS.md
+/CLAUDE.md
+/command.md
+/IMPLEMENTATION_SUMMARY.md
+/project.yaml
+/mise.toml
+
+# Test examples (not project-specific)
+/tests-examples/
