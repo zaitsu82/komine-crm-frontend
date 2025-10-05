@@ -82,7 +82,7 @@ export function LoginForm() {
             href="#"
             className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
           >
-            パスワードをお忘れの方
+            パスワードをお忘れの方。
           </a>
         </div>
       </Card>
