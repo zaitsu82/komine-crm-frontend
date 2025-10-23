@@ -19,47 +19,13 @@ export default function Home() {
         <MenuPage onNavigate={handleNavigate} />
       )}
       {currentView === 'customer' && (
-        <div>
-          <div className="fixed top-4 left-4 z-50">
-            <button
-              onClick={() => handleNavigate('menu')}
-              className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg flex items-center text-lg"
-            >
-              ← メニューに戻る
-            </button>
-          </div>
-          <CustomerManagement />
-        </div>
+        <CustomerManagement onNavigateToMenu={() => handleNavigate('menu')} />
       )}
       {currentView === 'burial' && (
-        <div className="min-h-screen bg-gray-100">
-          <div className="fixed top-4 left-4 z-50">
-            <button
-              onClick={() => handleNavigate('menu')}
-              className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg flex items-center text-lg"
-            >
-              ← メニューに戻る
-            </button>
-          </div>
-          <div className="pt-20 px-8">
-            <CemeteryManagementList />
-          </div>
-        </div>
+        <CemeteryManagementList onNavigateToMenu={() => handleNavigate('menu')} />
       )}
       {currentView === 'plots' && (
-        <div className="min-h-screen bg-gray-100">
-          <div className="fixed top-4 left-4 z-50">
-            <button
-              onClick={() => handleNavigate('menu')}
-              className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg flex items-center text-lg"
-            >
-              ← メニューに戻る
-            </button>
-          </div>
-          <div className="pt-20 px-8">
-            <PlotAvailabilityManagement />
-          </div>
-        </div>
+        <PlotAvailabilityManagement onNavigateToMenu={() => handleNavigate('menu')} />
       )}
     </>
   );

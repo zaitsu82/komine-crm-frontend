@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 interface PlotAvailabilityManagementProps {
   onCustomerSelect?: (customer: Customer) => void;
   selectedCustomer?: Customer;
+  onNavigateToMenu?: () => void;
 }
 
 interface PlotData {
@@ -37,7 +38,7 @@ const menuItems = [
   '利用状況レポート'
 ];
 
-export default function PlotAvailabilityManagement({ onCustomerSelect, selectedCustomer }: PlotAvailabilityManagementProps) {
+export default function PlotAvailabilityManagement({ onCustomerSelect, selectedCustomer, onNavigateToMenu }: PlotAvailabilityManagementProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortKey, setSortKey] = useState<SortKey>('section');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
@@ -211,6 +212,17 @@ export default function PlotAvailabilityManagement({ onCustomerSelect, selectedC
           <h3 className="text-lg font-semibold">区画管理メニュー</h3>
         </div>
         <div className="p-2">
+          {/* メインメニューに戻るボタン */}
+          {onNavigateToMenu && (
+            <Button
+              onClick={onNavigateToMenu}
+              className="w-full mb-3 btn-senior"
+              variant="outline"
+              size="lg"
+            >
+              ← メインメニューに戻る
+            </Button>
+          )}
           {menuItems.map((item) => (
             <button
               key={item}

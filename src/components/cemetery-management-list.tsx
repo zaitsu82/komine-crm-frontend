@@ -13,6 +13,7 @@ import CollectiveBurialApplicationForm from '@/components/collective-burial-appl
 interface CemeteryManagementListProps {
   onCustomerSelect?: (customer: Customer) => void;
   selectedCustomer?: Customer;
+  onNavigateToMenu?: () => void;
 }
 
 type SortKey = 'name' | 'plotSection' | 'plotNumber' | 'contractYear' | 'burialDate' | 'collectiveBurialInfo';
@@ -33,7 +34,7 @@ const menuItems = [
   '報告書作成',
 ];
 
-export default function CemeteryManagementList({ onCustomerSelect, selectedCustomer }: CemeteryManagementListProps) {
+export default function CemeteryManagementList({ onCustomerSelect, selectedCustomer, onNavigateToMenu }: CemeteryManagementListProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortKey, setSortKey] = useState<SortKey>('name');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
@@ -705,6 +706,17 @@ export default function CemeteryManagementList({ onCustomerSelect, selectedCusto
           <h3 className="text-lg font-semibold">顧客管理台帳</h3>
         </div>
         <div className="p-2">
+          {/* メインメニューに戻るボタン */}
+          {onNavigateToMenu && (
+            <Button
+              onClick={onNavigateToMenu}
+              className="w-full mb-3 btn-senior"
+              variant="outline"
+              size="lg"
+            >
+              ← メインメニューに戻る
+            </Button>
+          )}
           {menuItems.map((item) => (
             <button
               key={item}

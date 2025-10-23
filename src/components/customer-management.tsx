@@ -23,7 +23,11 @@ const menuItems = [
   '契約訂正'
 ];
 
-export default function CustomerManagement() {
+interface CustomerManagementProps {
+  onNavigateToMenu?: () => void;
+}
+
+export default function CustomerManagement({ onNavigateToMenu }: CustomerManagementProps) {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [currentView, setCurrentView] = useState<'registry' | 'search' | 'details' | 'register' | 'edit' | 'collective-burial'>('registry');
   const [isLoading, setIsLoading] = useState(false);
@@ -117,8 +121,36 @@ export default function CustomerManagement() {
       <div className="w-64 bg-gray-200 border-r border-gray-300 fixed top-0 left-0 h-screen overflow-y-auto z-10">
         <div className="p-4 pb-8">
           <h2 className="text-lg font-semibold text-gray-800 mb-4">台帳管理メニュー</h2>
-          <div className="space-y-1 mb-4">
-            {menuItems.map((item, index) => (
+
+          {/* メインメニューに戻るボタン */}
+          {onNavigateToMenu && (
+            <div className="mb-3">
+              <Button
+                onClick={onNavigateToMenu}
+                className="w-full btn-senior"
+                variant="outline"
+                size="lg"
+              >
+                ← メインメニューに戻る
+              </Button>
+            </div>
+          )}
+
+          {/* 台帳一覧に戻るボタン（詳細画面の時のみ表示） */}
+          {currentView === 'details' ? (
+            <div className="space-y-1 mb-4">
+              <Button
+                onClick={handleBackToRegistry}
+                className="w-full btn-senior"
+                variant="default"
+                size="lg"
+              >
+                台帳一覧に戻る
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-1 mb-4">
+              {menuItems.map((item, index) => (
               <button
                 key={index}
                 onClick={() => {
@@ -156,38 +188,13 @@ export default function CustomerManagement() {
                 {item}
               </button>
             ))}
-          </div>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col ml-64">
-        {/* Header with navigation buttons */}
-        <div className="bg-white border-b border-gray-300 px-6 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <span className="text-senior-sm text-gray-600 font-semibold">処理メニュー</span>
-              {currentView === 'details' && (
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  onClick={handleBackToRegistry}
-                  className="btn-senior"
-                >
-                  戻る
-                </Button>
-              )}
-              <Button size="sm" variant="outline" className="btn-senior">進む</Button>
-              <Button size="sm" variant="outline" className="btn-senior">上へ</Button>
-              <Button size="sm" variant="outline" className="btn-senior">トップ</Button>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Button size="sm" variant="outline">担当者</Button>
-              <Button size="sm" variant="outline">終了</Button>
-            </div>
-          </div>
-        </div>
-
         {/* Conditional Content Based on Current View */}
         {currentView === 'registry' ? (
           <div className="flex-1 p-6">
