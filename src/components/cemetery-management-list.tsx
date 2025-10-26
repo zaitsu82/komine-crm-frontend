@@ -9,6 +9,9 @@ import { cn, formatDateWithEra } from '@/lib/utils';
 import { CollectiveBurialApplication } from '@/types/collective-burial';
 import { getCollectiveBurialApplications } from '@/lib/collective-burial';
 import CollectiveBurialApplicationForm from '@/components/collective-burial-application-form';
+import CollectiveBurialDetail from '@/components/collective-burial-detail';
+import CollectiveBurialPrintTemplate from '@/components/collective-burial-print-template';
+import { COLLECTIVE_BURIAL_LIMITS, getCapacityStatus, getRemainingCapacity, getCapacityPercentage } from '@/config/collective-burial-limits';
 
 interface CemeteryManagementListProps {
   onCustomerSelect?: (customer: Customer) => void;
@@ -42,6 +45,9 @@ export default function CemeteryManagementList({ onCustomerSelect, selectedCusto
   const [selectedMenu, setSelectedMenu] = useState('台帳問い合わせ');
   const [applications, setApplications] = useState<CollectiveBurialApplication[]>(() => getCollectiveBurialApplications());
   const [lastSuccessMessage, setLastSuccessMessage] = useState<string | null>(null);
+  const [selectedApplication, setSelectedApplication] = useState<CollectiveBurialApplication | null>(null);
+  const [showPrintModal, setShowPrintModal] = useState(false);
+  const [printingApplication, setPrintingApplication] = useState<CollectiveBurialApplication | null>(null);
 
   const handleSearch = () => {
     // 検索処理（フィルタリングはuseMemoで実行）
@@ -150,6 +156,27 @@ export default function CemeteryManagementList({ onCustomerSelect, selectedCusto
     alert('合祀申込を登録しました');
   };
 
+  const handleViewDetail = (application: CollectiveBurialApplication) => {
+    setSelectedApplication(application);
+  };
+
+  const handleCloseDetail = () => {
+    setSelectedApplication(null);
+  };
+
+  const handlePrintApplication = (application: CollectiveBurialApplication) => {
+    setPrintingApplication(application);
+    setShowPrintModal(true);
+    setTimeout(() => {
+      window.print();
+    }, 500);
+  };
+
+  const handleClosePrintModal = () => {
+    setShowPrintModal(false);
+    setPrintingApplication(null);
+  };
+
   const renderCollectiveBurialCards = () => {
     const typeLabel: Record<CollectiveBurialApplication['burialType'], string> = {
       family: '家族合祀',
@@ -164,12 +191,120 @@ export default function CemeteryManagementList({ onCustomerSelect, selectedCusto
       cancelled: '中止',
     };
 
+    // 現在の合祀人数を計算
+    const totalPersons = applications.reduce((total, app) => {
+      if (app.status !== 'cancelled') {
+        return total + app.persons.length;
+      }
+      return total;
+    }, 0);
+
+    const maxCapacity = COLLECTIVE_BURIAL_LIMITS.MAX_TOTAL_CAPACITY;
+    const remaining = getRemainingCapacity(totalPersons, maxCapacity);
+    const percentage = getCapacityPercentage(totalPersons, maxCapacity);
+    const capacityStatus = getCapacityStatus(totalPersons, maxCapacity);
+
     if (applications.length === 0) {
       return <p className="text-gray-500 text-center py-12">合祀申込がまだ登録されていません</p>;
     }
 
     return (
       <div className="space-y-4">
+        {/* 合祀人数の状況バナー */}
+        <div className={`p-4 rounded-lg border-2 ${
+          capacityStatus === 'full' ? 'bg-red-50 border-red-400' :
+          capacityStatus === 'critical' ? 'bg-orange-50 border-orange-400' :
+          capacityStatus === 'warning' ? 'bg-yellow-50 border-yellow-400' :
+          'bg-green-50 border-green-400'
+        }`}>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center space-x-2">
+              <span className="text-2xl">
+                {capacityStatus === 'full' ? '🚫' :
+                 capacityStatus === 'critical' ? '🚨' :
+                 capacityStatus === 'warning' ? '⚠️' :
+                 '✅'}
+              </span>
+              <h3 className={`text-lg font-bold ${
+                capacityStatus === 'full' ? 'text-red-900' :
+                capacityStatus === 'critical' ? 'text-orange-900' :
+                capacityStatus === 'warning' ? 'text-yellow-900' :
+                'text-green-900'
+              }`}>
+                合祀堂収容状況
+              </h3>
+            </div>
+            <div className="text-right">
+              <p className={`text-2xl font-bold ${
+                capacityStatus === 'full' ? 'text-red-600' :
+                capacityStatus === 'critical' ? 'text-orange-600' :
+                capacityStatus === 'warning' ? 'text-yellow-600' :
+                'text-green-600'
+              }`}>
+                {percentage}%
+              </p>
+              <p className="text-xs text-gray-600">使用率</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-4 mb-3">
+            <div className="text-center p-2 bg-white rounded border">
+              <p className="text-xs text-gray-600 mb-1">現在の合祀人数</p>
+              <p className="text-xl font-bold text-gray-900">{totalPersons}名</p>
+            </div>
+            <div className="text-center p-2 bg-white rounded border">
+              <p className="text-xs text-gray-600 mb-1">上限人数</p>
+              <p className="text-lg font-semibold text-gray-700">{maxCapacity}名</p>
+            </div>
+            <div className="text-center p-2 bg-white rounded border">
+              <p className="text-xs text-gray-600 mb-1">残り人数</p>
+              <p className={`text-xl font-bold ${
+                capacityStatus === 'full' ? 'text-red-600' :
+                capacityStatus === 'critical' ? 'text-orange-600' :
+                capacityStatus === 'warning' ? 'text-yellow-600' :
+                'text-green-600'
+              }`}>
+                {remaining}名
+              </p>
+            </div>
+          </div>
+
+          {/* プログレスバー */}
+          <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+            <div
+              className={`h-4 rounded-full transition-all duration-500 ${
+                capacityStatus === 'full' ? 'bg-red-600' :
+                capacityStatus === 'critical' ? 'bg-orange-500' :
+                capacityStatus === 'warning' ? 'bg-yellow-500' :
+                'bg-green-500'
+              }`}
+              style={{ width: `${percentage}%` }}
+            />
+          </div>
+
+          {/* 警告メッセージ */}
+          {capacityStatus !== 'safe' && (
+            <div className="mt-3 text-sm">
+              {capacityStatus === 'full' && (
+                <p className="text-red-800 font-semibold">
+                  ⚠️ 合祀堂の収容人数が上限に達しました。これ以上の申込は受け付けできません。
+                </p>
+              )}
+              {capacityStatus === 'critical' && (
+                <p className="text-orange-800 font-semibold">
+                  ⚠️ 合祀堂の収容人数が95%を超えています。残りわずかです。
+                </p>
+              )}
+              {capacityStatus === 'warning' && (
+                <p className="text-yellow-800 font-semibold">
+                  ⚠️ 合祀堂の収容人数が80%を超えています。計画的な受付をお願いします。
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* 申込一覧 */}
         {applications.map((application) => (
           <div key={application.id} className="rounded-lg border border-gray-200 bg-gray-50 p-5 shadow-sm space-y-3">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between">
@@ -234,10 +369,28 @@ export default function CemeteryManagementList({ onCustomerSelect, selectedCusto
               )}
             </div>
 
-            <div className="text-xs text-gray-500 flex flex-wrap gap-4">
-              <span>ID: {application.id}</span>
-              <span>最終更新: {formatDateWithEra(application.updatedAt)}</span>
-              {application.documents.length > 0 && <span>関連書類: {application.documents.length}件</span>}
+            <div className="flex items-center justify-between mt-3">
+              <div className="text-xs text-gray-500 flex flex-wrap gap-4">
+                <span>ID: {application.id}</span>
+                <span>最終更新: {formatDateWithEra(application.updatedAt)}</span>
+                {application.documents.length > 0 && <span>関連書類: {application.documents.length}件</span>}
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleViewDetail(application)}
+                >
+                  詳細表示
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handlePrintApplication(application)}
+                >
+                  印刷
+                </Button>
+              </div>
             </div>
           </div>
         ))}
@@ -746,6 +899,39 @@ export default function CemeteryManagementList({ onCustomerSelect, selectedCusto
           </div>
         )}
       </div>
+
+      {/* 合祀申込詳細モーダル */}
+      {selectedApplication && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl h-[90vh] overflow-hidden">
+            <CollectiveBurialDetail
+              application={selectedApplication}
+              onClose={handleCloseDetail}
+              onPrint={() => handlePrintApplication(selectedApplication)}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* 合祀申込書印刷モーダル */}
+      {showPrintModal && printingApplication && (
+        <div id="collective-burial-print-modal" className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 print:bg-transparent print:relative print:inset-auto">
+          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-auto print:max-w-full print:shadow-none print:rounded-none">
+            <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center print:hidden">
+              <h2 className="text-xl font-bold">合祀申込書プレビュー</h2>
+              <div className="flex gap-2">
+                <Button onClick={() => window.print()} variant="default">
+                  印刷
+                </Button>
+                <Button onClick={handleClosePrintModal} variant="outline">
+                  閉じる
+                </Button>
+              </div>
+            </div>
+            <CollectiveBurialPrintTemplate application={printingApplication} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

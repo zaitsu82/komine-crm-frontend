@@ -10,8 +10,10 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { collectiveBurialApplicationSchema, CollectiveBurialApplicationFormValues } from '@/lib/validations';
-import { createCollectiveBurialApplication } from '@/lib/collective-burial';
+import { createCollectiveBurialApplication, getCollectiveBurialApplications } from '@/lib/collective-burial';
 import { CollectiveBurialApplication } from '@/types/collective-burial';
+import CapacityWarningDialog from '@/components/capacity-warning-dialog';
+import { COLLECTIVE_BURIAL_LIMITS, getCapacityStatus, getRemainingCapacity, getCapacityPercentage } from '@/config/collective-burial-limits';
 
 interface CollectiveBurialApplicationFormProps {
   onSubmitSuccess?: (application: CollectiveBurialApplication) => void;
@@ -62,6 +64,9 @@ const errorText = (message?: string) => {
 export default function CollectiveBurialApplicationForm({ onSubmitSuccess }: CollectiveBurialApplicationFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [lastCreatedId, setLastCreatedId] = useState<string | null>(null);
+  const [showCapacityWarning, setShowCapacityWarning] = useState(false);
+  const [capacityStatus, setCapacityStatus] = useState<'safe' | 'warning' | 'critical' | 'full'>('safe');
+  const [pendingSubmitData, setPendingSubmitData] = useState<CollectiveBurialApplicationFormValues | null>(null);
 
   const {
     register,
@@ -101,7 +106,52 @@ export default function CollectiveBurialApplicationForm({ onSubmitSuccess }: Col
     name: 'documents',
   });
 
-  const onSubmit = async (values: CollectiveBurialApplicationFormValues) => {
+  // 現在の合祀人数を計算
+  const getCurrentTotalPersons = (): number => {
+    const applications = getCollectiveBurialApplications();
+    return applications.reduce((total, app) => {
+      // 完了済みとキャンセル以外をカウント
+      if (app.status !== 'cancelled') {
+        return total + app.persons.length;
+      }
+      return total;
+    }, 0);
+  };
+
+  // 人数チェックを実行
+  const checkCapacity = (values: CollectiveBurialApplicationFormValues): boolean => {
+    const currentTotal = getCurrentTotalPersons();
+    const newPersonsCount = values.persons.length;
+    const futureTotal = currentTotal + newPersonsCount;
+    const maxCapacity = COLLECTIVE_BURIAL_LIMITS.MAX_TOTAL_CAPACITY;
+
+    const status = getCapacityStatus(futureTotal, maxCapacity);
+
+    // 1申込あたりの上限チェック
+    if (newPersonsCount > COLLECTIVE_BURIAL_LIMITS.MAX_PERSONS_PER_APPLICATION) {
+      alert(`1つの申込で登録できる故人数は${COLLECTIVE_BURIAL_LIMITS.MAX_PERSONS_PER_APPLICATION}名までです。\n現在: ${newPersonsCount}名`);
+      return false;
+    }
+
+    // 全体の上限チェック
+    if (status === 'full' || futureTotal > maxCapacity) {
+      setCapacityStatus('full');
+      setShowCapacityWarning(true);
+      return false;
+    }
+
+    // 警告表示（続行可能）
+    if (status === 'warning' || status === 'critical') {
+      setCapacityStatus(status);
+      setPendingSubmitData(values);
+      setShowCapacityWarning(true);
+      return false; // 一旦停止して警告表示
+    }
+
+    return true; // 問題なし
+  };
+
+  const performSubmit = async (values: CollectiveBurialApplicationFormValues) => {
     setIsSubmitting(true);
     try {
       const application = await createCollectiveBurialApplication(values);
@@ -116,11 +166,39 @@ export default function CollectiveBurialApplicationForm({ onSubmitSuccess }: Col
       alert('合祀申込の登録に失敗しました');
     } finally {
       setIsSubmitting(false);
+      setPendingSubmitData(null);
     }
   };
 
+  const onSubmit = async (values: CollectiveBurialApplicationFormValues) => {
+    // 人数チェック
+    const canProceed = checkCapacity(values);
+    if (canProceed) {
+      await performSubmit(values);
+    }
+  };
+
+  const handleCapacityWarningContinue = async () => {
+    setShowCapacityWarning(false);
+    if (pendingSubmitData) {
+      await performSubmit(pendingSubmitData);
+    }
+  };
+
+  const handleCapacityWarningClose = () => {
+    setShowCapacityWarning(false);
+    setPendingSubmitData(null);
+  };
+
+  // 現在の状況を計算
+  const currentTotal = getCurrentTotalPersons();
+  const maxCapacity = COLLECTIVE_BURIAL_LIMITS.MAX_TOTAL_CAPACITY;
+  const remaining = getRemainingCapacity(currentTotal, maxCapacity);
+  const percentage = getCapacityPercentage(currentTotal, maxCapacity);
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <Tabs defaultValue="basic" className="w-full">
         <TabsList className="grid grid-cols-5 gap-2 bg-white">
           <TabsTrigger value="basic" className="py-2 text-sm">基本情報</TabsTrigger>
@@ -537,5 +615,21 @@ export default function CollectiveBurialApplicationForm({ onSubmitSuccess }: Col
         </Button>
       </div>
     </form>
+
+      {/* 人数上限警告ダイアログ */}
+      <CapacityWarningDialog
+        isOpen={showCapacityWarning}
+        onClose={handleCapacityWarningClose}
+        onContinue={capacityStatus !== 'full' ? handleCapacityWarningContinue : undefined}
+        status={capacityStatus === 'safe' ? 'warning' : capacityStatus}
+        current={currentTotal + (pendingSubmitData?.persons.length || 0)}
+        max={maxCapacity}
+        remaining={remaining - (pendingSubmitData?.persons.length || 0)}
+        percentage={getCapacityPercentage(
+          currentTotal + (pendingSubmitData?.persons.length || 0),
+          maxCapacity
+        )}
+      />
+    </>
   );
 }

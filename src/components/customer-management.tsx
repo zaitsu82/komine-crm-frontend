@@ -13,6 +13,7 @@ import CustomerSearch from '@/components/customer-search';
 import CustomerForm from '@/components/customer-form';
 import CustomerRegistry from '@/components/customer-registry';
 import CemeteryManagementList from '@/components/cemetery-management-list';
+import InvoiceTemplate from '@/components/invoice-template';
 
 const menuItems = [
   '台帳問い合わせ',
@@ -29,10 +30,11 @@ interface CustomerManagementProps {
 
 export default function CustomerManagement({ onNavigateToMenu }: CustomerManagementProps) {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-  const [currentView, setCurrentView] = useState<'registry' | 'search' | 'details' | 'register' | 'edit' | 'collective-burial'>('registry');
+  const [currentView, setCurrentView] = useState<'registry' | 'search' | 'details' | 'register' | 'edit' | 'collective-burial' | 'invoice'>('registry');
   const [isLoading, setIsLoading] = useState(false);
   const [editingTab, setEditingTab] = useState<string | null>(null);
   const [editFormData, setEditFormData] = useState<any>({});
+  const [showInvoice, setShowInvoice] = useState(false);
 
   const handleCustomerSelect = (customer: Customer) => {
     setSelectedCustomer(customer);
@@ -85,6 +87,22 @@ export default function CustomerManagement({ onNavigateToMenu }: CustomerManagem
     } else {
       setCurrentView('search');
     }
+  };
+
+  const handlePrintInvoice = () => {
+    if (!selectedCustomer) {
+      alert('請求書を発行する顧客を選択してください');
+      return;
+    }
+    setShowInvoice(true);
+    // 印刷プレビューを表示後、印刷ダイアログを開く
+    setTimeout(() => {
+      window.print();
+    }, 500);
+  };
+
+  const handleCloseInvoice = () => {
+    setShowInvoice(false);
   };
 
   const handleTabEdit = (tabName: string) => {
@@ -146,6 +164,14 @@ export default function CustomerManagement({ onNavigateToMenu }: CustomerManagem
                 size="lg"
               >
                 台帳一覧に戻る
+              </Button>
+              <Button
+                onClick={handlePrintInvoice}
+                className="w-full btn-senior mt-2"
+                variant="outline"
+                size="lg"
+              >
+                請求書印刷
               </Button>
             </div>
           ) : (
@@ -2299,6 +2325,26 @@ export default function CustomerManagement({ onNavigateToMenu }: CustomerManagem
           </>
         )}
       </div>
+
+      {/* 請求書モーダル */}
+      {showInvoice && selectedCustomer && (
+        <div id="invoice-modal" className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 print:bg-transparent print:relative print:inset-auto">
+          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-auto print:max-w-full print:shadow-none print:rounded-none">
+            <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center print:hidden">
+              <h2 className="text-xl font-bold">請求書プレビュー</h2>
+              <div className="flex gap-2">
+                <Button onClick={() => window.print()} variant="default">
+                  印刷
+                </Button>
+                <Button onClick={handleCloseInvoice} variant="outline">
+                  閉じる
+                </Button>
+              </div>
+            </div>
+            <InvoiceTemplate customer={selectedCustomer} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

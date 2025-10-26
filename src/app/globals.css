@@ -233,3 +233,38 @@ body {
   .text-senior-lg { font-size: 20px; }
   .text-senior-xl { font-size: 24px; }
 }
+
+/* 印刷時のスタイル - 請求書・合祀申込書のみを表示 */
+@media print {
+  /* すべての要素を非表示 */
+  body * {
+    visibility: hidden;
+  }
+
+  /* 請求書モーダルとその中身のみを表示 */
+  #invoice-modal,
+  #invoice-modal *,
+  #collective-burial-print-modal,
+  #collective-burial-print-modal * {
+    visibility: visible;
+  }
+
+  /* モーダルを画面全体に配置 */
+  #invoice-modal,
+  #collective-burial-print-modal {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    background: white;
+  }
+
+  /* モーダルの背景とボーダーを削除 */
+  #invoice-modal > div,
+  #collective-burial-print-modal > div {
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+  }
+}
