@@ -1,11 +1,11 @@
 import { z } from "zod";
 
-export const NcustomerFormSchema = z.object({
+export const customerFormSchema = z.object({
   // 顧客基本情報
   customerCode: z.string().min(1, "顧客コードは必須です"),
   plotNumber: z.string().optional(),
   section: z.string().optional(),
-  
+
   // 契約者情報
   reservationDate: z.string().optional(),
   acceptanceNumber: z.string().optional(),
@@ -22,7 +22,7 @@ export const NcustomerFormSchema = z.object({
   email: z.string().email("正しいメールアドレスを入力してください").optional().or(z.literal("")),
   address: z.string().min(1, "住所は必須です"),
   registeredAddress: z.string().optional(),
-  
+
   // 申込者情報
   applicantInfo: z.object({
     applicationDate: z.string().optional(),
@@ -55,7 +55,7 @@ export const NcustomerFormSchema = z.object({
     accountNumber: z.string().optional(),
     accountHolder: z.string().optional(),
   }).optional(),
-  
+
   // 契約者情報
   contractorInfo: z.object({
     reservationDate: z.string().optional(),
@@ -64,7 +64,7 @@ export const NcustomerFormSchema = z.object({
     startDate: z.string().optional(),
     registeredAddress: z.string().optional(),
   }).optional(),
-  
+
   // 使用料
   usageFee: z.object({
     calculationType: z.string().optional(),
@@ -76,7 +76,7 @@ export const NcustomerFormSchema = z.object({
     usageFee: z.string().optional(),
     paymentMethod: z.string().optional(),
   }).optional(),
-  
+
   // 管理料
   managementFee: z.object({
     calculationType: z.string().optional(),
@@ -90,7 +90,7 @@ export const NcustomerFormSchema = z.object({
     lastBillingMonth: z.string().optional(),
     paymentMethod: z.string().optional(),
   }).optional(),
-  
+
   // 墓石情報
   gravestoneInfo: z.object({
     gravestoneBase: z.string().optional(),
@@ -101,7 +101,7 @@ export const NcustomerFormSchema = z.object({
     establishmentDeadline: z.string().optional(),
     establishmentDate: z.string().optional(),
   }).optional(),
-  
+
   // 家族・連絡先（複数対応）
   familyContacts: z.array(z.object({
     id: z.string(),
@@ -135,7 +135,7 @@ export const NcustomerFormSchema = z.object({
     burialDate: z.string().min(1, "埋葬日は必須です"),
     memo: z.string().optional(),
   })).optional(),
-  
+
   plotInfo: z.object({
     plotNumber: z.string().optional(),
     section: z.string().optional(),
@@ -144,7 +144,7 @@ export const NcustomerFormSchema = z.object({
     price: z.string().optional(),
     contractDate: z.string().optional(),
   }).optional(),
-  
+
   // 後方互換性のため残すフィールド
   postalCode: z.string().optional(),
   prefecture: z.string().optional(),
@@ -210,7 +210,7 @@ export type CollectiveBurialApplicationFormValues = z.infer<typeof collectiveBur
 export const plotAssignmentSchema = z.object({
   id: z.string(),
   customerId: z.string().optional(),
-  
+
   // 既存ユニット参照 or 新規ドラフト（どちらか必須）
   plotNumber: z.string().optional(),
   draftUnit: z.object({
@@ -227,7 +227,7 @@ export const plotAssignmentSchema = z.object({
     basePrice: z.number().nonnegative("価格は0以上である必要があります").optional(),
     notes: z.string().optional(),
   }).optional(),
-  
+
   // 収容人数設定
   capacityOverride: z.number()
     .int("収容人数は整数である必要があります")
@@ -237,25 +237,25 @@ export const plotAssignmentSchema = z.object({
   effectiveCapacity: z.number()
     .int("収容人数は整数である必要があります")
     .min(1, "有効な収容人数は1人以上である必要があります"),
-  
+
   // 合祀設定
   allowGoushi: z.boolean(),
-  
+
   // 所有・契約情報
   ownership: z.enum(['exclusive', 'shared'], {
     message: "所有形態を選択してください"
   }),
   purchaseDate: z.string().optional(),
   price: z.number().nonnegative("価格は0以上である必要があります").optional(),
-  
+
   // 連携ステータス
   desiredStatus: z.enum(['reserved', 'in_use'], {
     message: "ステータスを選択してください"
   }),
-  
+
   // その他
   notes: z.string().optional(),
-  
+
   createdAt: z.date().optional(),
   updatedAt: z.date().optional(),
 }).refine(

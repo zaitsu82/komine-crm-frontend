@@ -1,9 +1,7 @@
-import { Customer } from '@/types/customer';
-import type { 
-  PlotUnit, 
-  CustomerPlotAssignment, 
+import { Customer, PlotUnit, CustomerPlotAssignment, CustomerDocument } from '@/types/customer';
+import type {
   PlotAvailabilityCheck,
-  PlotStatus 
+  PlotStatus
 } from '@/types/customer';
 import { CustomerFormData } from '@/lib/validations';
 import { demoCustomers } from '@/lib/demo-data';
@@ -29,8 +27,8 @@ export function searchCustomers(query: string): Customer[] {
   }
 
   const lowercaseQuery = query.toLowerCase();
-  
-  return mockCustomers.filter(customer => 
+
+  return mockCustomers.filter(customer =>
     customer.name.toLowerCase().includes(lowercaseQuery) ||
     customer.nameKana.toLowerCase().includes(lowercaseQuery) ||
     (customer.customerCode?.toLowerCase().includes(lowercaseQuery) || false) ||
@@ -59,11 +57,11 @@ export function getCustomersByUsage(usage: 'in_use' | 'available' | 'reserved'):
 export function createCustomer(customerData: Omit<Customer, 'id' | 'createdAt' | 'updatedAt'>): Customer {
   const newCustomer: Customer = {
     ...customerData,
-    id: `${mockCustomers.length + 1}`,
+    id: `${mockCustomers.length + 1} `,
     createdAt: new Date(),
     updatedAt: new Date(),
   };
-  
+
   mockCustomers.push(newCustomer);
   return newCustomer;
 }
@@ -71,17 +69,17 @@ export function createCustomer(customerData: Omit<Customer, 'id' | 'createdAt' |
 // 顧客を更新
 export function updateCustomer(id: string, customerData: Partial<Omit<Customer, 'id' | 'createdAt'>>): Customer | null {
   const customerIndex = mockCustomers.findIndex(customer => customer.id === id);
-  
+
   if (customerIndex === -1) {
     return null;
   }
-  
+
   const updatedCustomer: Customer = {
     ...mockCustomers[customerIndex],
     ...customerData,
     updatedAt: new Date(),
   };
-  
+
   mockCustomers[customerIndex] = updatedCustomer;
   return updatedCustomer;
 }
@@ -89,11 +87,11 @@ export function updateCustomer(id: string, customerData: Partial<Omit<Customer, 
 // 顧客を削除
 export function deleteCustomer(id: string): boolean {
   const customerIndex = mockCustomers.findIndex(customer => customer.id === id);
-  
+
   if (customerIndex === -1) {
     return false;
   }
-  
+
   mockCustomers.splice(customerIndex, 1);
   return true;
 }
@@ -103,7 +101,7 @@ export function getCustomerStatus(customer: Customer): CustomerStatus {
   const now = new Date();
   const oneYearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
   const twoYearsAgo = new Date(now.getFullYear() - 2, now.getMonth(), now.getDate());
-  
+
   // 契約が非アクティブな場合
   if (customer.status === 'inactive') {
     return {
@@ -113,7 +111,7 @@ export function getCustomerStatus(customer: Customer): CustomerStatus {
       className: 'text-status-attention bg-red-50 border-red-200'
     };
   }
-  
+
   // 長期間更新されていない場合（2年以上）
   if (customer.updatedAt < twoYearsAgo) {
     return {
@@ -123,7 +121,7 @@ export function getCustomerStatus(customer: Customer): CustomerStatus {
       className: 'text-status-attention bg-red-50 border-red-200'
     };
   }
-  
+
   // 1年以上更新されていない場合（注意要）
   if (customer.updatedAt < oneYearAgo) {
     return {
@@ -133,7 +131,7 @@ export function getCustomerStatus(customer: Customer): CustomerStatus {
       className: 'text-status-warning bg-yellow-50 border-yellow-200'
     };
   }
-  
+
   // 通常の契約中ステータス
   return {
     status: 'active',
@@ -148,7 +146,7 @@ export function filterByAiueo(customers: Customer[], aiueoKey: string): Customer
   if (aiueoKey === '全') {
     return customers;
   }
-  
+
   const patterns: Record<string, RegExp> = {
     'あ': /^[あ-お]/,
     'か': /^[か-ご]/,
@@ -162,18 +160,18 @@ export function filterByAiueo(customers: Customer[], aiueoKey: string): Customer
     'わ': /^[わ-ん]/,
     'その他': /^[^あ-ん]/
   };
-  
+
   const pattern = patterns[aiueoKey];
   if (!pattern) return customers;
-  
-  return customers.filter(customer => 
+
+  return customers.filter(customer =>
     pattern.test(customer.nameKana.charAt(0))
   );
 }
 
 // あいう順ソート関数
 export function sortByKana(customers: Customer[]): Customer[] {
-  return [...customers].sort((a, b) => 
+  return [...customers].sort((a, b) =>
     a.nameKana.localeCompare(b.nameKana, 'ja', { numeric: true })
   );
 }
@@ -234,13 +232,13 @@ export function formDataToCustomer(formData: CustomerFormData): Omit<Customer, '
     registeredAddress: formData.registeredAddress || undefined,
     // 後方互換性のため残すフィールド
     postalCode: formData.postalCode || undefined,
-    prefecture: formData.prefecture || undefined,  
+    prefecture: formData.prefecture || undefined,
     city: formData.city || undefined,
-    
+
     // 申込者情報
     applicantInfo: formData.applicantInfo && (
-      formData.applicantInfo.name || 
-      formData.applicantInfo.applicationDate || 
+      formData.applicantInfo.name ||
+      formData.applicantInfo.applicationDate ||
       formData.applicantInfo.staffName
     ) ? {
       applicationDate: parseDate(formData.applicantInfo.applicationDate),
@@ -254,8 +252,8 @@ export function formDataToCustomer(formData: CustomerFormData): Omit<Customer, '
 
     // 勤務先・連絡情報
     workInfo: formData.workInfo && (
-      formData.workInfo.companyName || 
-      formData.workInfo.workAddress || 
+      formData.workInfo.companyName ||
+      formData.workInfo.workAddress ||
       formData.workInfo.dmSetting
     ) ? {
       companyName: formData.workInfo.companyName || '',
@@ -270,8 +268,8 @@ export function formDataToCustomer(formData: CustomerFormData): Omit<Customer, '
 
     // 請求情報
     billingInfo: formData.billingInfo && (
-      formData.billingInfo.bankName || 
-      formData.billingInfo.accountNumber || 
+      formData.billingInfo.bankName ||
+      formData.billingInfo.accountNumber ||
       formData.billingInfo.billingType
     ) ? {
       billingType: formData.billingInfo.billingType || 'individual',
@@ -284,7 +282,7 @@ export function formDataToCustomer(formData: CustomerFormData): Omit<Customer, '
 
     // 使用料
     usageFee: formData.usageFee && (
-      formData.usageFee.calculationType || 
+      formData.usageFee.calculationType ||
       formData.usageFee.usageFee !== undefined ||
       formData.usageFee.area
     ) ? {
@@ -300,7 +298,7 @@ export function formDataToCustomer(formData: CustomerFormData): Omit<Customer, '
 
     // 管理料
     managementFee: formData.managementFee && (
-      formData.managementFee.calculationType || 
+      formData.managementFee.calculationType ||
       formData.managementFee.managementFee !== undefined ||
       formData.managementFee.area
     ) ? {
@@ -318,8 +316,8 @@ export function formDataToCustomer(formData: CustomerFormData): Omit<Customer, '
 
     // 墓石情報
     gravestoneInfo: formData.gravestoneInfo && (
-      formData.gravestoneInfo.gravestoneBase || 
-      formData.gravestoneInfo.gravestoneType || 
+      formData.gravestoneInfo.gravestoneBase ||
+      formData.gravestoneInfo.gravestoneType ||
       formData.gravestoneInfo.establishmentDate
     ) ? {
       gravestoneBase: formData.gravestoneInfo.gravestoneBase || '',
@@ -343,8 +341,8 @@ export function formDataToCustomer(formData: CustomerFormData): Omit<Customer, '
 
     // 墓地区画情報
     plotInfo: formData.plotInfo && (
-      formData.plotInfo.plotNumber || 
-      formData.plotInfo.section || 
+      formData.plotInfo.plotNumber ||
+      formData.plotInfo.section ||
       formData.plotInfo.usage
     ) ? {
       plotNumber: formData.plotInfo.plotNumber || '',
@@ -434,7 +432,7 @@ export function checkPlotAvailability(
   plotNumber: string
 ): PlotAvailabilityCheck {
   const unit = getPlotUnitByNumber(plotNumber);
-  
+
   if (!unit) {
     return {
       plotNumber,
@@ -443,27 +441,27 @@ export function checkPlotAvailability(
       message: '指定された区画が見つかりません',
     };
   }
-  
+
   // 既存の顧客で同じ区画を使用しているか確認
   const conflictingCustomers = mockCustomers
-    .filter(customer => 
-      customer.plotAssignments?.some(assignment => 
+    .filter(customer =>
+      customer.plotAssignments?.some(assignment =>
         assignment.plotNumber === plotNumber
       )
     )
     .map(customer => customer.id);
-  
+
   const isAvailable = unit.currentStatus === 'available' && conflictingCustomers.length === 0;
-  
+
   let message = '';
   if (unit.currentStatus === 'in_use') {
     message = '使用中の区画です。共同使用の場合は問題ありません。';
   } else if (unit.currentStatus === 'reserved') {
     message = '予約済みの区画です。別の顧客が予約している可能性があります。';
   } else if (conflictingCustomers.length > 0) {
-    message = `既に${conflictingCustomers.length}件の顧客に割り当てられています。`;
+    message = `既に${conflictingCustomers.length} 件の顧客に割り当てられています。`;
   }
-  
+
   return {
     plotNumber,
     isAvailable,
@@ -481,25 +479,25 @@ export async function updatePlotStatus(
   newStatus: PlotStatus
 ): Promise<{ success: boolean; message?: string }> {
   const unit = getPlotUnitByNumber(plotNumber);
-  
+
   if (!unit) {
     return {
       success: false,
       message: `区画 ${plotNumber} が見つかりません`,
     };
   }
-  
+
   // 実際のプロダクションでは、ここでAPIを呼び出す
-  // const response = await fetch(`/api/v1/plots/${plotNumber}/status`, {
+  // const response = await fetch(`/ api / v1 / plots / ${ plotNumber }/status`, {
   //   method: 'PUT',
   //   headers: { 'Content-Type': 'application/json' },
   //   body: JSON.stringify({ status: newStatus }),
   // });
-  
+
   // モックでは直接更新
   unit.currentStatus = newStatus;
   unit.updatedAt = new Date();
-  
+
   return {
     success: true,
     message: `区画 ${plotNumber} のステータスを ${newStatus} に更新しました`,
@@ -519,7 +517,7 @@ export async function savePlotAssignmentsWithSync(
 }> {
   const warnings: string[] = [];
   const errors: string[] = [];
-  
+
   // 各割当の検証と連携
   for (const assignment of assignments) {
     if (!assignment.plotNumber) {
@@ -529,7 +527,7 @@ export async function savePlotAssignmentsWithSync(
       );
       continue;
     }
-    
+
     // 在庫確認
     const availabilityCheck = checkPlotAvailability(assignment.plotNumber);
     if (!availabilityCheck.isAvailable) {
@@ -537,14 +535,14 @@ export async function savePlotAssignmentsWithSync(
         `区画 ${assignment.plotNumber}: ${availabilityCheck.message}`
       );
     }
-    
+
     // ステータス更新を試行
     try {
       const result = await updatePlotStatus(
         assignment.plotNumber,
         assignment.desiredStatus
       );
-      
+
       if (!result.success) {
         errors.push(
           `区画 ${assignment.plotNumber}: ステータス更新に失敗しました - ${result.message}`
@@ -556,10 +554,28 @@ export async function savePlotAssignmentsWithSync(
       );
     }
   }
-  
+
   return {
     success: errors.length === 0,
     warnings,
     errors,
   };
+}
+
+export function addCustomerDocument(customerId: string, doc: Omit<CustomerDocument, 'id' | 'createdAt'>): CustomerDocument {
+  const customer = mockCustomers.find(c => c.id === customerId);
+  if (!customer) throw new Error('Customer not found');
+
+  const newDoc: CustomerDocument = {
+    ...doc,
+    id: Math.random().toString(36).substring(7),
+    createdAt: new Date(),
+  };
+
+  if (!customer.documents) {
+    customer.documents = [];
+  }
+
+  customer.documents.unshift(newDoc);
+  return newDoc;
 }

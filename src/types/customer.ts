@@ -1,11 +1,20 @@
+export interface CustomerDocument {
+  id: string;
+  type: 'invoice' | 'postcard' | 'other';
+  name: string;
+  createdAt: Date;
+  url?: string;
+  status: 'generated' | 'sent';
+}
+
 export interface Customer {
   id: string;
-  
+
   // 顧客基本情報
   customerCode: string; // 顧客コード A-56など *必須
   plotNumber?: string; // 区画番号 例: A-56
   section?: string; // 区域 (東区、西区など)
-  
+
   // 申込者情報
   applicantInfo?: {
     applicationDate: Date | null; // 申込日
@@ -31,7 +40,7 @@ export interface Customer {
   email?: string; // メール 例: example@email.com
   address: string; // 住所 *必須
   registeredAddress?: string; // 本籍地住所
-  
+
   // 使用料
   usageFee?: {
     calculationType: string; // 計算区分 (セレクトボックス)
@@ -43,7 +52,7 @@ export interface Customer {
     usageFee: string; // 使用料 例: 200000
     paymentMethod: string; // 支払い方法 (セレクトボックス)
   };
-  
+
   // 管理料
   managementFee?: {
     calculationType: string; // 計算区分 (セレクトボックス)
@@ -57,7 +66,7 @@ export interface Customer {
     lastBillingMonth: string; // 最終請求月 ----年--月
     paymentMethod: string; // 支払方法 (セレクトボックス)
   };
-  
+
   // 墓石
   gravestoneInfo?: {
     gravestoneBase: string; // 墓石台
@@ -68,7 +77,7 @@ export interface Customer {
     establishmentDeadline: Date | null; // 設立期限
     establishmentDate: Date | null; // 設立日
   };
-  
+
   // 家族・連絡先（複数対応） - 後方互換性のため残す
   familyContacts?: {
     id: string;
@@ -94,7 +103,7 @@ export interface Customer {
     relationship: string;
     phoneNumber: string;
   } | null;
-  
+
   // 埋葬者一覧（複数対応） - 後方互換性のため残す
   buriedPersons?: {
     id: string;
@@ -181,17 +190,18 @@ export interface Customer {
     price: string; // 金額
     contractDate: Date | null; // 契約日
   } | null;
-  
+
   // 区画割当情報（新規）- 複数区画対応
   plotAssignments?: CustomerPlotAssignment[];
-  
+  documents?: CustomerDocument[];
+
   // システム情報
   createdAt: Date;
   updatedAt: Date;
   status: 'active' | 'inactive'; // 契約ステータス
-  
+
   // 後方互換性のため残すフィールド
-  postalCode?: string; 
+  postalCode?: string;
   prefecture?: string;
   city?: string;
 }
@@ -273,10 +283,10 @@ export interface PlotUnit {
 export interface CustomerPlotAssignment {
   id: string;
   customerId?: string; // 割当先の顧客ID（保存後に設定）
-  
+
   // 既存ユニットを参照する場合
   plotNumber?: string; // 区画番号（PlotUnit.plotNumberを参照）
-  
+
   // 新規ユニット（ドラフト）の場合
   draftUnit?: {
     section: string;
@@ -287,25 +297,25 @@ export interface CustomerPlotAssignment {
     basePrice?: number;
     notes?: string;
   };
-  
+
   // 収容人数設定
   capacityOverride?: number; // 収容人数の上書き（未設定時はbaseCapacityを使用）
   effectiveCapacity: number; // 有効な収容人数（capacityOverride ?? baseCapacity）
-  
+
   // 合祀設定
   allowGoushi: boolean; // この割当での合祀可否（ユニットの設定を継承可能）
-  
+
   // 所有・契約情報
   ownership: OwnershipType; // 所有形態
   purchaseDate: Date | null; // 購入日
   price?: number; // 実際の購入価格
-  
+
   // 連携ステータス（保存時に区画管理システムへ送信）
   desiredStatus: PlotStatus; // 希望ステータス（reserved または in_use）
-  
+
   // その他
   notes?: string; // 備考
-  
+
   // システム情報
   createdAt: Date;
   updatedAt: Date;
