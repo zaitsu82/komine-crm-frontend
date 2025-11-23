@@ -1,4 +1,10 @@
 import { Customer } from '@/types/customer';
+import type { 
+  PlotUnit, 
+  CustomerPlotAssignment, 
+  PlotAvailabilityCheck,
+  PlotStatus 
+} from '@/types/customer';
 import { CustomerFormData } from '@/lib/validations';
 import { demoCustomers } from '@/lib/demo-data';
 
@@ -276,27 +282,6 @@ export function formDataToCustomer(formData: CustomerFormData): Omit<Customer, '
       accountHolder: formData.billingInfo.accountHolder || '',
     } : undefined,
 
-    // 契約者情報
-    contractorInfo: formData.contractorInfo && (
-      formData.contractorInfo.reservationDate || 
-      formData.contractorInfo.acceptanceNumber || 
-      formData.contractorInfo.startDate
-    ) ? {
-      reservationDate: parseDate(formData.contractorInfo.reservationDate),
-      acceptanceNumber: formData.contractorInfo.acceptanceNumber || '',
-      permitDate: parseDate(formData.contractorInfo.permitDate),
-      startDate: parseDate(formData.contractorInfo.startDate),
-      name: formData.name, // メインの契約者名を使用
-      nameKana: formData.nameKana, // メインの契約者名かなを使用
-      birthDate: parseDate(formData.birthDate), // メインの生年月日を使用
-      gender: formData.gender as 'male' | 'female' | 'other', // メインの性別を使用
-      address: formData.address, // メインの住所を使用
-      phoneNumber: formData.phoneNumber, // メインの電話番号を使用
-      faxNumber: formData.faxNumber || '', // メインのFAXを使用
-      email: formData.email || '', // メインのメールを使用
-      registeredAddress: formData.contractorInfo.registeredAddress || '',
-    } : undefined,
-
     // 使用料
     usageFee: formData.usageFee && (
       formData.usageFee.calculationType || 
@@ -306,10 +291,10 @@ export function formDataToCustomer(formData: CustomerFormData): Omit<Customer, '
       calculationType: formData.usageFee.calculationType || '',
       taxType: formData.usageFee.taxType || '',
       billingType: formData.usageFee.billingType || '',
-      billingYears: formData.usageFee.billingYears || 0,
+      billingYears: String(formData.usageFee.billingYears || ''),
       area: formData.usageFee.area || '',
-      unitPrice: formData.usageFee.unitPrice || 0,
-      usageFee: formData.usageFee.usageFee || 0,
+      unitPrice: String(formData.usageFee.unitPrice || ''),
+      usageFee: String(formData.usageFee.usageFee || ''),
       paymentMethod: formData.usageFee.paymentMethod || '',
     } : undefined,
 
@@ -322,11 +307,11 @@ export function formDataToCustomer(formData: CustomerFormData): Omit<Customer, '
       calculationType: formData.managementFee.calculationType || '',
       taxType: formData.managementFee.taxType || '',
       billingType: formData.managementFee.billingType || '',
-      billingYears: formData.managementFee.billingYears || 0,
+      billingYears: String(formData.managementFee.billingYears || ''),
       area: formData.managementFee.area || '',
-      billingMonth: formData.managementFee.billingMonth || 0,
-      managementFee: formData.managementFee.managementFee || 0,
-      unitPrice: formData.managementFee.unitPrice || 0,
+      billingMonth: String(formData.managementFee.billingMonth || ''),
+      managementFee: String(formData.managementFee.managementFee || ''),
+      unitPrice: String(formData.managementFee.unitPrice || ''),
       lastBillingMonth: formData.managementFee.lastBillingMonth || '',
       paymentMethod: formData.managementFee.paymentMethod || '',
     } : undefined,
@@ -366,10 +351,215 @@ export function formDataToCustomer(formData: CustomerFormData): Omit<Customer, '
       section: formData.plotInfo.section || '',
       usage: formData.plotInfo.usage || 'available',
       size: formData.plotInfo.size || '',
-      price: formData.plotInfo.price || 0,
+      price: String(formData.plotInfo.price || ''),
       contractDate: parseDate(formData.plotInfo.contractDate),
     } : null,
 
     status: 'active',
+  };
+}
+
+// ===== 区画管理関連の関数 =====
+
+// モック区画データ（実際のプロダクションではSupabaseやAPI接続に置き換える）
+export const mockPlotUnits: PlotUnit[] = [
+  {
+    id: 'plot-1',
+    plotNumber: 'A-56',
+    section: '東区',
+    type: 'grave_site',
+    areaSqm: 10.5,
+    baseCapacity: 4,
+    allowGoushi: true,
+    basePrice: 1575000,
+    currentStatus: 'available',
+    createdAt: new Date('2023-01-15'),
+    updatedAt: new Date('2023-01-15'),
+  },
+  {
+    id: 'plot-2',
+    plotNumber: 'B-12',
+    section: '西区',
+    type: 'columbarium',
+    areaSqm: 5.0,
+    baseCapacity: 2,
+    allowGoushi: false,
+    basePrice: 1000000,
+    currentStatus: 'in_use',
+    createdAt: new Date('2023-02-01'),
+    updatedAt: new Date('2023-02-01'),
+  },
+  {
+    id: 'plot-3',
+    plotNumber: 'C-33',
+    section: '南区',
+    type: 'ossuary',
+    areaSqm: 8.0,
+    baseCapacity: 6,
+    allowGoushi: true,
+    basePrice: 800000,
+    currentStatus: 'reserved',
+    createdAt: new Date('2023-03-10'),
+    updatedAt: new Date('2023-03-10'),
+  },
+];
+
+/**
+ * 区画番号で区画ユニットを取得
+ */
+export function getPlotUnitByNumber(plotNumber: string): PlotUnit | undefined {
+  return mockPlotUnits.find(unit => unit.plotNumber === plotNumber);
+}
+
+/**
+ * 空き区画を検索
+ */
+export function searchAvailablePlots(
+  section?: string,
+  type?: string
+): PlotUnit[] {
+  return mockPlotUnits.filter(unit => {
+    if (unit.currentStatus !== 'available') return false;
+    if (section && unit.section !== section) return false;
+    if (type && unit.type !== type) return false;
+    return true;
+  });
+}
+
+/**
+ * 区画の在庫確認
+ * 既に他の顧客に割り当てられているか確認
+ */
+export function checkPlotAvailability(
+  plotNumber: string
+): PlotAvailabilityCheck {
+  const unit = getPlotUnitByNumber(plotNumber);
+  
+  if (!unit) {
+    return {
+      plotNumber,
+      isAvailable: false,
+      currentStatus: 'available',
+      message: '指定された区画が見つかりません',
+    };
+  }
+  
+  // 既存の顧客で同じ区画を使用しているか確認
+  const conflictingCustomers = mockCustomers
+    .filter(customer => 
+      customer.plotAssignments?.some(assignment => 
+        assignment.plotNumber === plotNumber
+      )
+    )
+    .map(customer => customer.id);
+  
+  const isAvailable = unit.currentStatus === 'available' && conflictingCustomers.length === 0;
+  
+  let message = '';
+  if (unit.currentStatus === 'in_use') {
+    message = '使用中の区画です。共同使用の場合は問題ありません。';
+  } else if (unit.currentStatus === 'reserved') {
+    message = '予約済みの区画です。別の顧客が予約している可能性があります。';
+  } else if (conflictingCustomers.length > 0) {
+    message = `既に${conflictingCustomers.length}件の顧客に割り当てられています。`;
+  }
+  
+  return {
+    plotNumber,
+    isAvailable,
+    currentStatus: unit.currentStatus,
+    conflictingCustomers,
+    message,
+  };
+}
+
+/**
+ * 区画ステータスを更新（API連携のシミュレーション）
+ */
+export async function updatePlotStatus(
+  plotNumber: string,
+  newStatus: PlotStatus
+): Promise<{ success: boolean; message?: string }> {
+  const unit = getPlotUnitByNumber(plotNumber);
+  
+  if (!unit) {
+    return {
+      success: false,
+      message: `区画 ${plotNumber} が見つかりません`,
+    };
+  }
+  
+  // 実際のプロダクションでは、ここでAPIを呼び出す
+  // const response = await fetch(`/api/v1/plots/${plotNumber}/status`, {
+  //   method: 'PUT',
+  //   headers: { 'Content-Type': 'application/json' },
+  //   body: JSON.stringify({ status: newStatus }),
+  // });
+  
+  // モックでは直接更新
+  unit.currentStatus = newStatus;
+  unit.updatedAt = new Date();
+  
+  return {
+    success: true,
+    message: `区画 ${plotNumber} のステータスを ${newStatus} に更新しました`,
+  };
+}
+
+/**
+ * 複数の区画割当を保存時に検証・連携
+ */
+export async function savePlotAssignmentsWithSync(
+  customerId: string,
+  assignments: CustomerPlotAssignment[]
+): Promise<{
+  success: boolean;
+  warnings: string[];
+  errors: string[];
+}> {
+  const warnings: string[] = [];
+  const errors: string[] = [];
+  
+  // 各割当の検証と連携
+  for (const assignment of assignments) {
+    if (!assignment.plotNumber) {
+      // 新規ユニット（ドラフト）の場合はスキップ（将来対応）
+      warnings.push(
+        '新規区画は連携対象外です。区画マスタに登録後、再度割り当ててください。'
+      );
+      continue;
+    }
+    
+    // 在庫確認
+    const availabilityCheck = checkPlotAvailability(assignment.plotNumber);
+    if (!availabilityCheck.isAvailable) {
+      warnings.push(
+        `区画 ${assignment.plotNumber}: ${availabilityCheck.message}`
+      );
+    }
+    
+    // ステータス更新を試行
+    try {
+      const result = await updatePlotStatus(
+        assignment.plotNumber,
+        assignment.desiredStatus
+      );
+      
+      if (!result.success) {
+        errors.push(
+          `区画 ${assignment.plotNumber}: ステータス更新に失敗しました - ${result.message}`
+        );
+      }
+    } catch (error) {
+      errors.push(
+        `区画 ${assignment.plotNumber}: API連携エラー - ${error instanceof Error ? error.message : '不明なエラー'}`
+      );
+    }
+  }
+  
+  return {
+    success: errors.length === 0,
+    warnings,
+    errors,
   };
 }

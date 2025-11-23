@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const customerFormSchema = z.object({
+export const NcustomerFormSchema = z.object({
   // 顧客基本情報
   customerCode: z.string().min(1, "顧客コードは必須です"),
   plotNumber: z.string().optional(),
@@ -157,7 +157,7 @@ export const collectiveBurialApplicationSchema = z.object({
   applicationDate: z.string().min(1, '申込日は必須です'),
   desiredDate: z.string().optional(),
   burialType: z.enum(['family', 'relative', 'other'], {
-    required_error: '合祀種別を選択してください'
+    message: '合祀種別を選択してください'
   }),
   mainRepresentative: z.string().min(1, '主たる代表者は必須です'),
   applicantName: z.string().min(1, '申込者氏名は必須です'),
@@ -194,7 +194,7 @@ export const collectiveBurialApplicationSchema = z.object({
   })).optional(),
   documents: z.array(z.object({
     type: z.enum(['permit', 'certificate', 'agreement', 'other'], {
-      required_error: '書類種別を選択してください'
+      message: '書類種別を選択してください'
     }),
     name: z.string().min(1, '書類名は必須です'),
     issuedDate: z.string().optional(),
@@ -203,3 +203,73 @@ export const collectiveBurialApplicationSchema = z.object({
 });
 
 export type CollectiveBurialApplicationFormValues = z.infer<typeof collectiveBurialApplicationSchema>;
+
+// ===== 区画割当バリデーション =====
+
+// 区画割当の基本スキーマ
+export const plotAssignmentSchema = z.object({
+  id: z.string(),
+  customerId: z.string().optional(),
+  
+  // 既存ユニット参照 or 新規ドラフト（どちらか必須）
+  plotNumber: z.string().optional(),
+  draftUnit: z.object({
+    section: z.string().min(1, "区域は必須です"),
+    type: z.enum(['grave_site', 'columbarium', 'ossuary', 'other'], {
+      message: "ユニット種別を選択してください"
+    }),
+    areaSqm: z.number().positive("面積は正の数値である必要があります").optional(),
+    baseCapacity: z.number()
+      .int("収容人数は整数である必要があります")
+      .min(1, "収容人数は1人以上である必要があります")
+      .max(50, "収容人数は50人以下である必要があります"),
+    allowGoushi: z.boolean(),
+    basePrice: z.number().nonnegative("価格は0以上である必要があります").optional(),
+    notes: z.string().optional(),
+  }).optional(),
+  
+  // 収容人数設定
+  capacityOverride: z.number()
+    .int("収容人数は整数である必要があります")
+    .min(1, "収容人数は1人以上である必要があります")
+    .max(50, "収容人数は50人以下である必要があります")
+    .optional(),
+  effectiveCapacity: z.number()
+    .int("収容人数は整数である必要があります")
+    .min(1, "有効な収容人数は1人以上である必要があります"),
+  
+  // 合祀設定
+  allowGoushi: z.boolean(),
+  
+  // 所有・契約情報
+  ownership: z.enum(['exclusive', 'shared'], {
+    message: "所有形態を選択してください"
+  }),
+  purchaseDate: z.string().optional(),
+  price: z.number().nonnegative("価格は0以上である必要があります").optional(),
+  
+  // 連携ステータス
+  desiredStatus: z.enum(['reserved', 'in_use'], {
+    message: "ステータスを選択してください"
+  }),
+  
+  // その他
+  notes: z.string().optional(),
+  
+  createdAt: z.date().optional(),
+  updatedAt: z.date().optional(),
+}).refine(
+  (data) => data.plotNumber || data.draftUnit,
+  {
+    message: "既存区画の選択または新規区画の情報が必要です",
+    path: ["plotNumber"],
+  }
+);
+
+// 顧客フォームに区画割当を追加したスキーマ
+export const customerFormWithPlotsSchema = customerFormSchema.extend({
+  plotAssignments: z.array(plotAssignmentSchema).optional(),
+});
+
+export type PlotAssignmentFormData = z.infer<typeof plotAssignmentSchema>;
+export type CustomerFormWithPlotsData = z.infer<typeof customerFormWithPlotsSchema>;

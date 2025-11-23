@@ -3,13 +3,13 @@
 import { useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Customer } from '@/types/customer';
+import { Customer, PLOT_UNIT_TYPE_LABELS, PLOT_STATUS_LABELS, OWNERSHIP_TYPE_LABELS } from '@/types/customer';
 import { customerFormSchema, CustomerFormData } from '@/lib/validations';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { formatDate } from '@/lib/utils';
+import { formatDate, calculateEffectiveCapacity, calculateSuggestedPrice } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface CustomerFormProps {
@@ -189,11 +189,12 @@ export default function CustomerForm({ customer, onSave, onCancel, isLoading }: 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="w-full">
       <Tabs defaultValue="basic-info-1" className="w-full">
-        <TabsList className="grid w-full grid-cols-6 h-auto">
+        <TabsList className="grid w-full grid-cols-7 h-auto">
           <TabsTrigger value="basic-info-1" className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">基本情報①</TabsTrigger>
           <TabsTrigger value="basic-info-2" className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">基本情報②</TabsTrigger>
           <TabsTrigger value="contacts" className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">連絡先/家族</TabsTrigger>
           <TabsTrigger value="burial-info" className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">埋葬情報</TabsTrigger>
+          <TabsTrigger value="plot-settings" className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">区画設定</TabsTrigger>
           <TabsTrigger value="construction" className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">工事情報</TabsTrigger>
           <TabsTrigger value="history" className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">履歴情報</TabsTrigger>
         </TabsList>
@@ -1538,6 +1539,252 @@ export default function CustomerForm({ customer, onSave, onCancel, isLoading }: 
                   })}
                 </div>
               )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="plot-settings" className="space-y-6 mt-6">
+            {/* 区画設定 */}
+            <div className="space-y-4">
+              <div className="flex justify-between items-center border-b pb-2">
+                <h3 className="text-lg font-semibold">区画設定</h3>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    // TODO: 区画割当追加ロジック
+                    console.log('区画追加');
+                  }}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  + 区画を追加
+                </Button>
+              </div>
+              
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                <p className="text-sm text-blue-800">
+                  <strong>💡 ヒント:</strong> 複数の区画・納骨堂を登録できます。既存の区画を選択するか、新規に作成してください。
+                  収容人数や合祀の可否、連携ステータスも設定できます。
+                </p>
+              </div>
+
+              {/* 区画割当が無い場合のメッセージ */}
+              <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                <p className="text-gray-500 mb-4">まだ区画が登録されていません</p>
+                <p className="text-sm text-gray-400">「+ 区画を追加」ボタンから登録を開始してください</p>
+              </div>
+
+              {/* TODO: 動的な区画割当行を実装 */}
+              {/* 以下は実装例のプレースホルダー */}
+              <div className="space-y-4 hidden">
+                {/* 区画行サンプル（後で動的に生成） */}
+                <div className="border rounded-lg p-4 bg-white shadow-sm">
+                  <div className="flex justify-between items-start mb-4">
+                    <h4 className="font-semibold text-gray-700">区画 #1</h4>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      削除
+                    </Button>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-4 mb-4">
+                    {/* ユニット種別 */}
+                    <div>
+                      <Label className="text-sm font-medium">
+                        ユニット種別 <span className="text-red-500">*</span>
+                      </Label>
+                      <Select>
+                        <SelectTrigger className="mt-1">
+                          <SelectValue placeholder="選択してください" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(PLOT_UNIT_TYPE_LABELS).map(([key, label]) => (
+                            <SelectItem key={key} value={key}>
+                              {label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* 区画番号 */}
+                    <div>
+                      <Label className="text-sm font-medium">
+                        区画番号
+                      </Label>
+                      <Input
+                        placeholder="例: A-56"
+                        className="mt-1"
+                      />
+                    </div>
+
+                    {/* 区域 */}
+                    <div>
+                      <Label className="text-sm font-medium">
+                        区域
+                      </Label>
+                      <Input
+                        placeholder="例: 東区"
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-4 gap-4 mb-4">
+                    {/* 面積 */}
+                    <div>
+                      <Label className="text-sm font-medium">
+                        面積（㎡）
+                      </Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder="10.5"
+                        className="mt-1"
+                      />
+                    </div>
+
+                    {/* 基本収容人数 */}
+                    <div>
+                      <Label className="text-sm font-medium">
+                        基本収容人数
+                      </Label>
+                      <Input
+                        type="number"
+                        min="1"
+                        placeholder="4"
+                        className="mt-1"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">既定値</p>
+                    </div>
+
+                    {/* 収容人数上書き */}
+                    <div>
+                      <Label className="text-sm font-medium">
+                        収容人数上書き
+                      </Label>
+                      <Input
+                        type="number"
+                        min="1"
+                        max="50"
+                        placeholder="変更時のみ"
+                        className="mt-1"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">空欄=既定値</p>
+                    </div>
+
+                    {/* 有効収容人数（自動計算） */}
+                    <div>
+                      <Label className="text-sm font-medium">
+                        有効収容人数
+                      </Label>
+                      <div className="mt-1 px-3 py-2 bg-gray-100 rounded border text-center font-semibold text-lg">
+                        4人
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">自動計算</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-4 gap-4 mb-4">
+                    {/* 合祀可否 */}
+                    <div>
+                      <Label className="text-sm font-medium">
+                        合祀可否 <span className="text-red-500">*</span>
+                      </Label>
+                      <Select>
+                        <SelectTrigger className="mt-1">
+                          <SelectValue placeholder="選択" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="true">可</SelectItem>
+                          <SelectItem value="false">不可</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* 所有形態 */}
+                    <div>
+                      <Label className="text-sm font-medium">
+                        所有形態 <span className="text-red-500">*</span>
+                      </Label>
+                      <Select>
+                        <SelectTrigger className="mt-1">
+                          <SelectValue placeholder="選択" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(OWNERSHIP_TYPE_LABELS).map(([key, label]) => (
+                            <SelectItem key={key} value={key}>
+                              {label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* 連携ステータス */}
+                    <div>
+                      <Label className="text-sm font-medium">
+                        連携ステータス <span className="text-red-500">*</span>
+                      </Label>
+                      <Select>
+                        <SelectTrigger className="mt-1">
+                          <SelectValue placeholder="選択" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="reserved">予約済み</SelectItem>
+                          <SelectItem value="in_use">使用中</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* 価格 */}
+                    <div>
+                      <Label className="text-sm font-medium">
+                        価格（円）
+                      </Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        placeholder="1500000"
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* 購入日 */}
+                    <div>
+                      <Label className="text-sm font-medium">
+                        購入日
+                      </Label>
+                      <Input
+                        type="date"
+                        className="mt-1"
+                      />
+                    </div>
+
+                    {/* 備考 */}
+                    <div>
+                      <Label className="text-sm font-medium">
+                        備考
+                      </Label>
+                      <Input
+                        placeholder="特記事項があれば入力"
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
+
+                  {/* 警告メッセージ（在庫重複時など） */}
+                  <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded p-3 hidden">
+                    <p className="text-sm text-yellow-800">
+                      ⚠️ <strong>警告:</strong> この区画は既に別の顧客に割り当てられています。共同使用の場合は問題ありません。
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </TabsContent>
 

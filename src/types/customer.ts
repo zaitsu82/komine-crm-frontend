@@ -182,6 +182,9 @@ export interface Customer {
     contractDate: Date | null; // 契約日
   } | null;
   
+  // 区画割当情報（新規）- 複数区画対応
+  plotAssignments?: CustomerPlotAssignment[];
+  
   // システム情報
   createdAt: Date;
   updatedAt: Date;
@@ -216,4 +219,110 @@ export interface RegistryFilter {
   searchQuery: string;
   aiueoTab: string;
   statusFilter?: ContractStatus[];
+}
+
+// ===== 区画・ユニット管理型定義 =====
+
+// ユニット種別（墓地区画・納骨堂・合葬墓等）
+export type PlotUnitType = 'grave_site' | 'columbarium' | 'ossuary' | 'other';
+
+// ユニット種別の表示名マッピング
+export const PLOT_UNIT_TYPE_LABELS: Record<PlotUnitType, string> = {
+  grave_site: '墓地区画',
+  columbarium: '納骨堂',
+  ossuary: '合葬墓',
+  other: 'その他',
+};
+
+// 区画ステータス（API仕様書準拠）
+export type PlotStatus = 'in_use' | 'available' | 'reserved';
+
+// 区画ステータスの表示名マッピング
+export const PLOT_STATUS_LABELS: Record<PlotStatus, string> = {
+  in_use: '使用中',
+  available: '空き',
+  reserved: '予約済み',
+};
+
+// 所有形態（exclusive: 独占, shared: 共同）
+export type OwnershipType = 'exclusive' | 'shared';
+
+// 所有形態の表示名マッピング
+export const OWNERSHIP_TYPE_LABELS: Record<OwnershipType, string> = {
+  exclusive: '独占',
+  shared: '共同',
+};
+
+// 区画・納骨堂ユニット（マスタデータ）
+export interface PlotUnit {
+  id: string;
+  plotNumber: string; // 区画番号（API仕様書のplotNumberに対応）
+  section: string; // 区域（東区、西区など）
+  type: PlotUnitType; // ユニット種別
+  areaSqm?: number; // 面積（平方メートル）
+  baseCapacity: number; // 基本収容人数（既定値）
+  allowGoushi: boolean; // 合祀可否フラグ
+  basePrice?: number; // 基本価格
+  currentStatus: PlotStatus; // 現在のステータス
+  notes?: string; // 備考
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// 顧客への区画割当情報
+export interface CustomerPlotAssignment {
+  id: string;
+  customerId?: string; // 割当先の顧客ID（保存後に設定）
+  
+  // 既存ユニットを参照する場合
+  plotNumber?: string; // 区画番号（PlotUnit.plotNumberを参照）
+  
+  // 新規ユニット（ドラフト）の場合
+  draftUnit?: {
+    section: string;
+    type: PlotUnitType;
+    areaSqm?: number;
+    baseCapacity: number;
+    allowGoushi: boolean;
+    basePrice?: number;
+    notes?: string;
+  };
+  
+  // 収容人数設定
+  capacityOverride?: number; // 収容人数の上書き（未設定時はbaseCapacityを使用）
+  effectiveCapacity: number; // 有効な収容人数（capacityOverride ?? baseCapacity）
+  
+  // 合祀設定
+  allowGoushi: boolean; // この割当での合祀可否（ユニットの設定を継承可能）
+  
+  // 所有・契約情報
+  ownership: OwnershipType; // 所有形態
+  purchaseDate: Date | null; // 購入日
+  price?: number; // 実際の購入価格
+  
+  // 連携ステータス（保存時に区画管理システムへ送信）
+  desiredStatus: PlotStatus; // 希望ステータス（reserved または in_use）
+  
+  // その他
+  notes?: string; // 備考
+  
+  // システム情報
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// 区画割当のバリデーション結果
+export interface PlotAssignmentValidation {
+  isValid: boolean;
+  errors: string[]; // エラーメッセージ
+  warnings: string[]; // 警告メッセージ（ブロックはしない）
+}
+
+// 区画在庫確認結果
+export interface PlotAvailabilityCheck {
+  plotNumber: string;
+  isAvailable: boolean;
+  currentStatus: PlotStatus;
+  conflictingCustomers?: string[]; // 競合する顧客のID一覧
+  message?: string; // 警告メッセージ
 }
