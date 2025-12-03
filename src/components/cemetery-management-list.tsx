@@ -410,7 +410,7 @@ export default function CemeteryManagementList({ onCustomerSelect, selectedCusto
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  placeholder="氏名、区画、区画番号で検索..."
+                  placeholder="氏名、区画、許可番号で検索..."
                   className="flex-1"
                 />
                 <Button onClick={() => setSearchQuery('')} variant="outline" size="sm">
@@ -464,7 +464,7 @@ export default function CemeteryManagementList({ onCustomerSelect, selectedCusto
                         onClick={() => handleSort('plotNumber')}
                       >
                         <div className="flex items-center">
-                          <span>区画番号</span>
+                          <span>許可番号</span>
                           <div className="ml-1 flex flex-col">
                             <span className={cn('text-xs', sortKey === 'plotNumber' && sortOrder === 'asc' && 'text-blue-600')}>▲</span>
                             <span className={cn('text-xs -mt-1', sortKey === 'plotNumber' && sortOrder === 'desc' && 'text-blue-600')}>▼</span>
@@ -656,7 +656,7 @@ export default function CemeteryManagementList({ onCustomerSelect, selectedCusto
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  placeholder="氏名、区画、区画番号で検索..."
+                  placeholder="氏名、区画、許可番号で検索..."
                   className="flex-1"
                 />
                 <Button onClick={() => setSearchQuery('')} variant="outline" size="sm">
@@ -710,7 +710,7 @@ export default function CemeteryManagementList({ onCustomerSelect, selectedCusto
                         onClick={() => handleSort('plotNumber')}
                       >
                         <div className="flex items-center">
-                          <span>区画番号</span>
+                          <span>許可番号</span>
                           <div className="ml-1 flex flex-col">
                             <span className={cn('text-xs', sortKey === 'plotNumber' && sortOrder === 'asc' && 'text-blue-600')}>▲</span>
                             <span className={cn('text-xs -mt-1', sortKey === 'plotNumber' && sortOrder === 'desc' && 'text-blue-600')}>▼</span>

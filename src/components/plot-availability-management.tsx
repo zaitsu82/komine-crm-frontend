@@ -276,7 +276,7 @@ export default function PlotAvailabilityManagement({ onCustomerSelect, selectedC
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="区画番号、セクション、顧客名で検索..."
+            placeholder="許可番号、セクション、顧客名で検索..."
             className="flex-1 min-w-64"
           />
           <select 
@@ -335,7 +335,7 @@ export default function PlotAvailabilityManagement({ onCustomerSelect, selectedC
                   onClick={() => handleSort('plotNumber')}
                 >
                   <div className="flex items-center">
-                    <span>区画番号</span>
+                    <span>許可番号</span>
                     <div className="ml-1 flex flex-col">
                       <span className={cn("text-xs", sortKey === 'plotNumber' && sortOrder === 'asc' && "text-blue-600")}>▲</span>
                       <span className={cn("text-xs -mt-1", sortKey === 'plotNumber' && sortOrder === 'desc' && "text-blue-600")}>▼</span>

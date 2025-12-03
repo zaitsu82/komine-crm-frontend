@@ -259,7 +259,7 @@ export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, o
                   onClick={() => handleSort('customerCode')}
                 >
                   <div className="flex items-center justify-between">
-                    <span>顧客番号</span>
+                    <span>墓石コード</span>
                     <div className="flex flex-col ml-1">
                       <span className={cn(
                         "text-xs leading-none",

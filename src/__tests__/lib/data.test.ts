@@ -28,7 +28,7 @@ describe('data.ts - 顧客データ管理', () => {
       expect(results[0].nameKana).toBe('よしなが おさむ')
     })
 
-    it('顧客コードで検索できる', () => {
+    it('墓石コードで検索できる', () => {
       const results = searchCustomers('A-56')
       expect(results).toHaveLength(1)
       expect(results[0].customerCode).toBe('A-56')
@@ -73,14 +73,14 @@ describe('data.ts - 顧客データ管理', () => {
     })
   })
 
-  describe('顧客コードによる取得', () => {
-    it('有効な顧客コードで取得できる', () => {
+  describe('墓石コードによる取得', () => {
+    it('有効な墓石コードで取得できる', () => {
       const customer = getCustomerByCode('A-56')
       expect(customer).toBeDefined()
       expect(customer?.customerCode).toBe('A-56')
     })
 
-    it('無効な顧客コードではundefinedを返す', () => {
+    it('無効な墓石コードではundefinedを返す', () => {
       const customer = getCustomerByCode('X-999')
       expect(customer).toBeUndefined()
     })

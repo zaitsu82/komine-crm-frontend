@@ -11,8 +11,8 @@ export interface Customer {
   id: string;
 
   // 顧客基本情報
-  customerCode: string; // 顧客コード A-56など *必須
-  plotNumber?: string; // 区画番号 例: A-56
+  customerCode: string; // 墓石コード A-56など *必須
+  plotNumber?: string; // 許可番号 例: A-56
   section?: string; // 区域 (東区、西区など)
 
   // 申込者情報

@@ -206,7 +206,7 @@ export default function CustomerForm({ customer, onSave, onCancel, isLoading }: 
               <div className="grid grid-cols-3 gap-4">
                 <div>
                   <Label htmlFor="customerCode" className="text-sm font-medium">
-                    顧客コード <span className="text-red-500">*</span>
+                    墓石コード <span className="text-red-500">*</span>
                   </Label>
                   <Input
                     id="customerCode"
@@ -221,7 +221,7 @@ export default function CustomerForm({ customer, onSave, onCancel, isLoading }: 
                 </div>
                 <div>
                   <Label htmlFor="plotNumber" className="text-sm font-medium">
-                    区画番号
+                    許可番号
                   </Label>
                   <Input
                     id="plotNumber"
@@ -1609,10 +1609,10 @@ export default function CustomerForm({ customer, onSave, onCancel, isLoading }: 
                       </Select>
                     </div>
 
-                    {/* 区画番号 */}
+                    {/* 許可番号 */}
                     <div>
                       <Label className="text-sm font-medium">
-                        区画番号
+                        許可番号
                       </Label>
                       <Input
                         placeholder="例: A-56"

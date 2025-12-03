@@ -78,7 +78,7 @@ export default function CustomerSearch({ onCustomerSelect, selectedCustomer, onN
         <div className="space-y-4">
           <div>
             <Label htmlFor="search" className="text-senior-sm font-semibold text-accessible-text block mb-2">
-              検索条件（氏名・カナ・顧客コード・電話番号・住所）
+              検索条件（氏名・カナ・墓石コード・電話番号・住所）
             </Label>
             <Input
               id="search"
@@ -162,7 +162,7 @@ export default function CustomerSearch({ onCustomerSelect, selectedCustomer, onN
                         {status.label}
                       </div>
                       
-                      {/* 顧客コード */}
+                      {/* 墓石コード */}
                       <div className="text-senior-sm font-mono font-semibold text-accessible-primary bg-blue-50 px-2 py-1 rounded border">
                         {customer.customerCode}
                       </div>
@@ -236,7 +236,7 @@ export default function CustomerSearch({ onCustomerSelect, selectedCustomer, onN
             顧客検索の使い方
           </div>
           <div className="text-senior-sm text-blue-700 space-y-2">
-            <div>• 氏名、カナ、顧客コード、電話番号、住所で検索できます</div>
+            <div>• 氏名、カナ、墓石コード、電話番号、住所で検索できます</div>
             <div>• 部分一致で検索されます</div>
             <div>• Enterキーを押すか「検索」ボタンで実行できます</div>
           </div>

@@ -295,7 +295,7 @@ describe('validations.ts - フォームバリデーション', () => {
         expect(result.success).toBe(false)
         if (!result.success) {
           const customerCodeError = result.error.issues.find(issue => issue.path[0] === 'customerCode')
-          expect(customerCodeError?.message).toBe('顧客コードは必須です')
+          expect(customerCodeError?.message).toBe('墓石コードは必須です')
 
           const nameError = result.error.issues.find(issue => issue.path[0] === 'name')
           expect(nameError?.message).toBe('氏名は必須です')

@@ -157,7 +157,7 @@ export default function CollectiveBurialDetail({
                   <p>{application.plot.section}</p>
                 </div>
                 <div>
-                  <Label className="text-sm text-gray-600">区画番号</Label>
+                  <Label className="text-sm text-gray-600">許可番号</Label>
                   <p className="font-semibold">{application.plot.number}</p>
                 </div>
               </div>

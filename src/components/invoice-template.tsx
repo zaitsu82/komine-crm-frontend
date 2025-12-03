@@ -86,11 +86,11 @@ export default function InvoiceTemplate({
             </p>
           )}
           <p className="text-xs text-gray-600">
-            顧客コード: {customer.customerCode}
+            墓石コード: {customer.customerCode}
           </p>
           {customer.plotNumber && (
             <p className="text-xs text-gray-600">
-              区画番号: {customer.plotNumber}
+              許可番号: {customer.plotNumber}
             </p>
           )}
         </div>

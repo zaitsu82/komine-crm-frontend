@@ -254,7 +254,7 @@ export default function CollectiveBurialApplicationForm({ onSubmitSuccess }: Col
               {errorText(errors.plotSection?.message)}
             </div>
             <div>
-              <Label htmlFor="plotNumber">区画番号 *</Label>
+              <Label htmlFor="plotNumber">許可番号 *</Label>
               <Input id="plotNumber" placeholder="例: A-001" {...register('plotNumber')} />
               {errorText(errors.plotNumber?.message)}
             </div>

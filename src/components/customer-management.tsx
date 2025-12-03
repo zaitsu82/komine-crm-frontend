@@ -386,7 +386,7 @@ export default function CustomerManagement({ onNavigateToMenu }: CustomerManagem
 
                       <div className="grid grid-cols-3 gap-4">
                         <div>
-                          <Label className="text-sm font-medium">顧客コード *</Label>
+                          <Label className="text-sm font-medium">墓石コード *</Label>
                           <Input
                             value={editingTab === 'basic-info-1' ? (editFormData.customerCode || selectedCustomer.customerCode) : selectedCustomer.customerCode}
                             className={editingTab === 'basic-info-1' ? 'bg-white' : 'bg-yellow-50'}
@@ -396,7 +396,7 @@ export default function CustomerManagement({ onNavigateToMenu }: CustomerManagem
                           />
                         </div>
                         <div>
-                          <Label className="text-sm font-medium">区画番号</Label>
+                          <Label className="text-sm font-medium">許可番号</Label>
                           <Input
                             value={editingTab === 'basic-info-1' ? (editFormData.plotNumber || selectedCustomer.plotNumber || '') : selectedCustomer.plotNumber || ''}
                             className={editingTab === 'basic-info-1' ? 'bg-white' : 'bg-yellow-50'}
@@ -1542,7 +1542,7 @@ export default function CustomerManagement({ onNavigateToMenu }: CustomerManagem
                                       value={person.originalPlotNumber || ''}
                                       className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
                                       readOnly={editingTab !== 'collective-burial'}
-                                      placeholder="区画番号"
+                                      placeholder="許可番号"
                                     />
                                   </div>
                                   <div>

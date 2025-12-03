@@ -109,7 +109,7 @@ export default function CollectiveBurialPrintTemplate({ application }: Collectiv
               <td className="py-1.5 px-2">{application.plot.section}</td>
             </tr>
             <tr className="border-b">
-              <td className="py-1.5 px-2 bg-gray-50 font-semibold">区画番号</td>
+              <td className="py-1.5 px-2 bg-gray-50 font-semibold">許可番号</td>
               <td className="py-1.5 px-2 font-semibold">{application.plot.number}</td>
             </tr>
           </tbody>

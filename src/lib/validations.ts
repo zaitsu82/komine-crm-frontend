@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const customerFormSchema = z.object({
   // 顧客基本情報
-  customerCode: z.string().min(1, "顧客コードは必須です"),
+  customerCode: z.string().min(1, "墓石コードは必須です"),
   plotNumber: z.string().optional(),
   section: z.string().optional(),
 
@@ -167,7 +167,7 @@ export const collectiveBurialApplicationSchema = z.object({
   applicantPostalCode: z.string().optional(),
   applicantAddress: z.string().min(1, '住所は必須です'),
   plotSection: z.string().min(1, '区域は必須です'),
-  plotNumber: z.string().min(1, '区画番号は必須です'),
+  plotNumber: z.string().min(1, '許可番号は必須です'),
   specialRequests: z.string().optional(),
   totalFee: z.string().optional(),
   depositAmount: z.string().optional(),
