@@ -56,7 +56,8 @@ export interface CollectiveBurialApplication {
     address: string;
   };
   plot: {
-    section: string;
+    plotPeriod?: string; // 区画の期（1期〜4期）
+    section: string; // 区画詳細
     number: string;
   };
   persons: CollectiveBurialPerson[];

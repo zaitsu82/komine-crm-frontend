@@ -31,6 +31,16 @@ interface CustomerManagementProps {
   onNavigateToMenu?: () => void;
 }
 
+// 対応履歴の型定義
+interface HistoryEntry {
+  id: string;
+  date: string;
+  staff: string;
+  type: string;
+  priority: '通常' | '重要' | '緊急';
+  content: string;
+}
+
 export default function CustomerManagement({ onNavigateToMenu }: CustomerManagementProps) {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [currentView, setCurrentView] = useState<'registry' | 'search' | 'details' | 'register' | 'edit' | 'collective-burial' | 'invoice' | 'document-select' | 'document-history'>('registry');
@@ -39,6 +49,96 @@ export default function CustomerManagement({ onNavigateToMenu }: CustomerManagem
   const [editFormData, setEditFormData] = useState<any>({});
   const [showInvoice, setShowInvoice] = useState(false);
   const [showPostcard, setShowPostcard] = useState(false);
+  
+  // 履歴追加用のstate
+  const [showHistoryDialog, setShowHistoryDialog] = useState(false);
+  const [historyEntries, setHistoryEntries] = useState<HistoryEntry[]>([
+    {
+      id: 'history-1',
+      date: '2024年1月15日 14:30',
+      staff: '山田 太郎',
+      type: '電話対応',
+      priority: '通常',
+      content: '工事進捗についてお問い合わせ。基礎工事が完了し、墓石設置は3月予定であることをご説明。'
+    },
+    {
+      id: 'history-2',
+      date: '2023年12月20日 10:15',
+      staff: '佐藤 花子',
+      type: '来所相談',
+      priority: '重要',
+      content: '契約内容の変更について相談。墓石の種類変更を希望。見積もりを作成し後日回答予定。'
+    }
+  ]);
+  const [newHistory, setNewHistory] = useState<Omit<HistoryEntry, 'id'>>({
+    date: '',
+    staff: '',
+    type: '電話対応',
+    priority: '通常',
+    content: ''
+  });
+
+  // 重要な連絡事項・注意事項用のstate（顧客IDごとに管理）
+  interface ImportantNote {
+    id: string;
+    date: string;
+    priority: '要注意' | '注意' | '参考';
+    content: string;
+  }
+  const [customerNotes, setCustomerNotes] = useState<Record<string, ImportantNote[]>>({
+    'DEMO001': [
+      {
+        id: 'note-1',
+        date: '2023年12月22日',
+        priority: '要注意',
+        content: 'ご高齢のため、重要な説明は家族同席の上で行うこと。'
+      }
+    ]
+  });
+  
+  // 現在選択中の顧客の注意事項を取得
+  const importantNotes = selectedCustomer ? (customerNotes[selectedCustomer.id] || []) : [];
+  
+  // 注意事項を更新する関数
+  const setImportantNotes = (notes: ImportantNote[]) => {
+    if (selectedCustomer) {
+      setCustomerNotes(prev => ({
+        ...prev,
+        [selectedCustomer.id]: notes
+      }));
+    }
+  };
+  
+  const [showNoteDialog, setShowNoteDialog] = useState(false);
+  const [newNote, setNewNote] = useState<Omit<ImportantNote, 'id'>>({
+    date: '',
+    priority: '注意',
+    content: ''
+  });
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+  
+  // 顧客ごとの注意事項を取得するヘルパー関数
+  const getCustomerAttentionNotes = (customerId: string): string => {
+    const notes = customerNotes[customerId] || [];
+    if (notes.length === 0) return '';
+    // 要注意を優先して最初の1件を返す
+    const priorityOrder = ['要注意', '注意', '参考'];
+    const sorted = [...notes].sort((a, b) => 
+      priorityOrder.indexOf(a.priority) - priorityOrder.indexOf(b.priority)
+    );
+    return sorted[0].content;
+  };
+  
+  // 顧客ごとの注意事項の重要度を取得
+  const getCustomerAttentionPriority = (customerId: string): string | null => {
+    const notes = customerNotes[customerId] || [];
+    if (notes.length === 0) return null;
+    const priorityOrder = ['要注意', '注意', '参考'];
+    const sorted = [...notes].sort((a, b) => 
+      priorityOrder.indexOf(a.priority) - priorityOrder.indexOf(b.priority)
+    );
+    return sorted[0].priority;
+  };
 
   const handleCustomerSelect = (customer: Customer) => {
     setSelectedCustomer(customer);
@@ -94,6 +194,105 @@ export default function CustomerManagement({ onNavigateToMenu }: CustomerManagem
       setCurrentView('details');
     } else {
       setCurrentView('search');
+    }
+  };
+
+  // 履歴追加ダイアログを開く
+  const handleOpenHistoryDialog = () => {
+    const now = new Date();
+    const formattedDate = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日 ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+    setNewHistory({
+      date: formattedDate,
+      staff: '',
+      type: '電話対応',
+      priority: '通常',
+      content: ''
+    });
+    setShowHistoryDialog(true);
+  };
+
+  // 履歴を追加
+  const handleAddHistory = () => {
+    if (!newHistory.date || !newHistory.staff || !newHistory.content) {
+      alert('日時、担当者、対応内容は必須です');
+      return;
+    }
+    const newEntry: HistoryEntry = {
+      id: `history-${Date.now()}`,
+      ...newHistory
+    };
+    setHistoryEntries([newEntry, ...historyEntries]);
+    setShowHistoryDialog(false);
+    setNewHistory({
+      date: '',
+      staff: '',
+      type: '電話対応',
+      priority: '通常',
+      content: ''
+    });
+  };
+
+  // 履歴を削除
+  const handleDeleteHistory = (id: string) => {
+    if (confirm('この履歴を削除しますか？')) {
+      setHistoryEntries(historyEntries.filter(entry => entry.id !== id));
+    }
+  };
+
+  // 重要な連絡事項ダイアログを開く（新規）
+  const handleOpenNoteDialog = () => {
+    const now = new Date();
+    const formattedDate = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日`;
+    setNewNote({
+      date: formattedDate,
+      priority: '注意',
+      content: ''
+    });
+    setEditingNoteId(null);
+    setShowNoteDialog(true);
+  };
+
+  // 重要な連絡事項ダイアログを開く（編集）
+  const handleEditNote = (note: typeof importantNotes[0]) => {
+    setNewNote({
+      date: note.date,
+      priority: note.priority,
+      content: note.content
+    });
+    setEditingNoteId(note.id);
+    setShowNoteDialog(true);
+  };
+
+  // 重要な連絡事項を追加・更新
+  const handleSaveNote = () => {
+    if (!newNote.content) {
+      alert('内容は必須です');
+      return;
+    }
+    
+    if (editingNoteId) {
+      // 編集モード
+      setImportantNotes(importantNotes.map(note => 
+        note.id === editingNoteId 
+          ? { ...note, ...newNote }
+          : note
+      ));
+    } else {
+      // 新規追加
+      const newEntry: typeof importantNotes[0] = {
+        id: `note-${Date.now()}`,
+        ...newNote
+      };
+      setImportantNotes([newEntry, ...importantNotes]);
+    }
+    setShowNoteDialog(false);
+    setEditingNoteId(null);
+  };
+
+  // 重要な連絡事項を削除
+  const handleDeleteNote = (id: string) => {
+    if (confirm('この連絡事項を削除しますか？')) {
+      setImportantNotes(importantNotes.filter(note => note.id !== id));
     }
   };
 
@@ -274,6 +473,16 @@ export default function CustomerManagement({ onNavigateToMenu }: CustomerManagem
               onCustomerSelect={handleCustomerSelect}
               selectedCustomer={selectedCustomer || undefined}
               onNewCustomer={handleNewCustomer}
+              customerAttentionNotes={Object.fromEntries(
+                Object.entries(customerNotes).map(([customerId, notes]) => {
+                  if (notes.length === 0) return [customerId, null];
+                  const priorityOrder = ['要注意', '注意', '参考'];
+                  const sorted = [...notes].sort((a, b) => 
+                    priorityOrder.indexOf(a.priority) - priorityOrder.indexOf(b.priority)
+                  );
+                  return [customerId, { content: sorted[0].content, priority: sorted[0].priority }];
+                }).filter(([, v]) => v !== null)
+              )}
             />
           </div>
         ) : currentView === 'search' ? (
@@ -355,15 +564,13 @@ export default function CustomerManagement({ onNavigateToMenu }: CustomerManagem
             {/* Customer Details Tabs Interface */}
             <div className="flex-1 p-6">
               <Tabs defaultValue="basic-info-1" className="w-full">
-                <TabsList className="grid w-full grid-cols-7 h-auto">
+                <TabsList className="grid w-full grid-cols-6 h-auto">
                   <TabsTrigger value="basic-info-1" className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">基本情報①</TabsTrigger>
                   <TabsTrigger value="basic-info-2" className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">基本情報②</TabsTrigger>
                   <TabsTrigger value="contacts" className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">連絡先/家族</TabsTrigger>
                   <TabsTrigger value="burial-info" className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">埋葬情報</TabsTrigger>
                   <TabsTrigger value="collective-burial" className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">合祀</TabsTrigger>
-                  <TabsTrigger value="construction" className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">工事情報</TabsTrigger>
                   <TabsTrigger value="history" className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">履歴情報</TabsTrigger>
-
                 </TabsList>
 
                 <TabsContent value="basic-info-1" className="mt-6">
@@ -1731,435 +1938,66 @@ export default function CustomerManagement({ onNavigateToMenu }: CustomerManagem
                   </div>
                 </TabsContent>
 
-                <TabsContent value="construction" className="mt-6">
-                  <div className="space-y-6">
-                    <div className="flex justify-between items-center">
-                      <h3 className="text-lg font-semibold">工事情報</h3>
-                      {editingTab === 'construction' ? (
-                        <div className="flex space-x-2">
-                          <Button size="sm" variant="outline" onClick={handleTabCancel}>キャンセル</Button>
-                          <Button size="sm" onClick={() => handleTabSave('工事情報')}>保存</Button>
-                        </div>
-                      ) : (
-                        <Button size="sm" onClick={() => handleTabEdit('construction')}>編集</Button>
-                      )}
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-6">
-                      {/* 工事進捗 */}
-                      <div className="bg-green-50 p-4 rounded border">
-                        <h4 className="font-semibold mb-3 border-b pb-2">工事進捗状況</h4>
-                        <div className="grid grid-cols-2 gap-6">
-                          <div className="space-y-4">
-                            <div>
-                              <Label className="text-sm font-medium">工事区分</Label>
-                              <Input
-                                value={editingTab === 'construction' ? (editFormData.constructionType || '新設工事') : '新設工事'}
-                                className={editingTab === 'construction' ? 'bg-white' : 'bg-yellow-50'}
-                                readOnly={editingTab !== 'construction'}
-                                onChange={(e) => editingTab === 'construction' && setEditFormData({ ...editFormData, constructionType: e.target.value })}
-                              />
-                            </div>
-                            <div>
-                              <Label className="text-sm font-medium">着工予定日</Label>
-                              <Input
-                                value={editingTab === 'construction' ? (editFormData.startDate || (selectedCustomer.constructionInfo?.startDate ? formatDateWithEra(selectedCustomer.constructionInfo.startDate) : '')) : (selectedCustomer.constructionInfo?.startDate ? formatDateWithEra(selectedCustomer.constructionInfo.startDate) : '')}
-                                className={editingTab === 'construction' ? 'bg-white' : 'bg-yellow-50'}
-                                readOnly={editingTab !== 'construction'}
-                                onChange={(e) => editingTab === 'construction' && setEditFormData({ ...editFormData, startDate: e.target.value })}
-                              />
-                            </div>
-                            <div>
-                              <Label className="text-sm font-medium">完工予定日</Label>
-                              <Input
-                                value={editingTab === 'construction' ? (editFormData.completionDate || (selectedCustomer.constructionInfo?.completionDate ? formatDateWithEra(selectedCustomer.constructionInfo.completionDate) : '')) : (selectedCustomer.constructionInfo?.completionDate ? formatDateWithEra(selectedCustomer.constructionInfo.completionDate) : '')}
-                                className={editingTab === 'construction' ? 'bg-white' : 'bg-yellow-50'}
-                                readOnly={editingTab !== 'construction'}
-                                onChange={(e) => editingTab === 'construction' && setEditFormData({ ...editFormData, completionDate: e.target.value })}
-                              />
-                            </div>
-                          </div>
-                          <div className="space-y-4">
-                            <div>
-                              <Label className="text-sm font-medium">工事業者</Label>
-                              <Input
-                                value={editingTab === 'construction' ? (editFormData.contractor || '北九石材工業株式会社') : '北九石材工業株式会社'}
-                                className={editingTab === 'construction' ? 'bg-white' : 'bg-yellow-50'}
-                                readOnly={editingTab !== 'construction'}
-                                onChange={(e) => editingTab === 'construction' && setEditFormData({ ...editFormData, contractor: e.target.value })}
-                              />
-                            </div>
-                            <div>
-                              <Label className="text-sm font-medium">工事担当者</Label>
-                              <Input
-                                value={editingTab === 'construction' ? (editFormData.supervisor || '石田 工太郎') : '石田 工太郎'}
-                                className={editingTab === 'construction' ? 'bg-white' : 'bg-yellow-50'}
-                                readOnly={editingTab !== 'construction'}
-                                onChange={(e) => editingTab === 'construction' && setEditFormData({ ...editFormData, supervisor: e.target.value })}
-                              />
-                            </div>
-                            <div>
-                              <Label className="text-sm font-medium">進捗状況</Label>
-                              <Input
-                                value={editingTab === 'construction' ? (editFormData.progress || '基礎工事完了') : '基礎工事完了'}
-                                className={editingTab === 'construction' ? 'bg-white' : 'bg-green-100'}
-                                readOnly={editingTab !== 'construction'}
-                                onChange={(e) => editingTab === 'construction' && setEditFormData({ ...editFormData, progress: e.target.value })}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* 工事詳細 */}
-                      <div className="bg-blue-50 p-4 rounded border">
-                        <h4 className="font-semibold mb-3 border-b pb-2">工事詳細</h4>
-                        <div className="space-y-3">
-                          <div className="grid grid-cols-4 gap-4 bg-white p-3 rounded border">
-                            <div>
-                              <Label className="text-sm font-medium">工事項目</Label>
-                              <Input
-                                value={editingTab === 'construction' ? (editFormData.workItem1 || '基礎工事') : '基礎工事'}
-                                className={editingTab === 'construction' ? 'bg-white' : 'bg-yellow-50'}
-                                readOnly={editingTab !== 'construction'}
-                                onChange={(e) => editingTab === 'construction' && setEditFormData({ ...editFormData, workItem1: e.target.value })}
-                              />
-                            </div>
-                            <div>
-                              <Label className="text-sm font-medium">実施日</Label>
-                              <Input
-                                value={editingTab === 'construction' ? (editFormData.workDate1 || (selectedCustomer.constructionInfo?.workDate1 ? formatDateWithEra(selectedCustomer.constructionInfo.workDate1) : '')) : (selectedCustomer.constructionInfo?.workDate1 ? formatDateWithEra(selectedCustomer.constructionInfo.workDate1) : '')}
-                                className={editingTab === 'construction' ? 'bg-white' : 'bg-yellow-50'}
-                                readOnly={editingTab !== 'construction'}
-                                onChange={(e) => editingTab === 'construction' && setEditFormData({ ...editFormData, workDate1: e.target.value })}
-                              />
-                            </div>
-                            <div>
-                              <Label className="text-sm font-medium">金額</Label>
-                              <Input
-                                value={editingTab === 'construction' ? (editFormData.workAmount1 || (selectedCustomer.constructionInfo?.workAmount1 ? `¥${selectedCustomer.constructionInfo.workAmount1.toLocaleString()}` : '')) : (selectedCustomer.constructionInfo?.workAmount1 ? `¥${selectedCustomer.constructionInfo.workAmount1.toLocaleString()}` : '')}
-                                className={editingTab === 'construction' ? 'bg-white' : 'bg-yellow-50'}
-                                readOnly={editingTab !== 'construction'}
-                                onChange={(e) => editingTab === 'construction' && setEditFormData({ ...editFormData, workAmount1: e.target.value })}
-                              />
-                            </div>
-                            <div>
-                              <Label className="text-sm font-medium">状況</Label>
-                              <Input
-                                value={editingTab === 'construction' ? (editFormData.workStatus1 || '完了') : '完了'}
-                                className={editingTab === 'construction' ? 'bg-white' : 'bg-green-100'}
-                                readOnly={editingTab !== 'construction'}
-                                onChange={(e) => editingTab === 'construction' && setEditFormData({ ...editFormData, workStatus1: e.target.value })}
-                              />
-                            </div>
-                          </div>
-                          <div className="grid grid-cols-4 gap-4 bg-white p-3 rounded border">
-                            <div>
-                              <Label className="text-sm font-medium">工事項目</Label>
-                              <Input
-                                value={editingTab === 'construction' ? (editFormData.workItem2 || '墓石設置') : '墓石設置'}
-                                className={editingTab === 'construction' ? 'bg-white' : 'bg-yellow-50'}
-                                readOnly={editingTab !== 'construction'}
-                                onChange={(e) => editingTab === 'construction' && setEditFormData({ ...editFormData, workItem2: e.target.value })}
-                              />
-                            </div>
-                            <div>
-                              <Label className="text-sm font-medium">予定日</Label>
-                              <Input
-                                value={editingTab === 'construction' ? (editFormData.workDate2 || (selectedCustomer.constructionInfo?.workDate2 ? formatDateWithEra(selectedCustomer.constructionInfo.workDate2) : '')) : (selectedCustomer.constructionInfo?.workDate2 ? formatDateWithEra(selectedCustomer.constructionInfo.workDate2) : '')}
-                                className={editingTab === 'construction' ? 'bg-white' : 'bg-yellow-50'}
-                                readOnly={editingTab !== 'construction'}
-                                onChange={(e) => editingTab === 'construction' && setEditFormData({ ...editFormData, workDate2: e.target.value })}
-                              />
-                            </div>
-                            <div>
-                              <Label className="text-sm font-medium">金額</Label>
-                              <Input
-                                value={editingTab === 'construction' ? (editFormData.workAmount2 || (selectedCustomer.constructionInfo?.workAmount2 ? `¥${selectedCustomer.constructionInfo.workAmount2.toLocaleString()}` : '')) : (selectedCustomer.constructionInfo?.workAmount2 ? `¥${selectedCustomer.constructionInfo.workAmount2.toLocaleString()}` : '')}
-                                className={editingTab === 'construction' ? 'bg-white' : 'bg-yellow-50'}
-                                readOnly={editingTab !== 'construction'}
-                                onChange={(e) => editingTab === 'construction' && setEditFormData({ ...editFormData, workAmount2: e.target.value })}
-                              />
-                            </div>
-                            <div>
-                              <Label className="text-sm font-medium">状況</Label>
-                              <Input
-                                value={editingTab === 'construction' ? (editFormData.workStatus2 || '予定') : '予定'}
-                                className={editingTab === 'construction' ? 'bg-white' : 'bg-yellow-100'}
-                                readOnly={editingTab !== 'construction'}
-                                onChange={(e) => editingTab === 'construction' && setEditFormData({ ...editFormData, workStatus2: e.target.value })}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                        <Button size="sm" variant="outline" className="mt-3">+ 工事項目追加</Button>
-                      </div>
-
-                      {/* 許可・申請 */}
-                      <div className="bg-yellow-50 p-4 rounded border">
-                        <h4 className="font-semibold mb-3 border-b pb-2">許可・申請状況</h4>
-                        <div className="grid grid-cols-2 gap-6">
-                          <div className="space-y-4">
-                            <div>
-                              <Label className="text-sm font-medium">工事許可番号</Label>
-                              <Input
-                                value={editingTab === 'construction' ? (editFormData.permitNumber || '北九-工-2024-0156') : '北九-工-2024-0156'}
-                                className={editingTab === 'construction' ? 'bg-white' : 'bg-white'}
-                                readOnly={editingTab !== 'construction'}
-                                onChange={(e) => editingTab === 'construction' && setEditFormData({ ...editFormData, permitNumber: e.target.value })}
-                              />
-                            </div>
-                            <div>
-                              <Label className="text-sm font-medium">申請日</Label>
-                              <Input
-                                value={editingTab === 'construction' ? (editFormData.applicationDate || (selectedCustomer.constructionInfo?.applicationDate ? formatDateWithEra(selectedCustomer.constructionInfo.applicationDate) : '')) : (selectedCustomer.constructionInfo?.applicationDate ? formatDateWithEra(selectedCustomer.constructionInfo.applicationDate) : '')}
-                                className={editingTab === 'construction' ? 'bg-white' : 'bg-white'}
-                                readOnly={editingTab !== 'construction'}
-                                onChange={(e) => editingTab === 'construction' && setEditFormData({ ...editFormData, applicationDate: e.target.value })}
-                              />
-                            </div>
-                          </div>
-                          <div className="space-y-4">
-                            <div>
-                              <Label className="text-sm font-medium">許可日</Label>
-                              <Input
-                                value={editingTab === 'construction' ? (editFormData.permitDate || (selectedCustomer.constructionInfo?.permitDate ? formatDateWithEra(selectedCustomer.constructionInfo.permitDate) : '')) : (selectedCustomer.constructionInfo?.permitDate ? formatDateWithEra(selectedCustomer.constructionInfo.permitDate) : '')}
-                                className={editingTab === 'construction' ? 'bg-white' : 'bg-white'}
-                                readOnly={editingTab !== 'construction'}
-                                onChange={(e) => editingTab === 'construction' && setEditFormData({ ...editFormData, permitDate: e.target.value })}
-                              />
-                            </div>
-                            <div>
-                              <Label className="text-sm font-medium">許可状況</Label>
-                              <Input
-                                value={editingTab === 'construction' ? (editFormData.permitStatus || '許可済み') : '許可済み'}
-                                className={editingTab === 'construction' ? 'bg-white' : 'bg-green-100'}
-                                readOnly={editingTab !== 'construction'}
-                                onChange={(e) => editingTab === 'construction' && setEditFormData({ ...editFormData, permitStatus: e.target.value })}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* 支払状況 */}
-                      <div className="bg-orange-50 p-4 rounded border">
-                        <h4 className="font-semibold mb-3 border-b pb-2">工事代金支払状況</h4>
-                        <div className="space-y-3">
-                          <div className="grid grid-cols-4 gap-4 bg-white p-3 rounded border">
-                            <div>
-                              <Label className="text-sm font-medium">支払区分</Label>
-                              <Input
-                                value={editingTab === 'construction' ? (editFormData.paymentType1 || '着手金') : '着手金'}
-                                className={editingTab === 'construction' ? 'bg-white' : 'bg-yellow-50'}
-                                readOnly={editingTab !== 'construction'}
-                                onChange={(e) => editingTab === 'construction' && setEditFormData({ ...editFormData, paymentType1: e.target.value })}
-                              />
-                            </div>
-                            <div>
-                              <Label className="text-sm font-medium">金額</Label>
-                              <Input
-                                value={editingTab === 'construction' ? (editFormData.paymentAmount1 || (selectedCustomer.constructionInfo?.paymentAmount1 ? `¥${selectedCustomer.constructionInfo.paymentAmount1.toLocaleString()}` : '')) : (selectedCustomer.constructionInfo?.paymentAmount1 ? `¥${selectedCustomer.constructionInfo.paymentAmount1.toLocaleString()}` : '')}
-                                className={editingTab === 'construction' ? 'bg-white' : 'bg-yellow-50'}
-                                readOnly={editingTab !== 'construction'}
-                                onChange={(e) => editingTab === 'construction' && setEditFormData({ ...editFormData, paymentAmount1: e.target.value })}
-                              />
-                            </div>
-                            <div>
-                              <Label className="text-sm font-medium">支払日</Label>
-                              <Input
-                                value={editingTab === 'construction' ? (editFormData.paymentDate1 || (selectedCustomer.constructionInfo?.paymentDate1 ? formatDateWithEra(selectedCustomer.constructionInfo.paymentDate1) : '')) : (selectedCustomer.constructionInfo?.paymentDate1 ? formatDateWithEra(selectedCustomer.constructionInfo.paymentDate1) : '')}
-                                className={editingTab === 'construction' ? 'bg-white' : 'bg-yellow-50'}
-                                readOnly={editingTab !== 'construction'}
-                                onChange={(e) => editingTab === 'construction' && setEditFormData({ ...editFormData, paymentDate1: e.target.value })}
-                              />
-                            </div>
-                            <div>
-                              <Label className="text-sm font-medium">状況</Label>
-                              <Input
-                                value={editingTab === 'construction' ? (editFormData.paymentStatus1 || '支払済み') : '支払済み'}
-                                className={editingTab === 'construction' ? 'bg-white' : 'bg-green-100'}
-                                readOnly={editingTab !== 'construction'}
-                                onChange={(e) => editingTab === 'construction' && setEditFormData({ ...editFormData, paymentStatus1: e.target.value })}
-                              />
-                            </div>
-                          </div>
-                          <div className="grid grid-cols-4 gap-4 bg-white p-3 rounded border">
-                            <div>
-                              <Label className="text-sm font-medium">支払区分</Label>
-                              <Input
-                                value={editingTab === 'construction' ? (editFormData.paymentType2 || '完工時') : '完工時'}
-                                className={editingTab === 'construction' ? 'bg-white' : 'bg-yellow-50'}
-                                readOnly={editingTab !== 'construction'}
-                                onChange={(e) => editingTab === 'construction' && setEditFormData({ ...editFormData, paymentType2: e.target.value })}
-                              />
-                            </div>
-                            <div>
-                              <Label className="text-sm font-medium">金額</Label>
-                              <Input
-                                value={editingTab === 'construction' ? (editFormData.paymentAmount2 || (selectedCustomer.constructionInfo?.paymentAmount2 ? `¥${selectedCustomer.constructionInfo.paymentAmount2.toLocaleString()}` : '')) : (selectedCustomer.constructionInfo?.paymentAmount2 ? `¥${selectedCustomer.constructionInfo.paymentAmount2.toLocaleString()}` : '')}
-                                className={editingTab === 'construction' ? 'bg-white' : 'bg-yellow-50'}
-                                readOnly={editingTab !== 'construction'}
-                                onChange={(e) => editingTab === 'construction' && setEditFormData({ ...editFormData, paymentAmount2: e.target.value })}
-                              />
-                            </div>
-                            <div>
-                              <Label className="text-sm font-medium">支払予定日</Label>
-                              <Input
-                                value={editingTab === 'construction' ? (editFormData.paymentScheduledDate2 || (selectedCustomer.constructionInfo?.paymentScheduledDate2 ? formatDateWithEra(selectedCustomer.constructionInfo.paymentScheduledDate2) : '')) : (selectedCustomer.constructionInfo?.paymentScheduledDate2 ? formatDateWithEra(selectedCustomer.constructionInfo.paymentScheduledDate2) : '')}
-                                className={editingTab === 'construction' ? 'bg-white' : 'bg-yellow-50'}
-                                readOnly={editingTab !== 'construction'}
-                                onChange={(e) => editingTab === 'construction' && setEditFormData({ ...editFormData, paymentScheduledDate2: e.target.value })}
-                              />
-                            </div>
-                            <div>
-                              <Label className="text-sm font-medium">状況</Label>
-                              <Input
-                                value={editingTab === 'construction' ? (editFormData.paymentStatus2 || '未払い') : '未払い'}
-                                className={editingTab === 'construction' ? 'bg-white' : 'bg-yellow-100'}
-                                readOnly={editingTab !== 'construction'}
-                                onChange={(e) => editingTab === 'construction' && setEditFormData({ ...editFormData, paymentStatus2: e.target.value })}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* 工事備考 */}
-                      <div className="bg-gray-50 p-4 rounded border">
-                        <h4 className="font-semibold mb-3 border-b pb-2">工事備考</h4>
-                        <textarea
-                          className={`w-full p-3 border rounded resize-none h-24 ${editingTab === 'construction' ? 'bg-white' : 'bg-yellow-50'}`}
-                          value={editingTab === 'construction' ? (editFormData.constructionNotes || "墓石は御影石（黒御影）を使用。家紋の彫刻あり。雨天時は作業中止となる場合があります。") : "墓石は御影石（黒御影）を使用。家紋の彫刻あり。雨天時は作業中止となる場合があります。"}
-                          readOnly={editingTab !== 'construction'}
-                          onChange={(e) => editingTab === 'construction' && setEditFormData({ ...editFormData, constructionNotes: e.target.value })}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </TabsContent>
-
                 <TabsContent value="history" className="mt-6">
                   <div className="space-y-6">
                     <div className="flex justify-between items-center">
                       <h3 className="text-lg font-semibold">履歴情報</h3>
-                      {editingTab === 'history' ? (
-                        <div className="flex space-x-2">
-                          <Button size="sm" variant="outline" onClick={handleTabCancel}>キャンセル</Button>
-                          <Button size="sm" onClick={() => handleTabSave('履歴情報')}>保存</Button>
-                        </div>
-                      ) : (
-                        <Button size="sm" onClick={() => handleTabEdit('history')}>編集</Button>
-                      )}
                     </div>
 
                     <div className="grid grid-cols-1 gap-6">
                       {/* 最近の対応履歴 */}
                       <div className="bg-blue-50 p-4 rounded border">
                         <div className="flex justify-between items-center border-b pb-2 mb-3">
-                          <h4 className="font-semibold">対応履歴</h4>
-                          <Button size="sm" variant="outline">+ 履歴追加</Button>
+                          <h4 className="font-semibold">対応履歴（{historyEntries.length}件）</h4>
+                          <Button size="sm" variant="outline" onClick={handleOpenHistoryDialog}>+ 履歴追加</Button>
                         </div>
-                        <div className="space-y-3">
-                          <div className="grid grid-cols-1 gap-4 bg-white p-4 rounded border">
-                            <div className="grid grid-cols-4 gap-4">
-                              <div>
-                                <Label className="text-sm font-medium">日時</Label>
-                                <Input
-                                  value={editingTab === 'history' ? (editFormData.historyDate1 || '2024年1月15日 14:30') : '2024年1月15日 14:30'}
-                                  className={editingTab === 'history' ? 'bg-white' : 'bg-yellow-50'}
-                                  readOnly={editingTab !== 'history'}
-                                  onChange={(e) => editingTab === 'history' && setEditFormData({ ...editFormData, historyDate1: e.target.value })}
-                                />
+                        <div className="space-y-3 max-h-96 overflow-y-auto">
+                          {historyEntries.length === 0 ? (
+                            <p className="text-gray-500 text-center py-8">対応履歴がありません</p>
+                          ) : (
+                            historyEntries.map((entry) => (
+                              <div key={entry.id} className="grid grid-cols-1 gap-4 bg-white p-4 rounded border">
+                                <div className="flex justify-between items-start">
+                                  <div className="grid grid-cols-4 gap-4 flex-1">
+                                    <div>
+                                      <Label className="text-sm font-medium text-gray-600">日時</Label>
+                                      <p className="text-sm">{entry.date}</p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-sm font-medium text-gray-600">担当者</Label>
+                                      <p className="text-sm">{entry.staff}</p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-sm font-medium text-gray-600">対応種別</Label>
+                                      <p className="text-sm">{entry.type}</p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-sm font-medium text-gray-600">重要度</Label>
+                                      <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
+                                        entry.priority === '緊急' ? 'bg-red-100 text-red-800' :
+                                        entry.priority === '重要' ? 'bg-orange-100 text-orange-800' :
+                                        'bg-green-100 text-green-800'
+                                      }`}>
+                                        {entry.priority}
+                                      </span>
+                                    </div>
+                                  </div>
+                                  <Button 
+                                    size="sm" 
+                                    variant="ghost" 
+                                    className="text-red-600 hover:text-red-800 hover:bg-red-50 ml-2"
+                                    onClick={() => handleDeleteHistory(entry.id)}
+                                  >
+                                    削除
+                                  </Button>
+                                </div>
+                                <div>
+                                  <Label className="text-sm font-medium text-gray-600">対応内容</Label>
+                                  <p className="text-sm bg-gray-50 p-2 rounded mt-1">{entry.content}</p>
+                                </div>
                               </div>
-                              <div>
-                                <Label className="text-sm font-medium">担当者</Label>
-                                <Input
-                                  value={editingTab === 'history' ? (editFormData.historyStaff1 || '山田 太郎') : '山田 太郎'}
-                                  className={editingTab === 'history' ? 'bg-white' : 'bg-yellow-50'}
-                                  readOnly={editingTab !== 'history'}
-                                  onChange={(e) => editingTab === 'history' && setEditFormData({ ...editFormData, historyStaff1: e.target.value })}
-                                />
-                              </div>
-                              <div>
-                                <Label className="text-sm font-medium">対応種別</Label>
-                                <Input
-                                  value={editingTab === 'history' ? (editFormData.historyType1 || '電話対応') : '電話対応'}
-                                  className={editingTab === 'history' ? 'bg-white' : 'bg-yellow-50'}
-                                  readOnly={editingTab !== 'history'}
-                                  onChange={(e) => editingTab === 'history' && setEditFormData({ ...editFormData, historyType1: e.target.value })}
-                                />
-                              </div>
-                              <div>
-                                <Label className="text-sm font-medium">重要度</Label>
-                                <Input
-                                  value={editingTab === 'history' ? (editFormData.historyPriority1 || '通常') : '通常'}
-                                  className={editingTab === 'history' ? 'bg-white' : 'bg-green-100'}
-                                  readOnly={editingTab !== 'history'}
-                                  onChange={(e) => editingTab === 'history' && setEditFormData({ ...editFormData, historyPriority1: e.target.value })}
-                                />
-                              </div>
-                            </div>
-                            <div>
-                              <Label className="text-sm font-medium">対応内容</Label>
-                              <textarea
-                                className={`w-full p-2 border rounded resize-none h-16 ${editingTab === 'history' ? 'bg-white' : 'bg-yellow-50'}`}
-                                value={editingTab === 'history' ? (editFormData.historyContent1 || "工事進捗についてお問い合わせ。基礎工事が完了し、墓石設置は3月予定であることをご説明。") : "工事進捗についてお問い合わせ。基礎工事が完了し、墓石設置は3月予定であることをご説明。"}
-                                readOnly={editingTab !== 'history'}
-                                onChange={(e) => editingTab === 'history' && setEditFormData({ ...editFormData, historyContent1: e.target.value })}
-                              />
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-1 gap-4 bg-white p-4 rounded border">
-                            <div className="grid grid-cols-4 gap-4">
-                              <div>
-                                <Label className="text-sm font-medium">日時</Label>
-                                <Input
-                                  value={editingTab === 'history' ? (editFormData.historyDate2 || '2023年12月20日 10:15') : '2023年12月20日 10:15'}
-                                  className={editingTab === 'history' ? 'bg-white' : 'bg-yellow-50'}
-                                  readOnly={editingTab !== 'history'}
-                                  onChange={(e) => editingTab === 'history' && setEditFormData({ ...editFormData, historyDate2: e.target.value })}
-                                />
-                              </div>
-                              <div>
-                                <Label className="text-sm font-medium">担当者</Label>
-                                <Input
-                                  value={editingTab === 'history' ? (editFormData.historyStaff2 || '佐藤 花子') : '佐藤 花子'}
-                                  className={editingTab === 'history' ? 'bg-white' : 'bg-yellow-50'}
-                                  readOnly={editingTab !== 'history'}
-                                  onChange={(e) => editingTab === 'history' && setEditFormData({ ...editFormData, historyStaff2: e.target.value })}
-                                />
-                              </div>
-                              <div>
-                                <Label className="text-sm font-medium">対応種別</Label>
-                                <Input
-                                  value={editingTab === 'history' ? (editFormData.historyType2 || '来所相談') : '来所相談'}
-                                  className={editingTab === 'history' ? 'bg-white' : 'bg-yellow-50'}
-                                  readOnly={editingTab !== 'history'}
-                                  onChange={(e) => editingTab === 'history' && setEditFormData({ ...editFormData, historyType2: e.target.value })}
-                                />
-                              </div>
-                              <div>
-                                <Label className="text-sm font-medium">重要度</Label>
-                                <Input
-                                  value={editingTab === 'history' ? (editFormData.historyPriority2 || '重要') : '重要'}
-                                  className={editingTab === 'history' ? 'bg-white' : 'bg-orange-100'}
-                                  readOnly={editingTab !== 'history'}
-                                  onChange={(e) => editingTab === 'history' && setEditFormData({ ...editFormData, historyPriority2: e.target.value })}
-                                />
-                              </div>
-                            </div>
-                            <div>
-                              <Label className="text-sm font-medium">対応内容</Label>
-                              <textarea
-                                className={`w-full p-2 border rounded resize-none h-16 ${editingTab === 'history' ? 'bg-white' : 'bg-yellow-50'}`}
-                                value={editingTab === 'history' ? (editFormData.historyContent2 || "契約内容の変更について相談。墓石の種類変更を希望。見積もりを作成し後日回答予定。") : "契約内容の変更について相談。墓石の種類変更を希望。見積もりを作成し後日回答予定。"}
-                                readOnly={editingTab !== 'history'}
-                                onChange={(e) => editingTab === 'history' && setEditFormData({ ...editFormData, historyContent2: e.target.value })}
-                              />
-                            </div>
-                          </div>
+                            ))
+                          )}
                         </div>
                       </div>
 
@@ -2328,40 +2166,51 @@ export default function CustomerManagement({ onNavigateToMenu }: CustomerManagem
                       </div>
 
                       {/* 重要な連絡事項 */}
-                      <div className="bg-red-50 p-4 rounded border">
-                        <h4 className="font-semibold mb-3 border-b pb-2 text-red-700">重要な連絡事項・注意事項</h4>
-                        <div className="space-y-3">
-                          <div className="bg-white p-3 rounded border border-red-200">
-                            <div className="grid grid-cols-2 gap-4 mb-2">
-                              <div>
-                                <Label className="text-sm font-medium">登録日</Label>
-                                <Input
-                                  value={editingTab === 'history' ? (editFormData.importantNoteDate || '2023年12月22日') : '2023年12月22日'}
-                                  className={editingTab === 'history' ? 'bg-white' : 'bg-yellow-50'}
-                                  readOnly={editingTab !== 'history'}
-                                  onChange={(e) => editingTab === 'history' && setEditFormData({ ...editFormData, importantNoteDate: e.target.value })}
-                                />
+                      <div className="bg-red-50 p-4 rounded border border-red-200">
+                        <div className="flex justify-between items-center border-b border-red-200 pb-2 mb-3">
+                          <h4 className="font-semibold text-red-700">重要な連絡事項・注意事項（{importantNotes.length}件）</h4>
+                          <Button size="sm" variant="outline" className="border-red-300 text-red-700 hover:bg-red-100" onClick={handleOpenNoteDialog}>+ 追加</Button>
+                        </div>
+                        <div className="space-y-3 max-h-64 overflow-y-auto">
+                          {importantNotes.length === 0 ? (
+                            <p className="text-gray-500 text-center py-4">登録された連絡事項・注意事項はありません</p>
+                          ) : (
+                            importantNotes.map((note) => (
+                              <div key={note.id} className="bg-white p-3 rounded border border-red-200">
+                                <div className="flex justify-between items-start mb-2">
+                                  <div className="flex items-center gap-3">
+                                    <span className="text-sm text-gray-600">{note.date}</span>
+                                    <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
+                                      note.priority === '要注意' ? 'bg-red-100 text-red-800' :
+                                      note.priority === '注意' ? 'bg-orange-100 text-orange-800' :
+                                      'bg-blue-100 text-blue-800'
+                                    }`}>
+                                      {note.priority}
+                                    </span>
+                                  </div>
+                                  <div className="flex gap-1">
+                                    <Button 
+                                      size="sm" 
+                                      variant="ghost" 
+                                      className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 h-7 px-2"
+                                      onClick={() => handleEditNote(note)}
+                                    >
+                                      編集
+                                    </Button>
+                                    <Button 
+                                      size="sm" 
+                                      variant="ghost" 
+                                      className="text-red-600 hover:text-red-800 hover:bg-red-50 h-7 px-2"
+                                      onClick={() => handleDeleteNote(note.id)}
+                                    >
+                                      削除
+                                    </Button>
+                                  </div>
+                                </div>
+                                <p className="text-sm bg-red-50 p-2 rounded">{note.content}</p>
                               </div>
-                              <div>
-                                <Label className="text-sm font-medium">重要度</Label>
-                                <Input
-                                  value={editingTab === 'history' ? (editFormData.importantNotePriority || '要注意') : '要注意'}
-                                  className={editingTab === 'history' ? 'bg-white' : 'bg-red-100'}
-                                  readOnly={editingTab !== 'history'}
-                                  onChange={(e) => editingTab === 'history' && setEditFormData({ ...editFormData, importantNotePriority: e.target.value })}
-                                />
-                              </div>
-                            </div>
-                            <div>
-                              <Label className="text-sm font-medium">内容</Label>
-                              <textarea
-                                className={`w-full p-2 border rounded resize-none h-12 ${editingTab === 'history' ? 'bg-white' : 'bg-yellow-50'}`}
-                                value={editingTab === 'history' ? (editFormData.importantNoteContent || "ご高齢のため、重要な説明は家族同席の上で行うこと。") : "ご高齢のため、重要な説明は家族同席の上で行うこと。"}
-                                readOnly={editingTab !== 'history'}
-                                onChange={(e) => editingTab === 'history' && setEditFormData({ ...editFormData, importantNoteContent: e.target.value })}
-                              />
-                            </div>
-                          </div>
+                            ))
+                          )}
                         </div>
                       </div>
                     </div>
@@ -2541,6 +2390,138 @@ export default function CustomerManagement({ onNavigateToMenu }: CustomerManagem
           <div className="flex justify-center gap-8 p-8 bg-gray-100 min-h-screen">
             <div className="bg-white shadow-lg">
               <PostcardTemplate customer={selectedCustomer} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 重要な連絡事項追加・編集ダイアログ */}
+      {showNoteDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-lg mx-4">
+            <div className="bg-red-600 text-white px-6 py-4 rounded-t-lg">
+              <h3 className="text-lg font-semibold">{editingNoteId ? '連絡事項を編集' : '重要な連絡事項・注意事項を追加'}</h3>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium">登録日</Label>
+                  <Input
+                    value={newNote.date}
+                    onChange={(e) => setNewNote({ ...newNote, date: e.target.value })}
+                    placeholder="2024年1月15日"
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">重要度</Label>
+                  <select
+                    value={newNote.priority}
+                    onChange={(e) => setNewNote({ ...newNote, priority: e.target.value as '要注意' | '注意' | '参考' })}
+                    className="mt-1 w-full border rounded-md px-3 py-2 bg-white"
+                  >
+                    <option value="要注意">要注意</option>
+                    <option value="注意">注意</option>
+                    <option value="参考">参考</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">内容 <span className="text-red-500">*</span></Label>
+                <textarea
+                  value={newNote.content}
+                  onChange={(e) => setNewNote({ ...newNote, content: e.target.value })}
+                  placeholder="重要な連絡事項や注意事項を入力してください..."
+                  className="mt-1 w-full border rounded-md px-3 py-2 h-32 resize-none"
+                />
+              </div>
+            </div>
+            <div className="px-6 py-4 bg-gray-50 rounded-b-lg flex justify-end space-x-3">
+              <Button variant="outline" onClick={() => { setShowNoteDialog(false); setEditingNoteId(null); }}>
+                キャンセル
+              </Button>
+              <Button className="bg-red-600 hover:bg-red-700 text-white" onClick={handleSaveNote}>
+                {editingNoteId ? '更新' : '追加'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 履歴追加ダイアログ */}
+      {showHistoryDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4">
+            <div className="bg-blue-600 text-white px-6 py-4 rounded-t-lg">
+              <h3 className="text-lg font-semibold">対応履歴を追加</h3>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium">日時 <span className="text-red-500">*</span></Label>
+                  <Input
+                    value={newHistory.date}
+                    onChange={(e) => setNewHistory({ ...newHistory, date: e.target.value })}
+                    placeholder="2024年1月15日 14:30"
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">担当者 <span className="text-red-500">*</span></Label>
+                  <Input
+                    value={newHistory.staff}
+                    onChange={(e) => setNewHistory({ ...newHistory, staff: e.target.value })}
+                    placeholder="山田 太郎"
+                    className="mt-1"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium">対応種別</Label>
+                  <select
+                    value={newHistory.type}
+                    onChange={(e) => setNewHistory({ ...newHistory, type: e.target.value })}
+                    className="mt-1 w-full border rounded-md px-3 py-2 bg-white"
+                  >
+                    <option value="電話対応">電話対応</option>
+                    <option value="来所相談">来所相談</option>
+                    <option value="訪問対応">訪問対応</option>
+                    <option value="メール対応">メール対応</option>
+                    <option value="書類送付">書類送付</option>
+                    <option value="その他">その他</option>
+                  </select>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">重要度</Label>
+                  <select
+                    value={newHistory.priority}
+                    onChange={(e) => setNewHistory({ ...newHistory, priority: e.target.value as '通常' | '重要' | '緊急' })}
+                    className="mt-1 w-full border rounded-md px-3 py-2 bg-white"
+                  >
+                    <option value="通常">通常</option>
+                    <option value="重要">重要</option>
+                    <option value="緊急">緊急</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">対応内容 <span className="text-red-500">*</span></Label>
+                <textarea
+                  value={newHistory.content}
+                  onChange={(e) => setNewHistory({ ...newHistory, content: e.target.value })}
+                  placeholder="対応内容を入力してください..."
+                  className="mt-1 w-full border rounded-md px-3 py-2 h-32 resize-none"
+                />
+              </div>
+            </div>
+            <div className="px-6 py-4 bg-gray-50 rounded-b-lg flex justify-end space-x-3">
+              <Button variant="outline" onClick={() => setShowHistoryDialog(false)}>
+                キャンセル
+              </Button>
+              <Button className="bg-blue-600 hover:bg-blue-700 text-white" onClick={handleAddHistory}>
+                追加
+              </Button>
             </div>
           </div>
         </div>

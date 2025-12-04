@@ -40,7 +40,8 @@ export const mockCollectiveBurialApplications: CollectiveBurialApplication[] = [
       address: '福岡県北九州市小倉北区清水2-12-15',
     },
     plot: {
-      section: '東区',
+      plotPeriod: '1期',
+      section: 'A',
       number: 'A-001',
     },
     persons: [

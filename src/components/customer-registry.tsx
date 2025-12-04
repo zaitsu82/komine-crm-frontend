@@ -11,6 +11,7 @@ interface CustomerRegistryProps {
   onCustomerSelect: (customer: Customer) => void;
   selectedCustomer?: Customer;
   onNewCustomer?: () => void;
+  customerAttentionNotes?: Record<string, { content: string; priority: string }>;
 }
 
 // あいう順タブの定義（高齢者に優しいデザイン）
@@ -32,7 +33,7 @@ const AIUEO_TABS = [
 type SortKey = 'customerCode' | 'name' | 'nameKana' | 'address' | 'phoneNumber' | 'plotNumber' | 'applicant' | 'buried' | 'nextBilling' | 'notes';
 type SortOrder = 'asc' | 'desc';
 
-export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, onNewCustomer }: CustomerRegistryProps) {
+export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, onNewCustomer, customerAttentionNotes }: CustomerRegistryProps) {
   const [activeTab, setActiveTab] = useState('全');
   const [searchQuery, setSearchQuery] = useState('');
   const [customers] = useState<Customer[]>(mockCustomers);
@@ -504,7 +505,7 @@ export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, o
                         <div className="text-sm font-medium">
                           {getNextBillingDate(customer)}
                         </div>
-                        {customer.managementFeeInfo && (
+                        {customer.managementFeeInfo && customer.managementFeeInfo.managementFee && (
                           <div className="text-xs text-gray-500">
                             {parseInt(customer.managementFeeInfo.managementFee).toLocaleString()}円/
                             {customer.managementFeeInfo.billingType === 'monthly' ? '月' : '年'}
@@ -518,12 +519,28 @@ export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, o
                               📝 {customer.notes}
                             </div>
                           )}
-                          {customer.attentionNotes && (
+                          {/* 顧客管理から渡された注意事項を表示 */}
+                          {customerAttentionNotes?.[customer.id] && (
+                            <div 
+                              className={cn(
+                                "text-xs px-2 py-1 rounded truncate",
+                                customerAttentionNotes[customer.id].priority === '要注意' ? 'bg-red-100 text-red-800' :
+                                customerAttentionNotes[customer.id].priority === '注意' ? 'bg-orange-100 text-orange-800' :
+                                'bg-blue-100 text-blue-800'
+                              )}
+                              title={customerAttentionNotes[customer.id].content}
+                            >
+                              {customerAttentionNotes[customer.id].priority === '要注意' ? '🚨' : 
+                               customerAttentionNotes[customer.id].priority === '注意' ? '⚠️' : 'ℹ️'} {customerAttentionNotes[customer.id].content}
+                            </div>
+                          )}
+                          {/* 従来のattentionNotes（後方互換性） */}
+                          {customer.attentionNotes && !customerAttentionNotes?.[customer.id] && (
                             <div className="text-xs bg-red-100 px-2 py-1 rounded truncate" title={customer.attentionNotes}>
                               ⚠️ {customer.attentionNotes}
                             </div>
                           )}
-                          {!customer.notes && !customer.attentionNotes && '-'}
+                          {!customer.notes && !customer.attentionNotes && !customerAttentionNotes?.[customer.id] && '-'}
                         </div>
                       </td>
                     </tr>

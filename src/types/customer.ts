@@ -13,7 +13,8 @@ export interface Customer {
   // 顧客基本情報
   customerCode: string; // 墓石コード A-56など *必須
   plotNumber?: string; // 許可番号 例: A-56
-  section?: string; // 区域 (東区、西区など)
+  plotPeriod?: string; // 区画の期（1期〜4期）
+  section?: string; // 区画詳細（期ごとのサブ区画: A〜P, 吉相, 1〜8, 10,11,樹林,天空K, るり庵テラス等）
 
   // 申込者情報
   applicantInfo?: {
@@ -169,6 +170,9 @@ export interface Customer {
     dmSetting: 'allow' | 'deny' | 'limited'; // DM設定
     addressType: 'home' | 'work' | 'other'; // 宛先区分
     notes: string; // 備考
+    zipCode?: string; // 郵便番号（別名）
+    phone?: string; // 電話番号（別名）
+    address?: string; // 住所（別名）
   };
 
   // 請求情報 - 後方互換性のため残す
@@ -179,6 +183,7 @@ export interface Customer {
     accountType: 'ordinary' | 'current' | 'savings'; // 口座科目
     accountNumber: string; // 記号番号
     accountHolder: string; // 口座名義
+    type?: string; // 請求タイプ（表示用）
   };
 
   // 墓地区画情報 - 後方互換性のため残す
@@ -189,6 +194,7 @@ export interface Customer {
     size: string; // 面積
     price: string; // 金額
     contractDate: Date | null; // 契約日
+    capacity?: number; // 収容人数
   } | null;
 
   // 区画割当情報（新規）- 複数区画対応
@@ -204,7 +210,103 @@ export interface Customer {
   postalCode?: string;
   prefecture?: string;
   city?: string;
+
+  // 追加プロパティ（コンポーネントで使用）
+  contractorInfo?: {
+    contractYear?: number; // 契約年
+    contractDate?: Date | null; // 契約日
+    startDate?: Date | null; // 開始日
+  };
+
+  dmInfo?: {
+    setting: 'allow' | 'deny' | 'limited'; // DM設定
+    lastSentDate?: Date | null; // 最終送付日
+    addressType?: 'home' | 'work' | 'other'; // 宛先区分
+    notes?: string; // 備考
+  };
+
+  constructionInfo?: {
+    constructionType?: string; // 工事種別
+    constructionDate?: Date | null; // 工事日
+    completionDate?: Date | null; // 完了日
+    contractor?: string; // 施工業者
+    constructionStatus?: string; // 工事ステータス
+    notes?: string; // 備考
+    // 墓石工事関連
+    gravestoneType?: string; // 墓石タイプ
+    gravestoneDealer?: string; // 墓石業者
+    gravestoneStatus?: string; // 墓石ステータス
+    // 外柵工事関連
+    enclosureType?: string; // 外柵タイプ
+    enclosureDealer?: string; // 外柵業者
+    enclosureStatus?: string; // 外柵ステータス
+    // 付帯工事関連
+    additionalWorkType?: string; // 付帯工事種別
+    additionalWorkDealer?: string; // 付帯工事業者
+    additionalWorkStatus?: string; // 付帯工事ステータス
+    // 工事履歴関連
+    historyDate?: Date | null; // 履歴日
+    historyType?: string; // 履歴種別
+    historyContent?: string; // 履歴内容
+    historyStaff?: string; // 担当者
+    // 工事日程・金額関連
+    startDate?: Date | null; // 開始日
+    workDate1?: Date | null; // 工事日1
+    workDate2?: Date | null; // 工事日2
+    workAmount1?: number; // 工事金額1
+    workAmount2?: number; // 工事金額2
+    applicationDate?: Date | null; // 申請日
+    permitDate?: Date | null; // 許可日
+    paymentAmount1?: number; // 入金額1
+    paymentAmount2?: number; // 入金額2
+    paymentDate1?: Date | null; // 入金日1
+    paymentScheduledDate2?: Date | null; // 入金予定日2
+  };
+
+  applicant?: string; // 申込者名（台帳表示用）
+
+  managementFeeInfo?: {
+    nextBillingDate?: Date | null; // 次回請求日
+    lastBillingDate?: Date | null; // 前回請求日
+    lastBillingMonth?: string; // 最終請求月
+    amount?: number; // 金額
+    managementFee?: string; // 管理料
+    billingType?: string; // 請求区分
+  };
+
+  notes?: string; // 備考
+  attentionNotes?: string; // 注意事項
+
+  // 入金履歴
+  paymentHistory?: {
+    id: string;
+    date: Date | null; // 入金日
+    amount: number; // 金額
+    item?: string; // 項目
+    method?: string; // 支払方法
+    status?: string; // 状況
+    notes?: string; // 備考
+  }[];
 }
+
+// 区画の期（1期〜4期）
+export type PlotPeriod = '1期' | '2期' | '3期' | '4期';
+
+// 期ごとの区画詳細オプション
+export const PLOT_SECTIONS_BY_PERIOD: Record<PlotPeriod, string[]> = {
+  '1期': ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', '吉相'],
+  '2期': ['1', '2', '3', '4', '5', '6', '7', '8'],
+  '3期': ['10', '11', '樹林', '天空K'],
+  '4期': ['るり庵テラス', '1.5', '2.4', '3', '4', '5', '8.4', '憩', '恵', 'るり庵Ⅱ'],
+};
+
+// 期の表示名マッピング
+export const PLOT_PERIOD_LABELS: Record<PlotPeriod, string> = {
+  '1期': '第1期',
+  '2期': '第2期',
+  '3期': '第3期',
+  '4期': '第4期',
+};
 
 // 台帳表示用の契約ステータス型
 export type ContractStatus = 'active' | 'attention' | 'overdue';

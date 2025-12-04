@@ -234,7 +234,7 @@ export default function CollectiveBurialPrintTemplate({ application }: Collectiv
             <tr className="border-b">
               <td className="py-1.5 px-2 bg-gray-50 w-1/4 font-semibold">合祀料金総額</td>
               <td className="py-1.5 px-2 font-bold">
-                {application.payment.totalFee !== null
+                {application.payment.totalFee != null
                   ? `¥${application.payment.totalFee.toLocaleString()}`
                   : '未設定'}
               </td>
@@ -242,12 +242,12 @@ export default function CollectiveBurialPrintTemplate({ application }: Collectiv
             <tr className="border-b">
               <td className="py-1.5 px-2 bg-gray-50 font-semibold">入金額</td>
               <td className="py-1.5 px-2">
-                {application.payment.depositAmount !== null
+                {application.payment.depositAmount != null
                   ? `¥${application.payment.depositAmount.toLocaleString()}`
                   : '未入金'}
               </td>
             </tr>
-            {application.payment.totalFee !== null && application.payment.depositAmount !== null && (
+            {application.payment.totalFee != null && application.payment.depositAmount != null && (
               <tr className="border-b">
                 <td className="py-1.5 px-2 bg-gray-50 font-semibold">残金</td>
                 <td className="py-1.5 px-2 font-bold text-red-600">

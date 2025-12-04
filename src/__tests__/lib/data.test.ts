@@ -2,7 +2,7 @@ import {
   mockCustomers,
   searchCustomers,
   getCustomerById,
-  getCustomerByCode,
+  getCustomerByCustomerCode,
   getCustomersByUsage,
   createCustomer,
   updateCustomer,
@@ -75,13 +75,13 @@ describe('data.ts - 顧客データ管理', () => {
 
   describe('墓石コードによる取得', () => {
     it('有効な墓石コードで取得できる', () => {
-      const customer = getCustomerByCode('A-56')
+      const customer = getCustomerByCustomerCode('A-56')
       expect(customer).toBeDefined()
       expect(customer?.customerCode).toBe('A-56')
     })
 
     it('無効な墓石コードではundefinedを返す', () => {
-      const customer = getCustomerByCode('X-999')
+      const customer = getCustomerByCustomerCode('X-999')
       expect(customer).toBeUndefined()
     })
   })
@@ -120,7 +120,10 @@ describe('data.ts - 顧客データ管理', () => {
         email: undefined,
         emergencyContact: null,
         plotInfo: null,
-        status: 'active'
+        status: 'active',
+        reservationDate: null,
+        permitDate: null,
+        startDate: null
       }
 
       const originalLength = mockCustomers.length

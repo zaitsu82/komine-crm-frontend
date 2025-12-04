@@ -332,7 +332,7 @@ export default function CollectiveBurialDetail({
                 <div>
                   <Label className="text-sm text-gray-600">合祀料金総額</Label>
                   <p className="text-xl font-bold">
-                    {application.payment.totalFee !== null
+                    {application.payment.totalFee != null
                       ? `¥${application.payment.totalFee.toLocaleString()}`
                       : '未設定'}
                   </p>
@@ -340,12 +340,12 @@ export default function CollectiveBurialDetail({
                 <div>
                   <Label className="text-sm text-gray-600">入金額</Label>
                   <p className="text-xl font-semibold text-green-600">
-                    {application.payment.depositAmount !== null
+                    {application.payment.depositAmount != null
                       ? `¥${application.payment.depositAmount.toLocaleString()}`
                       : '未入金'}
                   </p>
                 </div>
-                {application.payment.totalFee !== null && application.payment.depositAmount !== null && (
+                {application.payment.totalFee != null && application.payment.depositAmount != null && (
                   <div>
                     <Label className="text-sm text-gray-600">残金</Label>
                     <p className="text-xl font-semibold text-red-600">

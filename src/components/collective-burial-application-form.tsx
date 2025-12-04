@@ -381,7 +381,7 @@ export default function CollectiveBurialApplicationForm({ onSubmitSuccess }: Col
                     name={`persons.${index}.gender`}
                     render={({ field }) => (
                       <Select
-                        value={field.value && field.value !== '' ? field.value : 'none'}
+                        value={field.value && (field.value as string) !== '' ? field.value : 'none'}
                         onValueChange={(value) => field.onChange(value === 'none' ? '' : value)}
                       >
                         <SelectTrigger id={`persons-${index}-gender`}>

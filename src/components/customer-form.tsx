@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Customer, PLOT_UNIT_TYPE_LABELS, PLOT_STATUS_LABELS, OWNERSHIP_TYPE_LABELS } from '@/types/customer';
+import { Customer, PLOT_UNIT_TYPE_LABELS, PLOT_STATUS_LABELS, OWNERSHIP_TYPE_LABELS, PLOT_SECTIONS_BY_PERIOD, PlotPeriod } from '@/types/customer';
 import { customerFormSchema, CustomerFormData } from '@/lib/validations';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,6 +34,7 @@ export default function CustomerForm({ customer, onSave, onCancel, isLoading }: 
     defaultValues: customer ? {
       customerCode: customer.customerCode,
       plotNumber: customer.plotNumber || '',
+      plotPeriod: customer.plotPeriod || '',
       section: customer.section || '',
       reservationDate: customer.reservationDate ? formatDate(customer.reservationDate) : '',
       acceptanceNumber: customer.acceptanceNumber || '',
@@ -105,6 +106,7 @@ export default function CustomerForm({ customer, onSave, onCancel, isLoading }: 
     } : {
       customerCode: '',
       plotNumber: '',
+      plotPeriod: '',
       section: '',
       reservationDate: '',
       acceptanceNumber: '',
@@ -189,13 +191,12 @@ export default function CustomerForm({ customer, onSave, onCancel, isLoading }: 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="w-full">
       <Tabs defaultValue="basic-info-1" className="w-full">
-        <TabsList className="grid w-full grid-cols-7 h-auto">
+        <TabsList className="grid w-full grid-cols-6 h-auto">
           <TabsTrigger value="basic-info-1" className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">基本情報①</TabsTrigger>
           <TabsTrigger value="basic-info-2" className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">基本情報②</TabsTrigger>
           <TabsTrigger value="contacts" className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">連絡先/家族</TabsTrigger>
           <TabsTrigger value="burial-info" className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">埋葬情報</TabsTrigger>
           <TabsTrigger value="plot-settings" className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">区画設定</TabsTrigger>
-          <TabsTrigger value="construction" className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">工事情報</TabsTrigger>
           <TabsTrigger value="history" className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">履歴情報</TabsTrigger>
         </TabsList>
 
@@ -231,22 +232,43 @@ export default function CustomerForm({ customer, onSave, onCancel, isLoading }: 
                   />
                 </div>
                 <div>
+                  <Label htmlFor="plotPeriod" className="text-sm font-medium">
+                    区画（期）
+                  </Label>
+                  <Select 
+                    value={watch('plotPeriod') || ''} 
+                    onValueChange={(value) => {
+                      setValue('plotPeriod', value);
+                      setValue('section', ''); // 期が変わったらサブ区画をリセット
+                    }}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="期を選択" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1期">1期</SelectItem>
+                      <SelectItem value="2期">2期</SelectItem>
+                      <SelectItem value="3期">3期</SelectItem>
+                      <SelectItem value="4期">4期</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
                   <Label htmlFor="section" className="text-sm font-medium">
-                    区域
+                    区画（詳細）
                   </Label>
                   <Select 
                     value={watch('section') || ''} 
                     onValueChange={(value) => setValue('section', value)}
+                    disabled={!watch('plotPeriod')}
                   >
                     <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="選択してください" />
+                      <SelectValue placeholder={watch('plotPeriod') ? '区画を選択' : '先に期を選択'} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="east">東区</SelectItem>
-                      <SelectItem value="west">西区</SelectItem>
-                      <SelectItem value="south">南区</SelectItem>
-                      <SelectItem value="north">北区</SelectItem>
-                      <SelectItem value="center">中央区</SelectItem>
+                      {watch('plotPeriod') && PLOT_SECTIONS_BY_PERIOD[watch('plotPeriod') as PlotPeriod]?.map((section) => (
+                        <SelectItem key={section} value={section}>{section}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -1785,14 +1807,6 @@ export default function CustomerForm({ customer, onSave, onCancel, isLoading }: 
                   </div>
                 </div>
               </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="construction" className="space-y-6 mt-6">
-            {/* 工事情報 */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold border-b pb-2">工事情報</h3>
-              <p className="text-gray-600">墓石工事に関する情報をここに入力します</p>
             </div>
           </TabsContent>
 

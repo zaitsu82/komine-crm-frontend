@@ -4,6 +4,7 @@ export const customerFormSchema = z.object({
   // 顧客基本情報
   customerCode: z.string().min(1, "墓石コードは必須です"),
   plotNumber: z.string().optional(),
+  plotPeriod: z.string().optional(), // 区画の期（1期〜4期）
   section: z.string().optional(),
 
   // 契約者情報
