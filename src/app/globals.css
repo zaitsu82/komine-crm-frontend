@@ -1,186 +1,289 @@
 @import "tailwindcss";
 
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Sans", "Noto Sans CJK JP", sans-serif;
+/* ============================================
+   小峰霊園CRM - スタイリッシュ和モダンテーマ
+   ============================================ */
+
+:root {
+  /* 和モダンカラーパレット - 日本の伝統色をベースに */
+  --color-sumi: #1a1a1a;           /* 墨色 - メインテキスト */
+  --color-sumi-light: #2d2d2d;     /* 薄墨 */
+  --color-hai: #6b6b6b;            /* 灰色 - サブテキスト */
+  --color-gin: #c0c0c0;            /* 銀色 - ボーダー */
+  --color-shiro: #fafaf8;          /* 白練 - 背景 */
+  --color-kinari: #f5f3ef;         /* 生成り - カード背景 */
+  
+  /* アクセントカラー - 落ち着いた和の色 */
+  --color-matsu: #2d5a3d;          /* 松葉色 - プライマリ */
+  --color-matsu-light: #3d7a52;    /* 松葉色（明） */
+  --color-matsu-dark: #1e3d29;     /* 松葉色（暗） */
+  
+  --color-cha: #8b7355;            /* 茶色 - セカンダリ */
+  --color-cha-light: #a08060;      /* 茶色（明） */
+  
+  --color-ai: #264348;             /* 藍色 - アクセント */
+  --color-ai-light: #3a6066;       /* 藍色（明） */
+  
+  --color-beni: #b54a4a;           /* 紅色 - 警告・エラー */
+  --color-kohaku: #c4a35a;         /* 琥珀色 - 注意 */
+  
+  /* ステータスカラー */
+  --color-success: #3d7a52;
+  --color-warning: #c4a35a;
+  --color-error: #b54a4a;
+  --color-info: #3a6066;
+  
+  /* シャドウ */
+  --shadow-sm: 0 1px 2px rgba(26, 26, 26, 0.05);
+  --shadow-md: 0 4px 12px rgba(26, 26, 26, 0.08);
+  --shadow-lg: 0 8px 24px rgba(26, 26, 26, 0.12);
+  --shadow-xl: 0 16px 48px rgba(26, 26, 26, 0.16);
+  
+  /* トランジション */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* 高齢者・アクセシビリティ対応スタイル */
+body {
+  font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Sans", sans-serif;
+  color: var(--color-sumi);
+  background-color: var(--color-shiro);
+  line-height: 1.7;
+  letter-spacing: 0.02em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 見出しフォント - 明朝体 */
+h1, h2, h3, .heading-mincho {
+  font-family: 'Shippori Mincho', "Hiragino Mincho ProN", "Yu Mincho", serif;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+/* ============================================
+   アクセシビリティ対応スタイル
+   ============================================ */
 
 /* フォーカス表示の強化 */
-.focus-visible, 
+.focus-visible,
 *:focus-visible {
-  outline: 3px solid #2563eb !important;
+  outline: 2px solid var(--color-matsu) !important;
   outline-offset: 2px !important;
   border-radius: 4px;
 }
 
 /* 高コントラストボタン */
 .btn-senior {
-  min-height: 44px;
-  min-width: 44px;
+  min-height: 48px;
+  min-width: 48px;
   font-size: 16px;
-  font-weight: 600;
-  padding: 12px 24px;
-  border: 2px solid transparent;
-  border-radius: 8px;
-  transition: all 0.2s ease-in-out;
+  font-weight: 500;
+  padding: 14px 28px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  transition: all var(--transition-normal);
 }
 
 .btn-senior:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-md);
 }
 
 .btn-senior:active {
   transform: translateY(0);
 }
 
-/* ステータス色のパターン対応（色覚バリアフリー） */
+/* ============================================
+   ステータス表示
+   ============================================ */
+
 .status-active::before {
   content: "●";
-  color: #22c55e;
+  color: var(--color-success);
   margin-right: 8px;
 }
 
 .status-warning::before {
   content: "▲";
-  color: #f59e0b;
+  color: var(--color-warning);
   margin-right: 8px;
 }
 
 .status-attention::before {
   content: "■";
-  color: #ef4444;
+  color: var(--color-error);
   margin-right: 8px;
 }
 
-/* あいう順タブのスタイル */
+.status-active {
+  color: var(--color-matsu-dark);
+  background: linear-gradient(135deg, #e8f0eb, #d4e5da);
+  border-color: var(--color-matsu);
+}
+
+.status-warning {
+  color: #8b6914;
+  background: linear-gradient(135deg, #fdf6e3, #f5e9c8);
+  border-color: var(--color-kohaku);
+}
+
+.status-attention {
+  color: var(--color-beni);
+  background: linear-gradient(135deg, #fbe9e9, #f5d4d4);
+  border-color: var(--color-beni);
+}
+
+/* ============================================
+   あいう順タブ
+   ============================================ */
+
 .aiueo-tab {
   min-width: 64px;
   min-height: 52px;
   font-size: 18px;
-  font-weight: 700;
-  border: 3px solid #d1d5db;
+  font-weight: 600;
+  border: 2px solid var(--color-gin);
   background: white;
-  border-radius: 10px;
-  transition: all 0.2s ease;
+  border-radius: 8px;
+  transition: all var(--transition-normal);
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-sm);
 }
 
 .aiueo-tab:hover:not(:disabled) {
-  background: #f8fafc;
-  border-color: #64748b;
+  background: var(--color-kinari);
+  border-color: var(--color-hai);
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--shadow-md);
 }
 
 .aiueo-tab.active {
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  background: var(--color-matsu);
   color: white;
-  border-color: #1e40af;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  border-color: var(--color-matsu-dark);
+  box-shadow: 0 4px 12px rgba(45, 90, 61, 0.25);
   transform: translateY(-1px);
 }
 
 .aiueo-tab:disabled {
   opacity: 0.4;
   cursor: not-allowed;
-  background: #f8fafc;
-  color: #94a3b8;
+  background: var(--color-kinari);
+  color: var(--color-hai);
 }
 
 .aiueo-tab:focus-visible {
-  outline: 4px solid #93c5fd;
+  outline: 3px solid var(--color-matsu-light);
   outline-offset: 2px;
-  border-color: #2563eb;
+  border-color: var(--color-matsu);
 }
 
 .aiueo-tab:active:not(:disabled) {
   transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
 }
 
-/* 顧客行のアクセシビリティ向上 */
+/* ============================================
+   顧客行スタイル
+   ============================================ */
+
 .customer-row {
   min-height: 80px;
-  border: 1px solid #e5e7eb;
-  transition: all 0.2s ease-in-out;
+  border: 1px solid var(--color-gin);
+  transition: all var(--transition-normal);
   border-radius: 8px;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
+  background: white;
 }
 
 .customer-row:hover {
-  background: linear-gradient(135deg, #f8fafc, #f1f5f9);
-  border-color: #64748b;
+  background: var(--color-kinari);
+  border-color: var(--color-cha);
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-md);
   transform: translateY(-1px);
 }
 
 .customer-row:focus-visible {
-  outline: 3px solid #2563eb;
+  outline: 2px solid var(--color-matsu);
   outline-offset: 2px;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+  border-color: var(--color-matsu);
+  box-shadow: 0 0 0 4px rgba(45, 90, 61, 0.1);
 }
 
 .customer-row.selected {
-  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
-  border-color: #2563eb;
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
-  transform: scale(1.01);
+  background: linear-gradient(135deg, #e8f0eb, #dce8e0);
+  border-color: var(--color-matsu);
+  box-shadow: 0 0 0 2px rgba(45, 90, 61, 0.15);
 }
 
 .customer-row:active {
-  transform: translateY(0) scale(0.99);
+  transform: translateY(0);
   transition: transform 0.1s ease;
 }
 
-/* ステータス表示の強化 */
-.status-active {
-  color: #059669;
-  background: linear-gradient(135deg, #d1fae5, #a7f3d0);
-  border-color: #10b981;
+/* ============================================
+   カードスタイル
+   ============================================ */
+
+.card-elegant {
+  background: white;
+  border: 1px solid var(--color-gin);
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-normal);
 }
 
-.status-warning {
-  color: #d97706;
-  background: linear-gradient(135deg, #fef3c7, #fde68a);
-  border-color: #f59e0b;
+.card-elegant:hover {
+  box-shadow: var(--shadow-md);
 }
 
-.status-attention {
-  color: #dc2626;
-  background: linear-gradient(135deg, #fecaca, #fca5a5);
-  border-color: #ef4444;
+.card-header-matsu {
+  background: linear-gradient(135deg, var(--color-matsu), var(--color-matsu-dark));
+  color: white;
+  border-radius: 11px 11px 0 0;
 }
 
-/* 大きなフォントサイズのメディアクエリ */
+.card-header-cha {
+  background: linear-gradient(135deg, var(--color-cha), #6b5a45);
+  color: white;
+  border-radius: 11px 11px 0 0;
+}
+
+.card-header-ai {
+  background: linear-gradient(135deg, var(--color-ai), #1a3033);
+  color: white;
+  border-radius: 11px 11px 0 0;
+}
+
+/* ============================================
+   メディアクエリ
+   ============================================ */
+
 @media (prefers-reduced-motion: no-preference) {
   .smooth-transition {
-    transition: all 0.2s ease-in-out;
+    transition: all var(--transition-normal);
   }
 }
 
-/* ハイコントラストモード対応 */
 @media (prefers-contrast: high) {
   .btn-senior,
   .aiueo-tab,
   .customer-row {
     border-width: 3px;
   }
-  
+
   body {
     color: #000;
     background: #fff;
   }
 }
 
-/* モーション設定を無効にした場合 */
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.01ms !important;
@@ -189,26 +292,24 @@ body {
   }
 }
 
-/* タブレット・モバイル対応 */
 @media (max-width: 768px) {
   .aiueo-tab {
     min-width: 50px;
     min-height: 50px;
     font-size: 18px;
   }
-  
+
   .btn-senior {
-    min-height: 48px;
+    min-height: 52px;
     font-size: 18px;
-    padding: 14px 28px;
+    padding: 16px 32px;
   }
-  
+
   .customer-row {
-    min-height: 80px;
+    min-height: 88px;
     padding: 16px;
   }
-  
-  /* フォントサイズを大きく */
+
   .text-senior-xs { font-size: 16px; }
   .text-senior-sm { font-size: 18px; }
   .text-senior-base { font-size: 20px; }
@@ -216,7 +317,6 @@ body {
   .text-senior-xl { font-size: 26px; }
 }
 
-/* 横向きタブレット対応 */
 @media (min-width: 768px) and (max-width: 1024px) {
   .aiueo-tab {
     min-width: 55px;
@@ -225,7 +325,6 @@ body {
   }
 }
 
-/* 大画面での文字サイズ上限設定 */
 @media (min-width: 1440px) {
   .text-senior-xs { font-size: 14px; }
   .text-senior-sm { font-size: 16px; }
@@ -234,14 +333,15 @@ body {
   .text-senior-xl { font-size: 24px; }
 }
 
-/* 印刷時のスタイル - 請求書・合祀申込書のみを表示 */
+/* ============================================
+   印刷スタイル
+   ============================================ */
+
 @media print {
-  /* すべての要素を非表示 */
   body * {
     visibility: hidden;
   }
 
-  /* 請求書モーダルとその中身のみを表示 */
   #invoice-modal,
   #invoice-modal *,
   #collective-burial-print-modal,
@@ -249,7 +349,6 @@ body {
     visibility: visible;
   }
 
-  /* モーダルを画面全体に配置 */
   #invoice-modal,
   #collective-burial-print-modal {
     position: absolute;
@@ -259,7 +358,6 @@ body {
     background: white;
   }
 
-  /* モーダルの背景とボーダーを削除 */
   #invoice-modal > div,
   #collective-burial-print-modal > div {
     box-shadow: none !important;
@@ -268,7 +366,6 @@ body {
     margin: 0 !important;
   }
 
-  /* 新しい書類エディタの印刷対応 */
   #invoice-print-content,
   #invoice-print-content *,
   #postcard-address-content,
@@ -301,18 +398,15 @@ body {
     background: white !important;
   }
 
-  /* 印刷時に非表示にする要素 */
   .no-print,
   [class*="print:hidden"] {
     display: none !important;
   }
 
-  /* 印刷時に表示する要素 */
   [class*="print:block"] {
     display: block !important;
   }
 
-  /* 印刷時の入力フィールドスタイル */
   input, textarea, select {
     border: none !important;
     background: transparent !important;
@@ -321,14 +415,94 @@ body {
   }
 }
 
-/* A4用紙サイズの印刷設定 */
 @page {
   size: A4 portrait;
   margin: 0;
 }
 
-/* はがき用紙サイズの印刷設定（はがきエディタ用） */
 @page postcard {
   size: 100mm 148mm;
   margin: 0;
+}
+
+/* ============================================
+   ユーティリティクラス
+   ============================================ */
+
+.text-sumi { color: var(--color-sumi); }
+.text-hai { color: var(--color-hai); }
+.text-matsu { color: var(--color-matsu); }
+.text-cha { color: var(--color-cha); }
+.text-ai { color: var(--color-ai); }
+.text-beni { color: var(--color-beni); }
+.text-kohaku { color: var(--color-kohaku); }
+
+.bg-shiro { background-color: var(--color-shiro); }
+.bg-kinari { background-color: var(--color-kinari); }
+.bg-matsu { background-color: var(--color-matsu); }
+.bg-cha { background-color: var(--color-cha); }
+.bg-ai { background-color: var(--color-ai); }
+
+.border-gin { border-color: var(--color-gin); }
+.border-matsu { border-color: var(--color-matsu); }
+.border-cha { border-color: var(--color-cha); }
+
+/* 和風装飾 */
+.border-top-accent {
+  border-top: 3px solid var(--color-matsu);
+}
+
+.border-left-accent {
+  border-left: 4px solid var(--color-matsu);
+}
+
+/* グラデーション背景 */
+.bg-gradient-warm {
+  background: linear-gradient(135deg, var(--color-shiro) 0%, var(--color-kinari) 100%);
+}
+
+.bg-gradient-matsu {
+  background: linear-gradient(135deg, var(--color-matsu) 0%, var(--color-matsu-dark) 100%);
+}
+
+.bg-gradient-cha {
+  background: linear-gradient(135deg, var(--color-cha) 0%, #6b5a45 100%);
+}
+
+.bg-gradient-ai {
+  background: linear-gradient(135deg, var(--color-ai) 0%, #1a3033 100%);
+}
+
+/* ボタン用背景色 */
+.bg-matsu {
+  background-color: var(--color-matsu);
+}
+
+.bg-matsu-light {
+  background-color: var(--color-matsu-light);
+}
+
+.bg-cha {
+  background-color: var(--color-cha);
+}
+
+.bg-cha-light {
+  background-color: var(--color-cha-light);
+}
+
+.bg-ai {
+  background-color: var(--color-ai);
+}
+
+.bg-ai-light {
+  background-color: var(--color-ai-light);
+}
+
+/* 微細なパターン背景 */
+.bg-pattern-subtle {
+  background-color: var(--color-shiro);
+  background-image: 
+    radial-gradient(circle at 25px 25px, var(--color-kinari) 2%, transparent 0%),
+    radial-gradient(circle at 75px 75px, var(--color-kinari) 2%, transparent 0%);
+  background-size: 100px 100px;
 }

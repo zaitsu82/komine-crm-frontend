@@ -42,11 +42,11 @@ type AreaSortKey = 'period' | 'areaSqm' | 'totalCount' | 'usedCount' | 'remainin
 type SortOrder = 'asc' | 'desc';
 
 const menuItems = [
-  { key: 'all', label: '📋 全区画表示', description: '全ての区画を一覧表示' },
-  { key: 'available', label: '✅ 空き区画のみ', description: '残数のある区画' },
-  { key: 'soldout', label: '❌ 完売区画', description: '残数0の区画' },
-  { key: 'usage-rate', label: '📊 使用率順', description: '使用率でソート' },
-  { key: 'remaining', label: '🔢 残数順', description: '残数でソート' },
+  { key: 'all', label: '全区画表示', icon: '📋', description: '全ての区画を一覧表示' },
+  { key: 'available', label: '空き区画のみ', icon: '✓', description: '残数のある区画' },
+  { key: 'soldout', label: '完売区画', icon: '×', description: '残数0の区画' },
+  { key: 'usage-rate', label: '使用率順', icon: '📊', description: '使用率でソート' },
+  { key: 'remaining', label: '残数順', icon: '🔢', description: '残数でソート' },
 ];
 
 export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAvailabilityManagementProps) {
@@ -160,19 +160,19 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
 
   // 使用率に応じた色を取得
   const getUsageRateColor = (usageRate: number) => {
-    if (usageRate >= 95) return 'bg-red-100 text-red-800';
-    if (usageRate >= 80) return 'bg-orange-100 text-orange-800';
-    if (usageRate >= 60) return 'bg-yellow-100 text-yellow-800';
-    return 'bg-green-100 text-green-800';
+    if (usageRate >= 95) return 'bg-beni-50 text-beni-dark';
+    if (usageRate >= 80) return 'bg-kohaku-50 text-kohaku-dark';
+    if (usageRate >= 60) return 'bg-cha-50 text-cha-dark';
+    return 'bg-matsu-50 text-matsu-dark';
   };
 
   // 残数に応じた色を取得
   const getRemainingColor = (remaining: number, total: number) => {
     const rate = (remaining / total) * 100;
-    if (rate <= 5) return 'text-red-600 font-bold';
-    if (rate <= 15) return 'text-orange-600 font-semibold';
-    if (rate <= 30) return 'text-yellow-600';
-    return 'text-green-600';
+    if (rate <= 5) return 'text-beni font-bold';
+    if (rate <= 15) return 'text-kohaku font-semibold';
+    if (rate <= 30) return 'text-cha';
+    return 'text-matsu';
   };
 
   const handleSort = (key: SortKey) => {
@@ -289,38 +289,53 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
   const areaStats = calculateAreaStats();
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-shiro">
       {/* サイドメニュー */}
-      <div className="w-64 bg-white border-r border-gray-200 shadow-md flex flex-col">
-        <div className="p-4 bg-orange-600 text-white">
-          <h3 className="text-lg font-semibold">区画残数管理</h3>
-          <p className="text-xs text-orange-100 mt-1">2025年6月末現在</p>
+      <div className="w-72 bg-white border-r border-gin shadow-elegant flex flex-col">
+        <div className="p-5 bg-gradient-ai text-white relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+          <div className="relative">
+            <div className="flex items-center space-x-3 mb-2">
+              <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center">
+                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-mincho text-lg font-semibold tracking-wide">区画残数管理</h3>
+                <p className="text-xs text-ai-100 mt-0.5">2025年6月末現在</p>
+              </div>
+            </div>
+          </div>
         </div>
         
-        <div className="p-3 flex-1 overflow-auto">
+        <div className="p-4 flex-1 overflow-auto">
           {/* メインメニューに戻るボタン */}
           {onNavigateToMenu && (
             <Button
               onClick={onNavigateToMenu}
-              className="w-full mb-4 btn-senior"
+              className="w-full mb-5"
               variant="outline"
               size="lg"
             >
-              ← メインメニューに戻る
+              <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              メインメニューに戻る
             </Button>
           )}
 
           {/* 表示形式切替（区画別/面積別） */}
-          <div className="mb-4">
-            <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">表示形式</h4>
-            <div className="flex gap-1">
+          <div className="mb-5">
+            <h4 className="text-xs font-semibold text-hai uppercase mb-2 tracking-wider">表示形式</h4>
+            <div className="flex gap-1 p-1 bg-kinari rounded-elegant border border-gin">
               <button
                 onClick={() => setDisplayMode('section')}
                 className={cn(
-                  'flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                  'flex-1 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200',
                   displayMode === 'section'
-                    ? 'bg-orange-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    ? 'bg-ai text-white shadow-elegant'
+                    : 'text-hai hover:text-sumi hover:bg-white'
                 )}
               >
                 区画別
@@ -328,10 +343,10 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
               <button
                 onClick={() => setDisplayMode('area')}
                 className={cn(
-                  'flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                  'flex-1 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200',
                   displayMode === 'area'
-                    ? 'bg-orange-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    ? 'bg-ai text-white shadow-elegant'
+                    : 'text-hai hover:text-sumi hover:bg-white'
                 )}
               >
                 面積別
@@ -340,55 +355,66 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
           </div>
 
           {/* 表示モード切替 */}
-          <div className="mb-4">
-            <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">フィルター</h4>
-            {menuItems.map((item) => (
-              <button
-                key={item.key}
-                onClick={() => setViewMode(item.key as ViewMode)}
-                className={cn(
-                  'w-full text-left px-3 py-2 rounded-md mb-1 transition-colors text-sm',
-                  viewMode === item.key
-                    ? 'bg-orange-100 text-orange-700 font-semibold'
-                    : 'hover:bg-gray-100 text-gray-700'
-                )}
-              >
-                {item.label}
-              </button>
-            ))}
+          <div className="mb-5">
+            <h4 className="text-xs font-semibold text-hai uppercase mb-2 tracking-wider">フィルター</h4>
+            <div className="space-y-1">
+              {menuItems.map((item) => (
+                <button
+                  key={item.key}
+                  onClick={() => setViewMode(item.key as ViewMode)}
+                  className={cn(
+                    'w-full text-left px-4 py-2.5 rounded-elegant transition-all duration-200 text-sm flex items-center',
+                    viewMode === item.key
+                      ? 'bg-ai-50 text-ai border border-ai-200 font-semibold'
+                      : 'hover:bg-kinari text-hai hover:text-sumi border border-transparent'
+                  )}
+                >
+                  <span className="w-6">{item.icon}</span>
+                  <span>{item.label}</span>
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* 期別フィルター */}
           <div className="mb-4">
-            <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">期別フィルター</h4>
+            <h4 className="text-xs font-semibold text-hai uppercase mb-2 tracking-wider">期別フィルター</h4>
             <button
               onClick={() => setSelectedPeriod('all')}
               className={cn(
-                'w-full text-left px-3 py-2 rounded-md mb-1 transition-colors text-sm',
+                'w-full text-left px-4 py-2.5 rounded-elegant mb-1 transition-all duration-200 text-sm',
                 selectedPeriod === 'all'
-                  ? 'bg-blue-100 text-blue-700 font-semibold'
-                  : 'hover:bg-gray-100 text-gray-700'
+                  ? 'bg-matsu-50 text-matsu border border-matsu-200 font-semibold'
+                  : 'hover:bg-kinari text-hai hover:text-sumi border border-transparent'
               )}
             >
               全期
             </button>
             {(['1期', '2期', '3期', '4期'] as PlotPeriod[]).map((period) => {
               const ps = periodSummaries.find(p => p.period === period);
+              const periodColors = {
+                '1期': { bg: 'bg-matsu-50', border: 'border-matsu-200', text: 'text-matsu' },
+                '2期': { bg: 'bg-ai-50', border: 'border-ai-200', text: 'text-ai' },
+                '3期': { bg: 'bg-cha-50', border: 'border-cha-200', text: 'text-cha' },
+                '4期': { bg: 'bg-kohaku-50', border: 'border-kohaku-200', text: 'text-kohaku' },
+              };
+              const colors = periodColors[period];
+              
               return (
                 <button
                   key={period}
                   onClick={() => setSelectedPeriod(period)}
                   className={cn(
-                    'w-full text-left px-3 py-2 rounded-md mb-1 transition-colors text-sm',
+                    'w-full text-left px-4 py-2.5 rounded-elegant mb-1 transition-all duration-200 text-sm',
                     selectedPeriod === period
-                      ? 'bg-blue-100 text-blue-700 font-semibold'
-                      : 'hover:bg-gray-100 text-gray-700'
+                      ? `${colors.bg} ${colors.text} border ${colors.border} font-semibold`
+                      : 'hover:bg-kinari text-hai hover:text-sumi border border-transparent'
                   )}
                 >
                   <div className="flex justify-between items-center">
                     <span>{period}</span>
                     <span className={cn(
-                      "text-xs px-1.5 py-0.5 rounded",
+                      "text-xs px-2 py-0.5 rounded-full",
                       getUsageRateColor(ps?.usageRate || 0)
                     )}>
                       残{ps?.remainingCount || 0}
@@ -402,92 +428,99 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
       </div>
 
       {/* メインコンテンツ */}
-      <div className="flex-1 overflow-auto p-6">
+      <div className="flex-1 overflow-auto p-6 bg-gradient-warm">
         {/* 全体サマリー */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-          <div className="bg-white border border-blue-200 rounded-lg p-4 text-center shadow-sm">
-            <div className="text-3xl font-bold text-blue-800">{summary.totalCount.toLocaleString()}</div>
-            <div className="text-sm text-blue-600 font-medium">総区画数</div>
-            <div className="text-xs text-gray-500 mt-1">{areaStats.totalArea.toLocaleString()}㎡</div>
+          <div className="bg-white border border-matsu-200 rounded-elegant-lg p-5 text-center shadow-elegant">
+            <div className="text-3xl font-bold text-matsu">{summary.totalCount.toLocaleString()}</div>
+            <div className="text-sm text-matsu font-medium mt-1">総区画数</div>
+            <div className="text-xs text-hai mt-2">{areaStats.totalArea.toLocaleString()}㎡</div>
           </div>
-          <div className="bg-white border border-green-200 rounded-lg p-4 text-center shadow-sm">
-            <div className="text-3xl font-bold text-green-800">{summary.usedCount.toLocaleString()}</div>
-            <div className="text-sm text-green-600 font-medium">使用済区画数</div>
-            <div className="text-xs text-gray-500 mt-1">{areaStats.usedArea.toLocaleString()}㎡</div>
+          <div className="bg-white border border-ai-200 rounded-elegant-lg p-5 text-center shadow-elegant">
+            <div className="text-3xl font-bold text-ai">{summary.usedCount.toLocaleString()}</div>
+            <div className="text-sm text-ai font-medium mt-1">使用済区画数</div>
+            <div className="text-xs text-hai mt-2">{areaStats.usedArea.toLocaleString()}㎡</div>
           </div>
-          <div className="bg-white border border-orange-200 rounded-lg p-4 text-center shadow-sm">
-            <div className="text-3xl font-bold text-orange-800">{summary.remainingCount.toLocaleString()}</div>
-            <div className="text-sm text-orange-600 font-medium">残区画数</div>
-            <div className="text-xs text-gray-500 mt-1">{areaStats.remainingArea.toLocaleString()}㎡</div>
+          <div className="bg-white border border-kohaku-200 rounded-elegant-lg p-5 text-center shadow-elegant">
+            <div className="text-3xl font-bold text-kohaku">{summary.remainingCount.toLocaleString()}</div>
+            <div className="text-sm text-kohaku font-medium mt-1">残区画数</div>
+            <div className="text-xs text-hai mt-2">{areaStats.remainingArea.toLocaleString()}㎡</div>
           </div>
-          <div className="bg-white border border-purple-200 rounded-lg p-4 text-center shadow-sm">
-            <div className="text-3xl font-bold text-purple-800">{summary.usageRate}%</div>
-            <div className="text-sm text-purple-600 font-medium">使用率</div>
-            <div className="w-full bg-purple-200 rounded-full h-2 mt-2">
+          <div className="bg-white border border-cha-200 rounded-elegant-lg p-5 text-center shadow-elegant">
+            <div className="text-3xl font-bold text-cha">{summary.usageRate}%</div>
+            <div className="text-sm text-cha font-medium mt-1">使用率</div>
+            <div className="w-full bg-cha-100 rounded-full h-2 mt-3">
               <div 
-                className="bg-purple-600 h-2 rounded-full" 
+                className="bg-cha h-2 rounded-full transition-all duration-500" 
                 style={{ width: `${summary.usageRate}%` }}
               />
             </div>
           </div>
-          <div className="bg-white border border-gray-200 rounded-lg p-4 text-center shadow-sm">
-            <div className="text-3xl font-bold text-gray-800">{(summary.remainingCount * 2).toLocaleString()}</div>
-            <div className="text-sm text-gray-600 font-medium">半区画換算</div>
-            <div className="text-xs text-gray-500 mt-1">1.8㎡×{(summary.remainingCount * 2).toLocaleString()}</div>
+          <div className="bg-white border border-gin rounded-elegant-lg p-5 text-center shadow-elegant">
+            <div className="text-3xl font-bold text-sumi">{(summary.remainingCount * 2).toLocaleString()}</div>
+            <div className="text-sm text-hai font-medium mt-1">半区画換算</div>
+            <div className="text-xs text-hai mt-2">1.8㎡×{(summary.remainingCount * 2).toLocaleString()}</div>
           </div>
         </div>
 
         {/* 期別サマリーカード */}
         <div className="grid grid-cols-4 gap-4 mb-6">
-          {periodSummaries.map((ps) => (
-            <button
-              key={ps.period}
-              onClick={() => setSelectedPeriod(ps.period)}
-              className={cn(
-                "bg-white border rounded-lg p-4 text-left transition-all hover:shadow-md",
-                selectedPeriod === ps.period 
-                  ? "border-blue-500 ring-2 ring-blue-200" 
-                  : "border-gray-200 hover:border-gray-300"
-              )}
-            >
-              <div className="flex justify-between items-center mb-3">
-                <span className={cn(
-                  "text-lg font-bold",
-                  ps.period === '1期' ? 'text-blue-700' :
-                  ps.period === '2期' ? 'text-green-700' :
-                  ps.period === '3期' ? 'text-purple-700' :
-                  'text-orange-700'
-                )}>{ps.period}</span>
-                <span className={cn(
-                  "text-xs px-2 py-1 rounded font-medium",
-                  getUsageRateColor(ps.usageRate)
-                )}>
-                  {ps.usageRate}%
-                </span>
-              </div>
-              <div className="grid grid-cols-3 gap-2 text-sm">
-                <div>
-                  <div className="text-gray-500 text-xs">総数</div>
-                  <div className="font-bold text-gray-800">{ps.totalCount}</div>
+          {periodSummaries.map((ps) => {
+            const periodColors = {
+              '1期': { gradient: 'from-matsu to-matsu-dark', light: 'matsu' },
+              '2期': { gradient: 'from-ai to-ai-dark', light: 'ai' },
+              '3期': { gradient: 'from-cha to-cha-dark', light: 'cha' },
+              '4期': { gradient: 'from-kohaku to-kohaku-dark', light: 'kohaku' },
+            };
+            const colors = periodColors[ps.period as keyof typeof periodColors];
+            
+            return (
+              <button
+                key={ps.period}
+                onClick={() => setSelectedPeriod(ps.period)}
+                className={cn(
+                  "bg-white border rounded-elegant-lg p-5 text-left transition-all duration-300 hover:shadow-elegant-lg",
+                  selectedPeriod === ps.period 
+                    ? `border-${colors.light} ring-2 ring-${colors.light}-100 shadow-elegant` 
+                    : "border-gin hover:border-hai"
+                )}
+              >
+                <div className="flex justify-between items-center mb-4">
+                  <span className={cn(
+                    "text-lg font-bold font-mincho",
+                    `text-${colors.light}`
+                  )}>{ps.period}</span>
+                  <span className={cn(
+                    "text-xs px-3 py-1 rounded-full font-medium",
+                    getUsageRateColor(ps.usageRate)
+                  )}>
+                    {ps.usageRate}%
+                  </span>
                 </div>
-                <div>
-                  <div className="text-gray-500 text-xs">使用</div>
-                  <div className="font-bold text-green-600">{ps.usedCount}</div>
-                </div>
-                <div>
-                  <div className="text-gray-500 text-xs">残り</div>
-                  <div className={cn("font-bold", getRemainingColor(ps.remainingCount, ps.totalCount))}>
-                    {ps.remainingCount}
+                <div className="grid grid-cols-3 gap-3 text-sm">
+                  <div>
+                    <div className="text-hai text-xs mb-1">総数</div>
+                    <div className="font-bold text-sumi">{ps.totalCount}</div>
+                  </div>
+                  <div>
+                    <div className="text-hai text-xs mb-1">使用</div>
+                    <div className="font-bold text-matsu">{ps.usedCount}</div>
+                  </div>
+                  <div>
+                    <div className="text-hai text-xs mb-1">残り</div>
+                    <div className={cn("font-bold", getRemainingColor(ps.remainingCount, ps.totalCount))}>
+                      {ps.remainingCount}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </button>
-          ))}
+              </button>
+            );
+          })}
         </div>
 
         {/* 検索バー */}
-        <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
-          <div className="flex items-center gap-3">
+        <div className="bg-white rounded-elegant-lg shadow-elegant p-4 mb-4 border border-gin">
+          <div className="flex items-center gap-4">
             <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -497,155 +530,158 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
             <Button 
               onClick={() => setSearchQuery('')}
               variant="outline"
-              size="sm"
+              size="default"
             >
               クリア
             </Button>
             <div className="flex-1" />
-            <span className="text-sm text-gray-500">
-              表示件数: {displayMode === 'section' ? displayData.length : displayAreaData.length}件
-              {selectedPeriod !== 'all' && ` (${selectedPeriod})`}
-              {displayMode === 'area' && ' [面積別]'}
+            <span className="text-sm text-hai">
+              表示件数: <span className="font-semibold text-sumi">{displayMode === 'section' ? displayData.length : displayAreaData.length}</span>件
+              {selectedPeriod !== 'all' && <span className="ml-2 text-ai">({selectedPeriod})</span>}
+              {displayMode === 'area' && <span className="ml-2 text-cha">[面積別]</span>}
             </span>
           </div>
         </div>
 
         {/* データテーブル */}
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div className="bg-white rounded-elegant-lg shadow-elegant overflow-hidden border border-gin">
           <div className="overflow-x-auto">
             {displayMode === 'section' ? (
               /* 区画別テーブル */
               <table className="w-full">
-                <thead className="bg-gray-100">
+                <thead className="bg-kinari border-b border-gin">
                   <tr>
                     <th 
                       className={cn(
-                        "px-4 py-3 text-left text-sm font-bold text-gray-700 cursor-pointer hover:bg-gray-200",
-                        sortKey === 'period' && "bg-gray-200"
+                        "px-4 py-4 text-left text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
+                        sortKey === 'period' && "bg-cha-50"
                       )}
                       onClick={() => handleSort('period')}
                     >
                       <div className="flex items-center">
                         期
                         {sortKey === 'period' && (
-                          <span className="ml-1">{sortOrder === 'asc' ? '▲' : '▼'}</span>
+                          <span className="ml-1 text-cha">{sortOrder === 'asc' ? '▲' : '▼'}</span>
                         )}
                       </div>
                     </th>
                     <th 
                       className={cn(
-                        "px-4 py-3 text-left text-sm font-bold text-gray-700 cursor-pointer hover:bg-gray-200",
-                        sortKey === 'section' && "bg-gray-200"
+                        "px-4 py-4 text-left text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
+                        sortKey === 'section' && "bg-cha-50"
                       )}
                       onClick={() => handleSort('section')}
                     >
                       <div className="flex items-center">
                         区画
                         {sortKey === 'section' && (
-                          <span className="ml-1">{sortOrder === 'asc' ? '▲' : '▼'}</span>
+                          <span className="ml-1 text-cha">{sortOrder === 'asc' ? '▲' : '▼'}</span>
                         )}
                       </div>
                     </th>
                     <th 
                       className={cn(
-                        "px-4 py-3 text-right text-sm font-bold text-gray-700 cursor-pointer hover:bg-gray-200",
-                        sortKey === 'totalCount' && "bg-gray-200"
+                        "px-4 py-4 text-right text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
+                        sortKey === 'totalCount' && "bg-cha-50"
                       )}
                       onClick={() => handleSort('totalCount')}
                     >
                       <div className="flex items-center justify-end">
                         総数
                         {sortKey === 'totalCount' && (
-                          <span className="ml-1">{sortOrder === 'asc' ? '▲' : '▼'}</span>
+                          <span className="ml-1 text-cha">{sortOrder === 'asc' ? '▲' : '▼'}</span>
                         )}
                       </div>
                     </th>
                     <th 
                       className={cn(
-                        "px-4 py-3 text-right text-sm font-bold text-gray-700 cursor-pointer hover:bg-gray-200",
-                        sortKey === 'usedCount' && "bg-gray-200"
+                        "px-4 py-4 text-right text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
+                        sortKey === 'usedCount' && "bg-cha-50"
                       )}
                       onClick={() => handleSort('usedCount')}
                     >
                       <div className="flex items-center justify-end">
                         使用数
                         {sortKey === 'usedCount' && (
-                          <span className="ml-1">{sortOrder === 'asc' ? '▲' : '▼'}</span>
+                          <span className="ml-1 text-cha">{sortOrder === 'asc' ? '▲' : '▼'}</span>
                         )}
                       </div>
                     </th>
                     <th 
                       className={cn(
-                        "px-4 py-3 text-right text-sm font-bold text-gray-700 cursor-pointer hover:bg-gray-200",
-                        sortKey === 'remainingCount' && "bg-gray-200"
+                        "px-4 py-4 text-right text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
+                        sortKey === 'remainingCount' && "bg-cha-50"
                       )}
                       onClick={() => handleSort('remainingCount')}
                     >
                       <div className="flex items-center justify-end">
                         残数
                         {sortKey === 'remainingCount' && (
-                          <span className="ml-1">{sortOrder === 'asc' ? '▲' : '▼'}</span>
+                          <span className="ml-1 text-cha">{sortOrder === 'asc' ? '▲' : '▼'}</span>
                         )}
                       </div>
                     </th>
                     <th 
                       className={cn(
-                        "px-4 py-3 text-center text-sm font-bold text-gray-700 cursor-pointer hover:bg-gray-200",
-                        sortKey === 'usageRate' && "bg-gray-200"
+                        "px-4 py-4 text-center text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
+                        sortKey === 'usageRate' && "bg-cha-50"
                       )}
                       onClick={() => handleSort('usageRate')}
                     >
                       <div className="flex items-center justify-center">
                         使用率
                         {sortKey === 'usageRate' && (
-                          <span className="ml-1">{sortOrder === 'asc' ? '▲' : '▼'}</span>
+                          <span className="ml-1 text-cha">{sortOrder === 'asc' ? '▲' : '▼'}</span>
                         )}
                       </div>
                     </th>
-                    <th className="px-4 py-3 text-center text-sm font-bold text-gray-700">
+                    <th className="px-4 py-4 text-center text-sm font-bold text-sumi">
                       状況
                     </th>
-                    <th className="px-4 py-3 text-right text-sm font-bold text-gray-700">
+                    <th className="px-4 py-4 text-right text-sm font-bold text-sumi">
                       面積（㎡）
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-gin">
                   {displayData.map((item, index) => {
                     const usageRate = item.totalCount > 0 
                       ? Math.round((item.usedCount / item.totalCount) * 100 * 10) / 10 
                       : 0;
                     const remainingArea = item.remainingCount * PLOT_SIZE.FULL;
+                    const periodColors = {
+                      '1期': 'bg-matsu-50 text-matsu',
+                      '2期': 'bg-ai-50 text-ai',
+                      '3期': 'bg-cha-50 text-cha',
+                      '4期': 'bg-kohaku-50 text-kohaku',
+                    };
                     
                     return (
                       <tr 
                         key={`${item.period}-${item.section}`}
                         className={cn(
-                          "hover:bg-gray-50 transition-colors",
-                          index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
+                          "hover:bg-kinari transition-colors",
+                          index % 2 === 0 ? 'bg-white' : 'bg-shiro'
                         )}
                       >
                         <td className="px-4 py-3 text-sm">
                           <span className={cn(
-                            "px-2 py-1 rounded text-xs font-medium",
-                            item.period === '1期' ? 'bg-blue-100 text-blue-800' :
-                            item.period === '2期' ? 'bg-green-100 text-green-800' :
-                            item.period === '3期' ? 'bg-purple-100 text-purple-800' :
-                            'bg-orange-100 text-orange-800'
+                            "px-3 py-1 rounded-full text-xs font-medium",
+                            periodColors[item.period as keyof typeof periodColors]
                           )}>
                             {item.period}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-sm font-semibold text-gray-900">
+                        <td className="px-4 py-3 text-sm font-semibold text-sumi">
                           {item.section}
                           {item.category && (
-                            <span className="ml-2 text-xs text-gray-500 font-normal">({item.category})</span>
+                            <span className="ml-2 text-xs text-hai font-normal">({item.category})</span>
                           )}
                         </td>
-                        <td className="px-4 py-3 text-sm text-right text-gray-700">
+                        <td className="px-4 py-3 text-sm text-right text-hai">
                           {item.totalCount}
                         </td>
-                        <td className="px-4 py-3 text-sm text-right text-green-600 font-medium">
+                        <td className="px-4 py-3 text-sm text-right text-matsu font-medium">
                           {item.usedCount}
                         </td>
                         <td className={cn(
@@ -656,37 +692,37 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
                         </td>
                         <td className="px-4 py-3 text-sm text-center">
                           <div className="flex items-center justify-center space-x-2">
-                            <div className="w-16 bg-gray-200 rounded-full h-2">
+                            <div className="w-16 bg-kinari rounded-full h-2 border border-gin">
                               <div 
                                 className={cn(
-                                  "h-2 rounded-full",
-                                  usageRate >= 95 ? 'bg-red-500' :
-                                  usageRate >= 80 ? 'bg-orange-500' :
-                                  usageRate >= 60 ? 'bg-yellow-500' :
-                                  'bg-green-500'
+                                  "h-2 rounded-full transition-all duration-300",
+                                  usageRate >= 95 ? 'bg-beni' :
+                                  usageRate >= 80 ? 'bg-kohaku' :
+                                  usageRate >= 60 ? 'bg-cha' :
+                                  'bg-matsu'
                                 )}
                                 style={{ width: `${usageRate}%` }}
                               />
                             </div>
-                            <span className="text-xs text-gray-600 w-12">{usageRate}%</span>
+                            <span className="text-xs text-hai w-12">{usageRate}%</span>
                           </div>
                         </td>
                         <td className="px-4 py-3 text-sm text-center">
                           {item.remainingCount === 0 ? (
-                            <span className="px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-medium">
+                            <span className="px-3 py-1 bg-beni-50 text-beni rounded-full text-xs font-medium">
                               完売
                             </span>
                           ) : item.remainingCount <= 5 ? (
-                            <span className="px-2 py-1 bg-orange-100 text-orange-800 rounded text-xs font-medium">
+                            <span className="px-3 py-1 bg-kohaku-50 text-kohaku rounded-full text-xs font-medium">
                               残少
                             </span>
                           ) : (
-                            <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-medium">
+                            <span className="px-3 py-1 bg-matsu-50 text-matsu rounded-full text-xs font-medium">
                               空有
                             </span>
                           )}
                         </td>
-                        <td className="px-4 py-3 text-sm text-right text-gray-600">
+                        <td className="px-4 py-3 text-sm text-right text-hai">
                           {remainingArea.toFixed(1)}
                         </td>
                       </tr>
@@ -694,21 +730,21 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
                   })}
                 </tbody>
                 {/* 合計行 */}
-                <tfoot className="bg-gray-100 font-bold">
+                <tfoot className="bg-kinari font-bold border-t-2 border-gin">
                   <tr>
-                    <td className="px-4 py-3 text-sm" colSpan={2}>
+                    <td className="px-4 py-4 text-sm text-sumi" colSpan={2}>
                       合計 {selectedPeriod !== 'all' ? `(${selectedPeriod})` : ''}
                     </td>
-                    <td className="px-4 py-3 text-sm text-right">
+                    <td className="px-4 py-4 text-sm text-right text-sumi">
                       {displayData.reduce((sum, item) => sum + item.totalCount, 0)}
                     </td>
-                    <td className="px-4 py-3 text-sm text-right text-green-600">
+                    <td className="px-4 py-4 text-sm text-right text-matsu">
                       {displayData.reduce((sum, item) => sum + item.usedCount, 0)}
                     </td>
-                    <td className="px-4 py-3 text-sm text-right text-orange-600">
+                    <td className="px-4 py-4 text-sm text-right text-kohaku">
                       {displayData.reduce((sum, item) => sum + item.remainingCount, 0)}
                     </td>
-                    <td className="px-4 py-3 text-sm text-center">
+                    <td className="px-4 py-4 text-sm text-center text-sumi">
                       {displayData.length > 0 ? (
                         Math.round(
                           (displayData.reduce((sum, item) => sum + item.usedCount, 0) /
@@ -716,8 +752,8 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
                         ) / 10
                       ) : 0}%
                     </td>
-                    <td className="px-4 py-3 text-sm text-center">-</td>
-                    <td className="px-4 py-3 text-sm text-right text-gray-600">
+                    <td className="px-4 py-4 text-sm text-center">-</td>
+                    <td className="px-4 py-4 text-sm text-right text-hai">
                       {(displayData.reduce((sum, item) => sum + item.remainingCount, 0) * PLOT_SIZE.FULL).toFixed(1)}
                     </td>
                   </tr>
@@ -726,143 +762,143 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
             ) : (
               /* 面積別テーブル */
               <table className="w-full">
-                <thead className="bg-gray-100">
+                <thead className="bg-kinari border-b border-gin">
                   <tr>
                     <th 
                       className={cn(
-                        "px-4 py-3 text-left text-sm font-bold text-gray-700 cursor-pointer hover:bg-gray-200",
-                        areaSortKey === 'period' && "bg-gray-200"
+                        "px-4 py-4 text-left text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
+                        areaSortKey === 'period' && "bg-cha-50"
                       )}
                       onClick={() => handleAreaSort('period')}
                     >
                       <div className="flex items-center">
                         期
                         {areaSortKey === 'period' && (
-                          <span className="ml-1">{sortOrder === 'asc' ? '▲' : '▼'}</span>
+                          <span className="ml-1 text-cha">{sortOrder === 'asc' ? '▲' : '▼'}</span>
                         )}
                       </div>
                     </th>
                     <th 
                       className={cn(
-                        "px-4 py-3 text-right text-sm font-bold text-gray-700 cursor-pointer hover:bg-gray-200",
-                        areaSortKey === 'areaSqm' && "bg-gray-200"
+                        "px-4 py-4 text-right text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
+                        areaSortKey === 'areaSqm' && "bg-cha-50"
                       )}
                       onClick={() => handleAreaSort('areaSqm')}
                     >
                       <div className="flex items-center justify-end">
                         面積（㎡）
                         {areaSortKey === 'areaSqm' && (
-                          <span className="ml-1">{sortOrder === 'asc' ? '▲' : '▼'}</span>
+                          <span className="ml-1 text-cha">{sortOrder === 'asc' ? '▲' : '▼'}</span>
                         )}
                       </div>
                     </th>
                     <th 
                       className={cn(
-                        "px-4 py-3 text-right text-sm font-bold text-gray-700 cursor-pointer hover:bg-gray-200",
-                        areaSortKey === 'totalCount' && "bg-gray-200"
+                        "px-4 py-4 text-right text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
+                        areaSortKey === 'totalCount' && "bg-cha-50"
                       )}
                       onClick={() => handleAreaSort('totalCount')}
                     >
                       <div className="flex items-center justify-end">
                         区画数
                         {areaSortKey === 'totalCount' && (
-                          <span className="ml-1">{sortOrder === 'asc' ? '▲' : '▼'}</span>
+                          <span className="ml-1 text-cha">{sortOrder === 'asc' ? '▲' : '▼'}</span>
                         )}
                       </div>
                     </th>
                     <th 
                       className={cn(
-                        "px-4 py-3 text-right text-sm font-bold text-gray-700 cursor-pointer hover:bg-gray-200",
-                        areaSortKey === 'usedCount' && "bg-gray-200"
+                        "px-4 py-4 text-right text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
+                        areaSortKey === 'usedCount' && "bg-cha-50"
                       )}
                       onClick={() => handleAreaSort('usedCount')}
                     >
                       <div className="flex items-center justify-end">
                         使用数
                         {areaSortKey === 'usedCount' && (
-                          <span className="ml-1">{sortOrder === 'asc' ? '▲' : '▼'}</span>
+                          <span className="ml-1 text-cha">{sortOrder === 'asc' ? '▲' : '▼'}</span>
                         )}
                       </div>
                     </th>
                     <th 
                       className={cn(
-                        "px-4 py-3 text-right text-sm font-bold text-gray-700 cursor-pointer hover:bg-gray-200",
-                        areaSortKey === 'remainingCount' && "bg-gray-200"
+                        "px-4 py-4 text-right text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
+                        areaSortKey === 'remainingCount' && "bg-cha-50"
                       )}
                       onClick={() => handleAreaSort('remainingCount')}
                     >
                       <div className="flex items-center justify-end">
                         残数
                         {areaSortKey === 'remainingCount' && (
-                          <span className="ml-1">{sortOrder === 'asc' ? '▲' : '▼'}</span>
+                          <span className="ml-1 text-cha">{sortOrder === 'asc' ? '▲' : '▼'}</span>
                         )}
                       </div>
                     </th>
                     <th 
                       className={cn(
-                        "px-4 py-3 text-right text-sm font-bold text-gray-700 cursor-pointer hover:bg-gray-200",
-                        areaSortKey === 'remainingAreaSqm' && "bg-gray-200"
+                        "px-4 py-4 text-right text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
+                        areaSortKey === 'remainingAreaSqm' && "bg-cha-50"
                       )}
                       onClick={() => handleAreaSort('remainingAreaSqm')}
                     >
                       <div className="flex items-center justify-end">
                         残㎡
                         {areaSortKey === 'remainingAreaSqm' && (
-                          <span className="ml-1">{sortOrder === 'asc' ? '▲' : '▼'}</span>
+                          <span className="ml-1 text-cha">{sortOrder === 'asc' ? '▲' : '▼'}</span>
                         )}
                       </div>
                     </th>
                     <th 
                       className={cn(
-                        "px-4 py-3 text-left text-sm font-bold text-gray-700 cursor-pointer hover:bg-gray-200",
-                        areaSortKey === 'plotType' && "bg-gray-200"
+                        "px-4 py-4 text-left text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
+                        areaSortKey === 'plotType' && "bg-cha-50"
                       )}
                       onClick={() => handleAreaSort('plotType')}
                     >
                       <div className="flex items-center">
                         タイプ
                         {areaSortKey === 'plotType' && (
-                          <span className="ml-1">{sortOrder === 'asc' ? '▲' : '▼'}</span>
+                          <span className="ml-1 text-cha">{sortOrder === 'asc' ? '▲' : '▼'}</span>
                         )}
                       </div>
                     </th>
-                    <th className="px-4 py-3 text-center text-sm font-bold text-gray-700">
+                    <th className="px-4 py-4 text-center text-sm font-bold text-sumi">
                       状況
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-gin">
                   {displayAreaData.map((item, index) => {
-                    const usageRate = item.totalCount > 0 
-                      ? Math.round((item.usedCount / item.totalCount) * 100 * 10) / 10 
-                      : 0;
+                    const periodColors = {
+                      '1期': 'bg-matsu-50 text-matsu',
+                      '2期': 'bg-ai-50 text-ai',
+                      '3期': 'bg-cha-50 text-cha',
+                      '4期': 'bg-kohaku-50 text-kohaku',
+                    };
                     
                     return (
                       <tr 
                         key={`${item.period}-${item.areaSqm}-${item.plotType}-${index}`}
                         className={cn(
-                          "hover:bg-gray-50 transition-colors",
-                          index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
+                          "hover:bg-kinari transition-colors",
+                          index % 2 === 0 ? 'bg-white' : 'bg-shiro'
                         )}
                       >
                         <td className="px-4 py-3 text-sm">
                           <span className={cn(
-                            "px-2 py-1 rounded text-xs font-medium",
-                            item.period === '1期' ? 'bg-blue-100 text-blue-800' :
-                            item.period === '2期' ? 'bg-green-100 text-green-800' :
-                            item.period === '3期' ? 'bg-purple-100 text-purple-800' :
-                            'bg-orange-100 text-orange-800'
+                            "px-3 py-1 rounded-full text-xs font-medium",
+                            periodColors[item.period as keyof typeof periodColors]
                           )}>
                             {item.period}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-sm text-right font-semibold text-gray-900">
+                        <td className="px-4 py-3 text-sm text-right font-semibold text-sumi">
                           {item.areaSqm}
                         </td>
-                        <td className="px-4 py-3 text-sm text-right text-gray-700">
+                        <td className="px-4 py-3 text-sm text-right text-hai">
                           {item.totalCount}
                         </td>
-                        <td className="px-4 py-3 text-sm text-right text-green-600 font-medium">
+                        <td className="px-4 py-3 text-sm text-right text-matsu font-medium">
                           {item.usedCount}
                         </td>
                         <td className={cn(
@@ -871,23 +907,23 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
                         )}>
                           {item.remainingCount}
                         </td>
-                        <td className="px-4 py-3 text-sm text-right text-blue-600 font-medium">
+                        <td className="px-4 py-3 text-sm text-right text-ai font-medium">
                           {item.remainingAreaSqm}
                         </td>
-                        <td className="px-4 py-3 text-sm text-gray-700">
+                        <td className="px-4 py-3 text-sm text-hai">
                           {item.plotType}
                         </td>
                         <td className="px-4 py-3 text-sm text-center">
                           {item.remainingCount === 0 ? (
-                            <span className="px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-medium">
+                            <span className="px-3 py-1 bg-beni-50 text-beni rounded-full text-xs font-medium">
                               完売
                             </span>
                           ) : item.remainingCount <= 5 ? (
-                            <span className="px-2 py-1 bg-orange-100 text-orange-800 rounded text-xs font-medium">
+                            <span className="px-3 py-1 bg-kohaku-50 text-kohaku rounded-full text-xs font-medium">
                               残少
                             </span>
                           ) : (
-                            <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-medium">
+                            <span className="px-3 py-1 bg-matsu-50 text-matsu rounded-full text-xs font-medium">
                               空有
                             </span>
                           )}
@@ -897,25 +933,25 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
                   })}
                 </tbody>
                 {/* 合計行 */}
-                <tfoot className="bg-gray-100 font-bold">
+                <tfoot className="bg-kinari font-bold border-t-2 border-gin">
                   <tr>
-                    <td className="px-4 py-3 text-sm" colSpan={2}>
+                    <td className="px-4 py-4 text-sm text-sumi" colSpan={2}>
                       合計 {selectedPeriod !== 'all' ? `(${selectedPeriod})` : ''}
                     </td>
-                    <td className="px-4 py-3 text-sm text-right">
+                    <td className="px-4 py-4 text-sm text-right text-sumi">
                       {displayAreaData.reduce((sum, item) => sum + item.totalCount, 0)}
                     </td>
-                    <td className="px-4 py-3 text-sm text-right text-green-600">
+                    <td className="px-4 py-4 text-sm text-right text-matsu">
                       {displayAreaData.reduce((sum, item) => sum + item.usedCount, 0)}
                     </td>
-                    <td className="px-4 py-3 text-sm text-right text-orange-600">
+                    <td className="px-4 py-4 text-sm text-right text-kohaku">
                       {displayAreaData.reduce((sum, item) => sum + item.remainingCount, 0)}
                     </td>
-                    <td className="px-4 py-3 text-sm text-right text-blue-600">
+                    <td className="px-4 py-4 text-sm text-right text-ai">
                       {displayAreaData.reduce((sum, item) => sum + item.remainingAreaSqm, 0).toFixed(1)}
                     </td>
-                    <td className="px-4 py-3 text-sm">-</td>
-                    <td className="px-4 py-3 text-sm text-center">-</td>
+                    <td className="px-4 py-4 text-sm">-</td>
+                    <td className="px-4 py-4 text-sm text-center">-</td>
                   </tr>
                 </tfoot>
               </table>
@@ -923,29 +959,32 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
           </div>
           
           {(displayMode === 'section' ? displayData.length : displayAreaData.length) === 0 && (
-            <div className="text-center py-12 text-gray-500">
+            <div className="text-center py-16 text-hai">
+              <svg className="w-16 h-16 mx-auto mb-4 text-gin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
               該当する区画がありません
             </div>
           )}
         </div>
 
         {/* フッター情報 */}
-        <div className="mt-4 flex justify-between items-center text-sm text-gray-500">
+        <div className="mt-5 flex justify-between items-center text-sm text-hai bg-white rounded-elegant-lg p-4 border border-gin">
           <div>
             ※ 1区画 = 3.6㎡、半区画 = 1.8㎡として計算
           </div>
           <div className="flex items-center space-x-4">
             <span className="flex items-center">
-              <span className="w-3 h-3 bg-green-500 rounded mr-1" /> 60%未満
+              <span className="w-3 h-3 bg-matsu rounded mr-2" /> 60%未満
             </span>
             <span className="flex items-center">
-              <span className="w-3 h-3 bg-yellow-500 rounded mr-1" /> 60-80%
+              <span className="w-3 h-3 bg-cha rounded mr-2" /> 60-80%
             </span>
             <span className="flex items-center">
-              <span className="w-3 h-3 bg-orange-500 rounded mr-1" /> 80-95%
+              <span className="w-3 h-3 bg-kohaku rounded mr-2" /> 80-95%
             </span>
             <span className="flex items-center">
-              <span className="w-3 h-3 bg-red-500 rounded mr-1" /> 95%以上
+              <span className="w-3 h-3 bg-beni rounded mr-2" /> 95%以上
             </span>
           </div>
         </div>

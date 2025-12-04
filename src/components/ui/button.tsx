@@ -3,26 +3,36 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium transition-all duration-250 ease-elegant focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-matsu focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
         default:
-          "bg-black text-white shadow hover:bg-gray-800",
+          "bg-matsu text-white shadow-elegant hover:bg-matsu-light hover:shadow-elegant-lg hover:-translate-y-0.5 active:translate-y-0",
         destructive:
-          "bg-red-600 text-white shadow-sm hover:bg-red-700",
+          "bg-beni text-white shadow-elegant hover:bg-beni-light hover:shadow-elegant-lg hover:-translate-y-0.5 active:translate-y-0",
         outline:
-          "border border-gray-300 bg-white shadow-sm hover:bg-gray-50",
+          "border-2 border-gin bg-white text-sumi shadow-elegant-sm hover:border-matsu hover:bg-matsu-50 hover:text-matsu hover:shadow-elegant hover:-translate-y-0.5 active:translate-y-0",
         secondary:
-          "bg-gray-100 text-gray-900 shadow-sm hover:bg-gray-200",
-        ghost: "hover:bg-gray-100",
-        link: "text-blue-600 underline-offset-4 hover:underline",
+          "bg-kinari text-sumi border border-gin shadow-elegant-sm hover:bg-cha-50 hover:border-cha hover:shadow-elegant hover:-translate-y-0.5 active:translate-y-0",
+        ghost: 
+          "text-sumi hover:bg-kinari hover:text-matsu",
+        link: 
+          "text-matsu underline-offset-4 hover:underline hover:text-matsu-light",
+        matsu:
+          "bg-matsu text-white shadow-matsu hover:bg-matsu-light hover:shadow-elegant-lg hover:-translate-y-0.5 active:translate-y-0",
+        cha:
+          "bg-cha text-white shadow-cha hover:bg-cha-light hover:shadow-elegant-lg hover:-translate-y-0.5 active:translate-y-0",
+        ai:
+          "bg-ai text-white shadow-elegant hover:bg-ai-light hover:shadow-elegant-lg hover:-translate-y-0.5 active:translate-y-0",
       },
       size: {
-        default: "h-9 px-4 py-2",
-        sm: "h-8 rounded-md px-3 text-xs",
-        lg: "h-10 rounded-md px-8",
-        icon: "h-9 w-9",
+        default: "h-10 px-5 py-2",
+        sm: "h-9 rounded-md px-4 text-xs",
+        lg: "h-12 rounded-lg px-8 text-base",
+        xl: "h-14 rounded-lg px-10 text-lg font-semibold",
+        icon: "h-10 w-10",
+        senior: "h-12 min-w-[120px] px-6 py-3 text-base font-medium",
       },
     },
     defaultVariants: {

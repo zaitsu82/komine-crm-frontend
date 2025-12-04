@@ -15,7 +15,12 @@ const SelectTrigger = React.forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-gray-300 bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
+      "flex h-10 w-full items-center justify-between whitespace-nowrap rounded-elegant border border-gin bg-white px-4 py-2 text-sm text-sumi shadow-elegant-sm transition-all duration-250 ease-elegant",
+      "placeholder:text-hai",
+      "focus:outline-none focus:ring-2 focus:ring-matsu focus:border-matsu",
+      "hover:border-matsu-300",
+      "disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-kinari",
+      "[&>span]:line-clamp-1",
       className
     )}
     {...props}
@@ -28,9 +33,10 @@ const SelectTrigger = React.forwardRef<
         viewBox="0 0 15 15"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
+        className="text-hai"
       >
         <path
-          d="m4.93179 5.43179c.20264-.20264.20264-.53043 0-.73307s-.53043-.20264-.73307 0l-2.12132 2.12132c-.20264.20264-.20264.53043 0 .73307l2.12132 2.12132c.20264.20264.53043.20264.73307 0s.20264-.53043 0-.73307l-1.37426-1.37426h8.28426c.2761 0 .5.22386.5.5s-.2239.5-.5.5h-8.28426l1.37426-1.37426z"
+          d="M4.93179 5.43179C4.75605 5.60753 4.75605 5.89245 4.93179 6.06819C5.10753 6.24392 5.39245 6.24392 5.56819 6.06819L7.49999 4.13638L9.43179 6.06819C9.60753 6.24392 9.89245 6.24392 10.0682 6.06819C10.2439 5.89245 10.2439 5.60753 10.0682 5.43179L7.81819 3.18179C7.64245 3.00605 7.35753 3.00605 7.18179 3.18179L4.93179 5.43179ZM10.0682 9.56819C10.2439 9.39245 10.2439 9.10753 10.0682 8.93179C9.89245 8.75606 9.60753 8.75606 9.43179 8.93179L7.49999 10.8636L5.56819 8.93179C5.39245 8.75606 5.10753 8.75606 4.93179 8.93179C4.75605 9.10753 4.75605 9.39245 4.93179 9.56819L7.18179 11.8182C7.35753 11.9939 7.64245 11.9939 7.81819 11.8182L10.0682 9.56819Z"
           fill="currentColor"
           fillRule="evenodd"
           clipRule="evenodd"
@@ -48,7 +54,7 @@ const SelectScrollUpButton = React.forwardRef<
   <SelectPrimitive.ScrollUpButton
     ref={ref}
     className={cn(
-      "flex cursor-default items-center justify-center py-1",
+      "flex cursor-default items-center justify-center py-1 text-hai",
       className
     )}
     {...props}
@@ -72,7 +78,7 @@ const SelectScrollDownButton = React.forwardRef<
   <SelectPrimitive.ScrollDownButton
     ref={ref}
     className={cn(
-      "flex cursor-default items-center justify-center py-1",
+      "flex cursor-default items-center justify-center py-1 text-hai",
       className
     )}
     {...props}
@@ -97,7 +103,7 @@ const SelectContent = React.forwardRef<
     <SelectPrimitive.Content
       ref={ref}
       className={cn(
-        "relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-md border bg-white text-gray-900 shadow-md animate-in fade-in-0 zoom-in-95",
+        "relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-elegant border border-gin bg-white text-sumi shadow-elegant-lg animate-in fade-in-0 zoom-in-95",
         position === "popper" &&
           "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
         className
@@ -127,7 +133,7 @@ const SelectLabel = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SelectPrimitive.Label
     ref={ref}
-    className={cn("px-2 py-1.5 text-sm font-semibold", className)}
+    className={cn("px-3 py-2 text-sm font-semibold text-sumi", className)}
     {...props}
   />
 ))
@@ -140,14 +146,16 @@ const SelectItem = React.forwardRef<
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none focus:bg-gray-100 data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "relative flex w-full cursor-default select-none items-center rounded-md py-2 pl-3 pr-8 text-sm outline-none transition-colors",
+      "focus:bg-matsu-50 focus:text-matsu",
+      "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className
     )}
     {...props}
   >
     <span className="absolute right-2 flex h-3.5 w-3.5 items-center justify-center">
       <SelectPrimitive.ItemIndicator>
-        <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" className="text-matsu">
           <path
             d="M11.4669 3.72684C11.7558 3.91574 11.8369 4.30308 11.648 4.59198L7.39799 11.092C7.29783 11.2452 7.13556 11.3467 6.95402 11.3699C6.77247 11.3931 6.58989 11.3355 6.45446 11.2124L3.70446 8.71241C3.44905 8.48022 3.43023 8.08494 3.66242 7.82953C3.89461 7.57412 4.28989 7.55529 4.5453 7.78749L6.75292 9.79441L10.6018 3.90792C10.7907 3.61902 11.178 3.53795 11.4669 3.72684Z"
             fill="currentColor"
@@ -168,7 +176,7 @@ const SelectSeparator = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SelectPrimitive.Separator
     ref={ref}
-    className={cn("-mx-1 my-1 h-px bg-gray-200", className)}
+    className={cn("-mx-1 my-1 h-px bg-gin", className)}
     {...props}
   />
 ))

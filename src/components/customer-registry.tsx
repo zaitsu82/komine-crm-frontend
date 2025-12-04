@@ -26,11 +26,11 @@ const AIUEO_TABS = [
   { key: 'や', label: 'や行', shortLabel: 'や' },
   { key: 'ら', label: 'ら行', shortLabel: 'ら' },
   { key: 'わ', label: 'わ行', shortLabel: 'わ' },
-  { key: 'その他', label: 'その他', shortLabel: 'その他' },
-  { key: '全', label: '全て表示', shortLabel: '全て' }
+  { key: 'その他', label: 'その他', shortLabel: '他' },
+  { key: '全', label: '全て表示', shortLabel: '全' }
 ];
 
-type SortKey = 'customerCode' | 'name' | 'nameKana' | 'address' | 'phoneNumber' | 'plotNumber' | 'applicant' | 'buried' | 'nextBilling' | 'notes' | 'ownedPlots';
+type SortKey = 'status' | 'customerCode' | 'name' | 'nameKana' | 'address' | 'phoneNumber' | 'plotNumber' | 'applicant' | 'buried' | 'nextBilling' | 'notes' | 'ownedPlots' | 'contractDate';
 type SortOrder = 'asc' | 'desc';
 
 export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, onNewCustomer, customerAttentionNotes }: CustomerRegistryProps) {
@@ -91,6 +91,12 @@ export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, o
       let bValue: any = '';
       
       switch(sortKey) {
+        case 'status':
+          // ステータス順（有効→保留→停止）
+          const statusOrder: Record<string, number> = { 'active': 0, 'pending': 1, 'suspended': 2 };
+          aValue = statusOrder[a.status || 'active'] ?? 0;
+          bValue = statusOrder[b.status || 'active'] ?? 0;
+          break;
         case 'customerCode':
           aValue = a.customerCode;
           bValue = b.customerCode;
@@ -112,30 +118,57 @@ export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, o
           bValue = b.phoneNumber;
           break;
         case 'plotNumber':
-          aValue = a.plotInfo?.plotNumber || '';
-          bValue = b.plotInfo?.plotNumber || '';
+          aValue = a.plotInfo?.plotNumber || a.plotNumber || '';
+          bValue = b.plotInfo?.plotNumber || b.plotNumber || '';
           break;
         case 'applicant':
-          aValue = a.applicant || '';
-          bValue = b.applicant || '';
+          aValue = a.applicant || a.name;
+          bValue = b.applicant || b.name;
           break;
         case 'buried':
           aValue = a.buriedPersons?.length || 0;
           bValue = b.buriedPersons?.length || 0;
           break;
+        case 'ownedPlots':
+          aValue = a.ownedPlots ? calculateOwnedPlotsInfo(a.ownedPlots).totalAreaSqm : 0;
+          bValue = b.ownedPlots ? calculateOwnedPlotsInfo(b.ownedPlots).totalAreaSqm : 0;
+          break;
+        case 'contractDate':
+          // 契約日でソート
+          const getContractTimestamp = (customer: any) => {
+            if (customer.applicantInfo?.applicationDate) {
+              return new Date(customer.applicantInfo.applicationDate).getTime();
+            }
+            return 0;
+          };
+          aValue = getContractTimestamp(a);
+          bValue = getContractTimestamp(b);
+          break;
         case 'nextBilling':
-          // 次回請求日の計算（簡易版）
-          aValue = a.managementFeeInfo?.lastBillingMonth || '';
-          bValue = b.managementFeeInfo?.lastBillingMonth || '';
+          // 次回請求日でソート
+          const getNextBillingTimestamp = (customer: any) => {
+            if (customer.managementFeeInfo?.lastBillingMonth) {
+              const lastBilling = new Date(customer.managementFeeInfo.lastBillingMonth);
+              const nextBilling = new Date(lastBilling);
+              if (customer.managementFeeInfo.billingType === 'monthly') {
+                nextBilling.setMonth(nextBilling.getMonth() + 1);
+              } else if (customer.managementFeeInfo.billingType === 'yearly') {
+                nextBilling.setFullYear(nextBilling.getFullYear() + 1);
+              }
+              return nextBilling.getTime();
+            }
+            return 0;
+          };
+          aValue = getNextBillingTimestamp(a);
+          bValue = getNextBillingTimestamp(b);
           break;
         case 'notes':
-          aValue = (a.notes || '') + (a.attentionNotes || '');
-          bValue = (b.notes || '') + (b.attentionNotes || '');
+          aValue = a.notes || a.attentionNotes || '';
+          bValue = b.notes || b.attentionNotes || '';
           break;
-        case 'ownedPlots':
-          aValue = calculateOwnedPlotsInfo(a.ownedPlots).totalAreaSqm;
-          bValue = calculateOwnedPlotsInfo(b.ownedPlots).totalAreaSqm;
-          break;
+        default:
+          aValue = a.customerCode;
+          bValue = b.customerCode;
       }
       
       if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
@@ -145,100 +178,115 @@ export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, o
     
     return filtered;
   }, [customers, searchQuery, activeTab, sortKey, sortOrder]);
-  
-  // タブ別の顧客数を計算
-  const tabCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
-    AIUEO_TABS.forEach(tab => {
-      counts[tab.key] = filterByAiueo(customers, tab.key).length;
-    });
-    return counts;
-  }, [customers]);
 
-  // キーボードナビゲーション対応
-  const handleKeyDown = (event: React.KeyboardEvent) => {
-    if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
-      event.preventDefault();
-      let newIndex = focusedTabIndex;
-      
-      if (event.key === 'ArrowLeft') {
-        newIndex = newIndex > 0 ? newIndex - 1 : AIUEO_TABS.length - 1;
-      } else {
-        newIndex = newIndex < AIUEO_TABS.length - 1 ? newIndex + 1 : 0;
-      }
-      
-      setFocusedTabIndex(newIndex);
-      setActiveTab(AIUEO_TABS[newIndex].key);
+  // タブのキーボードナビゲーション
+  const handleTabKeyDown = (e: React.KeyboardEvent, index: number) => {
+    if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      const nextIndex = (index + 1) % AIUEO_TABS.length;
+      setFocusedTabIndex(nextIndex);
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      const prevIndex = (index - 1 + AIUEO_TABS.length) % AIUEO_TABS.length;
+      setFocusedTabIndex(prevIndex);
+    } else if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      setActiveTab(AIUEO_TABS[index].key);
     }
   };
 
+  // 各タブの顧客数を計算
+  const getCustomerCountForTab = (tabKey: string) => {
+    return filterByAiueo(customers, tabKey).length;
+  };
+
+  // ソートインジケーター
+  const SortIndicator = ({ columnKey }: { columnKey: SortKey }) => (
+    <div className="flex flex-col ml-1">
+      <span className={cn(
+        "text-[10px] leading-none",
+        sortKey === columnKey && sortOrder === 'asc' ? 'text-kohaku' : 'text-matsu-200'
+      )}>▲</span>
+      <span className={cn(
+        "text-[10px] leading-none",
+        sortKey === columnKey && sortOrder === 'desc' ? 'text-kohaku' : 'text-matsu-200'
+      )}>▼</span>
+    </div>
+  );
+
   return (
-    <div className="space-y-2">
-      {/* Search Box */}
-      <div className="bg-white p-3 rounded border">
-        <div className="flex items-center space-x-2 mb-2">
+    <div className="h-full flex flex-col">
+      {/* 検索バー */}
+      <div className="mb-4 flex items-center gap-3">
+        <div className="flex-1 max-w-md">
           <Input
+            type="text"
+            placeholder="氏名・フリガナ・墓石コード・電話番号で検索..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="検索キーワードを入力..."
-            className="flex-1 text-sm h-8 border border-gray-300"
+            className="h-10 text-sm"
           />
-          <Button 
-            onClick={() => setSearchQuery('')}
-            variant="outline"
-            size="sm"
-            className="px-3 py-1 text-xs"
-          >
-            クリア
-          </Button>
-          <Button 
-            onClick={handleSearch}
-            size="sm"
-            className="px-3 py-1 text-xs bg-blue-600 hover:bg-blue-700"
-          >
-            検索
-          </Button>
-          {onNewCustomer && (
-            <Button 
-              onClick={onNewCustomer}
-              size="sm"
-              className="px-3 py-1 text-xs bg-green-600 hover:bg-green-700"
-            >
-              新規登録
-            </Button>
-          )}
         </div>
+        <Button 
+          onClick={handleSearch}
+          variant="matsu"
+          size="default"
+          className="h-10"
+        >
+          <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          検索
+        </Button>
+        {onNewCustomer && (
+          <Button 
+            onClick={onNewCustomer}
+            variant="outline"
+            size="default"
+            className="h-10"
+          >
+            <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            新規登録
+          </Button>
+        )}
       </div>
 
-      {/* あいう順タブナビゲーション */}
-      <div className="bg-white p-2 rounded border">
+      {/* あいう順タブ */}
+      <div className="mb-4">
         <div 
-          className="grid grid-cols-6 md:grid-cols-12 gap-1"
-          onKeyDown={handleKeyDown}
+          className="flex flex-wrap gap-1"
+          role="tablist"
+          aria-label="あいう順で絞り込み"
         >
           {AIUEO_TABS.map((tab, index) => {
-            const customerCount = tabCounts[tab.key] || 0;
+            const customerCount = getCustomerCountForTab(tab.key);
+            const isActive = activeTab === tab.key;
+            
             return (
               <button
                 key={tab.key}
-                onClick={() => {
-                  setActiveTab(tab.key);
-                  setFocusedTabIndex(index);
-                }}
+                role="tab"
+                aria-selected={isActive}
+                aria-controls="customer-list"
+                tabIndex={focusedTabIndex === index ? 0 : -1}
+                onClick={() => setActiveTab(tab.key)}
+                onKeyDown={(e) => handleTabKeyDown(e, index)}
                 className={cn(
-                  'px-2 py-1 text-sm border rounded relative',
-                  activeTab === tab.key 
-                    ? 'bg-blue-100 border-blue-300 text-blue-800' 
-                    : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50',
-                  customerCount === 0 && 'opacity-50 cursor-not-allowed'
+                  "aiueo-tab",
+                  "min-w-[44px] min-h-[44px] text-base",
+                  isActive && "active"
                 )}
-                disabled={customerCount === 0}
-                title={`${tab.label}: ${customerCount}件`}
+                disabled={customerCount === 0 && tab.key !== '全'}
               >
-                <span>{tab.shortLabel}</span>
-                {customerCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center leading-none">
+                {tab.shortLabel}
+                {customerCount > 0 && tab.key !== '全' && (
+                  <span className={cn(
+                    "ml-1 text-xs",
+                    isActive ? "text-white/80" : "text-hai"
+                  )}>
                     {customerCount > 99 ? '99+' : customerCount}
                   </span>
                 )}
@@ -249,218 +297,183 @@ export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, o
       </div>
 
       {/* 顧客一覧 - テーブル形式 */}
-      <div className="bg-white rounded border shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
+      <div className="bg-white rounded-elegant-lg border border-gin shadow-elegant overflow-hidden flex-1">
+        <div className="overflow-auto h-full">
+          <table className="w-full divide-y divide-gin text-sm table-fixed">
+            <colgroup>
+              <col className="w-[44px]" />   {/* ステータス */}
+              <col className="w-[68px]" />   {/* コード */}
+              <col className="w-[100px]" />  {/* 氏名 */}
+              <col className="w-[100px]" />  {/* 電話番号 */}
+              <col className="w-[65px]" />   {/* 区画番号 */}
+              <col className="w-[80px]" />   {/* 申込者 */}
+              <col className="w-[44px]" />   {/* 埋葬 */}
+              <col className="w-[52px]" />   {/* 面積 */}
+              <col className="w-[68px]" />   {/* 契約日 */}
+              <col className="w-[62px]" />   {/* 次回請求 */}
+              <col />                         {/* 備考 - 残り全部 */}
+            </colgroup>
             {/* テーブルヘッダー */}
-            <thead className="bg-gradient-to-r from-blue-600 to-blue-700">
+            <thead className="bg-gradient-matsu sticky top-0 z-10">
               <tr>
                 <th 
                   className={cn(
-                    "px-3 py-3 text-left text-sm font-bold text-white border-r border-blue-500 cursor-pointer transition-all duration-200",
-                    "hover:bg-blue-500 hover:shadow-md",
-                    sortKey === 'customerCode' && "bg-blue-800 shadow-inner"
+                    "px-2 py-2 text-center text-xs font-bold text-white cursor-pointer transition-all duration-200",
+                    "hover:bg-matsu-light",
+                    sortKey === 'status' && "bg-matsu-dark"
+                  )}
+                  onClick={() => handleSort('status')}
+                  title="契約状況"
+                >
+                  <div className="flex items-center justify-center">
+                    <span>状態</span>
+                  </div>
+                </th>
+                <th 
+                  className={cn(
+                    "px-2 py-2 text-left text-xs font-bold text-white cursor-pointer transition-all duration-200",
+                    "hover:bg-matsu-light",
+                    sortKey === 'customerCode' && "bg-matsu-dark"
                   )}
                   onClick={() => handleSort('customerCode')}
                 >
-                  <div className="flex items-center justify-between">
-                    <span>墓石コード</span>
-                    <div className="flex flex-col ml-1">
-                      <span className={cn(
-                        "text-xs leading-none",
-                        sortKey === 'customerCode' && sortOrder === 'asc' ? 'text-yellow-300' : 'text-blue-300'
-                      )}>▲</span>
-                      <span className={cn(
-                        "text-xs leading-none",
-                        sortKey === 'customerCode' && sortOrder === 'desc' ? 'text-yellow-300' : 'text-blue-300'
-                      )}>▼</span>
-                    </div>
+                  <div className="flex items-center">
+                    <span>コード</span>
+                    <SortIndicator columnKey="customerCode" />
                   </div>
                 </th>
                 <th 
                   className={cn(
-                    "px-3 py-3 text-left text-sm font-bold text-white border-r border-blue-500 cursor-pointer transition-all duration-200",
-                    "hover:bg-blue-500 hover:shadow-md",
-                    sortKey === 'name' && "bg-blue-800 shadow-inner"
+                    "px-2 py-2 text-left text-xs font-bold text-white cursor-pointer transition-all duration-200",
+                    "hover:bg-matsu-light",
+                    sortKey === 'name' && "bg-matsu-dark"
                   )}
                   onClick={() => handleSort('name')}
                 >
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center">
                     <span>氏名</span>
-                    <div className="flex flex-col ml-1">
-                      <span className={cn(
-                        "text-xs leading-none",
-                        sortKey === 'name' && sortOrder === 'asc' ? 'text-yellow-300' : 'text-blue-300'
-                      )}>▲</span>
-                      <span className={cn(
-                        "text-xs leading-none",
-                        sortKey === 'name' && sortOrder === 'desc' ? 'text-yellow-300' : 'text-blue-300'
-                      )}>▼</span>
-                    </div>
+                    <SortIndicator columnKey="name" />
                   </div>
                 </th>
                 <th 
                   className={cn(
-                    "px-3 py-3 text-left text-sm font-bold text-white border-r border-blue-500 cursor-pointer transition-all duration-200",
-                    "hover:bg-blue-500 hover:shadow-md",
-                    sortKey === 'address' && "bg-blue-800 shadow-inner"
-                  )}
-                  onClick={() => handleSort('address')}
-                >
-                  <div className="flex items-center justify-between">
-                    <span>住所</span>
-                    <div className="flex flex-col ml-1">
-                      <span className={cn(
-                        "text-xs leading-none",
-                        sortKey === 'address' && sortOrder === 'asc' ? 'text-yellow-300' : 'text-blue-300'
-                      )}>▲</span>
-                      <span className={cn(
-                        "text-xs leading-none",
-                        sortKey === 'address' && sortOrder === 'desc' ? 'text-yellow-300' : 'text-blue-300'
-                      )}>▼</span>
-                    </div>
-                  </div>
-                </th>
-                <th 
-                  className={cn(
-                    "px-3 py-3 text-left text-sm font-bold text-white border-r border-blue-500 cursor-pointer transition-all duration-200",
-                    "hover:bg-blue-500 hover:shadow-md",
-                    sortKey === 'applicant' && "bg-blue-800 shadow-inner"
-                  )}
-                  onClick={() => handleSort('applicant')}
-                >
-                  <div className="flex items-center justify-between">
-                    <span>申込者</span>
-                    <div className="flex flex-col ml-1">
-                      <span className={cn(
-                        "text-xs leading-none",
-                        sortKey === 'applicant' && sortOrder === 'asc' ? 'text-yellow-300' : 'text-blue-300'
-                      )}>▲</span>
-                      <span className={cn(
-                        "text-xs leading-none",
-                        sortKey === 'applicant' && sortOrder === 'desc' ? 'text-yellow-300' : 'text-blue-300'
-                      )}>▼</span>
-                    </div>
-                  </div>
-                </th>
-                <th 
-                  className={cn(
-                    "px-3 py-3 text-left text-sm font-bold text-white border-r border-blue-500 cursor-pointer transition-all duration-200",
-                    "hover:bg-blue-500 hover:shadow-md",
-                    sortKey === 'buried' && "bg-blue-800 shadow-inner"
-                  )}
-                  onClick={() => handleSort('buried')}
-                >
-                  <div className="flex items-center justify-between">
-                    <span>埋葬者</span>
-                    <div className="flex flex-col ml-1">
-                      <span className={cn(
-                        "text-xs leading-none",
-                        sortKey === 'buried' && sortOrder === 'asc' ? 'text-yellow-300' : 'text-blue-300'
-                      )}>▲</span>
-                      <span className={cn(
-                        "text-xs leading-none",
-                        sortKey === 'buried' && sortOrder === 'desc' ? 'text-yellow-300' : 'text-blue-300'
-                      )}>▼</span>
-                    </div>
-                  </div>
-                </th>
-                <th 
-                  className={cn(
-                    "px-3 py-3 text-left text-sm font-bold text-white border-r border-blue-500 cursor-pointer transition-all duration-200",
-                    "hover:bg-blue-500 hover:shadow-md",
-                    sortKey === 'phoneNumber' && "bg-blue-800 shadow-inner"
+                    "px-2 py-2 text-left text-xs font-bold text-white cursor-pointer transition-all duration-200",
+                    "hover:bg-matsu-light",
+                    sortKey === 'phoneNumber' && "bg-matsu-dark"
                   )}
                   onClick={() => handleSort('phoneNumber')}
                 >
-                  <div className="flex items-center justify-between">
-                    <span>電話番号</span>
-                    <div className="flex flex-col ml-1">
-                      <span className={cn(
-                        "text-xs leading-none",
-                        sortKey === 'phoneNumber' && sortOrder === 'asc' ? 'text-yellow-300' : 'text-blue-300'
-                      )}>▲</span>
-                      <span className={cn(
-                        "text-xs leading-none",
-                        sortKey === 'phoneNumber' && sortOrder === 'desc' ? 'text-yellow-300' : 'text-blue-300'
-                      )}>▼</span>
-                    </div>
+                  <div className="flex items-center">
+                    <span>電話</span>
+                    <SortIndicator columnKey="phoneNumber" />
                   </div>
                 </th>
                 <th 
                   className={cn(
-                    "px-3 py-3 text-left text-sm font-bold text-white border-r border-blue-500 cursor-pointer transition-all duration-200",
-                    "hover:bg-blue-500 hover:shadow-md",
-                    sortKey === 'ownedPlots' && "bg-blue-800 shadow-inner"
+                    "px-2 py-2 text-left text-xs font-bold text-white cursor-pointer transition-all duration-200",
+                    "hover:bg-matsu-light",
+                    sortKey === 'plotNumber' && "bg-matsu-dark"
+                  )}
+                  onClick={() => handleSort('plotNumber')}
+                >
+                  <div className="flex items-center">
+                    <span>区画No</span>
+                    <SortIndicator columnKey="plotNumber" />
+                  </div>
+                </th>
+                <th 
+                  className={cn(
+                    "px-2 py-2 text-left text-xs font-bold text-white cursor-pointer transition-all duration-200",
+                    "hover:bg-matsu-light",
+                    sortKey === 'applicant' && "bg-matsu-dark"
+                  )}
+                  onClick={() => handleSort('applicant')}
+                >
+                  <div className="flex items-center">
+                    <span>申込者</span>
+                    <SortIndicator columnKey="applicant" />
+                  </div>
+                </th>
+                <th 
+                  className={cn(
+                    "px-2 py-2 text-center text-xs font-bold text-white cursor-pointer transition-all duration-200",
+                    "hover:bg-matsu-light",
+                    sortKey === 'buried' && "bg-matsu-dark"
+                  )}
+                  onClick={() => handleSort('buried')}
+                >
+                  <div className="flex items-center justify-center">
+                    <span>埋葬</span>
+                  </div>
+                </th>
+                <th 
+                  className={cn(
+                    "px-2 py-2 text-center text-xs font-bold text-white cursor-pointer transition-all duration-200",
+                    "hover:bg-matsu-light",
+                    sortKey === 'ownedPlots' && "bg-matsu-dark"
                   )}
                   onClick={() => handleSort('ownedPlots')}
                 >
-                  <div className="flex items-center justify-between">
-                    <span>所有区画</span>
-                    <div className="flex flex-col ml-1">
-                      <span className={cn(
-                        "text-xs leading-none",
-                        sortKey === 'ownedPlots' && sortOrder === 'asc' ? 'text-yellow-300' : 'text-blue-300'
-                      )}>▲</span>
-                      <span className={cn(
-                        "text-xs leading-none",
-                        sortKey === 'ownedPlots' && sortOrder === 'desc' ? 'text-yellow-300' : 'text-blue-300'
-                      )}>▼</span>
-                    </div>
+                  <div className="flex items-center justify-center">
+                    <span>面積</span>
                   </div>
                 </th>
                 <th 
                   className={cn(
-                    "px-3 py-3 text-left text-sm font-bold text-white border-r border-blue-500 cursor-pointer transition-all duration-200",
-                    "hover:bg-blue-500 hover:shadow-md",
-                    sortKey === 'nextBilling' && "bg-blue-800 shadow-inner"
+                    "px-2 py-2 text-center text-xs font-bold text-white cursor-pointer transition-all duration-200",
+                    "hover:bg-matsu-light",
+                    sortKey === 'contractDate' && "bg-matsu-dark"
+                  )}
+                  onClick={() => handleSort('contractDate')}
+                >
+                  <div className="flex items-center justify-center">
+                    <span>契約日</span>
+                  </div>
+                </th>
+                <th 
+                  className={cn(
+                    "px-2 py-2 text-center text-xs font-bold text-white cursor-pointer transition-all duration-200",
+                    "hover:bg-matsu-light",
+                    sortKey === 'nextBilling' && "bg-matsu-dark"
                   )}
                   onClick={() => handleSort('nextBilling')}
                 >
-                  <div className="flex items-center justify-between">
-                    <span>次回請求</span>
-                    <div className="flex flex-col ml-1">
-                      <span className={cn(
-                        "text-xs leading-none",
-                        sortKey === 'nextBilling' && sortOrder === 'asc' ? 'text-yellow-300' : 'text-blue-300'
-                      )}>▲</span>
-                      <span className={cn(
-                        "text-xs leading-none",
-                        sortKey === 'nextBilling' && sortOrder === 'desc' ? 'text-yellow-300' : 'text-blue-300'
-                      )}>▼</span>
-                    </div>
+                  <div className="flex items-center justify-center">
+                    <span>次請求</span>
                   </div>
                 </th>
                 <th 
                   className={cn(
-                    "px-3 py-3 text-left text-sm font-bold text-white border-r border-blue-500 cursor-pointer transition-all duration-200",
-                    "hover:bg-blue-500 hover:shadow-md",
-                    sortKey === 'notes' && "bg-blue-800 shadow-inner"
+                    "px-2 py-2 text-left text-xs font-bold text-white cursor-pointer transition-all duration-200",
+                    "hover:bg-matsu-light",
+                    sortKey === 'notes' && "bg-matsu-dark"
                   )}
                   onClick={() => handleSort('notes')}
                 >
-                  <div className="flex items-center justify-between">
-                    <span>備考/注意</span>
-                    <div className="flex flex-col ml-1">
-                      <span className={cn(
-                        "text-xs leading-none",
-                        sortKey === 'notes' && sortOrder === 'asc' ? 'text-yellow-300' : 'text-blue-300'
-                      )}>▲</span>
-                      <span className={cn(
-                        "text-xs leading-none",
-                        sortKey === 'notes' && sortOrder === 'desc' ? 'text-yellow-300' : 'text-blue-300'
-                      )}>▼</span>
-                    </div>
+                  <div className="flex items-center">
+                    <span>備考</span>
+                    <SortIndicator columnKey="notes" />
                   </div>
                 </th>
               </tr>
             </thead>
             
             {/* テーブルボディ */}
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white divide-y divide-gin">
               {filteredCustomers.length > 0 ? (
                 filteredCustomers.map((customer, index) => {
-                  // 次回請求時期の計算（簡易版）
+                  // 利用状況による色分け
+                  const getRowBgColor = (customer: any) => {
+                    const buriedCount = customer.buriedPersons?.length || 0;
+                    const maxCapacity = customer.plotInfo?.capacity || 4;
+                    
+                    if (customer.status === 'suspended') return 'bg-beni-50';
+                    if (buriedCount >= maxCapacity) return 'bg-kohaku-50';
+                    if (buriedCount >= maxCapacity * 0.8) return 'bg-cha-50';
+                    return index % 2 === 0 ? 'bg-white' : 'bg-kinari';
+                  };
+
+                  // 次回請求日の計算
                   const getNextBillingDate = (customer: any) => {
                     if (customer.managementFeeInfo?.lastBillingMonth) {
                       const lastBilling = new Date(customer.managementFeeInfo.lastBillingMonth);
@@ -470,122 +483,113 @@ export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, o
                       } else if (customer.managementFeeInfo.billingType === 'yearly') {
                         nextBilling.setFullYear(nextBilling.getFullYear() + 1);
                       }
-                      return nextBilling.toLocaleDateString('ja-JP');
+                      return `${nextBilling.getMonth() + 1}/${nextBilling.getDate()}`;
                     }
                     return '-';
                   };
 
-                  // 利用状況による色分け
-                  const getRowBgColor = (customer: any) => {
-                    const buriedCount = customer.buriedPersons?.length || 0;
-                    const maxCapacity = customer.plotInfo?.capacity || 4;
-                    
-                    if (customer.status === 'suspended') return 'bg-red-50';
-                    if (buriedCount >= maxCapacity) return 'bg-orange-50';
-                    if (buriedCount >= maxCapacity * 0.8) return 'bg-yellow-50';
-                    return index % 2 === 0 ? 'bg-white' : 'bg-gray-50';
+                  // 契約日のフォーマット
+                  const getContractDate = (customer: any) => {
+                    if (customer.applicantInfo?.applicationDate) {
+                      const date = new Date(customer.applicantInfo.applicationDate);
+                      return `${date.getFullYear().toString().slice(-2)}/${date.getMonth() + 1}`;
+                    }
+                    return '-';
+                  };
+
+                  // ステータス表示
+                  const getStatusBadge = (status: string | undefined) => {
+                    switch (status) {
+                      case 'active':
+                        return <span className="inline-block w-5 h-5 rounded-full bg-matsu text-white text-[10px] leading-5 text-center" title="有効">有</span>;
+                      case 'suspended':
+                        return <span className="inline-block w-5 h-5 rounded-full bg-beni text-white text-[10px] leading-5 text-center" title="停止">停</span>;
+                      case 'pending':
+                        return <span className="inline-block w-5 h-5 rounded-full bg-kohaku text-white text-[10px] leading-5 text-center" title="保留">保</span>;
+                      default:
+                        return <span className="inline-block w-5 h-5 rounded-full bg-matsu text-white text-[10px] leading-5 text-center" title="有効">有</span>;
+                    }
                   };
 
                   return (
                     <tr 
                       key={customer.id}
                       className={cn(
-                        'cursor-pointer hover:bg-blue-50 transition-colors',
-                        selectedCustomer?.id === customer.id && 'bg-blue-100 border-l-4 border-blue-500',
+                        'cursor-pointer hover:bg-matsu-50 transition-all duration-200',
+                        selectedCustomer?.id === customer.id && 'bg-matsu-100 border-l-4 border-matsu',
                         getRowBgColor(customer)
                       )}
                       onClick={() => onCustomerSelect(customer)}
                     >
-                      <td className="px-3 py-2 whitespace-nowrap text-sm font-mono text-blue-600">
+                      <td className="px-2 py-2 text-center">
+                        {getStatusBadge(customer.status)}
+                      </td>
+                      <td className="px-2 py-2 font-mono text-matsu font-medium text-xs truncate">
                         {customer.customerCode}
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
-                        <div>
-                          <div>{customer.name}</div>
-                          <div className="text-xs text-gray-500">{customer.nameKana}</div>
+                      <td className="px-2 py-2">
+                        <div className="truncate">
+                          <div className="font-medium text-sumi text-sm truncate">{customer.name}</div>
+                          <div className="text-xs text-hai truncate">{customer.nameKana}</div>
                         </div>
                       </td>
-                      <td className="px-3 py-2 text-sm text-gray-700 max-w-xs">
-                        <div className="truncate" title={customer.address}>
-                          {customer.address || '-'}
-                        </div>
-                      </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-700">
-                        {customer.applicant || customer.name}
-                      </td>
-                      <td className="px-3 py-2 text-sm text-gray-700">
-                        <div>
-                          {customer.buriedPersons?.length || 0}名
-                          {customer.buriedPersons && customer.buriedPersons.length > 0 && (
-                            <div className="text-xs text-gray-500 truncate">
-                              {customer.buriedPersons[0].name}
-                              {customer.buriedPersons.length > 1 && ` 他${customer.buriedPersons.length - 1}名`}
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-700">
+                      <td className="px-2 py-2 text-xs text-hai truncate">
                         {customer.phoneNumber}
                       </td>
-                      <td className="px-3 py-2 text-sm text-gray-700">
+                      <td className="px-2 py-2 text-xs text-matsu font-medium truncate">
+                        {customer.plotInfo?.plotNumber || customer.plotNumber || '-'}
+                      </td>
+                      <td className="px-2 py-2 text-xs text-hai truncate">
+                        {customer.applicant || '-'}
+                      </td>
+                      <td className="px-2 py-2 text-xs text-hai text-center">
+                        <span className="font-medium text-sumi">{customer.buriedPersons?.length || 0}</span>
+                      </td>
+                      <td className="px-2 py-2 text-xs text-hai text-center">
                         {customer.ownedPlots && customer.ownedPlots.length > 0 ? (
-                          <div>
-                            <div className="font-medium text-green-700">
-                              {calculateOwnedPlotsInfo(customer.ownedPlots).totalAreaSqm}㎡
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              {calculateOwnedPlotsInfo(customer.ownedPlots).plotNumbers.join('/')}
-                            </div>
-                            {customer.ownedPlots.length > 1 && (
-                              <div className="text-xs text-blue-600">
-                                合わせ技 {customer.ownedPlots.length}区画
-                              </div>
-                            )}
-                          </div>
+                          <span className="font-medium text-matsu">
+                            {calculateOwnedPlotsInfo(customer.ownedPlots).totalAreaSqm}㎡
+                          </span>
                         ) : (
-                          <span className="text-gray-400">-</span>
+                          <span className="text-gin">-</span>
                         )}
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-700">
-                        <div className="text-sm font-medium">
-                          {getNextBillingDate(customer)}
-                        </div>
-                        {customer.managementFeeInfo && customer.managementFeeInfo.managementFee && (
-                          <div className="text-xs text-gray-500">
-                            {parseInt(customer.managementFeeInfo.managementFee).toLocaleString()}円/
-                            {customer.managementFeeInfo.billingType === 'monthly' ? '月' : '年'}
-                          </div>
-                        )}
+                      <td className="px-2 py-2 text-xs text-hai text-center">
+                        {getContractDate(customer)}
                       </td>
-                      <td className="px-3 py-2 text-sm text-gray-600 max-w-xs">
+                      <td className="px-2 py-2 text-xs text-hai text-center">
+                        {getNextBillingDate(customer)}
+                      </td>
+                      <td className="px-2 py-2 text-xs text-hai">
                         <div className="space-y-1">
                           {customer.notes && (
-                            <div className="text-xs bg-yellow-100 px-2 py-1 rounded truncate" title={customer.notes}>
+                            <div className="text-xs bg-kohaku-50 text-kohaku-dark px-1.5 py-0.5 rounded border border-kohaku-200 truncate" title={customer.notes}>
                               📝 {customer.notes}
                             </div>
                           )}
-                          {/* 顧客管理から渡された注意事項を表示 */}
                           {customerAttentionNotes?.[customer.id] && (
                             <div 
                               className={cn(
-                                "text-xs px-2 py-1 rounded truncate",
-                                customerAttentionNotes[customer.id].priority === '要注意' ? 'bg-red-100 text-red-800' :
-                                customerAttentionNotes[customer.id].priority === '注意' ? 'bg-orange-100 text-orange-800' :
-                                'bg-blue-100 text-blue-800'
+                                "text-xs px-1.5 py-0.5 rounded border truncate",
+                                customerAttentionNotes[customer.id].priority === '要注意' ? 'bg-beni-50 text-beni-dark border-beni-200' :
+                                customerAttentionNotes[customer.id].priority === '注意' ? 'bg-kohaku-50 text-kohaku-dark border-kohaku-200' :
+                                'bg-ai-50 text-ai-dark border-ai-200'
                               )}
                               title={customerAttentionNotes[customer.id].content}
                             >
-                              {customerAttentionNotes[customer.id].priority === '要注意' ? '🚨' : 
-                               customerAttentionNotes[customer.id].priority === '注意' ? '⚠️' : 'ℹ️'} {customerAttentionNotes[customer.id].content}
+                              {customerAttentionNotes[customer.id].priority === '要注意' ? '🚨 ' : 
+                               customerAttentionNotes[customer.id].priority === '注意' ? '⚠️ ' : 'ℹ️ '}
+                              {customerAttentionNotes[customer.id].content}
                             </div>
                           )}
-                          {/* 従来のattentionNotes（後方互換性） */}
                           {customer.attentionNotes && !customerAttentionNotes?.[customer.id] && (
-                            <div className="text-xs bg-red-100 px-2 py-1 rounded truncate" title={customer.attentionNotes}>
+                            <div className="text-xs bg-beni-50 text-beni-dark px-1.5 py-0.5 rounded border border-beni-200 truncate" title={customer.attentionNotes}>
                               ⚠️ {customer.attentionNotes}
                             </div>
                           )}
-                          {!customer.notes && !customer.attentionNotes && !customerAttentionNotes?.[customer.id] && '-'}
+                          {!customer.notes && !customer.attentionNotes && !customerAttentionNotes?.[customer.id] && (
+                            <span className="text-gin">-</span>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -593,16 +597,32 @@ export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, o
                 })
               ) : (
                 <tr>
-                  <td colSpan={9} className="px-3 py-4 text-center text-sm text-gray-500">
-                    {searchQuery.trim() 
-                      ? '検索条件に該当する顧客が見つかりませんでした' 
-                      : `${AIUEO_TABS.find(tab => tab.key === activeTab)?.label}の顧客はいません`
-                    }
+                  <td colSpan={11} className="px-4 py-12 text-center text-hai">
+                    <div className="flex flex-col items-center">
+                      <svg className="w-12 h-12 text-gin mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                      </svg>
+                      <p className="text-base font-medium">該当する顧客が見つかりません</p>
+                      <p className="text-sm mt-1">検索条件を変更してください</p>
+                    </div>
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
+        </div>
+      </div>
+
+      {/* 件数表示 */}
+      <div className="mt-3 flex items-center justify-between text-sm text-hai">
+        <div>
+          表示: <span className="font-semibold text-sumi">{filteredCustomers.length}</span> 件
+          {activeTab !== '全' && (
+            <span className="ml-2">（{AIUEO_TABS.find(t => t.key === activeTab)?.label}）</span>
+          )}
+        </div>
+        <div>
+          全 <span className="font-semibold text-sumi">{customers.length}</span> 件
         </div>
       </div>
     </div>
