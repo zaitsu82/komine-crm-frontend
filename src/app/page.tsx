@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import CustomerManagement from '@/components/customer-management';
-import CemeteryManagementList from '@/components/cemetery-management-list';
+import CollectiveBurialList from '@/components/collective-burial-list';
 import PlotAvailabilityManagement from '@/components/plot-availability-management';
 import MenuPage from '@/components/menu-page';
 
@@ -22,7 +22,7 @@ export default function Home() {
         <CustomerManagement onNavigateToMenu={() => handleNavigate('menu')} />
       )}
       {currentView === 'burial' && (
-        <CemeteryManagementList onNavigateToMenu={() => handleNavigate('menu')} />
+        <CollectiveBurialList onBack={() => handleNavigate('menu')} />
       )}
       {currentView === 'plots' && (
         <PlotAvailabilityManagement onNavigateToMenu={() => handleNavigate('menu')} />

@@ -1,11 +1,20 @@
 /**
  * 顧客管理と合祀管理の統合ロジック
  * 合祀申込を顧客データに紐付けて一元管理
+ * 台帳登録時に合祀一覧への自動反映も行う
  */
 
 import { Customer } from '@/types/customer';
 import { CollectiveBurialApplication } from '@/types/collective-burial';
 import { mockCustomers } from '@/lib/data';
+import {
+  CollectiveBurialSection,
+  calculateCollectiveBurialPeriod,
+} from '@/types/collective-burial-list';
+import {
+  createCollectiveBurialRecordFromCustomer,
+  mockCollectiveBurialListRecords,
+} from '@/lib/collective-burial-list-data';
 
 /**
  * 合祀申込を顧客の合祀情報に変換
@@ -183,4 +192,152 @@ export function getCollectiveBurialPersonsByPlot(): Record<string, number> {
   });
 
   return plotCounts;
+}
+
+/**
+ * 顧客の区画情報が納骨堂かどうかを判定
+ * 納骨堂の区画（阿弥陀、不動、天空、弥勒）の場合は合祀一覧に追加対象
+ */
+export function isColumbarium(section?: string): section is CollectiveBurialSection {
+  if (!section) return false;
+  return ['阿弥陀', '不動', '天空', '弥勒'].includes(section);
+}
+
+/**
+ * 顧客登録/更新時に合祀一覧へ自動反映
+ * 納骨堂契約者の場合、合祀一覧に自動的にレコードを追加
+ */
+export function syncCustomerToCollectiveBurialList(
+  customer: Customer
+): { success: boolean; recordId?: string; error?: string } {
+  // 納骨堂の区画でない場合はスキップ
+  const section = customer.section || customer.plotInfo?.section;
+  if (!isColumbarium(section)) {
+    return {
+      success: true,
+      error: '納骨堂契約者ではないため、合祀一覧への追加はスキップされました'
+    };
+  }
+
+  // 契約日を取得（startDate, permitDate, reservationDate, createdAtの順で優先）
+  const contractDate = customer.startDate ||
+                       customer.permitDate ||
+                       customer.reservationDate ||
+                       customer.contractorInfo?.contractDate ||
+                       customer.createdAt;
+
+  if (!contractDate) {
+    return {
+      success: false,
+      error: '契約日が設定されていません'
+    };
+  }
+
+  // 区画番号を取得
+  const plotNumber = customer.plotNumber ||
+                     customer.plotInfo?.plotNumber ||
+                     customer.customerCode;
+
+  if (!plotNumber) {
+    return {
+      success: false,
+      error: '区画番号が設定されていません'
+    };
+  }
+
+  // 既存レコードがあるか確認
+  const existingRecord = mockCollectiveBurialListRecords.find(
+    r => r.customerId === customer.id || r.customerCode === customer.customerCode
+  );
+
+  if (existingRecord) {
+    // 既存レコードを更新
+    existingRecord.name = customer.name;
+    existingRecord.nameKana = customer.nameKana;
+    existingRecord.section = section;
+    existingRecord.plotNumber = plotNumber;
+    existingRecord.updatedAt = new Date();
+
+    return {
+      success: true,
+      recordId: existingRecord.id
+    };
+  }
+
+  // 納骨日を取得（埋葬者情報から最新の日付、または契約日を使用）
+  let burialDate: Date | null = null;
+  if (customer.buriedPersons && customer.buriedPersons.length > 0) {
+    const latestBurial = customer.buriedPersons
+      .filter(p => p.burialDate)
+      .sort((a, b) => {
+        if (!a.burialDate || !b.burialDate) return 0;
+        return b.burialDate.getTime() - a.burialDate.getTime();
+      })[0];
+    burialDate = latestBurial?.burialDate || null;
+  }
+
+  // 新規レコードを作成
+  const newRecord = createCollectiveBurialRecordFromCustomer(
+    customer.id,
+    customer.customerCode,
+    customer.name,
+    customer.nameKana,
+    section,
+    plotNumber,
+    contractDate,
+    burialDate
+  );
+
+  return {
+    success: true,
+    recordId: newRecord.id
+  };
+}
+
+/**
+ * 顧客一覧から合祀一覧を一括生成
+ * 初期データ移行や再同期時に使用
+ */
+export function bulkSyncCustomersToCollectiveBurialList(): {
+  successCount: number;
+  errorCount: number;
+  errors: string[];
+} {
+  let successCount = 0;
+  let errorCount = 0;
+  const errors: string[] = [];
+
+  mockCustomers.forEach(customer => {
+    const result = syncCustomerToCollectiveBurialList(customer);
+    if (result.success && result.recordId) {
+      successCount++;
+    } else if (!result.success) {
+      errorCount++;
+      errors.push(`${customer.customerCode}: ${result.error}`);
+    }
+  });
+
+  return {
+    successCount,
+    errorCount,
+    errors
+  };
+}
+
+/**
+ * 顧客削除時に合祀一覧からも削除
+ */
+export function removeCustomerFromCollectiveBurialList(
+  customerId: string
+): boolean {
+  const index = mockCollectiveBurialListRecords.findIndex(
+    r => r.customerId === customerId
+  );
+
+  if (index === -1) {
+    return false;
+  }
+
+  mockCollectiveBurialListRecords.splice(index, 1);
+  return true;
 }
