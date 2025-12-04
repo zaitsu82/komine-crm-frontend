@@ -1,12 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { Customer } from '@/types/customer';
+import { Customer, OwnedPlot, PLOT_SIZE_LABELS } from '@/types/customer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { formatDateWithEra } from '@/lib/utils';
+import { formatDateWithEra, calculateOwnedPlotsInfo } from '@/lib/utils';
 import { createCustomer, updateCustomer, formDataToCustomer, addCustomerDocument } from '@/lib/data';
 import { CustomerFormData } from '@/lib/validations';
 import CustomerSearch from '@/components/customer-search';
@@ -16,6 +16,8 @@ import CemeteryManagementList from '@/components/cemetery-management-list';
 
 import InvoiceTemplate from '@/components/invoice-template';
 import PostcardTemplate from '@/components/postcard-template';
+import InvoiceEditor from '@/components/invoice-editor';
+import PostcardEditor from '@/components/postcard-editor';
 import { exportInvoiceToExcel, exportPostcardToExcel } from '@/lib/excel-exporter';
 
 const menuItems = [
@@ -49,6 +51,8 @@ export default function CustomerManagement({ onNavigateToMenu }: CustomerManagem
   const [editFormData, setEditFormData] = useState<any>({});
   const [showInvoice, setShowInvoice] = useState(false);
   const [showPostcard, setShowPostcard] = useState(false);
+  const [showInvoiceEditor, setShowInvoiceEditor] = useState(false);
+  const [showPostcardEditor, setShowPostcardEditor] = useState(false);
   
   // 履歴追加用のstate
   const [showHistoryDialog, setShowHistoryDialog] = useState(false);
@@ -438,7 +442,7 @@ export default function CustomerManagement({ onNavigateToMenu }: CustomerManagem
                     } else if (item === '新規登録') {
                       handleNewCustomer();
                     } else if (item === '区画管理') {
-                      alert('区画管理機能は準備中です');
+                      alert('区画管理は「区画残数管理」メニューからご利用ください');
                     } else if (item === '合祀管理') {
                       setCurrentView('collective-burial');
                       setSelectedCustomer(null);
@@ -543,6 +547,15 @@ export default function CustomerManagement({ onNavigateToMenu }: CustomerManagem
                     <Label className="text-sm font-medium">区石</Label>
                     <div className="px-2 py-1 bg-white border rounded text-sm font-medium">{selectedCustomer.customerCode}</div>
                   </div>
+                  {/* 複数区画情報の表示 */}
+                  {selectedCustomer.ownedPlots && selectedCustomer.ownedPlots.length > 0 && (
+                    <div className="flex items-center space-x-2">
+                      <Label className="text-sm font-medium">所有区画</Label>
+                      <div className="px-2 py-1 bg-green-100 border border-green-300 rounded text-sm font-medium text-green-800">
+                        {calculateOwnedPlotsInfo(selectedCustomer.ownedPlots).displayText}
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center space-x-2">
@@ -624,6 +637,87 @@ export default function CustomerManagement({ onNavigateToMenu }: CustomerManagem
                         </div>
                       </div>
                     </div>
+
+                    {/* 所有区画情報（複数区画対応） */}
+                    {selectedCustomer.ownedPlots && selectedCustomer.ownedPlots.length > 0 && (
+                      <div className="space-y-4">
+                        <h4 className="font-semibold border-b pb-2">所有区画情報</h4>
+                        
+                        {/* 合計情報 */}
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                          <div className="grid grid-cols-3 gap-4">
+                            <div>
+                              <Label className="text-sm font-medium text-green-700">合計面積</Label>
+                              <div className="text-lg font-bold text-green-800">
+                                {calculateOwnedPlotsInfo(selectedCustomer.ownedPlots).totalAreaSqm}㎡
+                              </div>
+                            </div>
+                            <div>
+                              <Label className="text-sm font-medium text-green-700">区画数</Label>
+                              <div className="text-lg font-bold text-green-800">
+                                {calculateOwnedPlotsInfo(selectedCustomer.ownedPlots).plotCount}区画
+                              </div>
+                            </div>
+                            <div>
+                              <Label className="text-sm font-medium text-green-700">区画番号</Label>
+                              <div className="text-lg font-bold text-green-800">
+                                {calculateOwnedPlotsInfo(selectedCustomer.ownedPlots).plotNumbers.join('／')}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* 個別区画一覧 */}
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium">区画詳細</Label>
+                          <div className="border rounded-lg overflow-hidden">
+                            <table className="w-full text-sm">
+                              <thead className="bg-gray-100">
+                                <tr>
+                                  <th className="px-4 py-2 text-left font-medium">区画番号</th>
+                                  <th className="px-4 py-2 text-left font-medium">期</th>
+                                  <th className="px-4 py-2 text-left font-medium">区画詳細</th>
+                                  <th className="px-4 py-2 text-left font-medium">サイズ</th>
+                                  <th className="px-4 py-2 text-left font-medium">面積</th>
+                                  <th className="px-4 py-2 text-left font-medium">利用状況</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {selectedCustomer.ownedPlots.map((plot, index) => (
+                                  <tr key={plot.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                                    <td className="px-4 py-2 font-medium">{plot.plotNumber}</td>
+                                    <td className="px-4 py-2">{plot.plotPeriod || '-'}</td>
+                                    <td className="px-4 py-2">{plot.section || '-'}</td>
+                                    <td className="px-4 py-2">
+                                      <span className={`px-2 py-1 rounded text-xs ${
+                                        plot.sizeType === 'full' 
+                                          ? 'bg-blue-100 text-blue-800' 
+                                          : 'bg-orange-100 text-orange-800'
+                                      }`}>
+                                        {PLOT_SIZE_LABELS[plot.sizeType]}
+                                      </span>
+                                    </td>
+                                    <td className="px-4 py-2">{plot.areaSqm}㎡</td>
+                                    <td className="px-4 py-2">
+                                      <span className={`px-2 py-1 rounded text-xs ${
+                                        plot.status === 'in_use' 
+                                          ? 'bg-green-100 text-green-800'
+                                          : plot.status === 'reserved'
+                                          ? 'bg-yellow-100 text-yellow-800'
+                                          : 'bg-gray-100 text-gray-800'
+                                      }`}>
+                                        {plot.status === 'in_use' ? '利用中' : 
+                                         plot.status === 'reserved' ? '予約済み' : '空き'}
+                                      </span>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                     {/* 申込者情報 */}
                     <div className="space-y-4">
@@ -2301,50 +2395,58 @@ export default function CustomerManagement({ onNavigateToMenu }: CustomerManagem
           <div className="flex-1 p-8 bg-gray-50 overflow-y-auto">
             <div className="max-w-4xl mx-auto">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">書類作成テンプレート選択</h2>
-              <p className="text-gray-600 mb-8">作成したい書類のテンプレートを選択してください。</p>
+              <p className="text-gray-600 mb-8">作成したい書類のテンプレートを選択してください。クリックするとプレビュー・編集画面が開き、その場で編集・印刷ができます。</p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* 請求書テンプレート */}
                 <div
-                  className="bg-white p-6 rounded-xl shadow-sm border-2 border-transparent hover:border-green-500 cursor-pointer transition-all hover:shadow-md"
-                  onClick={handleExportInvoice}
+                  className="bg-white p-6 rounded-xl shadow-sm border-2 border-transparent hover:border-blue-500 cursor-pointer transition-all hover:shadow-md group"
+                  onClick={() => setShowInvoiceEditor(true)}
                 >
                   <div className="flex items-center justify-between mb-4">
-                    <div className="p-3 bg-blue-100 rounded-lg text-blue-600">
+                    <div className="p-3 bg-blue-100 rounded-lg text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
                     </div>
-                    <span className="text-xs font-semibold bg-gray-100 text-gray-600 px-2 py-1 rounded">Excel</span>
+                    <div className="flex gap-2">
+                      <span className="text-xs font-semibold bg-green-100 text-green-600 px-2 py-1 rounded">編集可</span>
+                      <span className="text-xs font-semibold bg-blue-100 text-blue-600 px-2 py-1 rounded">印刷</span>
+                      <span className="text-xs font-semibold bg-gray-100 text-gray-600 px-2 py-1 rounded">Excel</span>
+                    </div>
                   </div>
                   <h3 className="text-xl font-bold text-gray-800 mb-2">請求書</h3>
                   <p className="text-gray-500 text-sm mb-4">
-                    標準的な請求書フォーマットです。宛名、件名、金額、振込先などが記載されます。
+                    標準的な請求書フォーマットです。プレビュー画面で内容を編集し、そのまま印刷またはExcel出力ができます。
                   </p>
                   <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-                    作成する
+                    🖨️ 作成・編集・印刷
                   </Button>
                 </div>
 
                 {/* はがきテンプレート */}
                 <div
-                  className="bg-white p-6 rounded-xl shadow-sm border-2 border-transparent hover:border-green-500 cursor-pointer transition-all hover:shadow-md"
-                  onClick={handleExportPostcard}
+                  className="bg-white p-6 rounded-xl shadow-sm border-2 border-transparent hover:border-purple-500 cursor-pointer transition-all hover:shadow-md group"
+                  onClick={() => setShowPostcardEditor(true)}
                 >
                   <div className="flex items-center justify-between mb-4">
-                    <div className="p-3 bg-orange-100 rounded-lg text-orange-600">
+                    <div className="p-3 bg-purple-100 rounded-lg text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-colors">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                       </svg>
                     </div>
-                    <span className="text-xs font-semibold bg-gray-100 text-gray-600 px-2 py-1 rounded">Excel</span>
+                    <div className="flex gap-2">
+                      <span className="text-xs font-semibold bg-green-100 text-green-600 px-2 py-1 rounded">編集可</span>
+                      <span className="text-xs font-semibold bg-blue-100 text-blue-600 px-2 py-1 rounded">印刷</span>
+                      <span className="text-xs font-semibold bg-gray-100 text-gray-600 px-2 py-1 rounded">Excel</span>
+                    </div>
                   </div>
                   <h3 className="text-xl font-bold text-gray-800 mb-2">はがき（合祀案内など）</h3>
                   <p className="text-gray-500 text-sm mb-4">
-                    官製はがきサイズのレイアウトです。宛名面と通信面（文面）の2シートが出力されます。
+                    官製はがきサイズのレイアウトです。宛名面と文面を編集し、そのまま印刷またはExcel出力ができます。
                   </p>
-                  <Button className="w-full bg-orange-600 hover:bg-orange-700 text-white">
-                    作成する
+                  <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white">
+                    🖨️ 作成・編集・印刷
                   </Button>
                 </div>
 
@@ -2393,6 +2495,38 @@ export default function CustomerManagement({ onNavigateToMenu }: CustomerManagem
             </div>
           </div>
         </div>
+      )}
+
+      {/* 請求書エディタ（プレビュー・編集・印刷） */}
+      {showInvoiceEditor && selectedCustomer && (
+        <InvoiceEditor
+          customer={selectedCustomer}
+          onClose={() => setShowInvoiceEditor(false)}
+          onSave={() => {
+            addCustomerDocument(selectedCustomer.id, {
+              type: 'invoice',
+              name: `請求書_${formatDateWithEra(new Date())}`,
+              status: 'generated'
+            });
+            setSelectedCustomer({ ...selectedCustomer });
+          }}
+        />
+      )}
+
+      {/* はがきエディタ（プレビュー・編集・印刷） */}
+      {showPostcardEditor && selectedCustomer && (
+        <PostcardEditor
+          customer={selectedCustomer}
+          onClose={() => setShowPostcardEditor(false)}
+          onSave={() => {
+            addCustomerDocument(selectedCustomer.id, {
+              type: 'postcard',
+              name: `はがきデータ_${formatDateWithEra(new Date())}`,
+              status: 'generated'
+            });
+            setSelectedCustomer({ ...selectedCustomer });
+          }}
+        />
       )}
 
       {/* 重要な連絡事項追加・編集ダイアログ */}

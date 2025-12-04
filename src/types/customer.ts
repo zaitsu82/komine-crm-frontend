@@ -197,6 +197,11 @@ export interface Customer {
     capacity?: number; // 収容人数
   } | null;
 
+  // 複数区画管理（新規）
+  // 1区画 = 3.6㎡、必要に応じて1.8㎡×2に分割販売
+  // 複数区画の同一顧客所有（合わせ技）に対応
+  ownedPlots?: OwnedPlot[];
+
   // 区画割当情報（新規）- 複数区画対応
   plotAssignments?: CustomerPlotAssignment[];
   documents?: CustomerDocument[];
@@ -307,6 +312,47 @@ export const PLOT_PERIOD_LABELS: Record<PlotPeriod, string> = {
   '3期': '第3期',
   '4期': '第4期',
 };
+
+// ===== 区画管理仕様 =====
+// 基本ルール: 1区画 = 3.6㎡、必要に応じて1.8㎡×2に分割販売
+// 複数区画の同一顧客所有（合わせ技）に対応
+
+// 区画サイズ定数
+export const PLOT_SIZE = {
+  FULL: 3.6, // 1区画 = 3.6㎡
+  HALF: 1.8, // 半区画 = 1.8㎡
+} as const;
+
+// 区画サイズタイプ
+export type PlotSizeType = 'full' | 'half';
+
+// 区画サイズの表示名マッピング
+export const PLOT_SIZE_LABELS: Record<PlotSizeType, string> = {
+  full: '1区画（3.6㎡）',
+  half: '半区画（1.8㎡）',
+};
+
+// 所有区画情報
+export interface OwnedPlot {
+  id: string;
+  plotNumber: string; // 区画番号（例: C-29）
+  plotPeriod?: PlotPeriod; // 期（1期〜4期）
+  section?: string; // 区画詳細
+  sizeType: PlotSizeType; // full: 3.6㎡, half: 1.8㎡
+  areaSqm: number; // 面積（㎡）
+  purchaseDate?: Date | null; // 購入日
+  price?: number; // 購入金額
+  status: 'in_use' | 'available' | 'reserved'; // 利用状況
+  notes?: string; // 備考
+}
+
+// 顧客の所有区画情報を集計するヘルパー関数の型
+export interface OwnedPlotsInfo {
+  totalAreaSqm: number; // 合計面積
+  plotCount: number; // 区画数
+  plotNumbers: string[]; // 区画番号一覧
+  displayText: string; // 表示用テキスト（例: "3.6㎡（C-29／C-30）"）
+}
 
 // 台帳表示用の契約ステータス型
 export type ContractStatus = 'active' | 'attention' | 'overdue';

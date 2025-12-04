@@ -47,8 +47,54 @@ import type {
   CustomerPlotAssignment, 
   PlotUnit, 
   PlotUnitType,
-  PlotAssignmentValidation 
+  PlotAssignmentValidation,
+  OwnedPlot,
+  OwnedPlotsInfo
 } from "@/types/customer";
+
+import { PLOT_SIZE } from "@/types/customer";
+
+/**
+ * 顧客の所有区画情報を集計
+ * @param ownedPlots 所有区画一覧
+ * @returns 集計情報
+ */
+export function calculateOwnedPlotsInfo(ownedPlots?: OwnedPlot[]): OwnedPlotsInfo {
+  if (!ownedPlots || ownedPlots.length === 0) {
+    return {
+      totalAreaSqm: 0,
+      plotCount: 0,
+      plotNumbers: [],
+      displayText: '-',
+    };
+  }
+  
+  const totalAreaSqm = ownedPlots.reduce((sum, plot) => sum + plot.areaSqm, 0);
+  const plotNumbers = ownedPlots.map(plot => plot.plotNumber);
+  
+  // 表示テキストの生成（例: "3.6㎡（C-29／C-30）"）
+  const areaText = `${totalAreaSqm}㎡`;
+  const numbersText = plotNumbers.join('／');
+  const displayText = plotNumbers.length > 1 
+    ? `${areaText}（${numbersText}）`
+    : `${areaText}（${numbersText}）`;
+  
+  return {
+    totalAreaSqm,
+    plotCount: ownedPlots.length,
+    plotNumbers,
+    displayText,
+  };
+}
+
+/**
+ * 区画サイズから面積を取得
+ * @param sizeType 区画サイズタイプ
+ * @returns 面積（㎡）
+ */
+export function getPlotArea(sizeType: 'full' | 'half'): number {
+  return sizeType === 'full' ? PLOT_SIZE.FULL : PLOT_SIZE.HALF;
+}
 
 /**
  * 有効な収容人数を計算

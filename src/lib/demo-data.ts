@@ -1,4 +1,4 @@
-import { Customer } from '@/types/customer';
+import { Customer, OwnedPlot } from '@/types/customer';
 
 export const demoCustomers: Customer[] = [
   {
@@ -7,6 +7,31 @@ export const demoCustomers: Customer[] = [
     plotNumber: 'A-001',
     plotPeriod: '1期',
     section: 'A',
+    // 複数区画所有（合わせ技の例）
+    ownedPlots: [
+      {
+        id: 'plot-001-1',
+        plotNumber: 'A-001',
+        plotPeriod: '1期',
+        section: 'A',
+        sizeType: 'half',
+        areaSqm: 1.8,
+        purchaseDate: new Date('2024-02-01'),
+        price: 270000,
+        status: 'in_use',
+      },
+      {
+        id: 'plot-001-2',
+        plotNumber: 'A-002',
+        plotPeriod: '1期',
+        section: 'A',
+        sizeType: 'half',
+        areaSqm: 1.8,
+        purchaseDate: new Date('2024-02-01'),
+        price: 270000,
+        status: 'in_use',
+      }
+    ],
     reservationDate: new Date('2024-01-15'),
     acceptanceNumber: 'ACC-001',
     permitDate: new Date('2024-02-01'),
@@ -155,6 +180,20 @@ export const demoCustomers: Customer[] = [
     plotNumber: 'B-045',
     plotPeriod: '2期',
     section: '3',
+    // 1区画所有（通常）
+    ownedPlots: [
+      {
+        id: 'plot-002-1',
+        plotNumber: 'B-045',
+        plotPeriod: '2期',
+        section: '3',
+        sizeType: 'full',
+        areaSqm: 3.6,
+        purchaseDate: new Date('2023-09-05'),
+        price: 540000,
+        status: 'in_use',
+      }
+    ],
     reservationDate: new Date('2023-08-20'),
     acceptanceNumber: 'ACC-002',
     permitDate: new Date('2023-09-05'),
@@ -213,6 +252,31 @@ export const demoCustomers: Customer[] = [
     plotNumber: 'C-078',
     plotPeriod: '3期',
     section: '樹林',
+    // 複数区画所有（2区画の合わせ技）
+    ownedPlots: [
+      {
+        id: 'plot-003-1',
+        plotNumber: 'C-29',
+        plotPeriod: '3期',
+        section: '樹林',
+        sizeType: 'half',
+        areaSqm: 1.8,
+        purchaseDate: new Date('2024-03-10'),
+        price: 270000,
+        status: 'in_use',
+      },
+      {
+        id: 'plot-003-2',
+        plotNumber: 'C-30',
+        plotPeriod: '3期',
+        section: '樹林',
+        sizeType: 'half',
+        areaSqm: 1.8,
+        purchaseDate: new Date('2024-03-10'),
+        price: 270000,
+        status: 'in_use',
+      }
+    ],
     reservationDate: new Date('2024-03-10'),
     name: '佐藤 三郎',
     nameKana: 'さとう さぶろう',

@@ -5,7 +5,7 @@ import { Customer } from '@/types/customer';
 import { mockCustomers, filterByAiueo, sortByKana } from '@/lib/data';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { cn, calculateOwnedPlotsInfo } from '@/lib/utils';
 
 interface CustomerRegistryProps {
   onCustomerSelect: (customer: Customer) => void;
@@ -30,7 +30,7 @@ const AIUEO_TABS = [
   { key: '全', label: '全て表示', shortLabel: '全て' }
 ];
 
-type SortKey = 'customerCode' | 'name' | 'nameKana' | 'address' | 'phoneNumber' | 'plotNumber' | 'applicant' | 'buried' | 'nextBilling' | 'notes';
+type SortKey = 'customerCode' | 'name' | 'nameKana' | 'address' | 'phoneNumber' | 'plotNumber' | 'applicant' | 'buried' | 'nextBilling' | 'notes' | 'ownedPlots';
 type SortOrder = 'asc' | 'desc';
 
 export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, onNewCustomer, customerAttentionNotes }: CustomerRegistryProps) {
@@ -131,6 +131,10 @@ export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, o
         case 'notes':
           aValue = (a.notes || '') + (a.attentionNotes || '');
           bValue = (b.notes || '') + (b.attentionNotes || '');
+          break;
+        case 'ownedPlots':
+          aValue = calculateOwnedPlotsInfo(a.ownedPlots).totalAreaSqm;
+          bValue = calculateOwnedPlotsInfo(b.ownedPlots).totalAreaSqm;
           break;
       }
       
@@ -387,6 +391,28 @@ export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, o
                   className={cn(
                     "px-3 py-3 text-left text-sm font-bold text-white border-r border-blue-500 cursor-pointer transition-all duration-200",
                     "hover:bg-blue-500 hover:shadow-md",
+                    sortKey === 'ownedPlots' && "bg-blue-800 shadow-inner"
+                  )}
+                  onClick={() => handleSort('ownedPlots')}
+                >
+                  <div className="flex items-center justify-between">
+                    <span>所有区画</span>
+                    <div className="flex flex-col ml-1">
+                      <span className={cn(
+                        "text-xs leading-none",
+                        sortKey === 'ownedPlots' && sortOrder === 'asc' ? 'text-yellow-300' : 'text-blue-300'
+                      )}>▲</span>
+                      <span className={cn(
+                        "text-xs leading-none",
+                        sortKey === 'ownedPlots' && sortOrder === 'desc' ? 'text-yellow-300' : 'text-blue-300'
+                      )}>▼</span>
+                    </div>
+                  </div>
+                </th>
+                <th 
+                  className={cn(
+                    "px-3 py-3 text-left text-sm font-bold text-white border-r border-blue-500 cursor-pointer transition-all duration-200",
+                    "hover:bg-blue-500 hover:shadow-md",
                     sortKey === 'nextBilling' && "bg-blue-800 shadow-inner"
                   )}
                   onClick={() => handleSort('nextBilling')}
@@ -501,6 +527,25 @@ export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, o
                       <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-700">
                         {customer.phoneNumber}
                       </td>
+                      <td className="px-3 py-2 text-sm text-gray-700">
+                        {customer.ownedPlots && customer.ownedPlots.length > 0 ? (
+                          <div>
+                            <div className="font-medium text-green-700">
+                              {calculateOwnedPlotsInfo(customer.ownedPlots).totalAreaSqm}㎡
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {calculateOwnedPlotsInfo(customer.ownedPlots).plotNumbers.join('/')}
+                            </div>
+                            {customer.ownedPlots.length > 1 && (
+                              <div className="text-xs text-blue-600">
+                                合わせ技 {customer.ownedPlots.length}区画
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
+                      </td>
                       <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-700">
                         <div className="text-sm font-medium">
                           {getNextBillingDate(customer)}
@@ -548,7 +593,7 @@ export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, o
                 })
               ) : (
                 <tr>
-                  <td colSpan={8} className="px-3 py-4 text-center text-sm text-gray-500">
+                  <td colSpan={9} className="px-3 py-4 text-center text-sm text-gray-500">
                     {searchQuery.trim() 
                       ? '検索条件に該当する顧客が見つかりませんでした' 
                       : `${AIUEO_TABS.find(tab => tab.key === activeTab)?.label}の顧客はいません`
