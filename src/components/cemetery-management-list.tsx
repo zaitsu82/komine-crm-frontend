@@ -5,6 +5,7 @@ import { Customer } from '@/types/customer';
 import { mockCustomers } from '@/lib/data';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn, formatDateWithEra } from '@/lib/utils';
 import { CollectiveBurialApplication } from '@/types/collective-burial';
 import { getCollectiveBurialApplications } from '@/lib/collective-burial';
@@ -405,6 +406,69 @@ export default function CemeteryManagementList({ onCustomerSelect, selectedCusto
           <>
             <div className="bg-white p-4 rounded-lg shadow">
               <h2 className="text-xl font-bold mb-4">台帳問い合わせ</h2>
+              {/* ソート選択エリア */}
+              <div className="flex flex-wrap items-center gap-4 mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <span className="text-sm font-medium text-gray-700">並び替え:</span>
+                <div className="flex items-center gap-2">
+                  <Select value={sortKey} onValueChange={(value: SortKey) => setSortKey(value)}>
+                    <SelectTrigger className="w-[160px] bg-white">
+                      <SelectValue placeholder="項目を選択" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="name">氏名</SelectItem>
+                      <SelectItem value="plotSection">区画</SelectItem>
+                      <SelectItem value="plotNumber">許可番号</SelectItem>
+                      <SelectItem value="contractYear">契約年</SelectItem>
+                      <SelectItem value="burialDate">納骨日</SelectItem>
+                      <SelectItem value="collectiveBurialInfo">合祀人数</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select value={sortOrder} onValueChange={(value: SortOrder) => setSortOrder(value)}>
+                    <SelectTrigger className="w-[120px] bg-white">
+                      <SelectValue placeholder="順序" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="asc">昇順 ↑</SelectItem>
+                      <SelectItem value="desc">降順 ↓</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex gap-2 flex-wrap">
+                  <Button
+                    onClick={() => { setSortKey('plotSection'); setSortOrder('asc'); }}
+                    variant={sortKey === 'plotSection' ? 'default' : 'outline'}
+                    size="sm"
+                    className={sortKey === 'plotSection' ? 'bg-blue-600 hover:bg-blue-700' : ''}
+                  >
+                    区画順
+                  </Button>
+                  <Button
+                    onClick={() => { setSortKey('name'); setSortOrder('asc'); }}
+                    variant={sortKey === 'name' ? 'default' : 'outline'}
+                    size="sm"
+                    className={sortKey === 'name' ? 'bg-blue-600 hover:bg-blue-700' : ''}
+                  >
+                    氏名順
+                  </Button>
+                  <Button
+                    onClick={() => { setSortKey('contractYear'); setSortOrder('desc'); }}
+                    variant={sortKey === 'contractYear' ? 'default' : 'outline'}
+                    size="sm"
+                    className={sortKey === 'contractYear' ? 'bg-blue-600 hover:bg-blue-700' : ''}
+                  >
+                    契約年順
+                  </Button>
+                  <Button
+                    onClick={() => { setSortKey('burialDate'); setSortOrder('desc'); }}
+                    variant={sortKey === 'burialDate' ? 'default' : 'outline'}
+                    size="sm"
+                    className={sortKey === 'burialDate' ? 'bg-blue-600 hover:bg-blue-700' : ''}
+                  >
+                    納骨日順
+                  </Button>
+                </div>
+              </div>
+              {/* 検索エリア */}
               <div className="flex items-center space-x-2">
                 <Input
                   value={searchQuery}
@@ -651,6 +715,61 @@ export default function CemeteryManagementList({ onCustomerSelect, selectedCusto
           <>
             <div className="bg-white p-4 rounded-lg shadow">
               <h2 className="text-xl font-bold mb-4">合祀管理</h2>
+              {/* ソート選択エリア */}
+              <div className="flex flex-wrap items-center gap-4 mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <span className="text-sm font-medium text-gray-700">並び替え:</span>
+                <div className="flex items-center gap-2">
+                  <Select value={sortKey} onValueChange={(value: SortKey) => setSortKey(value)}>
+                    <SelectTrigger className="w-[160px] bg-white">
+                      <SelectValue placeholder="項目を選択" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="name">氏名</SelectItem>
+                      <SelectItem value="plotSection">区画</SelectItem>
+                      <SelectItem value="plotNumber">許可番号</SelectItem>
+                      <SelectItem value="contractYear">契約年</SelectItem>
+                      <SelectItem value="burialDate">納骨日</SelectItem>
+                      <SelectItem value="collectiveBurialInfo">合祀人数</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select value={sortOrder} onValueChange={(value: SortOrder) => setSortOrder(value)}>
+                    <SelectTrigger className="w-[120px] bg-white">
+                      <SelectValue placeholder="順序" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="asc">昇順 ↑</SelectItem>
+                      <SelectItem value="desc">降順 ↓</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex gap-2 flex-wrap">
+                  <Button
+                    onClick={() => { setSortKey('plotSection'); setSortOrder('asc'); }}
+                    variant={sortKey === 'plotSection' ? 'default' : 'outline'}
+                    size="sm"
+                    className={sortKey === 'plotSection' ? 'bg-blue-600 hover:bg-blue-700' : ''}
+                  >
+                    区画順
+                  </Button>
+                  <Button
+                    onClick={() => { setSortKey('name'); setSortOrder('asc'); }}
+                    variant={sortKey === 'name' ? 'default' : 'outline'}
+                    size="sm"
+                    className={sortKey === 'name' ? 'bg-blue-600 hover:bg-blue-700' : ''}
+                  >
+                    氏名順
+                  </Button>
+                  <Button
+                    onClick={() => { setSortKey('collectiveBurialInfo'); setSortOrder('desc'); }}
+                    variant={sortKey === 'collectiveBurialInfo' ? 'default' : 'outline'}
+                    size="sm"
+                    className={sortKey === 'collectiveBurialInfo' ? 'bg-blue-600 hover:bg-blue-700' : ''}
+                  >
+                    合祀人数順
+                  </Button>
+                </div>
+              </div>
+              {/* 検索エリア */}
               <div className="flex items-center space-x-2">
                 <Input
                   value={searchQuery}
