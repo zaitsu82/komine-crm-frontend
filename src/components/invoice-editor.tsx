@@ -22,7 +22,7 @@ interface InvoiceEditorProps {
 
 export default function InvoiceEditor({ customer, onClose, onSave }: InvoiceEditorProps) {
   const printRef = useRef<HTMLDivElement>(null);
-  
+
   // 請求書番号の生成
   const generateInvoiceNumber = () => {
     const now = new Date();
@@ -32,7 +32,7 @@ export default function InvoiceEditor({ customer, onClose, onSave }: InvoiceEdit
   // 初期の請求項目
   const getInitialItems = (): InvoiceItem[] => {
     const items: InvoiceItem[] = [];
-    
+
     // 管理料から請求金額を取得
     if (customer.managementFee?.managementFee) {
       const amount = parseInt(customer.managementFee.managementFee.replace(/[^0-9]/g, '')) || 50000;
@@ -50,7 +50,7 @@ export default function InvoiceEditor({ customer, onClose, onSave }: InvoiceEdit
         amount: 50000
       });
     }
-    
+
     return items;
   };
 
@@ -60,7 +60,7 @@ export default function InvoiceEditor({ customer, onClose, onSave }: InvoiceEdit
   const [items, setItems] = useState<InvoiceItem[]>(getInitialItems());
   const [notes, setNotes] = useState('');
   const [isEditing, setIsEditing] = useState(false);
-  
+
   // 霊園情報（編集可能）
   const [cemeteryName, setCemeteryName] = useState('小峰霊園');
   const [cemeteryAddress, setCemeteryAddress] = useState('〒000-0000 東京都○○区○○ 1-2-3');
@@ -280,7 +280,7 @@ export default function InvoiceEditor({ customer, onClose, onSave }: InvoiceEdit
         {/* コンテンツエリア */}
         <div className="flex-1 overflow-auto p-4 bg-gray-100">
           {/* 印刷用コンテンツ */}
-          <div 
+          <div
             ref={printRef}
             className="bg-white mx-auto shadow-lg print:shadow-none"
             style={{ width: '210mm', padding: '10mm' }}
@@ -458,7 +458,7 @@ export default function InvoiceEditor({ customer, onClose, onSave }: InvoiceEdit
                   ))}
                 </tbody>
               </table>
-              
+
               {isEditing && (
                 <Button
                   onClick={addItem}

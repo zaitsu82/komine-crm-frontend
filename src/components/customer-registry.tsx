@@ -41,18 +41,14 @@ export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, o
   const [sortKey, setSortKey] = useState<SortKey>('customerCode');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
 
-  // 検索実行
-  const handleSearch = () => {
-    if (searchQuery.trim()) {
-      // 検索時は「全て」タブに切り替えて検索結果を表示
-      setActiveTab('全');
-    }
-  };
+  // ページネーション用state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(50);
 
   // Enterキーでも検索実行
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
-      handleSearch();
+      handleSearchWithReset();
     }
   };
 
@@ -69,11 +65,11 @@ export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, o
   // フィルタされた顧客リスト
   const filteredCustomers = useMemo(() => {
     let filtered = customers;
-    
+
     // 検索クエリでフィルタ
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(customer => 
+      filtered = filtered.filter(customer =>
         customer.name.toLowerCase().includes(query) ||
         customer.nameKana.toLowerCase().includes(query) ||
         customer.customerCode.toLowerCase().includes(query) ||
@@ -81,19 +77,19 @@ export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, o
         (customer.plotInfo?.plotNumber?.toLowerCase().includes(query))
       );
     }
-    
+
     // あいう順タブでフィルタ
     filtered = filterByAiueo(filtered, activeTab);
-    
+
     // ソート処理
     filtered.sort((a, b) => {
       let aValue: any = '';
       let bValue: any = '';
-      
-      switch(sortKey) {
+
+      switch (sortKey) {
         case 'status':
-          // ステータス順（有効→保留→停止）
-          const statusOrder: Record<string, number> = { 'active': 0, 'pending': 1, 'suspended': 2 };
+          // ステータス順（有効→解約済み）
+          const statusOrder: Record<string, number> = { 'active': 0, 'inactive': 1 };
           aValue = statusOrder[a.status || 'active'] ?? 0;
           bValue = statusOrder[b.status || 'active'] ?? 0;
           break;
@@ -170,14 +166,57 @@ export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, o
           aValue = a.customerCode;
           bValue = b.customerCode;
       }
-      
+
       if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
       if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
       return 0;
     });
-    
+
     return filtered;
   }, [customers, searchQuery, activeTab, sortKey, sortOrder]);
+
+  // ページネーション計算
+  const totalItems = filteredCustomers.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+
+  // ページ分割された顧客リスト
+  const paginatedCustomers = useMemo(() => {
+    return filteredCustomers.slice(startIndex, endIndex);
+  }, [filteredCustomers, startIndex, endIndex]);
+
+  // フィルタ条件が変わったらページを1に戻す
+  const resetPage = () => setCurrentPage(1);
+
+  // 検索やタブ変更時にページをリセット
+  const handleSearchWithReset = () => {
+    resetPage();
+    if (searchQuery.trim()) {
+      setActiveTab('全');
+    }
+  };
+
+  const handleTabChange = (tabKey: string) => {
+    setActiveTab(tabKey);
+    resetPage();
+  };
+
+  // ページ移動
+  const goToPage = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
+  const goToPrevPage = () => goToPage(currentPage - 1);
+  const goToNextPage = () => goToPage(currentPage + 1);
+
+  // 表示件数変更
+  const handleItemsPerPageChange = (value: number) => {
+    setItemsPerPage(value);
+    setCurrentPage(1);
+  };
 
   // タブのキーボードナビゲーション
   const handleTabKeyDown = (e: React.KeyboardEvent, index: number) => {
@@ -191,7 +230,7 @@ export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, o
       setFocusedTabIndex(prevIndex);
     } else if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      setActiveTab(AIUEO_TABS[index].key);
+      handleTabChange(AIUEO_TABS[index].key);
     }
   };
 
@@ -228,8 +267,8 @@ export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, o
             className="h-10 text-sm"
           />
         </div>
-        <Button 
-          onClick={handleSearch}
+        <Button
+          onClick={handleSearchWithReset}
           variant="matsu"
           size="default"
           className="h-10"
@@ -240,7 +279,7 @@ export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, o
           検索
         </Button>
         {onNewCustomer && (
-          <Button 
+          <Button
             onClick={onNewCustomer}
             variant="outline"
             size="default"
@@ -256,7 +295,7 @@ export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, o
 
       {/* あいう順タブ */}
       <div className="mb-4">
-        <div 
+        <div
           className="flex flex-wrap gap-1"
           role="tablist"
           aria-label="あいう順で絞り込み"
@@ -264,7 +303,7 @@ export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, o
           {AIUEO_TABS.map((tab, index) => {
             const customerCount = getCustomerCountForTab(tab.key);
             const isActive = activeTab === tab.key;
-            
+
             return (
               <button
                 key={tab.key}
@@ -272,7 +311,7 @@ export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, o
                 aria-selected={isActive}
                 aria-controls="customer-list"
                 tabIndex={focusedTabIndex === index ? 0 : -1}
-                onClick={() => setActiveTab(tab.key)}
+                onClick={() => handleTabChange(tab.key)}
                 onKeyDown={(e) => handleTabKeyDown(e, index)}
                 className={cn(
                   "aiueo-tab",
@@ -300,23 +339,14 @@ export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, o
       <div className="bg-white rounded-elegant-lg border border-gin shadow-elegant overflow-hidden flex-1">
         <div className="overflow-auto h-full">
           <table className="w-full divide-y divide-gin text-sm table-fixed">
+            {/* 列幅定義: ステータス, コード, 氏名, 電話番号, 区画番号, 申込者, 埋葬, 面積, 契約日, 次回請求, 備考 */}
             <colgroup>
-              <col className="w-[44px]" />   {/* ステータス */}
-              <col className="w-[68px]" />   {/* コード */}
-              <col className="w-[100px]" />  {/* 氏名 */}
-              <col className="w-[100px]" />  {/* 電話番号 */}
-              <col className="w-[65px]" />   {/* 区画番号 */}
-              <col className="w-[80px]" />   {/* 申込者 */}
-              <col className="w-[44px]" />   {/* 埋葬 */}
-              <col className="w-[52px]" />   {/* 面積 */}
-              <col className="w-[68px]" />   {/* 契約日 */}
-              <col className="w-[62px]" />   {/* 次回請求 */}
-              <col />                         {/* 備考 - 残り全部 */}
+              <col className="w-[44px]" /><col className="w-[68px]" /><col className="w-[100px]" /><col className="w-[100px]" /><col className="w-[65px]" /><col className="w-[80px]" /><col className="w-[44px]" /><col className="w-[52px]" /><col className="w-[68px]" /><col className="w-[62px]" /><col />
             </colgroup>
             {/* テーブルヘッダー */}
             <thead className="bg-gradient-matsu sticky top-0 z-10">
               <tr>
-                <th 
+                <th
                   className={cn(
                     "px-2 py-2 text-center text-xs font-bold text-white cursor-pointer transition-all duration-200",
                     "hover:bg-matsu-light",
@@ -329,7 +359,7 @@ export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, o
                     <span>状態</span>
                   </div>
                 </th>
-                <th 
+                <th
                   className={cn(
                     "px-2 py-2 text-left text-xs font-bold text-white cursor-pointer transition-all duration-200",
                     "hover:bg-matsu-light",
@@ -342,7 +372,7 @@ export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, o
                     <SortIndicator columnKey="customerCode" />
                   </div>
                 </th>
-                <th 
+                <th
                   className={cn(
                     "px-2 py-2 text-left text-xs font-bold text-white cursor-pointer transition-all duration-200",
                     "hover:bg-matsu-light",
@@ -355,7 +385,7 @@ export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, o
                     <SortIndicator columnKey="name" />
                   </div>
                 </th>
-                <th 
+                <th
                   className={cn(
                     "px-2 py-2 text-left text-xs font-bold text-white cursor-pointer transition-all duration-200",
                     "hover:bg-matsu-light",
@@ -368,7 +398,7 @@ export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, o
                     <SortIndicator columnKey="phoneNumber" />
                   </div>
                 </th>
-                <th 
+                <th
                   className={cn(
                     "px-2 py-2 text-left text-xs font-bold text-white cursor-pointer transition-all duration-200",
                     "hover:bg-matsu-light",
@@ -381,7 +411,7 @@ export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, o
                     <SortIndicator columnKey="plotNumber" />
                   </div>
                 </th>
-                <th 
+                <th
                   className={cn(
                     "px-2 py-2 text-left text-xs font-bold text-white cursor-pointer transition-all duration-200",
                     "hover:bg-matsu-light",
@@ -394,7 +424,7 @@ export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, o
                     <SortIndicator columnKey="applicant" />
                   </div>
                 </th>
-                <th 
+                <th
                   className={cn(
                     "px-2 py-2 text-center text-xs font-bold text-white cursor-pointer transition-all duration-200",
                     "hover:bg-matsu-light",
@@ -406,7 +436,7 @@ export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, o
                     <span>埋葬</span>
                   </div>
                 </th>
-                <th 
+                <th
                   className={cn(
                     "px-2 py-2 text-center text-xs font-bold text-white cursor-pointer transition-all duration-200",
                     "hover:bg-matsu-light",
@@ -418,7 +448,7 @@ export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, o
                     <span>面積</span>
                   </div>
                 </th>
-                <th 
+                <th
                   className={cn(
                     "px-2 py-2 text-center text-xs font-bold text-white cursor-pointer transition-all duration-200",
                     "hover:bg-matsu-light",
@@ -430,7 +460,7 @@ export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, o
                     <span>契約日</span>
                   </div>
                 </th>
-                <th 
+                <th
                   className={cn(
                     "px-2 py-2 text-center text-xs font-bold text-white cursor-pointer transition-all duration-200",
                     "hover:bg-matsu-light",
@@ -442,7 +472,7 @@ export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, o
                     <span>次請求</span>
                   </div>
                 </th>
-                <th 
+                <th
                   className={cn(
                     "px-2 py-2 text-left text-xs font-bold text-white cursor-pointer transition-all duration-200",
                     "hover:bg-matsu-light",
@@ -457,20 +487,21 @@ export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, o
                 </th>
               </tr>
             </thead>
-            
+
             {/* テーブルボディ */}
             <tbody className="bg-white divide-y divide-gin">
-              {filteredCustomers.length > 0 ? (
-                filteredCustomers.map((customer, index) => {
+              {paginatedCustomers.length > 0 ? (
+                paginatedCustomers.map((customer, index) => {
+                  const absoluteIndex = startIndex + index;
                   // 利用状況による色分け
-                  const getRowBgColor = (customer: any) => {
+                  const getRowBgColor = (customer: Customer) => {
                     const buriedCount = customer.buriedPersons?.length || 0;
                     const maxCapacity = customer.plotInfo?.capacity || 4;
-                    
-                    if (customer.status === 'suspended') return 'bg-beni-50';
+
+                    if (customer.status === 'inactive') return 'bg-beni-50'; // 解約済み
                     if (buriedCount >= maxCapacity) return 'bg-kohaku-50';
                     if (buriedCount >= maxCapacity * 0.8) return 'bg-cha-50';
-                    return index % 2 === 0 ? 'bg-white' : 'bg-kinari';
+                    return absoluteIndex % 2 === 0 ? 'bg-white' : 'bg-kinari';
                   };
 
                   // 次回請求日の計算
@@ -502,17 +533,15 @@ export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, o
                     switch (status) {
                       case 'active':
                         return <span className="inline-block w-5 h-5 rounded-full bg-matsu text-white text-[10px] leading-5 text-center" title="有効">有</span>;
-                      case 'suspended':
-                        return <span className="inline-block w-5 h-5 rounded-full bg-beni text-white text-[10px] leading-5 text-center" title="停止">停</span>;
-                      case 'pending':
-                        return <span className="inline-block w-5 h-5 rounded-full bg-kohaku text-white text-[10px] leading-5 text-center" title="保留">保</span>;
+                      case 'inactive':
+                        return <span className="inline-block w-5 h-5 rounded-full bg-beni text-white text-[10px] leading-5 text-center" title="解約">解</span>;
                       default:
                         return <span className="inline-block w-5 h-5 rounded-full bg-matsu text-white text-[10px] leading-5 text-center" title="有効">有</span>;
                     }
                   };
 
                   return (
-                    <tr 
+                    <tr
                       key={customer.id}
                       className={cn(
                         'cursor-pointer hover:bg-matsu-50 transition-all duration-200',
@@ -568,17 +597,17 @@ export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, o
                             </div>
                           )}
                           {customerAttentionNotes?.[customer.id] && (
-                            <div 
+                            <div
                               className={cn(
                                 "text-xs px-1.5 py-0.5 rounded border truncate",
                                 customerAttentionNotes[customer.id].priority === '要注意' ? 'bg-beni-50 text-beni-dark border-beni-200' :
-                                customerAttentionNotes[customer.id].priority === '注意' ? 'bg-kohaku-50 text-kohaku-dark border-kohaku-200' :
-                                'bg-ai-50 text-ai-dark border-ai-200'
+                                  customerAttentionNotes[customer.id].priority === '注意' ? 'bg-kohaku-50 text-kohaku-dark border-kohaku-200' :
+                                    'bg-ai-50 text-ai-dark border-ai-200'
                               )}
                               title={customerAttentionNotes[customer.id].content}
                             >
-                              {customerAttentionNotes[customer.id].priority === '要注意' ? '🚨 ' : 
-                               customerAttentionNotes[customer.id].priority === '注意' ? '⚠️ ' : 'ℹ️ '}
+                              {customerAttentionNotes[customer.id].priority === '要注意' ? '🚨 ' :
+                                customerAttentionNotes[customer.id].priority === '注意' ? '⚠️ ' : 'ℹ️ '}
                               {customerAttentionNotes[customer.id].content}
                             </div>
                           )}
@@ -613,16 +642,104 @@ export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, o
         </div>
       </div>
 
-      {/* 件数表示 */}
-      <div className="mt-3 flex items-center justify-between text-sm text-hai">
-        <div>
-          表示: <span className="font-semibold text-sumi">{filteredCustomers.length}</span> 件
-          {activeTab !== '全' && (
-            <span className="ml-2">（{AIUEO_TABS.find(t => t.key === activeTab)?.label}）</span>
-          )}
+      {/* ページネーションコントロール */}
+      <div className="mt-3 flex items-center justify-between text-sm">
+        {/* 左側: 件数情報 */}
+        <div className="flex items-center gap-4 text-hai">
+          <div>
+            <span className="font-semibold text-sumi">{startIndex + 1}</span>
+            〜
+            <span className="font-semibold text-sumi">{endIndex}</span>
+            {' / '}
+            <span className="font-semibold text-sumi">{totalItems}</span> 件
+            {activeTab !== '全' && (
+              <span className="ml-2">（{AIUEO_TABS.find(t => t.key === activeTab)?.label}）</span>
+            )}
+          </div>
+          <div className="text-gin">|</div>
+          <div>
+            全 <span className="font-semibold text-sumi">{customers.length}</span> 件
+          </div>
         </div>
-        <div>
-          全 <span className="font-semibold text-sumi">{customers.length}</span> 件
+
+        {/* 中央: ページ移動 */}
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={goToPrevPage}
+            disabled={currentPage === 1}
+            className="h-8 px-3"
+          >
+            ← 前へ
+          </Button>
+          <div className="flex items-center gap-1">
+            {/* ページ番号ボタン */}
+            {(() => {
+              const pageNumbers: (number | string)[] = [];
+              const maxVisiblePages = 5;
+
+              if (totalPages <= maxVisiblePages) {
+                for (let i = 1; i <= totalPages; i++) {
+                  pageNumbers.push(i);
+                }
+              } else {
+                if (currentPage <= 3) {
+                  for (let i = 1; i <= 4; i++) pageNumbers.push(i);
+                  pageNumbers.push('...');
+                  pageNumbers.push(totalPages);
+                } else if (currentPage >= totalPages - 2) {
+                  pageNumbers.push(1);
+                  pageNumbers.push('...');
+                  for (let i = totalPages - 3; i <= totalPages; i++) pageNumbers.push(i);
+                } else {
+                  pageNumbers.push(1);
+                  pageNumbers.push('...');
+                  for (let i = currentPage - 1; i <= currentPage + 1; i++) pageNumbers.push(i);
+                  pageNumbers.push('...');
+                  pageNumbers.push(totalPages);
+                }
+              }
+
+              return pageNumbers.map((page, idx) => (
+                typeof page === 'number' ? (
+                  <Button
+                    key={idx}
+                    variant={page === currentPage ? 'matsu' : 'outline'}
+                    size="sm"
+                    onClick={() => goToPage(page)}
+                    className="h-8 w-8 p-0"
+                  >
+                    {page}
+                  </Button>
+                ) : (
+                  <span key={idx} className="px-1 text-hai">...</span>
+                )
+              ));
+            })()}
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={goToNextPage}
+            disabled={currentPage === totalPages || totalPages === 0}
+            className="h-8 px-3"
+          >
+            次へ →
+          </Button>
+        </div>
+
+        {/* 右側: 表示件数選択 */}
+        <div className="flex items-center gap-2 text-hai">
+          <span>表示件数:</span>
+          <select
+            value={itemsPerPage}
+            onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
+            className="h-8 px-2 border border-gin rounded text-sm bg-white text-sumi focus:outline-none focus:ring-2 focus:ring-matsu"
+          >
+            <option value={50}>50件</option>
+            <option value={100}>100件</option>
+          </select>
         </div>
       </div>
     </div>

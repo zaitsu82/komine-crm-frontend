@@ -16,20 +16,20 @@ export function formatDate(date: Date | null) {
 
 export function formatDateWithEra(date: Date | string | null) {
   if (!date) return ""
-  
+
   // 文字列の日付をDateオブジェクトに変換
   const dateObj = typeof date === 'string' ? new Date(date) : date
-  
+
   // 無効な日付の場合は空文字列を返す
   if (isNaN(dateObj.getTime())) return ""
-  
+
   const year = dateObj.getFullYear()
   const heiseiStart = 1989
   const reiwaStart = 2019
-  
+
   let era = ""
   let eraYear = 0
-  
+
   if (year >= reiwaStart) {
     era = "令和"
     eraYear = year - reiwaStart + 1
@@ -37,15 +37,15 @@ export function formatDateWithEra(date: Date | string | null) {
     era = "平成"
     eraYear = year - heiseiStart + 1
   }
-  
+
   return `${era}${eraYear}年 ${dateObj.getMonth() + 1}月${dateObj.getDate()}日`
 }
 
 // ===== 区画管理ユーティリティ =====
 
-import type { 
-  CustomerPlotAssignment, 
-  PlotUnit, 
+import type {
+  CustomerPlotAssignment,
+  PlotUnit,
   PlotUnitType,
   PlotAssignmentValidation,
   OwnedPlot,
@@ -68,17 +68,17 @@ export function calculateOwnedPlotsInfo(ownedPlots?: OwnedPlot[]): OwnedPlotsInf
       displayText: '-',
     };
   }
-  
+
   const totalAreaSqm = ownedPlots.reduce((sum, plot) => sum + plot.areaSqm, 0);
   const plotNumbers = ownedPlots.map(plot => plot.plotNumber);
-  
+
   // 表示テキストの生成（例: "3.6㎡（C-29／C-30）"）
   const areaText = `${totalAreaSqm}㎡`;
   const numbersText = plotNumbers.join('／');
-  const displayText = plotNumbers.length > 1 
+  const displayText = plotNumbers.length > 1
     ? `${areaText}（${numbersText}）`
     : `${areaText}（${numbersText}）`;
-  
+
   return {
     totalAreaSqm,
     plotCount: ownedPlots.length,
@@ -120,7 +120,7 @@ export function calculateSuggestedPrice(
   type: PlotUnitType
 ): number | undefined {
   if (!areaSqm) return undefined;
-  
+
   // 種別ごとの単価（㎡あたり）
   const unitPrices: Record<PlotUnitType, number> = {
     grave_site: 150000,    // 墓地区画: 15万円/㎡
@@ -128,7 +128,7 @@ export function calculateSuggestedPrice(
     ossuary: 100000,       // 合葬墓: 10万円/㎡
     other: 100000,         // その他: 10万円/㎡
   };
-  
+
   const unitPrice = unitPrices[type];
   return Math.round(areaSqm * unitPrice);
 }
@@ -145,12 +145,12 @@ export function validatePlotAssignment(
 ): PlotAssignmentValidation {
   const errors: string[] = [];
   const warnings: string[] = [];
-  
+
   // 基本チェック: plotNumber または draftUnit のどちらかが必要
   if (!assignment.plotNumber && !assignment.draftUnit) {
     errors.push("既存区画の選択または新規区画の情報が必要です");
   }
-  
+
   // 収容人数チェック
   if (assignment.effectiveCapacity !== undefined) {
     if (assignment.effectiveCapacity < 1) {
@@ -160,7 +160,7 @@ export function validatePlotAssignment(
       errors.push("収容人数は50人以下である必要があります");
     }
   }
-  
+
   // 合祀不可のユニットへの複数名割当の警告
   if (assignment.allowGoushi === false && (assignment.effectiveCapacity ?? 0) > 1) {
     warnings.push(
@@ -168,12 +168,12 @@ export function validatePlotAssignment(
       "将来的に複数名の埋葬が必要な場合は、合祀可に変更してください。"
     );
   }
-  
+
   // 価格の妥当性チェック
   if (assignment.price !== undefined && assignment.price < 0) {
     errors.push("価格は0以上である必要があります");
   }
-  
+
   // 面積の妥当性チェック
   if (assignment.draftUnit?.areaSqm !== undefined) {
     if (assignment.draftUnit.areaSqm <= 0) {
@@ -183,7 +183,7 @@ export function validatePlotAssignment(
       warnings.push("面積が100㎡を超えています。正しい値かご確認ください。");
     }
   }
-  
+
   // 既存ユニットの在庫確認
   if (assignment.plotNumber && existingUnits) {
     const unit = existingUnits.find(u => u.plotNumber === assignment.plotNumber);
@@ -202,7 +202,7 @@ export function validatePlotAssignment(
       }
     }
   }
-  
+
   return {
     isValid: errors.length === 0,
     errors,
@@ -220,29 +220,29 @@ export function validatePlotAssignments(
 ): PlotAssignmentValidation {
   const errors: string[] = [];
   const warnings: string[] = [];
-  
+
   // 同一顧客内での区画番号の重複チェック
   const plotNumbers = assignments
     .map(a => a.plotNumber)
     .filter((n): n is string => !!n);
-  
+
   const duplicates = plotNumbers.filter(
     (num, index) => plotNumbers.indexOf(num) !== index
   );
-  
+
   if (duplicates.length > 0) {
     errors.push(
       `同一の区画が複数回選択されています: ${[...new Set(duplicates)].join(", ")}`
     );
   }
-  
+
   // 各割当の個別バリデーション
   assignments.forEach((assignment, index) => {
     const result = validatePlotAssignment(assignment);
     errors.push(...result.errors.map(e => `区画${index + 1}: ${e}`));
     warnings.push(...result.warnings.map(w => `区画${index + 1}: ${w}`));
   });
-  
+
   return {
     isValid: errors.length === 0,
     errors,

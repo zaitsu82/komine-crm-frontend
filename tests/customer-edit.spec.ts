@@ -3,11 +3,11 @@ import { test, expect } from '@playwright/test';
 test.describe('顧客情報編集機能', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    
+
     // 顧客詳細画面に遷移して編集画面を開く
     const firstCustomerRow = page.locator('tbody tr').first();
     const rowCount = await page.locator('tbody tr').count();
-    
+
     if (rowCount > 0) {
       await firstCustomerRow.click();
       await page.getByRole('button', { name: '編集' }).click();
@@ -16,10 +16,10 @@ test.describe('顧客情報編集機能', () => {
       await page.getByRole('tab', { name: '検索' }).click();
       await page.getByLabel('顧客ID').fill('C001');
       await page.getByRole('button', { name: '検索' }).click();
-      
+
       const searchResultRow = page.locator('[data-testid="search-results"] tbody tr').first();
       const searchRowCount = await page.locator('[data-testid="search-results"] tbody tr').count();
-      
+
       if (searchRowCount > 0) {
         await searchResultRow.click();
         await page.getByRole('button', { name: '編集' }).click();
@@ -30,10 +30,10 @@ test.describe('顧客情報編集機能', () => {
   test('顧客情報編集画面が正常に表示されることを確認', async ({ page }) => {
     // 編集画面のタイトルを確認
     await expect(page.getByText('顧客情報編集')).toBeVisible();
-    
+
     // フォームが表示されることを確認
     await expect(page.locator('form')).toBeVisible();
-    
+
     // 保存・キャンセル・削除ボタンの確認
     await expect(page.getByRole('button', { name: '保存' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'キャンセル' })).toBeVisible();
@@ -154,7 +154,7 @@ test.describe('顧客情報編集機能', () => {
     // 一つのフィールドのみを変更
     const emailField = page.getByLabel('メールアドレス');
     const originalEmail = await emailField.inputValue();
-    
+
     await emailField.clear();
     await emailField.fill('newemail@example.com');
 
@@ -242,7 +242,7 @@ test.describe('顧客情報編集機能', () => {
   test('楽観的ロックが正常に動作することを確認', async ({ page }) => {
     // 編集中に別のセッションで同じ顧客が更新された場合の処理
     // （実装されている場合のテスト）
-    
+
     // フィールドを変更
     const nameField = page.getByLabel('契約者氏名');
     await nameField.clear();
@@ -307,7 +307,7 @@ test.describe('顧客情報編集機能', () => {
   test('フィールドの文字数制限が正常に動作することを確認', async ({ page }) => {
     // 長すぎる文字列を入力
     const longString = 'あ'.repeat(100);
-    
+
     const nameField = page.getByLabel('契約者氏名');
     await nameField.clear();
     await nameField.fill(longString);

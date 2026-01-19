@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('新規顧客登録機能', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    
+
     // 新規顧客登録ボタンをクリックして登録画面に遷移
     await page.getByRole('button', { name: '新規顧客登録' }).click();
   });
@@ -11,10 +11,10 @@ test.describe('新規顧客登録機能', () => {
   test('新規顧客登録画面が正常に表示されることを確認', async ({ page }) => {
     // 登録画面のタイトルを確認
     await expect(page.getByText('新規顧客登録')).toBeVisible();
-    
+
     // フォームが表示されることを確認
     await expect(page.locator('form')).toBeVisible();
-    
+
     // 登録ボタンとキャンセルボタンの確認
     await expect(page.getByRole('button', { name: '登録' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'キャンセル' })).toBeVisible();
@@ -23,7 +23,7 @@ test.describe('新規顧客登録機能', () => {
   test('基本情報入力フィールドが正しく表示されることを確認', async ({ page }) => {
     // 基本情報セクションの確認
     await expect(page.getByText('基本情報')).toBeVisible();
-    
+
     // 必須フィールドの確認
     const requiredFields = [
       '契約者氏名',
@@ -53,7 +53,7 @@ test.describe('新規顧客登録機能', () => {
   test('墓所情報入力フィールドが正しく表示されることを確認', async ({ page }) => {
     // 墓所情報セクションの確認
     await expect(page.getByText('墓所情報')).toBeVisible();
-    
+
     // 墓所情報フィールドの確認
     const graveFields = [
       '墓所番号',
@@ -114,7 +114,7 @@ test.describe('新規顧客登録機能', () => {
     // 不正なフリガナを入力
     await page.getByLabel('契約者氏名').fill('田中太郎');
     await page.getByLabel('フリガナ').fill('田中太郎'); // ひらがな・漢字（不正）
-    
+
     await page.getByRole('button', { name: '登録' }).click();
 
     // フリガナのバリデーションエラーを確認
@@ -124,7 +124,7 @@ test.describe('新規顧客登録機能', () => {
   test('郵便番号の入力形式チェックが動作することを確認', async ({ page }) => {
     // 不正な郵便番号を入力
     await page.getByLabel('郵便番号').fill('1234567'); // ハイフンなし（不正）
-    
+
     await page.getByRole('button', { name: '登録' }).click();
 
     // 郵便番号のバリデーションエラーを確認
@@ -134,7 +134,7 @@ test.describe('新規顧客登録機能', () => {
   test('電話番号の入力形式チェックが動作することを確認', async ({ page }) => {
     // 不正な電話番号を入力
     await page.getByLabel('電話番号').fill('03-1234'); // 不完全な番号（不正）
-    
+
     await page.getByRole('button', { name: '登録' }).click();
 
     // 電話番号のバリデーションエラーを確認
@@ -144,7 +144,7 @@ test.describe('新規顧客登録機能', () => {
   test('メールアドレスの入力形式チェックが動作することを確認', async ({ page }) => {
     // 不正なメールアドレスを入力
     await page.getByLabel('メールアドレス').fill('invalid-email'); // 不正な形式
-    
+
     await page.getByRole('button', { name: '登録' }).click();
 
     // メールアドレスのバリデーションエラーを確認
@@ -156,9 +156,9 @@ test.describe('新規顧客登録機能', () => {
     const futureDate = new Date();
     futureDate.setFullYear(futureDate.getFullYear() + 1);
     const futureDateString = futureDate.toISOString().split('T')[0];
-    
+
     await page.getByLabel('生年月日').fill(futureDateString);
-    
+
     await page.getByRole('button', { name: '登録' }).click();
 
     // 生年月日のバリデーションエラーを確認
@@ -190,7 +190,7 @@ test.describe('新規顧客登録機能', () => {
     // 不正な数値を入力
     await page.getByLabel('使用料').fill('abc'); // 数値以外
     await page.getByLabel('管理料').fill('-1000'); // 負の数値
-    
+
     await page.getByRole('button', { name: '登録' }).click();
 
     // 数値バリデーションエラーを確認
@@ -236,7 +236,7 @@ test.describe('新規顧客登録機能', () => {
     const generateIdButton = page.getByRole('button', { name: '顧客ID自動生成' });
     if (await generateIdButton.isVisible()) {
       await generateIdButton.click();
-      
+
       // 顧客IDが自動生成されることを確認
       const customerIdField = page.getByLabel('顧客ID');
       await expect(customerIdField).not.toHaveValue('');
@@ -273,9 +273,9 @@ test.describe('新規顧客登録機能', () => {
   test('入力文字数制限が動作することを確認', async ({ page }) => {
     // 長すぎる文字列を入力
     const longString = 'あ'.repeat(100);
-    
+
     await page.getByLabel('契約者氏名').fill(longString);
-    
+
     // 文字数制限エラーまたは自動トリミングを確認
     const nameValue = await page.getByLabel('契約者氏名').inputValue();
     expect(nameValue.length).toBeLessThanOrEqual(50); // 仮の制限値

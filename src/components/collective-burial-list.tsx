@@ -28,21 +28,21 @@ export default function CollectiveBurialList({
   onSelectRecord,
 }: CollectiveBurialListProps) {
   const currentYear = new Date().getFullYear();
-  
+
   // フィルター状態
   const [selectedYear, setSelectedYear] = useState<number | 'all'>('all');
   const [selectedSection, setSelectedSection] = useState<CollectiveBurialSection | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [contractYearFrom, setContractYearFrom] = useState<string>('');
   const [contractYearTo, setContractYearTo] = useState<string>('');
-  
+
   // 利用可能な年のリスト
   const availableYears = useMemo(() => getAvailableCollectiveBurialYears(), []);
-  
+
   // 統計データ
   const sectionStats = useMemo(() => getCollectiveBurialStatsBySection(), []);
   const yearStats = useMemo(() => getCollectiveBurialStatsByYear(), []);
-  
+
   // フィルタリングされたデータ
   const filteredData = useMemo(() => {
     return searchCollectiveBurialList({
@@ -53,7 +53,7 @@ export default function CollectiveBurialList({
       contractYearTo: contractYearTo ? parseInt(contractYearTo) : undefined,
     });
   }, [selectedYear, selectedSection, searchQuery, contractYearFrom, contractYearTo]);
-  
+
   // 年別グループ化データ
   const yearGroups = useMemo(() => {
     if (selectedYear !== 'all') {
@@ -63,7 +63,7 @@ export default function CollectiveBurialList({
         totalCount: filteredData.reduce((sum, r) => sum + r.count, 0),
       }];
     }
-    
+
     // 年別にグループ化
     const groups = new Map<number, CollectiveBurialListRecord[]>();
     filteredData.forEach(record => {
@@ -73,7 +73,7 @@ export default function CollectiveBurialList({
       }
       groups.get(year)!.push(record);
     });
-    
+
     return Array.from(groups.entries())
       .map(([year, records]) => ({
         year,
@@ -82,7 +82,7 @@ export default function CollectiveBurialList({
       }))
       .sort((a, b) => a.year - b.year);
   }, [filteredData, selectedYear]);
-  
+
   // フィルターをリセット
   const resetFilters = () => {
     setSelectedYear('all');
@@ -91,7 +91,7 @@ export default function CollectiveBurialList({
     setContractYearFrom('');
     setContractYearTo('');
   };
-  
+
   // 日付フォーマット
   const formatDate = (date: Date | null): string => {
     if (!date) return '-';
@@ -104,7 +104,7 @@ export default function CollectiveBurialList({
       <div className="bg-gradient-to-r from-cha-50 to-kinari border-b border-cha-200 px-6 py-5 relative overflow-hidden">
         {/* 装飾 */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-cha-100/30 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-        
+
         <div className="relative flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="w-12 h-12 rounded-xl bg-gradient-cha flex items-center justify-center shadow-cha">
@@ -140,7 +140,7 @@ export default function CollectiveBurialList({
             )}
           </div>
         </div>
-        
+
         {/* 凡例 */}
         <div className="relative mt-4 flex flex-wrap gap-6 text-sm">
           <div className="flex items-center space-x-2">
@@ -157,7 +157,7 @@ export default function CollectiveBurialList({
           </div>
         </div>
       </div>
-      
+
       {/* フィルターエリア */}
       <div className="bg-white border-b border-gin px-6 py-5">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -177,7 +177,7 @@ export default function CollectiveBurialList({
               ))}
             </select>
           </div>
-          
+
           {/* 区画選択 */}
           <div>
             <Label className="text-sm font-medium text-sumi mb-2 block">区画</Label>
@@ -194,7 +194,7 @@ export default function CollectiveBurialList({
               ))}
             </select>
           </div>
-          
+
           {/* 名前検索 */}
           <div>
             <Label className="text-sm font-medium text-sumi mb-2 block">名前検索</Label>
@@ -205,7 +205,7 @@ export default function CollectiveBurialList({
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          
+
           {/* 契約年範囲 */}
           <div>
             <Label className="text-sm font-medium text-sumi mb-2 block">契約年（から）</Label>
@@ -230,7 +230,7 @@ export default function CollectiveBurialList({
             />
           </div>
         </div>
-        
+
         {/* 検索結果サマリー */}
         <div className="mt-5 flex items-center justify-between pt-4 border-t border-gin">
           <p className="text-sm text-hai">
@@ -256,7 +256,7 @@ export default function CollectiveBurialList({
           </div>
         </div>
       </div>
-      
+
       {/* メインコンテンツ */}
       <div className="flex-1 overflow-auto p-6 bg-gradient-warm">
         {yearGroups.length === 0 ? (
@@ -282,19 +282,19 @@ export default function CollectiveBurialList({
                     </span>
                   </div>
                 </div>
-                
+
                 {/* テーブル */}
                 <div className="overflow-x-auto">
                   <table className="w-full table-fixed">
                     <thead className="bg-kinari border-b border-gin">
                       <tr>
-                        <th className="text-left px-4 py-3 text-sm font-semibold text-sumi" style={{width: '160px'}}>氏名</th>
-                        <th className="text-center px-4 py-3 text-sm font-semibold text-sumi" style={{width: '80px'}}>区画</th>
-                        <th className="text-center px-4 py-3 text-sm font-semibold text-sumi" style={{width: '100px'}}>区画番号</th>
-                        <th className="text-center px-4 py-3 text-sm font-semibold text-sumi" style={{width: '80px'}}>契約年</th>
-                        <th className="text-center px-4 py-3 text-sm font-semibold text-sumi" style={{width: '110px'}}>納骨日</th>
-                        <th className="text-center px-4 py-3 text-sm font-semibold text-sumi" style={{width: '80px'}}>合祀年</th>
-                        <th className="text-center px-4 py-3 text-sm font-semibold text-sumi" style={{width: '50px'}}>件数</th>
+                        <th className="text-left px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '160px' }}>氏名</th>
+                        <th className="text-center px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '80px' }}>区画</th>
+                        <th className="text-center px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '100px' }}>区画番号</th>
+                        <th className="text-center px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '80px' }}>契約年</th>
+                        <th className="text-center px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '110px' }}>納骨日</th>
+                        <th className="text-center px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '80px' }}>合祀年</th>
+                        <th className="text-center px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '50px' }}>件数</th>
                         <th className="text-left px-4 py-3 text-sm font-semibold text-sumi">備考</th>
                       </tr>
                     </thead>
@@ -302,13 +302,12 @@ export default function CollectiveBurialList({
                       {group.records.map((record) => (
                         <tr
                           key={record.id}
-                          className={`cursor-pointer transition-all duration-200 ${
-                            record.periodType === '7year' 
-                              ? 'bg-matsu-50 hover:bg-matsu-100 border-l-4 border-l-matsu' 
-                              : record.periodType === '13year' 
-                                ? 'bg-ai-50 hover:bg-ai-100 border-l-4 border-l-ai' 
-                                : 'bg-kinari hover:bg-cha-50 border-l-4 border-l-hai'
-                          }`}
+                          className={`cursor-pointer transition-all duration-200 ${record.periodType === '7year'
+                            ? 'bg-matsu-50 hover:bg-matsu-100 border-l-4 border-l-matsu'
+                            : record.periodType === '13year'
+                              ? 'bg-ai-50 hover:bg-ai-100 border-l-4 border-l-ai'
+                              : 'bg-kinari hover:bg-cha-50 border-l-4 border-l-hai'
+                            }`}
                           onClick={() => onSelectRecord?.(record)}
                         >
                           <td className="px-4 py-3">
@@ -347,7 +346,7 @@ export default function CollectiveBurialList({
           </div>
         )}
       </div>
-      
+
       {/* フッター統計 */}
       <div className="bg-white border-t border-gin px-6 py-4">
         <div className="flex flex-wrap gap-6">

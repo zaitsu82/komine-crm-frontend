@@ -38,25 +38,25 @@ const POSTCARD_TEMPLATES = {
 
 export default function PostcardEditor({ customer, onClose, onSave }: PostcardEditorProps) {
   const printRef = useRef<HTMLDivElement>(null);
-  
+
   const [postcardType, setPostcardType] = useState<PostcardType>('ceremony_notice');
   const [isEditing, setIsEditing] = useState(false);
   const [currentSide, setCurrentSide] = useState<'address' | 'content'>('address');
-  
+
   // 宛名面の編集状態
   const [recipientName, setRecipientName] = useState(customer.name);
   const [recipientPostalCode, setRecipientPostalCode] = useState(customer.postalCode || '');
   const [recipientAddress, setRecipientAddress] = useState(customer.address || '');
-  
+
   // 差出人情報
   const [senderName, setSenderName] = useState('小峰霊園 管理事務所');
   const [senderPostalCode, setSenderPostalCode] = useState('XXX-XXXX');
   const [senderAddress, setSenderAddress] = useState('〇〇県〇〇市〇〇町1-2-3');
   const [senderPhone, setSenderPhone] = useState('TEL: 03-XXXX-XXXX');
-  
+
   // 文面の編集状態
   const getBuriedPersonName = () => customer.buriedPersons?.[0]?.name || '〇〇';
-  
+
   const getTemplateContent = (type: PostcardType) => {
     const template = POSTCARD_TEMPLATES[type];
     return {
@@ -64,7 +64,7 @@ export default function PostcardEditor({ customer, onClose, onSave }: PostcardEd
       body: template.body.replace('{buriedPerson}', getBuriedPersonName())
     };
   };
-  
+
   const [title, setTitle] = useState(getTemplateContent('ceremony_notice').title);
   const [greeting, setGreeting] = useState(getTemplateContent('ceremony_notice').greeting);
   const [body, setBody] = useState(getTemplateContent('ceremony_notice').body);
@@ -72,7 +72,7 @@ export default function PostcardEditor({ customer, onClose, onSave }: PostcardEd
   const [eventDate, setEventDate] = useState('');
   const [eventTime, setEventTime] = useState('');
   const [eventPlace, setEventPlace] = useState('小峰霊園 本堂');
-  
+
   // テンプレート変更時
   const handleTemplateChange = (type: PostcardType) => {
     setPostcardType(type);
@@ -87,7 +87,7 @@ export default function PostcardEditor({ customer, onClose, onSave }: PostcardEd
   const handlePrint = () => {
     const addressContent = document.getElementById('postcard-address-content');
     const contentContent = document.getElementById('postcard-content-content');
-    
+
     if (!addressContent || !contentContent) return;
 
     const printWindow = window.open('', '_blank', 'width=600,height=800');
@@ -248,27 +248,25 @@ export default function PostcardEditor({ customer, onClose, onSave }: PostcardEd
             <div className="flex rounded-lg overflow-hidden border">
               <button
                 onClick={() => setCurrentSide('address')}
-                className={`px-4 py-2 text-sm font-medium transition-colors ${
-                  currentSide === 'address' 
-                    ? 'bg-purple-600 text-white' 
-                    : 'bg-white text-gray-700 hover:bg-gray-50'
-                }`}
+                className={`px-4 py-2 text-sm font-medium transition-colors ${currentSide === 'address'
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-white text-gray-700 hover:bg-gray-50'
+                  }`}
               >
                 📮 宛名面
               </button>
               <button
                 onClick={() => setCurrentSide('content')}
-                className={`px-4 py-2 text-sm font-medium transition-colors ${
-                  currentSide === 'content' 
-                    ? 'bg-purple-600 text-white' 
-                    : 'bg-white text-gray-700 hover:bg-gray-50'
-                }`}
+                className={`px-4 py-2 text-sm font-medium transition-colors ${currentSide === 'content'
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-white text-gray-700 hover:bg-gray-50'
+                  }`}
               >
                 📝 文面
               </button>
             </div>
           </div>
-          
+
           {currentSide === 'content' && (
             <div className="flex items-center gap-4">
               <span className="text-sm font-medium text-gray-600">テンプレート:</span>
@@ -289,7 +287,7 @@ export default function PostcardEditor({ customer, onClose, onSave }: PostcardEd
         <div className="flex-1 overflow-auto p-6 bg-gray-200">
           <div className="flex justify-center gap-8">
             {/* 宛名面 */}
-            <div 
+            <div
               ref={printRef}
               className={`bg-white shadow-lg ${currentSide !== 'address' ? 'hidden print:block' : ''}`}
               style={{ width: '100mm', height: '148mm', padding: '8mm' }}
@@ -299,8 +297,8 @@ export default function PostcardEditor({ customer, onClose, onSave }: PostcardEd
                 {/* 郵便番号枠（上部） */}
                 <div className="absolute top-2 right-4 flex gap-1">
                   {[...Array(7)].map((_, i) => (
-                    <div 
-                      key={i} 
+                    <div
+                      key={i}
                       className={`w-5 h-7 border ${i < 3 ? 'border-red-400' : 'border-gray-400'} flex items-center justify-center text-sm font-mono`}
                     >
                       {recipientPostalCode.replace('-', '')[i] || ''}
@@ -325,7 +323,7 @@ export default function PostcardEditor({ customer, onClose, onSave }: PostcardEd
                       </p>
                     )}
                   </div>
-                  
+
                   {/* 宛名 */}
                   <div className="text-center">
                     {isEditing ? (
@@ -383,7 +381,7 @@ export default function PostcardEditor({ customer, onClose, onSave }: PostcardEd
             </div>
 
             {/* 文面 */}
-            <div 
+            <div
               className={`bg-white shadow-lg ${currentSide !== 'content' ? 'hidden print:block' : ''}`}
               style={{ width: '100mm', height: '148mm', padding: '8mm' }}
               id="postcard-content-content"
@@ -421,7 +419,7 @@ export default function PostcardEditor({ customer, onClose, onSave }: PostcardEd
                         rows={5}
                         placeholder="本文"
                       />
-                      
+
                       {/* 日時・場所 */}
                       <div className="space-y-2 bg-gray-50 p-2 rounded">
                         <div className="flex items-center gap-2">
@@ -449,7 +447,7 @@ export default function PostcardEditor({ customer, onClose, onSave }: PostcardEd
                           />
                         </div>
                       </div>
-                      
+
                       <Input
                         value={closing}
                         onChange={(e) => setClosing(e.target.value)}
@@ -461,7 +459,7 @@ export default function PostcardEditor({ customer, onClose, onSave }: PostcardEd
                     <div className="space-y-3">
                       <p className="whitespace-pre-line">{greeting}</p>
                       <p className="whitespace-pre-line">{body}</p>
-                      
+
                       {/* 日時・場所（入力されている場合のみ表示） */}
                       {(eventDate || eventPlace) && (
                         <div className="bg-gray-50 p-3 rounded mt-4">
@@ -472,7 +470,7 @@ export default function PostcardEditor({ customer, onClose, onSave }: PostcardEd
                           {eventPlace && <p>場所: {eventPlace}</p>}
                         </div>
                       )}
-                      
+
                       <p className="text-right mt-4">{closing}</p>
                     </div>
                   )}

@@ -21,17 +21,17 @@ import {
  */
 export function convertApplicationToCustomerCollectiveBurial(
   application: CollectiveBurialApplication
-): Customer['collectiveBurialInfo'][0] {
+): NonNullable<Customer['collectiveBurialInfo']>[0] {
   return {
     id: application.id,
     type: application.burialType,
     ceremonies: application.ceremonies.map(ceremony => ({
       id: ceremony.id,
       date: ceremony.date,
-      officiant: ceremony.officiant,
-      religion: ceremony.religion,
+      officiant: ceremony.officiant || '',
+      religion: ceremony.religion || '',
       participants: ceremony.participants || 0,
-      location: ceremony.location,
+      location: ceremony.location || '',
       memo: ceremony.memo
     })),
     persons: application.persons.map(person => ({
@@ -41,9 +41,9 @@ export function convertApplicationToCustomerCollectiveBurial(
       relationship: person.relationship,
       deathDate: person.deathDate,
       age: person.age || undefined,
-      gender: person.gender,
+      gender: person.gender === 'male' || person.gender === 'female' ? person.gender : undefined,
       originalPlotNumber: person.originalPlotNumber,
-      transferDate: null, // 申込時点では未設定
+      transferDate: undefined, // 申込時点では未設定
       certificateNumber: person.certificateNumber,
       memo: person.memo
     })),
@@ -59,7 +59,7 @@ export function convertApplicationToCustomerCollectiveBurial(
     })),
     specialRequests: application.specialRequests,
     status: application.status === 'completed' ? 'completed' :
-            application.status === 'cancelled' ? 'cancelled' : 'planned',
+      application.status === 'cancelled' ? 'cancelled' : 'planned',
     createdAt: application.createdAt,
     updatedAt: application.updatedAt
   };
@@ -165,7 +165,7 @@ export function getTotalCollectiveBurialPersons(): number {
  */
 export function getCustomerLatestCollectiveBurial(
   customer: Customer
-): Customer['collectiveBurialInfo'][0] | null {
+): NonNullable<Customer['collectiveBurialInfo']>[0] | null {
   if (!customer.collectiveBurialInfo || customer.collectiveBurialInfo.length === 0) {
     return null;
   }
@@ -221,10 +221,10 @@ export function syncCustomerToCollectiveBurialList(
 
   // 契約日を取得（startDate, permitDate, reservationDate, createdAtの順で優先）
   const contractDate = customer.startDate ||
-                       customer.permitDate ||
-                       customer.reservationDate ||
-                       customer.contractorInfo?.contractDate ||
-                       customer.createdAt;
+    customer.permitDate ||
+    customer.reservationDate ||
+    customer.contractorInfo?.contractDate ||
+    customer.createdAt;
 
   if (!contractDate) {
     return {
@@ -235,8 +235,8 @@ export function syncCustomerToCollectiveBurialList(
 
   // 区画番号を取得
   const plotNumber = customer.plotNumber ||
-                     customer.plotInfo?.plotNumber ||
-                     customer.customerCode;
+    customer.plotInfo?.plotNumber ||
+    customer.customerCode;
 
   if (!plotNumber) {
     return {

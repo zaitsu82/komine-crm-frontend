@@ -16,7 +16,7 @@ test.describe('霊園CRM - 全ボタン機能テスト', () => {
     const searchButton = page.getByRole('button', { name: /^検索$/ });
     await expect(searchButton).toBeVisible();
     await expect(searchButton).toBeEnabled();
-    
+
     // クリアボタンのテスト
     const clearButton = page.getByRole('button', { name: /クリア/ });
     await expect(clearButton).toBeVisible();
@@ -26,11 +26,11 @@ test.describe('霊園CRM - 全ボタン機能テスト', () => {
     const newCustomerButton = page.getByRole('button', { name: /新規登録/ });
     await expect(newCustomerButton).toBeVisible();
     await expect(newCustomerButton).toBeEnabled();
-    
+
     // 検索フィールドに値を入力して検索ボタンをクリック
     await page.fill('input[placeholder*="顧客番号"]', 'TEST001');
     await searchButton.click();
-    
+
     // 検索中の表示確認（ボタンテキストが変わるか）
     const searchingButton = page.getByRole('button', { name: /検索中/ });
     if (await searchingButton.isVisible({ timeout: 1000 }).catch(() => false)) {
@@ -53,13 +53,13 @@ test.describe('霊園CRM - 全ボタン機能テスト', () => {
     const addContactButton = page.getByRole('button', { name: /\+ 新規追加/ }).first();
     if (await addContactButton.isVisible()) {
       await expect(addContactButton).toBeEnabled();
-      
+
       // ボタンをクリックして新しい連絡先フォームが追加されるか確認
       const initialContactCount = await page.locator('[class*="contact-item"]').count();
       await addContactButton.click();
       await page.waitForTimeout(500);
       const newContactCount = await page.locator('[class*="contact-item"]').count();
-      
+
       // 新しい連絡先が追加されたか確認（要素が増えているか）
       if (newContactCount > initialContactCount) {
         console.log('新規連絡先が正常に追加されました');
@@ -70,7 +70,7 @@ test.describe('霊園CRM - 全ボタン機能テスト', () => {
     const addBuriedPersonButton = page.getByRole('button', { name: /\+ 新規追加/ }).nth(1);
     if (await addBuriedPersonButton.isVisible()) {
       await expect(addBuriedPersonButton).toBeEnabled();
-      
+
       // ボタンをクリックして新しい埋葬者フォームが追加されるか確認
       await addBuriedPersonButton.click();
       await page.waitForTimeout(500);
@@ -90,7 +90,7 @@ test.describe('霊園CRM - 全ボタン機能テスト', () => {
     // 登録/更新ボタンの確認
     const submitButton = page.getByRole('button', { name: /登録|更新/ });
     await expect(submitButton).toBeVisible();
-    
+
     // 必須フィールドが空の場合、ボタンの状態を確認
     const isDisabled = await submitButton.isDisabled();
     console.log(`登録ボタンの状態: ${isDisabled ? '無効' : '有効'}`);
@@ -115,7 +115,7 @@ test.describe('霊園CRM - 全ボタン機能テスト', () => {
 
     // フォーム送信をテスト（実際には送信しない）
     await submitButton.click();
-    
+
     // 送信中の表示確認
     const savingButton = page.getByRole('button', { name: /保存中/ });
     if (await savingButton.isVisible({ timeout: 1000 }).catch(() => false)) {
@@ -135,11 +135,11 @@ test.describe('霊園CRM - 全ボタン機能テスト', () => {
       const tabButton = page.getByRole('tab', { name: new RegExp(tab.name) });
       await expect(tabButton).toBeVisible();
       await tabButton.click();
-      
+
       // タブがアクティブになったか確認
       const isSelected = await tabButton.getAttribute('aria-selected');
       expect(isSelected).toBe('true');
-      
+
       console.log(`${tab.name}タブが正常に切り替わりました`);
       await page.waitForTimeout(300);
     }
@@ -150,22 +150,22 @@ test.describe('霊園CRM - 全ボタン機能テスト', () => {
     await page.fill('input[placeholder*="氏名"]', 'テスト');
     const searchButton = page.getByRole('button', { name: /^検索$/ });
     await searchButton.click();
-    
+
     // 検索結果が表示されるまで待機
     await page.waitForTimeout(2000);
-    
+
     // 検索結果の顧客カード（クリック可能な要素）を確認
     const customerCards = page.locator('[role="button"][aria-label*="顧客"]');
     const cardCount = await customerCards.count();
-    
+
     if (cardCount > 0) {
       console.log(`${cardCount}件の顧客が見つかりました`);
-      
+
       // 最初の顧客カードをクリック
       const firstCard = customerCards.first();
       await expect(firstCard).toBeVisible();
       await firstCard.click();
-      
+
       console.log('顧客カードのクリックが正常に動作しました');
     } else {
       console.log('検索結果に顧客が見つかりませんでした');
@@ -183,11 +183,11 @@ test.describe('霊園CRM - 全ボタン機能テスト', () => {
     // Tabキーでボタン間を移動
     await page.keyboard.press('Tab');
     await page.keyboard.press('Tab');
-    
+
     // フォーカスされている要素を確認
     const focusedElement = page.locator(':focus');
     const tagName = await focusedElement.evaluate(el => el.tagName);
-    
+
     if (tagName === 'BUTTON') {
       // Enterキーでボタンをクリック
       await page.keyboard.press('Enter');
@@ -198,7 +198,7 @@ test.describe('霊園CRM - 全ボタン機能テスト', () => {
     await page.keyboard.press('Tab');
     const nextFocusedElement = page.locator(':focus');
     const nextTagName = await nextFocusedElement.evaluate(el => el.tagName);
-    
+
     if (nextTagName === 'BUTTON') {
       await page.keyboard.press('Space');
       console.log('Spaceキーでもボタンがクリックできました');
@@ -208,25 +208,25 @@ test.describe('霊園CRM - 全ボタン機能テスト', () => {
   test('レスポンシブデザイン: モバイルビューでのボタン表示確認', async ({ page }) => {
     // モバイルビューポートに変更
     await page.setViewportSize({ width: 375, height: 667 });
-    
+
     // ボタンが適切に表示されているか確認
     const buttons = page.getByRole('button');
     const buttonCount = await buttons.count();
-    
+
     console.log(`モバイルビューで${buttonCount}個のボタンが表示されています`);
-    
+
     // 各ボタンがタップ可能なサイズか確認
     for (let i = 0; i < Math.min(buttonCount, 5); i++) {
       const button = buttons.nth(i);
       const box = await button.boundingBox();
-      
+
       if (box) {
         // モバイルでのタップターゲットの最小推奨サイズ（44x44px）を確認
         expect(box.width).toBeGreaterThanOrEqual(44);
         expect(box.height).toBeGreaterThanOrEqual(44);
       }
     }
-    
+
     console.log('モバイルビューでのボタンサイズが適切です');
   });
 
@@ -239,16 +239,16 @@ test.describe('霊園CRM - 全ボタン機能テスト', () => {
     // 不正な値を入力
     await page.fill('input[name="postalCode"]', 'invalid');
     await page.fill('input[name="phone"]', 'invalid-phone');
-    
+
     // 登録ボタンをクリック
     const submitButton = page.getByRole('button', { name: /登録/ });
     await submitButton.click();
-    
+
     // エラーメッセージが表示されるか確認
     await page.waitForTimeout(1000);
     const errorMessages = page.locator('[class*="error"], [class*="invalid"]');
     const errorCount = await errorMessages.count();
-    
+
     if (errorCount > 0) {
       console.log(`${errorCount}個のエラーメッセージが表示されました`);
       // エラー状態でもボタンが適切に動作するか確認
@@ -260,18 +260,18 @@ test.describe('霊園CRM - 全ボタン機能テスト', () => {
 test.describe('パフォーマンステスト', () => {
   test('ボタンクリックの応答時間測定', async ({ page }) => {
     await page.goto('/');
-    
+
     // 検索ボタンのクリック応答時間を測定
     const searchButton = page.getByRole('button', { name: /^検索$/ });
-    
+
     const startTime = Date.now();
     await searchButton.click();
-    await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
+    await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => { });
     const endTime = Date.now();
-    
+
     const responseTime = endTime - startTime;
     console.log(`検索ボタンの応答時間: ${responseTime}ms`);
-    
+
     // 応答時間が3秒以内であることを確認
     expect(responseTime).toBeLessThan(3000);
   });

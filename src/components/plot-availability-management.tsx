@@ -60,7 +60,7 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
 
   // 全体集計
   const summary = useMemo(() => calculateInventorySummary(), []);
-  
+
   // 期別集計
   const periodSummaries = useMemo(() => calculateAllPeriodSummaries(), []);
 
@@ -73,7 +73,7 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
   // 表示するデータ
   const displayData = useMemo(() => {
     let data: PlotInventoryItem[] = [];
-    
+
     switch (viewMode) {
       case 'all':
         if (selectedPeriod === 'all') {
@@ -83,22 +83,22 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
         }
         break;
       case 'available':
-        data = getAvailablePlots().filter(item => 
+        data = getAvailablePlots().filter(item =>
           selectedPeriod === 'all' || item.period === selectedPeriod
         );
         break;
       case 'soldout':
-        data = getSoldOutPlots().filter(item => 
+        data = getSoldOutPlots().filter(item =>
           selectedPeriod === 'all' || item.period === selectedPeriod
         );
         break;
       case 'usage-rate':
-        data = getInventorySortedByUsageRate(sortOrder === 'asc').filter(item => 
+        data = getInventorySortedByUsageRate(sortOrder === 'asc').filter(item =>
           selectedPeriod === 'all' || item.period === selectedPeriod
         );
         break;
       case 'remaining':
-        data = getInventorySortedByRemaining(sortOrder === 'asc').filter(item => 
+        data = getInventorySortedByRemaining(sortOrder === 'asc').filter(item =>
           selectedPeriod === 'all' || item.period === selectedPeriod
         );
         break;
@@ -121,8 +121,8 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
       data = [...data].sort((a, b) => {
         let aValue: any = '';
         let bValue: any = '';
-        
-        switch(sortKey) {
+
+        switch (sortKey) {
           case 'period':
             aValue = a.period;
             bValue = b.period;
@@ -148,7 +148,7 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
             bValue = b.totalCount > 0 ? b.usedCount / b.totalCount : 0;
             break;
         }
-        
+
         if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
         if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
         return 0;
@@ -196,7 +196,7 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
   // 面積別表示データ
   const displayAreaData = useMemo(() => {
     let data: PlotByAreaItem[] = [];
-    
+
     switch (viewMode) {
       case 'all':
         if (selectedPeriod === 'all') {
@@ -206,12 +206,12 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
         }
         break;
       case 'available':
-        data = getAvailablePlotsByArea().filter(item => 
+        data = getAvailablePlotsByArea().filter(item =>
           selectedPeriod === 'all' || item.period === selectedPeriod
         );
         break;
       case 'soldout':
-        data = getSoldOutPlotsByArea().filter(item => 
+        data = getSoldOutPlotsByArea().filter(item =>
           selectedPeriod === 'all' || item.period === selectedPeriod
         );
         break;
@@ -237,8 +237,8 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
     data = [...data].sort((a, b) => {
       let aValue: any = '';
       let bValue: any = '';
-      
-      switch(areaSortKey) {
+
+      switch (areaSortKey) {
         case 'period':
           aValue = a.period;
           bValue = b.period;
@@ -268,7 +268,7 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
           bValue = b.plotType;
           break;
       }
-      
+
       if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
       if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
       return 0;
@@ -308,7 +308,7 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
             </div>
           </div>
         </div>
-        
+
         <div className="p-4 flex-1 overflow-auto">
           {/* メインメニューに戻るボタン */}
           {onNavigateToMenu && (
@@ -399,7 +399,7 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
                 '4期': { bg: 'bg-kohaku-50', border: 'border-kohaku-200', text: 'text-kohaku' },
               };
               const colors = periodColors[period];
-              
+
               return (
                 <button
                   key={period}
@@ -450,8 +450,8 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
             <div className="text-3xl font-bold text-cha">{summary.usageRate}%</div>
             <div className="text-sm text-cha font-medium mt-1">使用率</div>
             <div className="w-full bg-cha-100 rounded-full h-2 mt-3">
-              <div 
-                className="bg-cha h-2 rounded-full transition-all duration-500" 
+              <div
+                className="bg-cha h-2 rounded-full transition-all duration-500"
                 style={{ width: `${summary.usageRate}%` }}
               />
             </div>
@@ -473,15 +473,15 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
               '4期': { gradient: 'from-kohaku to-kohaku-dark', light: 'kohaku' },
             };
             const colors = periodColors[ps.period as keyof typeof periodColors];
-            
+
             return (
               <button
                 key={ps.period}
                 onClick={() => setSelectedPeriod(ps.period)}
                 className={cn(
                   "bg-white border rounded-elegant-lg p-5 text-left transition-all duration-300 hover:shadow-elegant-lg",
-                  selectedPeriod === ps.period 
-                    ? `border-${colors.light} ring-2 ring-${colors.light}-100 shadow-elegant` 
+                  selectedPeriod === ps.period
+                    ? `border-${colors.light} ring-2 ring-${colors.light}-100 shadow-elegant`
                     : "border-gin hover:border-hai"
                 )}
               >
@@ -527,7 +527,7 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
               placeholder={displayMode === 'section' ? "区画名、期で検索..." : "面積、タイプ、期で検索..."}
               className="flex-1 max-w-md"
             />
-            <Button 
+            <Button
               onClick={() => setSearchQuery('')}
               variant="outline"
               size="default"
@@ -551,7 +551,7 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
               <table className="w-full">
                 <thead className="bg-kinari border-b border-gin">
                   <tr>
-                    <th 
+                    <th
                       className={cn(
                         "px-4 py-4 text-left text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
                         sortKey === 'period' && "bg-cha-50"
@@ -565,7 +565,7 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
                         )}
                       </div>
                     </th>
-                    <th 
+                    <th
                       className={cn(
                         "px-4 py-4 text-left text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
                         sortKey === 'section' && "bg-cha-50"
@@ -579,7 +579,7 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
                         )}
                       </div>
                     </th>
-                    <th 
+                    <th
                       className={cn(
                         "px-4 py-4 text-right text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
                         sortKey === 'totalCount' && "bg-cha-50"
@@ -593,7 +593,7 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
                         )}
                       </div>
                     </th>
-                    <th 
+                    <th
                       className={cn(
                         "px-4 py-4 text-right text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
                         sortKey === 'usedCount' && "bg-cha-50"
@@ -607,7 +607,7 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
                         )}
                       </div>
                     </th>
-                    <th 
+                    <th
                       className={cn(
                         "px-4 py-4 text-right text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
                         sortKey === 'remainingCount' && "bg-cha-50"
@@ -621,7 +621,7 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
                         )}
                       </div>
                     </th>
-                    <th 
+                    <th
                       className={cn(
                         "px-4 py-4 text-center text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
                         sortKey === 'usageRate' && "bg-cha-50"
@@ -645,8 +645,8 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
                 </thead>
                 <tbody className="divide-y divide-gin">
                   {displayData.map((item, index) => {
-                    const usageRate = item.totalCount > 0 
-                      ? Math.round((item.usedCount / item.totalCount) * 100 * 10) / 10 
+                    const usageRate = item.totalCount > 0
+                      ? Math.round((item.usedCount / item.totalCount) * 100 * 10) / 10
                       : 0;
                     const remainingArea = item.remainingCount * PLOT_SIZE.FULL;
                     const periodColors = {
@@ -655,9 +655,9 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
                       '3期': 'bg-cha-50 text-cha',
                       '4期': 'bg-kohaku-50 text-kohaku',
                     };
-                    
+
                     return (
-                      <tr 
+                      <tr
                         key={`${item.period}-${item.section}`}
                         className={cn(
                           "hover:bg-kinari transition-colors",
@@ -693,13 +693,13 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
                         <td className="px-4 py-3 text-sm text-center">
                           <div className="flex items-center justify-center space-x-2">
                             <div className="w-16 bg-kinari rounded-full h-2 border border-gin">
-                              <div 
+                              <div
                                 className={cn(
                                   "h-2 rounded-full transition-all duration-300",
                                   usageRate >= 95 ? 'bg-beni' :
-                                  usageRate >= 80 ? 'bg-kohaku' :
-                                  usageRate >= 60 ? 'bg-cha' :
-                                  'bg-matsu'
+                                    usageRate >= 80 ? 'bg-kohaku' :
+                                      usageRate >= 60 ? 'bg-cha' :
+                                        'bg-matsu'
                                 )}
                                 style={{ width: `${usageRate}%` }}
                               />
@@ -748,7 +748,7 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
                       {displayData.length > 0 ? (
                         Math.round(
                           (displayData.reduce((sum, item) => sum + item.usedCount, 0) /
-                          displayData.reduce((sum, item) => sum + item.totalCount, 0)) * 100 * 10
+                            displayData.reduce((sum, item) => sum + item.totalCount, 0)) * 100 * 10
                         ) / 10
                       ) : 0}%
                     </td>
@@ -764,7 +764,7 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
               <table className="w-full">
                 <thead className="bg-kinari border-b border-gin">
                   <tr>
-                    <th 
+                    <th
                       className={cn(
                         "px-4 py-4 text-left text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
                         areaSortKey === 'period' && "bg-cha-50"
@@ -778,7 +778,7 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
                         )}
                       </div>
                     </th>
-                    <th 
+                    <th
                       className={cn(
                         "px-4 py-4 text-right text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
                         areaSortKey === 'areaSqm' && "bg-cha-50"
@@ -792,7 +792,7 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
                         )}
                       </div>
                     </th>
-                    <th 
+                    <th
                       className={cn(
                         "px-4 py-4 text-right text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
                         areaSortKey === 'totalCount' && "bg-cha-50"
@@ -806,7 +806,7 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
                         )}
                       </div>
                     </th>
-                    <th 
+                    <th
                       className={cn(
                         "px-4 py-4 text-right text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
                         areaSortKey === 'usedCount' && "bg-cha-50"
@@ -820,7 +820,7 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
                         )}
                       </div>
                     </th>
-                    <th 
+                    <th
                       className={cn(
                         "px-4 py-4 text-right text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
                         areaSortKey === 'remainingCount' && "bg-cha-50"
@@ -834,7 +834,7 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
                         )}
                       </div>
                     </th>
-                    <th 
+                    <th
                       className={cn(
                         "px-4 py-4 text-right text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
                         areaSortKey === 'remainingAreaSqm' && "bg-cha-50"
@@ -848,7 +848,7 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
                         )}
                       </div>
                     </th>
-                    <th 
+                    <th
                       className={cn(
                         "px-4 py-4 text-left text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
                         areaSortKey === 'plotType' && "bg-cha-50"
@@ -875,9 +875,9 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
                       '3期': 'bg-cha-50 text-cha',
                       '4期': 'bg-kohaku-50 text-kohaku',
                     };
-                    
+
                     return (
-                      <tr 
+                      <tr
                         key={`${item.period}-${item.areaSqm}-${item.plotType}-${index}`}
                         className={cn(
                           "hover:bg-kinari transition-colors",
@@ -957,7 +957,7 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
               </table>
             )}
           </div>
-          
+
           {(displayMode === 'section' ? displayData.length : displayAreaData.length) === 0 && (
             <div className="text-center py-16 text-hai">
               <svg className="w-16 h-16 mx-auto mb-4 text-gin" fill="none" viewBox="0 0 24 24" stroke="currentColor">

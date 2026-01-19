@@ -50,10 +50,12 @@ export const customerFormSchema = z.object({
   // 請求情報
   billingInfo: z.object({
     billingType: z.enum(["individual", "corporate", "bank_transfer"]).optional(),
-    bankName: z.string().optional(),
+    institutionName: z.string().optional(), // 機関名称（銀行・ゆうちょ等）
+    bankName: z.string().optional(), // 後方互換性のため残す
     branchName: z.string().optional(),
     accountType: z.enum(["ordinary", "current", "savings"]).optional(),
-    accountNumber: z.string().optional(),
+    symbolNumber: z.string().optional(), // 記号
+    accountNumber: z.string().optional(), // 番号
     accountHolder: z.string().optional(),
   }).optional(),
 
@@ -107,7 +109,9 @@ export const customerFormSchema = z.object({
   familyContacts: z.array(z.object({
     id: z.string(),
     name: z.string().min(1, "氏名は必須です"),
+    nameKana: z.string().optional(),
     birthDate: z.string().optional(),
+    gender: z.enum(["", "male", "female"]).optional(),
     relationship: z.string().min(1, "続柄は必須です"),
     address: z.string().min(1, "住所は必須です"),
     phoneNumber: z.string().min(1, "電話番号は必須です"),
@@ -132,8 +136,16 @@ export const customerFormSchema = z.object({
   buriedPersons: z.array(z.object({
     id: z.string(),
     name: z.string().min(1, "氏名は必須です"),
+    nameKana: z.string().optional(),
+    birthDate: z.string().optional(),
     gender: z.enum(["", "male", "female"]),
+    posthumousName: z.string().optional(),
+    deathDate: z.string().optional(),
+    age: z.string().optional(),
     burialDate: z.string().min(1, "埋葬日は必須です"),
+    reportDate: z.string().optional(),
+    religion: z.string().optional(),
+    relationship: z.string().optional(),
     memo: z.string().optional(),
   })).optional(),
 
@@ -150,6 +162,20 @@ export const customerFormSchema = z.object({
   postalCode: z.string().optional(),
   prefecture: z.string().optional(),
   city: z.string().optional(),
+
+  // 工事情報（複数対応）
+  constructionRecords: z.array(z.object({
+    id: z.string(),
+    contractorName: z.string().min(1, "業者名は必須です"),
+    constructionType: z.enum(["gravestone", "enclosure", "additional", "repair", "other"]),
+    startDate: z.string().optional(),
+    scheduledEndDate: z.string().optional(),
+    endDate: z.string().optional(),
+    description: z.string().optional(),
+    constructionAmount: z.string().optional(),
+    paidAmount: z.string().optional(),
+    notes: z.string().optional(),
+  })).optional(),
 });
 
 export type CustomerFormData = z.infer<typeof customerFormSchema>;

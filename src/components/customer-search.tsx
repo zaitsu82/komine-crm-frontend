@@ -48,22 +48,22 @@ export default function CustomerSearch({ onCustomerSelect, selectedCustomer, onN
     // 実際のビジネスロジックに応じて調整
     const hasOverdue = false; // 滞納があるか
     const needsAttention = false; // 要対応事項があるか
-    
+
     if (needsAttention) {
-      return { 
+      return {
         className: 'status-attention text-status-attention bg-red-50 border-red-200',
         label: '要対応',
         icon: '■'
       };
     }
     if (hasOverdue) {
-      return { 
+      return {
         className: 'status-warning text-status-warning bg-yellow-50 border-yellow-200',
         label: '滞納注意',
         icon: '▲'
       };
     }
-    return { 
+    return {
       className: 'status-active text-status-active bg-green-50 border-green-200',
       label: '契約中',
       icon: '●'
@@ -94,16 +94,16 @@ export default function CustomerSearch({ onCustomerSelect, selectedCustomer, onN
             </p>
           </div>
           <div className="flex items-center space-x-4">
-            <Button 
-              onClick={handleSearch} 
+            <Button
+              onClick={handleSearch}
               disabled={isSearching}
               className="btn-senior bg-accessible-primary hover:bg-blue-700"
               aria-label="検索を実行"
             >
               {isSearching ? '検索中...' : '検索'}
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => {
                 setSearchQuery('');
                 setSearchResults([]);
@@ -114,7 +114,7 @@ export default function CustomerSearch({ onCustomerSelect, selectedCustomer, onN
               クリア
             </Button>
             {onNewCustomer && (
-              <Button 
+              <Button
                 onClick={onNewCustomer}
                 className="btn-senior bg-accessible-secondary hover:bg-green-700"
                 aria-label="新しい顧客を登録"
@@ -140,9 +140,8 @@ export default function CustomerSearch({ onCustomerSelect, selectedCustomer, onN
               return (
                 <div
                   key={customer.id}
-                  className={`customer-row p-4 border-b border-accessible-border cursor-pointer transition-all ${
-                    selectedCustomer?.id === customer.id ? 'selected bg-blue-50 border-blue-300' : 'hover:bg-accessible-bg-light'
-                  }`}
+                  className={`customer-row p-4 border-b border-accessible-border cursor-pointer transition-all ${selectedCustomer?.id === customer.id ? 'selected bg-blue-50 border-blue-300' : 'hover:bg-accessible-bg-light'
+                    }`}
                   onClick={() => onCustomerSelect(customer)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
@@ -161,12 +160,12 @@ export default function CustomerSearch({ onCustomerSelect, selectedCustomer, onN
                         <span className="mr-1">{status.icon}</span>
                         {status.label}
                       </div>
-                      
+
                       {/* 墓石コード */}
                       <div className="text-senior-sm font-mono font-semibold text-accessible-primary bg-blue-50 px-2 py-1 rounded border">
                         {customer.customerCode}
                       </div>
-                      
+
                       {/* 顧客名 */}
                       <div>
                         <div className="text-senior-base font-bold text-accessible-text">
@@ -177,14 +176,14 @@ export default function CustomerSearch({ onCustomerSelect, selectedCustomer, onN
                         </div>
                       </div>
                     </div>
-                    
+
                     {/* 連絡先情報 */}
                     <div className="text-right text-senior-sm text-gray-700 space-y-1">
                       <div className="font-semibold">{customer.phoneNumber}</div>
                       <div>{customer.prefecture}{customer.city}</div>
                     </div>
                   </div>
-                  
+
                   {/* 詳細情報 */}
                   <div className="text-senior-xs text-gray-600 bg-gray-50 px-3 py-2 rounded border">
                     <div className="flex justify-between items-center">
@@ -195,8 +194,8 @@ export default function CustomerSearch({ onCustomerSelect, selectedCustomer, onN
                         区画: {customer.plotInfo?.plotNumber || '未設定'}
                       </span>
                       <span>
-                        利用状況: {customer.plotInfo?.usage === 'in_use' ? '利用中' : 
-                                 customer.plotInfo?.usage === 'reserved' ? '予約済み' : '利用可能'}
+                        利用状況: {customer.plotInfo?.usage === 'in_use' ? '利用中' :
+                          customer.plotInfo?.usage === 'reserved' ? '予約済み' : '利用可能'}
                       </span>
                     </div>
                   </div>
@@ -216,8 +215,8 @@ export default function CustomerSearch({ onCustomerSelect, selectedCustomer, onN
           <div className="text-senior-sm text-yellow-700 mb-4">
             検索キーワード: 「{searchQuery}」
           </div>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => {
               setSearchQuery('');
               setSearchResults([]);

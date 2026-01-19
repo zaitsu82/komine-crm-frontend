@@ -6,7 +6,7 @@ test.describe('統合テスト - 顧客管理フロー', () => {
 
     // 1. 新規顧客登録
     await page.getByRole('button', { name: '新規顧客登録' }).click();
-    
+
     // 顧客情報を入力
     const timestamp = Date.now();
     const testCustomerName = `テスト太郎${timestamp}`;
@@ -119,14 +119,14 @@ test.describe('統合テスト - 顧客管理フロー', () => {
       const nextButton = page.getByRole('button', { name: '次へ' });
       if (await nextButton.isEnabled()) {
         await nextButton.click();
-        
+
         // ページが変わったことを確認
         await expect(page.locator('[data-testid="current-page"]')).toContainText('2');
-        
+
         // 前のページボタンをクリック
         const prevButton = page.getByRole('button', { name: '前へ' });
         await prevButton.click();
-        
+
         // 最初のページに戻ったことを確認
         await expect(page.locator('[data-testid="current-page"]')).toContainText('1');
       }
@@ -141,7 +141,7 @@ test.describe('統合テスト - 顧客管理フロー', () => {
 
     // 新規登録を試行
     await page.getByRole('button', { name: '新規顧客登録' }).click();
-    
+
     await page.getByLabel('契約者氏名').fill('エラーテスト');
     await page.getByLabel('フリガナ').fill('エラーテスト');
     await page.getByLabel('性別').selectOption('男性');
@@ -171,14 +171,14 @@ test.describe('統合テスト - 顧客管理フロー', () => {
     // タブレット表示
     await page.setViewportSize({ width: 768, height: 1024 });
     await expect(page.getByRole('heading', { name: '顧客台帳' })).toBeVisible();
-    
+
     // 新規登録ボタンが表示されることを確認
     await expect(page.getByRole('button', { name: '新規顧客登録' })).toBeVisible();
 
     // モバイル表示
     await page.setViewportSize({ width: 375, height: 667 });
     await expect(page.getByRole('heading', { name: '顧客台帳' })).toBeVisible();
-    
+
     // メニューが適切に表示されることを確認
     const hamburgerMenu = page.locator('[data-testid="mobile-menu"]');
     if (await hamburgerMenu.isVisible()) {
@@ -193,7 +193,7 @@ test.describe('統合テスト - 顧客管理フロー', () => {
     // キーボードナビゲーション
     await page.keyboard.press('Tab');
     await page.keyboard.press('Tab');
-    
+
     // フォーカスが適切に移動することを確認
     const focusedElement = page.locator(':focus');
     await expect(focusedElement).toBeVisible();
@@ -216,20 +216,20 @@ test.describe('統合テスト - 顧客管理フロー', () => {
 
   test('パフォーマンステスト', async ({ page }) => {
     const startTime = Date.now();
-    
+
     await page.goto('/');
-    
+
     // ページロード時間を測定
     const loadTime = Date.now() - startTime;
     expect(loadTime).toBeLessThan(5000); // 5秒以内でロード
 
     // 大量データでの検索パフォーマンステスト
     await page.getByRole('tab', { name: '検索' }).click();
-    
+
     const searchStartTime = Date.now();
     await page.getByLabel('氏名').fill('田');
     await page.getByRole('button', { name: '検索' }).click();
-    
+
     // 検索結果が表示されるまでの時間を測定
     await expect(page.getByText('検索結果')).toBeVisible({ timeout: 10000 });
     const searchTime = Date.now() - searchStartTime;
@@ -246,7 +246,7 @@ test.describe('統合テスト - 顧客管理フロー', () => {
     // 新規顧客登録
     const timestamp = Date.now();
     await page.getByRole('button', { name: '新規顧客登録' }).click();
-    
+
     await page.getByLabel('契約者氏名').fill(`整合性テスト${timestamp}`);
     await page.getByLabel('フリガナ').fill('セイゴウセイテスト');
     await page.getByLabel('性別').selectOption('女性');
@@ -270,7 +270,7 @@ test.describe('統合テスト - 顧客管理フロー', () => {
     await page.getByRole('tab', { name: '検索' }).click();
     await page.getByLabel('氏名').fill(`整合性テスト${timestamp}`);
     await page.getByRole('button', { name: '検索' }).click();
-    
+
     await expect(page.getByText('検索結果')).toBeVisible();
     await expect(page.getByText(`整合性テスト${timestamp}`)).toBeVisible();
   });

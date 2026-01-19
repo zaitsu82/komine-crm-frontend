@@ -94,11 +94,10 @@ export default function CapacityWarningDialog({
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium text-gray-600">残り人数</span>
-                <span className={`text-xl font-bold ${
-                  isFull ? 'text-red-600' :
+                <span className={`text-xl font-bold ${isFull ? 'text-red-600' :
                   status === 'critical' ? 'text-orange-600' :
-                  'text-yellow-600'
-                }`}>
+                    'text-yellow-600'
+                  }`}>
                   {remaining}名
                 </span>
               </div>
@@ -107,21 +106,19 @@ export default function CapacityWarningDialog({
               <div className="mt-4">
                 <div className="flex justify-between items-center mb-1">
                   <span className="text-xs text-gray-500">使用率</span>
-                  <span className={`text-sm font-bold ${
-                    isFull ? 'text-red-600' :
+                  <span className={`text-sm font-bold ${isFull ? 'text-red-600' :
                     status === 'critical' ? 'text-orange-600' :
-                    'text-yellow-600'
-                  }`}>
+                      'text-yellow-600'
+                    }`}>
                     {percentage}%
                   </span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
                   <div
-                    className={`h-3 rounded-full transition-all duration-500 ${
-                      isFull ? 'bg-red-600' :
+                    className={`h-3 rounded-full transition-all duration-500 ${isFull ? 'bg-red-600' :
                       status === 'critical' ? 'bg-orange-500' :
-                      'bg-yellow-500'
-                    }`}
+                        'bg-yellow-500'
+                      }`}
                     style={{ width: `${percentage}%` }}
                   />
                 </div>

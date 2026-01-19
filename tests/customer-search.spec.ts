@@ -14,7 +14,7 @@ test.describe('顧客検索機能', () => {
     await expect(page.getByLabel('フリガナ')).toBeVisible();
     await expect(page.getByLabel('電話番号')).toBeVisible();
     await expect(page.getByLabel('墓所番号')).toBeVisible();
-    
+
     // 検索ボタンの確認
     await expect(page.getByRole('button', { name: '検索' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'クリア' })).toBeVisible();
@@ -26,10 +26,10 @@ test.describe('顧客検索機能', () => {
 
     // 顧客IDを入力
     await customerIdInput.fill('C001');
-    
+
     // 検索実行
     await searchButton.click();
-    
+
     // 検索結果が表示されることを確認
     await expect(page.getByText('検索結果')).toBeVisible();
   });
@@ -40,10 +40,10 @@ test.describe('顧客検索機能', () => {
 
     // 氏名を入力
     await nameInput.fill('田中');
-    
+
     // 検索実行
     await searchButton.click();
-    
+
     // 検索結果が表示されることを確認
     await expect(page.getByText('検索結果')).toBeVisible();
   });
@@ -54,10 +54,10 @@ test.describe('顧客検索機能', () => {
 
     // フリガナを入力
     await furiganaInput.fill('タナカ');
-    
+
     // 検索実行
     await searchButton.click();
-    
+
     // 検索結果が表示されることを確認
     await expect(page.getByText('検索結果')).toBeVisible();
   });
@@ -68,10 +68,10 @@ test.describe('顧客検索機能', () => {
 
     // 電話番号を入力
     await phoneInput.fill('03-1234-5678');
-    
+
     // 検索実行
     await searchButton.click();
-    
+
     // 検索結果が表示されることを確認
     await expect(page.getByText('検索結果')).toBeVisible();
   });
@@ -82,10 +82,10 @@ test.describe('顧客検索機能', () => {
 
     // 墓所番号を入力
     await graveInput.fill('A-001');
-    
+
     // 検索実行
     await searchButton.click();
-    
+
     // 検索結果が表示されることを確認
     await expect(page.getByText('検索結果')).toBeVisible();
   });
@@ -98,10 +98,10 @@ test.describe('顧客検索機能', () => {
     // 複数の検索条件を入力
     await nameInput.fill('田中');
     await phoneInput.fill('03-1234');
-    
+
     // 検索実行
     await searchButton.click();
-    
+
     // 検索結果が表示されることを確認
     await expect(page.getByText('検索結果')).toBeVisible();
   });
@@ -114,14 +114,14 @@ test.describe('顧客検索機能', () => {
     // 入力フィールドに値を設定
     await customerIdInput.fill('C001');
     await nameInput.fill('田中太郎');
-    
+
     // 値が入力されていることを確認
     await expect(customerIdInput).toHaveValue('C001');
     await expect(nameInput).toHaveValue('田中太郎');
-    
+
     // クリアボタンをクリック
     await clearButton.click();
-    
+
     // フィールドがクリアされていることを確認
     await expect(customerIdInput).toHaveValue('');
     await expect(nameInput).toHaveValue('');
@@ -134,14 +134,14 @@ test.describe('顧客検索機能', () => {
     // 検索実行
     await nameInput.fill('田中');
     await searchButton.click();
-    
+
     // 検索結果が表示されるまで待機
     await expect(page.getByText('検索結果')).toBeVisible();
-    
+
     // 検索結果テーブルの最初の行をクリック
     const firstResultRow = page.locator('[data-testid="search-results"] tbody tr').first();
     const rowCount = await page.locator('[data-testid="search-results"] tbody tr').count();
-    
+
     if (rowCount > 0) {
       await firstResultRow.click();
       // 詳細画面に遷移することを確認
@@ -156,7 +156,7 @@ test.describe('顧客検索機能', () => {
     // 存在しない顧客IDで検索
     await customerIdInput.fill('NONEXISTENT');
     await searchButton.click();
-    
+
     // 検索結果0件のメッセージを確認
     await expect(page.getByText('該当する顧客が見つかりませんでした')).toBeVisible();
   });
@@ -168,7 +168,7 @@ test.describe('顧客検索機能', () => {
     // 不正な電話番号形式を入力
     await phoneInput.fill('invalid-phone');
     await searchButton.click();
-    
+
     // バリデーションエラーが表示されることを確認（実装に応じて調整）
     // await expect(page.getByText('正しい電話番号を入力してください')).toBeVisible();
   });
@@ -197,10 +197,10 @@ test.describe('顧客検索機能', () => {
     // 検索実行
     await nameInput.fill('田');
     await searchButton.click();
-    
+
     // 検索結果が表示されるまで待機
     await expect(page.getByText('検索結果')).toBeVisible();
-    
+
     // カラムヘッダーをクリックしてソート（実装されている場合）
     const nameColumnHeader = page.getByText('氏名').first();
     if (await nameColumnHeader.isVisible()) {
@@ -216,10 +216,10 @@ test.describe('顧客検索機能', () => {
     // 多くの結果が返される検索を実行
     await nameInput.fill('田');
     await searchButton.click();
-    
+
     // 検索結果が表示されるまで待機
     await expect(page.getByText('検索結果')).toBeVisible();
-    
+
     // ページネーション要素が表示されることを確認
     const pagination = page.locator('[data-testid="search-pagination"]');
     if (await pagination.isVisible()) {

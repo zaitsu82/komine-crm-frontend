@@ -45,7 +45,7 @@ export const demoCustomers: Customer[] = [
     email: 'tanaka.taro@example.com',
     address: '福岡県北九州市小倉北区清水2-12-15',
     registeredAddress: '福岡県北九州市小倉北区清水2-12-15',
-    
+
     applicantInfo: {
       applicationDate: new Date('2024-01-10'),
       staffName: '佐藤 一郎',
@@ -55,7 +55,7 @@ export const demoCustomers: Customer[] = [
       phoneNumber: '090-1234-5678',
       address: '福岡県北九州市小倉北区清水2-12-15'
     },
-    
+
     usageFee: {
       calculationType: '固定',
       taxType: '税込',
@@ -66,7 +66,7 @@ export const demoCustomers: Customer[] = [
       usageFee: '300000',
       paymentMethod: '銀行振込'
     },
-    
+
     managementFee: {
       calculationType: '固定',
       taxType: '税込',
@@ -79,7 +79,7 @@ export const demoCustomers: Customer[] = [
       lastBillingMonth: '2024年04月',
       paymentMethod: '口座振替'
     },
-    
+
     gravestoneInfo: {
       gravestoneBase: '御影石',
       enclosurePosition: '正面',
@@ -89,7 +89,187 @@ export const demoCustomers: Customer[] = [
       establishmentDeadline: new Date('2024-12-31'),
       establishmentDate: new Date('2024-06-15')
     },
-    
+
+    // 請求情報
+    billingInfo: {
+      billingType: 'bank_transfer',
+      institutionName: '福岡銀行',
+      branchName: '小倉支店',
+      accountType: 'ordinary',
+      symbolNumber: '123',
+      accountNumber: '4567890',
+      accountHolder: 'タナカ タロウ',
+      type: '口座振替'
+    },
+
+    // 家族・連絡先情報
+    familyContacts: [
+      {
+        id: 'family-001',
+        name: '田中 次郎',
+        nameKana: 'たなか じろう',
+        relationship: '長男',
+        gender: 'male',
+        birthDate: new Date('1980-05-10'),
+        phoneNumber: '090-2222-3333',
+        faxNumber: '093-561-3456',
+        email: 'tanaka.jiro@example.com',
+        address: '福岡県北九州市小倉北区清水3-5-10',
+        registeredAddress: '福岡県北九州市小倉北区清水2-12-15',
+        mailingType: 'home',
+        companyName: '株式会社ABC商事',
+        companyNameKana: 'かぶしきがいしゃえーびーしーしょうじ',
+        companyAddress: '福岡県北九州市小倉北区船場町1-1-1',
+        companyPhone: '093-521-1234',
+        notes: '主要連絡先。父の墓守として対応'
+      },
+      {
+        id: 'family-002',
+        name: '田中 美咲',
+        nameKana: 'たなか みさき',
+        relationship: '長女',
+        gender: 'female',
+        birthDate: new Date('1983-09-25'),
+        phoneNumber: '080-4444-5555',
+        email: 'tanaka.misaki@example.com',
+        address: '東京都世田谷区用賀2-8-15',
+        mailingType: 'home',
+        notes: '東京在住。年末年始に帰省'
+      }
+    ],
+
+    // 埋葬者情報
+    buriedPersons: [
+      {
+        id: 'buried-001',
+        name: '田中 一郎',
+        nameKana: 'たなか いちろう',
+        relationship: '父',
+        gender: 'male',
+        birthDate: new Date('1938-04-15'),
+        deathDate: new Date('2023-12-15'),
+        age: 85,
+        posthumousName: '釋浄覚信士',
+        religion: '浄土宗',
+        reportDate: new Date('2023-12-20'),
+        burialDate: new Date('2024-01-10'),
+        memo: '浄土寺にて法要実施'
+      },
+      {
+        id: 'buried-002',
+        name: '田中 花子',
+        nameKana: 'たなか はなこ',
+        relationship: '母',
+        gender: 'female',
+        birthDate: new Date('1943-08-20'),
+        deathDate: new Date('2024-03-20'),
+        age: 80,
+        posthumousName: '釋浄妙信女',
+        religion: '浄土宗',
+        reportDate: new Date('2024-03-25'),
+        burialDate: new Date('2024-04-05'),
+        memo: '夫と同じ浄土寺にて法要'
+      }
+    ],
+
+    // 工事情報
+    constructionRecords: [
+      {
+        id: 'construction-001',
+        contractorName: '石材店A',
+        constructionType: 'gravestone',
+        startDate: new Date('2024-04-01'),
+        scheduledEndDate: new Date('2024-05-31'),
+        endDate: new Date('2024-05-15'),
+        description: '洋型墓石（御影石）の設置。基礎工事含む。',
+        constructionAmount: 850000,
+        paidAmount: 850000,
+        notes: '完工検査済み'
+      },
+      {
+        id: 'construction-002',
+        contractorName: '石材店A',
+        constructionType: 'enclosure',
+        startDate: new Date('2024-05-20'),
+        scheduledEndDate: new Date('2024-06-15'),
+        endDate: new Date('2024-06-10'),
+        description: '外柵工事（御影石、正面開口型）',
+        constructionAmount: 320000,
+        paidAmount: 320000,
+        notes: '墓石工事と同一業者'
+      },
+      {
+        id: 'construction-003',
+        contractorName: '緑化サービスB',
+        constructionType: 'additional',
+        startDate: new Date('2024-06-15'),
+        scheduledEndDate: new Date('2024-06-20'),
+        endDate: new Date('2024-06-18'),
+        description: '植栽工事（低木植込み、防草シート施工）',
+        constructionAmount: 85000,
+        paidAmount: 85000,
+        notes: '年1回の剪定サービス付き'
+      }
+    ],
+
+    // 更新履歴（契約者情報スナップショット）
+    historyRecords: [
+      {
+        id: 'history-001',
+        updatedAt: new Date('2024-01-10'),
+        updatedBy: '佐藤 一郎',
+        reasonType: 'new_registration',
+        reasonDetail: '新規契約',
+        contractorSnapshot: {
+          name: '田中 太郎',
+          nameKana: 'たなか たろう',
+          birthDate: new Date('1955-03-15'),
+          gender: 'male',
+          postalCode: '803-0841',
+          address: '福岡県北九州市小倉北区清水2-12-15',
+          phoneNumber: '090-1234-5678',
+          faxNumber: '093-561-2345',
+          email: 'tanaka.taro@example.com'
+        }
+      },
+      {
+        id: 'history-002',
+        updatedAt: new Date('2024-02-15'),
+        updatedBy: '鈴木 次郎',
+        reasonType: 'burial_update',
+        reasonDetail: '父（田中一郎）の埋葬情報を登録',
+        contractorSnapshot: {
+          name: '田中 太郎',
+          nameKana: 'たなか たろう',
+          birthDate: new Date('1955-03-15'),
+          gender: 'male',
+          postalCode: '803-0841',
+          address: '福岡県北九州市小倉北区清水2-12-15',
+          phoneNumber: '090-1234-5678',
+          faxNumber: '093-561-2345',
+          email: 'tanaka.taro@example.com'
+        }
+      },
+      {
+        id: 'history-003',
+        updatedAt: new Date('2024-04-10'),
+        updatedBy: '鈴木 次郎',
+        reasonType: 'burial_update',
+        reasonDetail: '母（田中花子）の埋葬情報を登録',
+        contractorSnapshot: {
+          name: '田中 太郎',
+          nameKana: 'たなか たろう',
+          birthDate: new Date('1955-03-15'),
+          gender: 'male',
+          postalCode: '803-0841',
+          address: '福岡県北九州市小倉北区清水2-12-15',
+          phoneNumber: '090-1234-5678',
+          faxNumber: '093-561-2345',
+          email: 'tanaka.taro@example.com'
+        }
+      }
+    ],
+
     // 合祀情報サンプル
     collectiveBurialInfo: [
       {
@@ -147,7 +327,7 @@ export const demoCustomers: Customer[] = [
           },
           {
             id: 'DOC002',
-            type: 'permit', 
+            type: 'permit',
             name: '改葬許可証（田中花子）',
             issuedDate: new Date('2024-09-10'),
             expiryDate: null,
@@ -168,12 +348,12 @@ export const demoCustomers: Customer[] = [
         updatedAt: new Date('2024-09-23')
       }
     ],
-    
+
     createdAt: new Date('2024-01-10'),
     updatedAt: new Date('2024-02-15'),
     status: 'active'
   },
-  
+
   {
     id: 'DEMO002',
     customerCode: 'B-045',
@@ -206,7 +386,7 @@ export const demoCustomers: Customer[] = [
     email: 'yamada.hanako@example.com',
     address: '福岡県福岡市中央区天神1-2-3',
     registeredAddress: '福岡県福岡市中央区天神1-2-3',
-    
+
     applicantInfo: {
       applicationDate: new Date('2023-08-15'),
       staffName: '鈴木 次郎',
@@ -216,7 +396,7 @@ export const demoCustomers: Customer[] = [
       phoneNumber: '080-9876-5432',
       address: '福岡県福岡市中央区天神1-2-3'
     },
-    
+
     usageFee: {
       calculationType: '面積割',
       taxType: '税別',
@@ -227,7 +407,7 @@ export const demoCustomers: Customer[] = [
       usageFee: '360000',
       paymentMethod: '現金'
     },
-    
+
     managementFee: {
       calculationType: '固定',
       taxType: '税込',
@@ -240,12 +420,12 @@ export const demoCustomers: Customer[] = [
       lastBillingMonth: '2024年03月',
       paymentMethod: '銀行振込'
     },
-    
+
     createdAt: new Date('2023-08-15'),
     updatedAt: new Date('2023-09-20'),
     status: 'active'
   },
-  
+
   {
     id: 'DEMO003',
     customerCode: 'C-078',
@@ -278,6 +458,9 @@ export const demoCustomers: Customer[] = [
       }
     ],
     reservationDate: new Date('2024-03-10'),
+    acceptanceNumber: 'ACC-003',
+    permitDate: new Date('2024-03-15'),
+    startDate: new Date('2024-03-25'),
     name: '佐藤 三郎',
     nameKana: 'さとう さぶろう',
     birthDate: new Date('1948-12-05'),
@@ -285,7 +468,7 @@ export const demoCustomers: Customer[] = [
     phoneNumber: '070-5555-1111',
     faxNumber: '092-111-2222',
     address: '福岡県福岡市南区大橋2-5-8',
-    
+
     usageFee: {
       calculationType: '変動',
       taxType: '非課税',
@@ -296,7 +479,7 @@ export const demoCustomers: Customer[] = [
       usageFee: '240000',
       paymentMethod: 'クレジット'
     },
-    
+
     createdAt: new Date('2024-03-10'),
     updatedAt: new Date('2024-03-10'),
     status: 'active'

@@ -22,32 +22,32 @@ export type CollectiveBurialListStatus = 'pending' | 'completed' | 'cancelled';
  */
 export interface CollectiveBurialListRecord {
   id: string;
-  
+
   // 契約者情報
   customerId?: string;        // 関連する顧客ID
   customerCode?: string;      // 顧客コード
   name: string;               // 氏名
   nameKana?: string;          // 氏名カナ
-  
+
   // 区画情報
   section: CollectiveBurialSection;  // 区画（阿弥陀、不動、天空、弥勒）
   plotNumber: string;         // 区画番号（例: 51, H-1・7・13, 122・128）
-  
+
   // 契約・納骨情報
   contractYear: number;       // 契約年（西暦）
   burialDate: Date | null;    // 納骨日
-  
+
   // 合祀情報
   collectiveBurialYear: number;  // 合祀予定年（西暦）
   periodType: CollectiveBurialPeriodType;  // 合祀期間タイプ
   count: number;              // 件数（通常1）
-  
+
   // ステータス
   status: CollectiveBurialListStatus;
-  
+
   // メモ・備考
   notes?: string;             // 備考（例: 「2022年再契約」など）
-  
+
   // システム情報
   createdAt: Date;
   updatedAt: Date;
@@ -85,17 +85,17 @@ export function calculateCollectiveBurialPeriod(contractDate: Date): {
 } {
   const contractYear = contractDate.getFullYear();
   const contractMonth = contractDate.getMonth() + 1; // 0-indexed
-  
+
   // 2015年1月以前契約 → 7年後合祀
   if (contractYear < 2015 || (contractYear === 2015 && contractMonth === 1)) {
     return { periodType: '7year', yearsUntilBurial: 7 };
   }
-  
+
   // 2021年4月以降契約 → 13年後合祀
   if (contractYear > 2021 || (contractYear === 2021 && contractMonth >= 4)) {
     return { periodType: '13year', yearsUntilBurial: 13 };
   }
-  
+
   // その他 → 33年後合祀
   return { periodType: '33year', yearsUntilBurial: 33 };
 }

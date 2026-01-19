@@ -33,7 +33,7 @@ export default function PlotInventoryList({ onClose }: PlotInventoryListProps) {
 
   // 全体集計
   const summary = useMemo(() => calculateInventorySummary(), []);
-  
+
   // 期別集計
   const periodSummaries = useMemo(() => calculateAllPeriodSummaries(), []);
 
@@ -51,19 +51,19 @@ export default function PlotInventoryList({ onClose }: PlotInventoryListProps) {
         }
         return getPlotInventoryByPeriod(selectedPeriod);
       case 'available':
-        return getAvailablePlots().filter(item => 
+        return getAvailablePlots().filter(item =>
           selectedPeriod === 'all' || item.period === selectedPeriod
         );
       case 'soldout':
-        return getSoldOutPlots().filter(item => 
+        return getSoldOutPlots().filter(item =>
           selectedPeriod === 'all' || item.period === selectedPeriod
         );
       case 'usage-rate':
-        return getInventorySortedByUsageRate(sortAscending).filter(item => 
+        return getInventorySortedByUsageRate(sortAscending).filter(item =>
           selectedPeriod === 'all' || item.period === selectedPeriod
         );
       case 'remaining':
-        return getInventorySortedByRemaining(sortAscending).filter(item => 
+        return getInventorySortedByRemaining(sortAscending).filter(item =>
           selectedPeriod === 'all' || item.period === selectedPeriod
         );
       default:
@@ -125,8 +125,8 @@ export default function PlotInventoryList({ onClose }: PlotInventoryListProps) {
           <div className="text-3xl font-bold text-purple-800">{summary.usageRate}%</div>
           <div className="text-xs text-purple-500">
             <div className="w-full bg-purple-200 rounded-full h-2 mt-1">
-              <div 
-                className="bg-purple-600 h-2 rounded-full" 
+              <div
+                className="bg-purple-600 h-2 rounded-full"
                 style={{ width: `${summary.usageRate}%` }}
               />
             </div>
@@ -145,8 +145,8 @@ export default function PlotInventoryList({ onClose }: PlotInventoryListProps) {
             }}
             className={cn(
               "border rounded-lg p-3 text-left transition-all hover:shadow-md",
-              selectedPeriod === ps.period 
-                ? "border-blue-500 bg-blue-50" 
+              selectedPeriod === ps.period
+                ? "border-blue-500 bg-blue-50"
                 : "border-gray-200 hover:border-gray-300"
             )}
           >
@@ -207,8 +207,8 @@ export default function PlotInventoryList({ onClose }: PlotInventoryListProps) {
         <Button
           variant={viewMode === 'usage-rate' ? 'default' : 'outline'}
           size="sm"
-          onClick={() => { 
-            setViewMode('usage-rate'); 
+          onClick={() => {
+            setViewMode('usage-rate');
             setSortAscending(!sortAscending);
           }}
         >
@@ -217,8 +217,8 @@ export default function PlotInventoryList({ onClose }: PlotInventoryListProps) {
         <Button
           variant={viewMode === 'remaining' ? 'default' : 'outline'}
           size="sm"
-          onClick={() => { 
-            setViewMode('remaining'); 
+          onClick={() => {
+            setViewMode('remaining');
             setSortAscending(!sortAscending);
           }}
         >
@@ -262,11 +262,11 @@ export default function PlotInventoryList({ onClose }: PlotInventoryListProps) {
           </thead>
           <tbody>
             {displayData.map((item, index) => {
-              const usageRate = item.totalCount > 0 
-                ? Math.round((item.usedCount / item.totalCount) * 100 * 10) / 10 
+              const usageRate = item.totalCount > 0
+                ? Math.round((item.usedCount / item.totalCount) * 100 * 10) / 10
                 : 0;
               return (
-                <tr 
+                <tr
                   key={`${item.period}-${item.section}`}
                   className={cn(
                     "hover:bg-gray-50 transition-colors",
@@ -277,9 +277,9 @@ export default function PlotInventoryList({ onClose }: PlotInventoryListProps) {
                     <span className={cn(
                       "px-2 py-1 rounded text-xs",
                       item.period === '1期' ? 'bg-blue-100 text-blue-800' :
-                      item.period === '2期' ? 'bg-green-100 text-green-800' :
-                      item.period === '3期' ? 'bg-purple-100 text-purple-800' :
-                      'bg-orange-100 text-orange-800'
+                        item.period === '2期' ? 'bg-green-100 text-green-800' :
+                          item.period === '3期' ? 'bg-purple-100 text-purple-800' :
+                            'bg-orange-100 text-orange-800'
                     )}>
                       {item.period}
                     </span>
@@ -305,13 +305,13 @@ export default function PlotInventoryList({ onClose }: PlotInventoryListProps) {
                   <td className="px-4 py-2 text-sm text-center border-b">
                     <div className="flex items-center justify-center space-x-2">
                       <div className="w-16 bg-gray-200 rounded-full h-2">
-                        <div 
+                        <div
                           className={cn(
                             "h-2 rounded-full",
                             usageRate >= 95 ? 'bg-red-500' :
-                            usageRate >= 80 ? 'bg-orange-500' :
-                            usageRate >= 60 ? 'bg-yellow-500' :
-                            'bg-green-500'
+                              usageRate >= 80 ? 'bg-orange-500' :
+                                usageRate >= 60 ? 'bg-yellow-500' :
+                                  'bg-green-500'
                           )}
                           style={{ width: `${usageRate}%` }}
                         />
@@ -339,7 +339,7 @@ export default function PlotInventoryList({ onClose }: PlotInventoryListProps) {
             })}
           </tbody>
         </table>
-        
+
         {displayData.length === 0 && (
           <div className="text-center py-12 text-gray-500">
             該当する区画がありません

@@ -3,12 +3,12 @@ import { test, expect } from '@playwright/test';
 test.describe('顧客詳細表示機能', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    
+
     // 台帳から顧客を選択して詳細画面に遷移
     // テストデータがある場合の想定
     const firstCustomerRow = page.locator('tbody tr').first();
     const rowCount = await page.locator('tbody tr').count();
-    
+
     if (rowCount > 0) {
       await firstCustomerRow.click();
     } else {
@@ -16,10 +16,10 @@ test.describe('顧客詳細表示機能', () => {
       await page.getByRole('tab', { name: '検索' }).click();
       await page.getByLabel('顧客ID').fill('C001');
       await page.getByRole('button', { name: '検索' }).click();
-      
+
       const searchResultRow = page.locator('[data-testid="search-results"] tbody tr').first();
       const searchRowCount = await page.locator('[data-testid="search-results"] tbody tr').count();
-      
+
       if (searchRowCount > 0) {
         await searchResultRow.click();
       }
@@ -29,7 +29,7 @@ test.describe('顧客詳細表示機能', () => {
   test('顧客詳細画面が正常に表示されることを確認', async ({ page }) => {
     // 詳細画面のタイトルを確認
     await expect(page.getByText('顧客詳細')).toBeVisible();
-    
+
     // 戻るボタンの確認
     await expect(page.getByRole('button', { name: '一覧に戻る' })).toBeVisible();
   });
@@ -37,7 +37,7 @@ test.describe('顧客詳細表示機能', () => {
   test('顧客基本情報が表示されることを確認', async ({ page }) => {
     // 基本情報セクションの確認
     await expect(page.getByText('基本情報')).toBeVisible();
-    
+
     // 基本情報フィールドの確認
     const basicInfoFields = [
       '顧客ID',
@@ -60,7 +60,7 @@ test.describe('顧客詳細表示機能', () => {
   test('墓所情報が表示されることを確認', async ({ page }) => {
     // 墓所情報セクションの確認
     await expect(page.getByText('墓所情報')).toBeVisible();
-    
+
     // 墓所情報フィールドの確認
     const graveInfoFields = [
       '墓所番号',
@@ -80,7 +80,7 @@ test.describe('顧客詳細表示機能', () => {
   test('埋葬者情報が表示されることを確認', async ({ page }) => {
     // 埋葬者情報セクションの確認
     await expect(page.getByText('埋葬者情報')).toBeVisible();
-    
+
     // 埋葬者情報テーブルの確認
     const burialInfoColumns = [
       '氏名',
@@ -98,7 +98,7 @@ test.describe('顧客詳細表示機能', () => {
   test('支払履歴が表示されることを確認', async ({ page }) => {
     // 支払履歴セクションの確認
     await expect(page.getByText('支払履歴')).toBeVisible();
-    
+
     // 支払履歴テーブルの確認
     const paymentHistoryColumns = [
       '支払日',
@@ -116,7 +116,7 @@ test.describe('顧客詳細表示機能', () => {
   test('連絡履歴が表示されることを確認', async ({ page }) => {
     // 連絡履歴セクションの確認
     await expect(page.getByText('連絡履歴')).toBeVisible();
-    
+
     // 連絡履歴テーブルの確認
     const contactHistoryColumns = [
       '日付',
@@ -135,10 +135,10 @@ test.describe('顧客詳細表示機能', () => {
     const editButton = page.getByRole('button', { name: '編集' });
     await expect(editButton).toBeVisible();
     await expect(editButton).toBeEnabled();
-    
+
     // 編集ボタンをクリック
     await editButton.click();
-    
+
     // 編集画面に遷移することを確認
     await expect(page.getByText('顧客情報編集')).toBeVisible();
   });
@@ -148,7 +148,7 @@ test.describe('顧客詳細表示機能', () => {
     const printButton = page.getByRole('button', { name: '印刷' });
     await expect(printButton).toBeVisible();
     await expect(printButton).toBeEnabled();
-    
+
     // 印刷ダイアログの確認（実装されている場合）
     // await printButton.click();
     // 印刷プレビューまたは印刷ダイアログが表示されることを確認
@@ -158,7 +158,7 @@ test.describe('顧客詳細表示機能', () => {
     // 戻るボタンをクリック
     const backButton = page.getByRole('button', { name: '一覧に戻る' });
     await backButton.click();
-    
+
     // 一覧画面に戻ることを確認
     await expect(page.getByRole('heading', { name: '顧客台帳' })).toBeVisible();
     await expect(page.getByRole('tab', { name: '台帳' })).toHaveAttribute('data-state', 'active');
@@ -167,7 +167,7 @@ test.describe('顧客詳細表示機能', () => {
   test('タブ切り替えで各セクションが表示されることを確認', async ({ page }) => {
     // 詳細画面内のタブが存在する場合のテスト
     const tabs = ['基本情報', '墓所情報', '埋葬者情報', '支払履歴', '連絡履歴'];
-    
+
     for (const tabName of tabs) {
       const tab = page.getByRole('tab', { name: tabName });
       if (await tab.isVisible()) {
@@ -183,7 +183,7 @@ test.describe('顧客詳細表示機能', () => {
     // 日本の年号フォーマット（令和、平成など）で表示されることを確認
     const dateElements = page.locator('[data-testid*="date"]');
     const count = await dateElements.count();
-    
+
     if (count > 0) {
       for (let i = 0; i < count; i++) {
         const dateText = await dateElements.nth(i).textContent();
@@ -231,12 +231,12 @@ test.describe('顧客詳細表示機能', () => {
   test('アクセシビリティが適切に設定されていることを確認', async ({ page }) => {
     // フォーカス可能な要素がキーボードでアクセスできることを確認
     await page.keyboard.press('Tab');
-    
+
     // 適切なaria-labelやroleが設定されていることを確認
     const headings = page.locator('h1, h2, h3, h4, h5, h6');
     const headingCount = await headings.count();
     expect(headingCount).toBeGreaterThan(0);
-    
+
     // テーブルに適切なヘッダーが設定されていることを確認
     const tables = page.locator('table');
     const tableCount = await tables.count();
@@ -253,7 +253,7 @@ test.describe('顧客詳細表示機能', () => {
       expect(customerId).toBeTruthy();
       expect(customerId?.length).toBeGreaterThan(0);
     }
-    
+
     // 必須フィールドが空でないことを確認
     const requiredFields = ['契約者氏名', '墓所番号'];
     for (const field of requiredFields) {

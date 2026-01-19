@@ -34,7 +34,7 @@ export const mockCollectiveBurialListRecords: CollectiveBurialListRecord[] = [
     createdAt: new Date('2013-07-19'),
     updatedAt: new Date('2013-07-19'),
   },
-  
+
   // 2029年合祀予定
   {
     id: 'CBL-002',
@@ -51,7 +51,7 @@ export const mockCollectiveBurialListRecords: CollectiveBurialListRecord[] = [
     createdAt: new Date('2013-01-01'),
     updatedAt: new Date('2022-08-07'),
   },
-  
+
   // 2034年合祀予定（2021年契約グループ）
   {
     id: 'CBL-003',
@@ -203,7 +203,7 @@ export const mockCollectiveBurialListRecords: CollectiveBurialListRecord[] = [
     createdAt: new Date('2021-08-18'),
     updatedAt: new Date('2021-08-18'),
   },
-  
+
   // 2035年合祀予定（2022年契約グループ）
   {
     id: 'CBL-013',
@@ -470,7 +470,7 @@ export function getCollectiveBurialListRecords(): CollectiveBurialListRecord[] {
 export function getCollectiveBurialListByYear(): CollectiveBurialYearGroup[] {
   const records = getCollectiveBurialListRecords();
   const yearMap = new Map<number, CollectiveBurialListRecord[]>();
-  
+
   records.forEach(record => {
     const year = record.collectiveBurialYear;
     if (!yearMap.has(year)) {
@@ -478,7 +478,7 @@ export function getCollectiveBurialListByYear(): CollectiveBurialYearGroup[] {
     }
     yearMap.get(year)!.push(record);
   });
-  
+
   const groups: CollectiveBurialYearGroup[] = [];
   yearMap.forEach((records, year) => {
     groups.push({
@@ -487,7 +487,7 @@ export function getCollectiveBurialListByYear(): CollectiveBurialYearGroup[] {
       totalCount: records.reduce((sum, r) => sum + r.count, 0),
     });
   });
-  
+
   return groups.sort((a, b) => a.year - b.year);
 }
 
@@ -505,27 +505,27 @@ export function searchCollectiveBurialList(
   filter: CollectiveBurialListFilter
 ): CollectiveBurialListRecord[] {
   let records = getCollectiveBurialListRecords();
-  
+
   if (filter.year) {
     records = records.filter(r => r.collectiveBurialYear === filter.year);
   }
-  
+
   if (filter.section) {
     records = records.filter(r => r.section === filter.section);
   }
-  
+
   if (filter.status) {
     records = records.filter(r => r.status === filter.status);
   }
-  
+
   if (filter.contractYearFrom) {
     records = records.filter(r => r.contractYear >= filter.contractYearFrom!);
   }
-  
+
   if (filter.contractYearTo) {
     records = records.filter(r => r.contractYear <= filter.contractYearTo!);
   }
-  
+
   if (filter.searchQuery) {
     const query = filter.searchQuery.toLowerCase();
     records = records.filter(r =>
@@ -534,7 +534,7 @@ export function searchCollectiveBurialList(
       r.plotNumber.toLowerCase().includes(query)
     );
   }
-  
+
   return records;
 }
 
@@ -580,7 +580,7 @@ export function createCollectiveBurialRecordFromCustomer(
   const { periodType, yearsUntilBurial } = calculateCollectiveBurialPeriod(contractDate);
   const contractYear = contractDate.getFullYear();
   const collectiveBurialYear = contractYear + yearsUntilBurial;
-  
+
   const newRecord: CollectiveBurialListRecord = {
     id: `CBL-${Date.now()}`,
     customerId,
@@ -598,10 +598,10 @@ export function createCollectiveBurialRecordFromCustomer(
     createdAt: new Date(),
     updatedAt: new Date(),
   };
-  
+
   // モックデータに追加
   mockCollectiveBurialListRecords.push(newRecord);
-  
+
   return newRecord;
 }
 
@@ -614,13 +614,13 @@ export function updateCollectiveBurialRecord(
 ): CollectiveBurialListRecord | null {
   const index = mockCollectiveBurialListRecords.findIndex(r => r.id === id);
   if (index === -1) return null;
-  
+
   mockCollectiveBurialListRecords[index] = {
     ...mockCollectiveBurialListRecords[index],
     ...updates,
     updatedAt: new Date(),
   };
-  
+
   return mockCollectiveBurialListRecords[index];
 }
 
@@ -630,7 +630,7 @@ export function updateCollectiveBurialRecord(
 export function deleteCollectiveBurialRecord(id: string): boolean {
   const index = mockCollectiveBurialListRecords.findIndex(r => r.id === id);
   if (index === -1) return false;
-  
+
   mockCollectiveBurialListRecords.splice(index, 1);
   return true;
 }
@@ -645,11 +645,11 @@ export function getCollectiveBurialStatsBySection(): Record<CollectiveBurialSect
     '天空': 0,
     '弥勒': 0,
   };
-  
+
   mockCollectiveBurialListRecords.forEach(r => {
     stats[r.section] += r.count;
   });
-  
+
   return stats;
 }
 
@@ -658,14 +658,14 @@ export function getCollectiveBurialStatsBySection(): Record<CollectiveBurialSect
  */
 export function getCollectiveBurialStatsByYear(): Record<number, number> {
   const stats: Record<number, number> = {};
-  
+
   mockCollectiveBurialListRecords.forEach(r => {
     if (!stats[r.collectiveBurialYear]) {
       stats[r.collectiveBurialYear] = 0;
     }
     stats[r.collectiveBurialYear] += r.count;
   });
-  
+
   return stats;
 }
 

@@ -35,7 +35,7 @@ export default function MenuPage({ onNavigate }: MenuPageProps) {
         <main className="container mx-auto max-w-6xl">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
             {/* 台帳管理カード */}
-            <Card 
+            <Card
               className="group cursor-pointer hover:shadow-elegant-xl hover:-translate-y-2 transition-all duration-slow border-0 overflow-hidden"
               onClick={() => onNavigate('customer')}
             >
@@ -43,7 +43,7 @@ export default function MenuPage({ onNavigate }: MenuPageProps) {
                 {/* 装飾パターン */}
                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
                 <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
-                
+
                 <div className="relative">
                   <div className="w-12 h-12 rounded-lg bg-white/10 flex items-center justify-center mb-4">
                     <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -97,14 +97,14 @@ export default function MenuPage({ onNavigate }: MenuPageProps) {
             </Card>
 
             {/* 合祀管理カード */}
-            <Card 
+            <Card
               className="group cursor-pointer hover:shadow-elegant-xl hover:-translate-y-2 transition-all duration-slow border-0 overflow-hidden"
               onClick={() => onNavigate('burial')}
             >
               <CardHeader className="bg-gradient-cha p-8 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
                 <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
-                
+
                 <div className="relative">
                   <div className="w-12 h-12 rounded-lg bg-white/10 flex items-center justify-center mb-4">
                     <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -158,14 +158,14 @@ export default function MenuPage({ onNavigate }: MenuPageProps) {
             </Card>
 
             {/* 区画残数管理カード */}
-            <Card 
+            <Card
               className="group cursor-pointer hover:shadow-elegant-xl hover:-translate-y-2 transition-all duration-slow border-0 overflow-hidden"
               onClick={() => onNavigate('plots')}
             >
               <CardHeader className="bg-gradient-ai p-8 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
                 <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
-                
+
                 <div className="relative">
                   <div className="w-12 h-12 rounded-lg bg-white/10 flex items-center justify-center mb-4">
                     <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">

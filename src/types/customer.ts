@@ -79,11 +79,13 @@ export interface Customer {
     establishmentDate: Date | null; // 設立日
   };
 
-  // 家族・連絡先（複数対応） - 後方互換性のため残す
+  // 家族・連絡先（複数対応）
   familyContacts?: {
     id: string;
     name: string; // 氏名
+    nameKana?: string; // ふりがな
     birthDate: Date | null; // 生年月日
+    gender?: 'male' | 'female' | undefined; // 性別
     relationship: string; // 続柄
     address: string; // 住所
     phoneNumber: string; // 電話番号
@@ -105,17 +107,21 @@ export interface Customer {
     phoneNumber: string;
   } | null;
 
-  // 埋葬者一覧（複数対応） - 後方互換性のため残す
+  // 埋葬者一覧（複数対応）
   buriedPersons?: {
     id: string;
     name: string; // 氏名
-    nameKana?: string; // 氏名カナ
-    relationship?: string; // 続柄
-    deathDate?: Date | null; // 死亡日
-    age?: number; // 年齢
+    nameKana?: string; // ふりがな
+    birthDate?: Date | null; // 生年月日
     gender: 'male' | 'female' | undefined; // 性別（初期状態は未選択）
-    burialDate?: Date | null; // 埋葬日（後方互換性のため残す）
-    memo?: string; // メモ（後方互換性のため残す）
+    posthumousName?: string; // 戒名
+    deathDate?: Date | null; // 命日（死亡日）
+    age?: number; // 享年
+    burialDate?: Date | null; // 埋葬日
+    reportDate?: Date | null; // 届出日
+    religion?: string; // 宗派
+    relationship?: string; // 続柄
+    memo?: string; // メモ
   }[];
 
   // 合祀情報（複数の故人を一つの墓所に祀る管理）
@@ -178,12 +184,15 @@ export interface Customer {
   // 請求情報 - 後方互換性のため残す
   billingInfo?: {
     billingType: 'individual' | 'corporate' | 'bank_transfer'; // 請求種別
-    bankName: string; // 銀行名称
+    institutionName: string; // 機関名称（銀行・ゆうちょ等）
     branchName: string; // 支店名称
     accountType: 'ordinary' | 'current' | 'savings'; // 口座科目
-    accountNumber: string; // 記号番号
+    symbolNumber: string; // 記号（ゆうちょの場合は記号部分）
+    accountNumber: string; // 番号
     accountHolder: string; // 口座名義
     type?: string; // 請求タイプ（表示用）
+    // 後方互換性のため残す
+    bankName?: string; // 旧: 銀行名称 → institutionName へ移行
   };
 
   // 墓地区画情報 - 後方互換性のため残す
@@ -292,6 +301,108 @@ export interface Customer {
     status?: string; // 状況
     notes?: string; // 備考
   }[];
+
+  // 工事情報（複数対応）
+  constructionRecords?: ConstructionRecord[];
+
+  // 履歴情報（複数対応）- 読み取り専用
+  historyRecords?: HistoryRecord[];
+
+  // 解約情報
+  terminationInfo?: {
+    terminationDate: Date | null; // 解約日
+    reason: string; // 解約理由
+    processType: TerminationProcessType; // 処理種別
+    processDetail?: string; // 処理詳細
+    refundAmount?: number; // 返金額
+    handledBy?: string; // 担当者
+    notes?: string; // 備考
+  };
+}
+
+// ===== 解約処理型定義 =====
+
+// 解約処理種別
+export type TerminationProcessType = 'return' | 'transfer' | 'perpetual_memorial' | 'other';
+
+// 解約処理種別の表示名マッピング
+export const TERMINATION_PROCESS_TYPE_LABELS: Record<TerminationProcessType, string> = {
+  return: '返還（墓石撤去）',
+  transfer: '移転',
+  perpetual_memorial: '永代供養へ移行',
+  other: 'その他',
+};
+
+// ===== 工事情報型定義 =====
+
+// 工事種別
+export type ConstructionType = 'gravestone' | 'enclosure' | 'additional' | 'repair' | 'other';
+
+// 工事種別の表示名マッピング
+export const CONSTRUCTION_TYPE_LABELS: Record<ConstructionType, string> = {
+  gravestone: '墓石工事',
+  enclosure: '外柵工事',
+  additional: '付帯工事',
+  repair: '修繕工事',
+  other: 'その他',
+};
+
+// 工事記録
+export interface ConstructionRecord {
+  id: string;
+  contractorName: string; // 業者名
+  constructionType: ConstructionType; // 工事種別
+  startDate: Date | null; // 工事開始日
+  scheduledEndDate: Date | null; // 終了予定日
+  endDate: Date | null; // 工事終了日
+  description: string; // 工事内容
+  constructionAmount: number | null; // 施工金額
+  paidAmount: number | null; // 入金金額
+  notes?: string; // 備考
+}
+
+// ===== 履歴情報型定義 =====
+
+// 更新事由
+export type HistoryReasonType = 'new_registration' | 'info_change' | 'name_change' | 'address_change' | 'burial_update' | 'contract_change' | 'termination' | 'other';
+
+// 更新事由の表示名マッピング
+export const HISTORY_REASON_LABELS: Record<HistoryReasonType, string> = {
+  new_registration: '新規登録',
+  info_change: '記載事項変更',
+  name_change: '名義変更',
+  address_change: '住所変更',
+  burial_update: '埋葬情報更新',
+  contract_change: '契約変更',
+  termination: '解約',
+  other: 'その他',
+};
+
+// 履歴時点の契約者情報スナップショット
+export interface ContractorSnapshot {
+  name: string; // 氏名
+  nameKana: string; // ふりがな
+  birthDate: Date | null; // 生年月日
+  gender: 'male' | 'female' | undefined; // 性別
+  postalCode?: string; // 郵便番号
+  address: string; // 住所
+  phoneNumber: string; // 電話番号
+  faxNumber?: string; // FAX
+  email?: string; // メール
+  companyName?: string; // 勤務先名称
+  companyNameKana?: string; // 勤務先かな
+  companyAddress?: string; // 勤務先住所
+  companyPhone?: string; // 勤務先電話番号
+}
+
+// 履歴レコード
+export interface HistoryRecord {
+  id: string;
+  updatedAt: Date; // 更新履歴日
+  updatedBy: string; // 更新者（氏名）
+  reasonType: HistoryReasonType; // 更新事由
+  reasonDetail?: string; // 更新事由詳細
+  contractorSnapshot: ContractorSnapshot; // 契約者情報スナップショット
 }
 
 // 区画の期（1期〜4期）

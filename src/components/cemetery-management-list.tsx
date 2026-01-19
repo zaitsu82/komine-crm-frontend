@@ -212,36 +212,33 @@ export default function CemeteryManagementList({ onCustomerSelect, selectedCusto
     return (
       <div className="space-y-4">
         {/* 合祀人数の状況バナー */}
-        <div className={`p-4 rounded-lg border-2 ${
-          capacityStatus === 'full' ? 'bg-red-50 border-red-400' :
+        <div className={`p-4 rounded-lg border-2 ${capacityStatus === 'full' ? 'bg-red-50 border-red-400' :
           capacityStatus === 'critical' ? 'bg-orange-50 border-orange-400' :
-          capacityStatus === 'warning' ? 'bg-yellow-50 border-yellow-400' :
-          'bg-green-50 border-green-400'
-        }`}>
+            capacityStatus === 'warning' ? 'bg-yellow-50 border-yellow-400' :
+              'bg-green-50 border-green-400'
+          }`}>
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center space-x-2">
               <span className="text-2xl">
                 {capacityStatus === 'full' ? '🚫' :
-                 capacityStatus === 'critical' ? '🚨' :
-                 capacityStatus === 'warning' ? '⚠️' :
-                 '✅'}
+                  capacityStatus === 'critical' ? '🚨' :
+                    capacityStatus === 'warning' ? '⚠️' :
+                      '✅'}
               </span>
-              <h3 className={`text-lg font-bold ${
-                capacityStatus === 'full' ? 'text-red-900' :
+              <h3 className={`text-lg font-bold ${capacityStatus === 'full' ? 'text-red-900' :
                 capacityStatus === 'critical' ? 'text-orange-900' :
-                capacityStatus === 'warning' ? 'text-yellow-900' :
-                'text-green-900'
-              }`}>
+                  capacityStatus === 'warning' ? 'text-yellow-900' :
+                    'text-green-900'
+                }`}>
                 合祀堂収容状況
               </h3>
             </div>
             <div className="text-right">
-              <p className={`text-2xl font-bold ${
-                capacityStatus === 'full' ? 'text-red-600' :
+              <p className={`text-2xl font-bold ${capacityStatus === 'full' ? 'text-red-600' :
                 capacityStatus === 'critical' ? 'text-orange-600' :
-                capacityStatus === 'warning' ? 'text-yellow-600' :
-                'text-green-600'
-              }`}>
+                  capacityStatus === 'warning' ? 'text-yellow-600' :
+                    'text-green-600'
+                }`}>
                 {percentage}%
               </p>
               <p className="text-xs text-gray-600">使用率</p>
@@ -259,12 +256,11 @@ export default function CemeteryManagementList({ onCustomerSelect, selectedCusto
             </div>
             <div className="text-center p-2 bg-white rounded border">
               <p className="text-xs text-gray-600 mb-1">残り人数</p>
-              <p className={`text-xl font-bold ${
-                capacityStatus === 'full' ? 'text-red-600' :
+              <p className={`text-xl font-bold ${capacityStatus === 'full' ? 'text-red-600' :
                 capacityStatus === 'critical' ? 'text-orange-600' :
-                capacityStatus === 'warning' ? 'text-yellow-600' :
-                'text-green-600'
-              }`}>
+                  capacityStatus === 'warning' ? 'text-yellow-600' :
+                    'text-green-600'
+                }`}>
                 {remaining}名
               </p>
             </div>
@@ -273,12 +269,11 @@ export default function CemeteryManagementList({ onCustomerSelect, selectedCusto
           {/* プログレスバー */}
           <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
             <div
-              className={`h-4 rounded-full transition-all duration-500 ${
-                capacityStatus === 'full' ? 'bg-red-600' :
+              className={`h-4 rounded-full transition-all duration-500 ${capacityStatus === 'full' ? 'bg-red-600' :
                 capacityStatus === 'critical' ? 'bg-orange-500' :
-                capacityStatus === 'warning' ? 'bg-yellow-500' :
-                'bg-green-500'
-              }`}
+                  capacityStatus === 'warning' ? 'bg-yellow-500' :
+                    'bg-green-500'
+                }`}
               style={{ width: `${percentage}%` }}
             />
           </div>

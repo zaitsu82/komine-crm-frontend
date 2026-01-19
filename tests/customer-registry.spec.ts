@@ -8,7 +8,7 @@ test.describe('顧客台帳一覧', () => {
   test('ページが正常に読み込まれることを確認', async ({ page }) => {
     // ページタイトルの確認
     await expect(page).toHaveTitle(/霊園顧客管理システム|顧客管理/);
-    
+
     // メイン見出しの確認
     await expect(page.getByRole('heading', { name: '顧客台帳' })).toBeVisible();
   });
@@ -16,12 +16,12 @@ test.describe('顧客台帳一覧', () => {
   test('タブ切り替えが正常に動作することを確認', async ({ page }) => {
     // デフォルトで台帳タブが選択されている
     await expect(page.getByRole('tab', { name: '台帳' })).toHaveAttribute('data-state', 'active');
-    
+
     // 検索タブをクリック
     await page.getByRole('tab', { name: '検索' }).click();
     await expect(page.getByRole('tab', { name: '検索' })).toHaveAttribute('data-state', 'active');
     await expect(page.getByRole('tab', { name: '台帳' })).toHaveAttribute('data-state', 'inactive');
-    
+
     // 台帳タブに戻る
     await page.getByRole('tab', { name: '台帳' }).click();
     await expect(page.getByRole('tab', { name: '台帳' })).toHaveAttribute('data-state', 'active');
@@ -52,7 +52,7 @@ test.describe('顧客台帳一覧', () => {
     // ページサイズセレクターの確認
     const pageSizeSelector = page.locator('select').filter({ hasText: '件表示' });
     await expect(pageSizeSelector).toBeVisible();
-    
+
     // ページサイズを変更
     await pageSizeSelector.selectOption('20');
     // 変更が適用されることを確認（実際のデータがあれば表示件数の変化も確認）
@@ -61,7 +61,7 @@ test.describe('顧客台帳一覧', () => {
   test('顧客行をクリックすると詳細表示に遷移することを確認', async ({ page }) => {
     // テーブル内の最初の顧客行を探す
     const firstCustomerRow = page.locator('tbody tr').first();
-    
+
     // 顧客データが存在する場合のテスト
     const rowCount = await page.locator('tbody tr').count();
     if (rowCount > 0) {

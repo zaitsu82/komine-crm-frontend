@@ -1,13 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { Customer, OwnedPlot, PLOT_SIZE_LABELS } from '@/types/customer';
+import { Customer, OwnedPlot, PLOT_SIZE_LABELS, CONSTRUCTION_TYPE_LABELS, ConstructionType, HISTORY_REASON_LABELS, HistoryReasonType, TerminationProcessType, TERMINATION_PROCESS_TYPE_LABELS } from '@/types/customer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { formatDateWithEra, calculateOwnedPlotsInfo } from '@/lib/utils';
-import { createCustomer, updateCustomer, formDataToCustomer, addCustomerDocument } from '@/lib/data';
+import { createCustomer, updateCustomer, formDataToCustomer, addCustomerDocument, terminateCustomer, TerminationInput } from '@/lib/data';
 import { CustomerFormData } from '@/lib/validations';
 import CustomerSearch from '@/components/customer-search';
 import CustomerForm from '@/components/customer-form';
@@ -53,7 +53,7 @@ export default function CustomerManagement({ onNavigateToMenu }: CustomerManagem
   const [showPostcard, setShowPostcard] = useState(false);
   const [showInvoiceEditor, setShowInvoiceEditor] = useState(false);
   const [showPostcardEditor, setShowPostcardEditor] = useState(false);
-  
+
   // 履歴追加用のstate
   const [showHistoryDialog, setShowHistoryDialog] = useState(false);
   const [historyEntries, setHistoryEntries] = useState<HistoryEntry[]>([
@@ -99,10 +99,30 @@ export default function CustomerManagement({ onNavigateToMenu }: CustomerManagem
       }
     ]
   });
-  
+
   // 現在選択中の顧客の注意事項を取得
   const importantNotes = selectedCustomer ? (customerNotes[selectedCustomer.id] || []) : [];
-  
+
+  // 解約ダイアログ用のstate
+  const [showTerminationDialog, setShowTerminationDialog] = useState(false);
+  const [terminationForm, setTerminationForm] = useState<{
+    terminationDate: string;
+    reason: string;
+    processType: TerminationProcessType;
+    processDetail: string;
+    refundAmount: string;
+    handledBy: string;
+    notes: string;
+  }>({
+    terminationDate: new Date().toISOString().split('T')[0],
+    reason: '',
+    processType: 'return',
+    processDetail: '',
+    refundAmount: '',
+    handledBy: '',
+    notes: ''
+  });
+
   // 注意事項を更新する関数
   const setImportantNotes = (notes: ImportantNote[]) => {
     if (selectedCustomer) {
@@ -112,7 +132,7 @@ export default function CustomerManagement({ onNavigateToMenu }: CustomerManagem
       }));
     }
   };
-  
+
   const [showNoteDialog, setShowNoteDialog] = useState(false);
   const [newNote, setNewNote] = useState<Omit<ImportantNote, 'id'>>({
     date: '',
@@ -120,25 +140,25 @@ export default function CustomerManagement({ onNavigateToMenu }: CustomerManagem
     content: ''
   });
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
-  
+
   // 顧客ごとの注意事項を取得するヘルパー関数
   const getCustomerAttentionNotes = (customerId: string): string => {
     const notes = customerNotes[customerId] || [];
     if (notes.length === 0) return '';
     // 要注意を優先して最初の1件を返す
     const priorityOrder = ['要注意', '注意', '参考'];
-    const sorted = [...notes].sort((a, b) => 
+    const sorted = [...notes].sort((a, b) =>
       priorityOrder.indexOf(a.priority) - priorityOrder.indexOf(b.priority)
     );
     return sorted[0].content;
   };
-  
+
   // 顧客ごとの注意事項の重要度を取得
   const getCustomerAttentionPriority = (customerId: string): string | null => {
     const notes = customerNotes[customerId] || [];
     if (notes.length === 0) return null;
     const priorityOrder = ['要注意', '注意', '参考'];
-    const sorted = [...notes].sort((a, b) => 
+    const sorted = [...notes].sort((a, b) =>
       priorityOrder.indexOf(a.priority) - priorityOrder.indexOf(b.priority)
     );
     return sorted[0].priority;
@@ -273,11 +293,11 @@ export default function CustomerManagement({ onNavigateToMenu }: CustomerManagem
       alert('内容は必須です');
       return;
     }
-    
+
     if (editingNoteId) {
       // 編集モード
-      setImportantNotes(importantNotes.map(note => 
-        note.id === editingNoteId 
+      setImportantNotes(importantNotes.map(note =>
+        note.id === editingNoteId
           ? { ...note, ...newNote }
           : note
       ));
@@ -297,6 +317,65 @@ export default function CustomerManagement({ onNavigateToMenu }: CustomerManagem
   const handleDeleteNote = (id: string) => {
     if (confirm('この連絡事項を削除しますか？')) {
       setImportantNotes(importantNotes.filter(note => note.id !== id));
+    }
+  };
+
+  // 解約ダイアログを開く
+  const handleOpenTerminationDialog = () => {
+    if (!selectedCustomer) return;
+    if (selectedCustomer.status === 'inactive') {
+      alert('この顧客は既に解約済みです。');
+      return;
+    }
+    setTerminationForm({
+      terminationDate: new Date().toISOString().split('T')[0],
+      reason: '',
+      processType: 'return',
+      processDetail: '',
+      refundAmount: '',
+      handledBy: '',
+      notes: ''
+    });
+    setShowTerminationDialog(true);
+  };
+
+  // 解約処理を実行
+  const handleTerminate = () => {
+    if (!selectedCustomer) return;
+
+    // バリデーション
+    if (!terminationForm.reason.trim()) {
+      alert('解約理由を入力してください。');
+      return;
+    }
+    if (!terminationForm.handledBy.trim()) {
+      alert('担当者を入力してください。');
+      return;
+    }
+
+    // 確認ダイアログ
+    if (!confirm(`${selectedCustomer.name} 様の契約を解約処理します。\nこの操作は取り消せません。よろしいですか？`)) {
+      return;
+    }
+
+    const terminationInput: TerminationInput = {
+      terminationDate: new Date(terminationForm.terminationDate),
+      reason: terminationForm.reason,
+      processType: terminationForm.processType,
+      processDetail: terminationForm.processDetail || undefined,
+      refundAmount: terminationForm.refundAmount ? parseInt(terminationForm.refundAmount, 10) : undefined,
+      handledBy: terminationForm.handledBy,
+      notes: terminationForm.notes || undefined,
+    };
+
+    const result = terminateCustomer(selectedCustomer.id, terminationInput);
+
+    if (result) {
+      setSelectedCustomer(result);
+      setShowTerminationDialog(false);
+      alert('解約処理が完了しました。');
+    } else {
+      alert('解約処理に失敗しました。');
     }
   };
 
@@ -423,6 +502,18 @@ export default function CustomerManagement({ onNavigateToMenu }: CustomerManagem
               >
                 書類履歴
               </Button>
+
+              <div className="border-t border-gray-300 my-4"></div>
+
+              <Button
+                onClick={handleOpenTerminationDialog}
+                className={`w-full btn-senior mt-2 border-none ${selectedCustomer.status === 'inactive' ? 'bg-gray-400 text-white cursor-not-allowed' : 'bg-white text-red-600 hover:bg-red-50 border-red-600'}`}
+                variant="outline"
+                size="lg"
+                disabled={selectedCustomer.status === 'inactive'}
+              >
+                {selectedCustomer.status === 'inactive' ? '解約済み' : '解約入力'}
+              </Button>
             </div>
           ) : (
             <div className="space-y-1 mb-4">
@@ -481,7 +572,7 @@ export default function CustomerManagement({ onNavigateToMenu }: CustomerManagem
                 Object.entries(customerNotes).map(([customerId, notes]) => {
                   if (notes.length === 0) return [customerId, null];
                   const priorityOrder = ['要注意', '注意', '参考'];
-                  const sorted = [...notes].sort((a, b) => 
+                  const sorted = [...notes].sort((a, b) =>
                     priorityOrder.indexOf(a.priority) - priorityOrder.indexOf(b.priority)
                   );
                   return [customerId, { content: sorted[0].content, priority: sorted[0].priority }];
@@ -582,7 +673,7 @@ export default function CustomerManagement({ onNavigateToMenu }: CustomerManagem
                   <TabsTrigger value="basic-info-2" className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">基本情報②</TabsTrigger>
                   <TabsTrigger value="contacts" className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">連絡先/家族</TabsTrigger>
                   <TabsTrigger value="burial-info" className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">埋葬情報</TabsTrigger>
-                  <TabsTrigger value="collective-burial" className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">合祀</TabsTrigger>
+                  <TabsTrigger value="construction-info" className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">工事情報</TabsTrigger>
                   <TabsTrigger value="history" className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">履歴情報</TabsTrigger>
                 </TabsList>
 
@@ -642,7 +733,7 @@ export default function CustomerManagement({ onNavigateToMenu }: CustomerManagem
                     {selectedCustomer.ownedPlots && selectedCustomer.ownedPlots.length > 0 && (
                       <div className="space-y-4">
                         <h4 className="font-semibold border-b pb-2">所有区画情報</h4>
-                        
+
                         {/* 合計情報 */}
                         <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                           <div className="grid grid-cols-3 gap-4">
@@ -689,25 +780,23 @@ export default function CustomerManagement({ onNavigateToMenu }: CustomerManagem
                                     <td className="px-4 py-2">{plot.plotPeriod || '-'}</td>
                                     <td className="px-4 py-2">{plot.section || '-'}</td>
                                     <td className="px-4 py-2">
-                                      <span className={`px-2 py-1 rounded text-xs ${
-                                        plot.sizeType === 'full' 
-                                          ? 'bg-blue-100 text-blue-800' 
-                                          : 'bg-orange-100 text-orange-800'
-                                      }`}>
+                                      <span className={`px-2 py-1 rounded text-xs ${plot.sizeType === 'full'
+                                        ? 'bg-blue-100 text-blue-800'
+                                        : 'bg-orange-100 text-orange-800'
+                                        }`}>
                                         {PLOT_SIZE_LABELS[plot.sizeType]}
                                       </span>
                                     </td>
                                     <td className="px-4 py-2">{plot.areaSqm}㎡</td>
                                     <td className="px-4 py-2">
-                                      <span className={`px-2 py-1 rounded text-xs ${
-                                        plot.status === 'in_use' 
-                                          ? 'bg-green-100 text-green-800'
-                                          : plot.status === 'reserved'
+                                      <span className={`px-2 py-1 rounded text-xs ${plot.status === 'in_use'
+                                        ? 'bg-green-100 text-green-800'
+                                        : plot.status === 'reserved'
                                           ? 'bg-yellow-100 text-yellow-800'
                                           : 'bg-gray-100 text-gray-800'
-                                      }`}>
-                                        {plot.status === 'in_use' ? '利用中' : 
-                                         plot.status === 'reserved' ? '予約済み' : '空き'}
+                                        }`}>
+                                        {plot.status === 'in_use' ? '利用中' :
+                                          plot.status === 'reserved' ? '予約済み' : '空き'}
                                       </span>
                                     </td>
                                   </tr>
@@ -1336,13 +1425,13 @@ export default function CustomerManagement({ onNavigateToMenu }: CustomerManagem
                             )}
                           </div>
                           <div>
-                            <Label className="text-sm font-medium">銀行名称</Label>
+                            <Label className="text-sm font-medium">機関名称</Label>
                             <Input
-                              value={editingTab === 'basic-info-2' ? (editFormData.bankName || selectedCustomer.billingInfo?.bankName || '') : selectedCustomer.billingInfo?.bankName || ''}
+                              value={editingTab === 'basic-info-2' ? (editFormData.institutionName || selectedCustomer.billingInfo?.institutionName || selectedCustomer.billingInfo?.bankName || '') : selectedCustomer.billingInfo?.institutionName || selectedCustomer.billingInfo?.bankName || ''}
                               className={editingTab === 'basic-info-2' ? 'bg-white' : 'bg-yellow-50'}
                               readOnly={editingTab !== 'basic-info-2'}
-                              placeholder="○○銀行"
-                              onChange={(e) => editingTab === 'basic-info-2' && setEditFormData({ ...editFormData, bankName: e.target.value })}
+                              placeholder="○○銀行 / ゆうちょ銀行"
+                              onChange={(e) => editingTab === 'basic-info-2' && setEditFormData({ ...editFormData, institutionName: e.target.value })}
                             />
                           </div>
                           <div>
@@ -1377,13 +1466,23 @@ export default function CustomerManagement({ onNavigateToMenu }: CustomerManagem
                           </div>
                           <div>
                             <Label className="text-sm font-medium">記号番号</Label>
-                            <Input
-                              value={editingTab === 'basic-info-2' ? (editFormData.accountNumber || selectedCustomer.billingInfo?.accountNumber || '') : selectedCustomer.billingInfo?.accountNumber || ''}
-                              className={editingTab === 'basic-info-2' ? 'bg-white' : 'bg-yellow-50'}
-                              readOnly={editingTab !== 'basic-info-2'}
-                              placeholder="1234567"
-                              onChange={(e) => editingTab === 'basic-info-2' && setEditFormData({ ...editFormData, accountNumber: e.target.value })}
-                            />
+                            <div className="flex items-center gap-2">
+                              <Input
+                                value={editingTab === 'basic-info-2' ? (editFormData.symbolNumber || selectedCustomer.billingInfo?.symbolNumber || '') : selectedCustomer.billingInfo?.symbolNumber || ''}
+                                className={`w-24 ${editingTab === 'basic-info-2' ? 'bg-white' : 'bg-yellow-50'}`}
+                                readOnly={editingTab !== 'basic-info-2'}
+                                placeholder="記号"
+                                onChange={(e) => editingTab === 'basic-info-2' && setEditFormData({ ...editFormData, symbolNumber: e.target.value })}
+                              />
+                              <span className="text-gray-500">-</span>
+                              <Input
+                                value={editingTab === 'basic-info-2' ? (editFormData.accountNumber || selectedCustomer.billingInfo?.accountNumber || '') : selectedCustomer.billingInfo?.accountNumber || ''}
+                                className={`flex-1 ${editingTab === 'basic-info-2' ? 'bg-white' : 'bg-yellow-50'}`}
+                                readOnly={editingTab !== 'basic-info-2'}
+                                placeholder="番号"
+                                onChange={(e) => editingTab === 'basic-info-2' && setEditFormData({ ...editFormData, accountNumber: e.target.value })}
+                              />
+                            </div>
                           </div>
                           <div>
                             <Label className="text-sm font-medium">口座名義</Label>
@@ -1476,7 +1575,7 @@ export default function CustomerManagement({ onNavigateToMenu }: CustomerManagem
                               <div key={contact.id} className="bg-white p-4 rounded border">
                                 <div className="grid grid-cols-1 gap-4">
                                   {/* 基本情報行 */}
-                                  <div className="grid grid-cols-4 gap-4">
+                                  <div className="grid grid-cols-6 gap-4">
                                     <div>
                                       <Label className="text-sm font-medium">氏名</Label>
                                       <Input
@@ -1486,9 +1585,25 @@ export default function CustomerManagement({ onNavigateToMenu }: CustomerManagem
                                       />
                                     </div>
                                     <div>
+                                      <Label className="text-sm font-medium">ふりがな</Label>
+                                      <Input
+                                        value={contact.nameKana || ''}
+                                        className="bg-yellow-50"
+                                        readOnly
+                                      />
+                                    </div>
+                                    <div>
                                       <Label className="text-sm font-medium">続柄</Label>
                                       <Input
                                         value={contact.relationship}
+                                        className="bg-yellow-50"
+                                        readOnly
+                                      />
+                                    </div>
+                                    <div>
+                                      <Label className="text-sm font-medium">性別</Label>
+                                      <Input
+                                        value={contact.gender === 'male' ? '男性' : contact.gender === 'female' ? '女性' : ''}
                                         className="bg-yellow-50"
                                         readOnly
                                       />
@@ -1652,55 +1767,114 @@ export default function CustomerManagement({ onNavigateToMenu }: CustomerManagem
                         {selectedCustomer.buriedPersons && selectedCustomer.buriedPersons.length > 0 ? (
                           <div className="space-y-3">
                             {selectedCustomer.buriedPersons.map((person) => (
-                              <div key={person.id} className="grid grid-cols-6 gap-4 bg-white p-3 rounded border">
-                                <div>
-                                  <Label className="text-sm font-medium">氏名</Label>
-                                  <Input
-                                    value={person.name}
-                                    className={editingTab === 'burial-info' ? 'bg-white' : 'bg-yellow-50'}
-                                    readOnly={editingTab !== 'burial-info'}
-                                  />
+                              <div key={person.id} className="bg-white p-4 rounded border">
+                                {/* 基本情報行 */}
+                                <div className="grid grid-cols-6 gap-4 mb-3">
+                                  <div>
+                                    <Label className="text-sm font-medium">氏名</Label>
+                                    <Input
+                                      value={person.name}
+                                      className={editingTab === 'burial-info' ? 'bg-white' : 'bg-yellow-50'}
+                                      readOnly={editingTab !== 'burial-info'}
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label className="text-sm font-medium">ふりがな</Label>
+                                    <Input
+                                      value={person.nameKana || ''}
+                                      className={editingTab === 'burial-info' ? 'bg-white' : 'bg-yellow-50'}
+                                      readOnly={editingTab !== 'burial-info'}
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label className="text-sm font-medium">続柄</Label>
+                                    <Input
+                                      value={person.relationship || ''}
+                                      className={editingTab === 'burial-info' ? 'bg-white' : 'bg-yellow-50'}
+                                      readOnly={editingTab !== 'burial-info'}
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label className="text-sm font-medium">性別</Label>
+                                    <Input
+                                      value={person.gender === 'male' ? '男性' : person.gender === 'female' ? '女性' : ''}
+                                      className={editingTab === 'burial-info' ? 'bg-white' : 'bg-yellow-50'}
+                                      readOnly={editingTab !== 'burial-info'}
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label className="text-sm font-medium">生年月日</Label>
+                                    <Input
+                                      value={person.birthDate ? formatDateWithEra(person.birthDate) : ''}
+                                      className={editingTab === 'burial-info' ? 'bg-white' : 'bg-yellow-50'}
+                                      readOnly={editingTab !== 'burial-info'}
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label className="text-sm font-medium">宗派</Label>
+                                    <Input
+                                      value={person.religion || ''}
+                                      className={editingTab === 'burial-info' ? 'bg-white' : 'bg-yellow-50'}
+                                      readOnly={editingTab !== 'burial-info'}
+                                    />
+                                  </div>
                                 </div>
-                                <div>
-                                  <Label className="text-sm font-medium">氏名カナ</Label>
-                                  <Input
-                                    value={person.nameKana || ''}
-                                    className={editingTab === 'burial-info' ? 'bg-white' : 'bg-yellow-50'}
-                                    readOnly={editingTab !== 'burial-info'}
-                                  />
+
+                                {/* 死亡・埋葬情報行 */}
+                                <div className="grid grid-cols-5 gap-4">
+                                  <div>
+                                    <Label className="text-sm font-medium">命日</Label>
+                                    <Input
+                                      value={person.deathDate ? formatDateWithEra(person.deathDate) : ''}
+                                      className={editingTab === 'burial-info' ? 'bg-white' : 'bg-yellow-50'}
+                                      readOnly={editingTab !== 'burial-info'}
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label className="text-sm font-medium">享年</Label>
+                                    <Input
+                                      value={person.age ? `${person.age}歳` : ''}
+                                      className={editingTab === 'burial-info' ? 'bg-white' : 'bg-yellow-50'}
+                                      readOnly={editingTab !== 'burial-info'}
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label className="text-sm font-medium">届出日</Label>
+                                    <Input
+                                      value={person.reportDate ? formatDateWithEra(person.reportDate) : ''}
+                                      className={editingTab === 'burial-info' ? 'bg-white' : 'bg-yellow-50'}
+                                      readOnly={editingTab !== 'burial-info'}
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label className="text-sm font-medium">埋葬日</Label>
+                                    <Input
+                                      value={person.burialDate ? formatDateWithEra(person.burialDate) : ''}
+                                      className={editingTab === 'burial-info' ? 'bg-white' : 'bg-yellow-50'}
+                                      readOnly={editingTab !== 'burial-info'}
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label className="text-sm font-medium">戒名</Label>
+                                    <Input
+                                      value={person.posthumousName || ''}
+                                      className={editingTab === 'burial-info' ? 'bg-white' : 'bg-yellow-50'}
+                                      readOnly={editingTab !== 'burial-info'}
+                                    />
+                                  </div>
                                 </div>
-                                <div>
-                                  <Label className="text-sm font-medium">続柄</Label>
-                                  <Input
-                                    value={person.relationship || ''}
-                                    className={editingTab === 'burial-info' ? 'bg-white' : 'bg-yellow-50'}
-                                    readOnly={editingTab !== 'burial-info'}
-                                  />
-                                </div>
-                                <div>
-                                  <Label className="text-sm font-medium">死亡日</Label>
-                                  <Input
-                                    value={person.deathDate ? formatDateWithEra(person.deathDate) : ''}
-                                    className={editingTab === 'burial-info' ? 'bg-white' : 'bg-yellow-50'}
-                                    readOnly={editingTab !== 'burial-info'}
-                                  />
-                                </div>
-                                <div>
-                                  <Label className="text-sm font-medium">年齢</Label>
-                                  <Input
-                                    value={person.age ? `${person.age}歳` : ''}
-                                    className={editingTab === 'burial-info' ? 'bg-white' : 'bg-yellow-50'}
-                                    readOnly={editingTab !== 'burial-info'}
-                                  />
-                                </div>
-                                <div>
-                                  <Label className="text-sm font-medium">性別</Label>
-                                  <Input
-                                    value={person.gender === 'male' ? '男性' : person.gender === 'female' ? '女性' : ''}
-                                    className={editingTab === 'burial-info' ? 'bg-white' : 'bg-yellow-50'}
-                                    readOnly={editingTab !== 'burial-info'}
-                                  />
-                                </div>
+
+                                {/* 備考行 */}
+                                {person.memo && (
+                                  <div className="mt-3">
+                                    <Label className="text-sm font-medium">備考</Label>
+                                    <textarea
+                                      value={person.memo}
+                                      className="w-full p-2 bg-yellow-50 border rounded text-sm resize-none h-12"
+                                      readOnly
+                                    />
+                                  </div>
+                                )}
                               </div>
                             ))}
                           </div>
@@ -1712,320 +1886,116 @@ export default function CustomerManagement({ onNavigateToMenu }: CustomerManagem
                   </div>
                 </TabsContent>
 
-                <TabsContent value="collective-burial" className="mt-6">
+                <TabsContent value="construction-info" className="mt-6">
                   <div className="space-y-6">
                     <div className="flex justify-between items-center">
-                      <h3 className="text-lg font-semibold">合祀</h3>
-                      {editingTab === 'collective-burial' ? (
-                        <div className="flex space-x-2">
-                          <Button size="sm" variant="outline" onClick={handleTabCancel}>キャンセル</Button>
-                          <Button size="sm" onClick={() => handleTabSave('合祀')}>保存</Button>
-                        </div>
-                      ) : (
-                        <Button size="sm" onClick={() => handleTabEdit('collective-burial')}>編集</Button>
-                      )}
+                      <h3 className="text-lg font-semibold">工事情報</h3>
+                      <Button
+                        size="sm"
+                        onClick={() => setCurrentView('edit')}
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                      >
+                        編集
+                      </Button>
                     </div>
 
                     <div className="grid grid-cols-1 gap-6">
-                      {/* 合祀概要情報 */}
+                      {/* 工事記録一覧 */}
                       <div className="bg-orange-50 p-4 rounded border">
-                        <h4 className="font-semibold border-b pb-2 mb-3">合祀概要</h4>
-                        <div className="grid grid-cols-3 gap-4">
-                          <div>
-                            <Label className="text-sm font-medium">合祀種別</Label>
-                            <Input
-                              value={selectedCustomer.collectiveBurialInfo && selectedCustomer.collectiveBurialInfo.length > 0 ?
-                                (selectedCustomer.collectiveBurialInfo[0].type === 'family' ? '家族合祀' :
-                                  selectedCustomer.collectiveBurialInfo[0].type === 'relative' ? '親族合祀' : 'その他') : ''
-                              }
-                              className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
-                              readOnly={editingTab !== 'collective-burial'}
-                              placeholder="例: 家族合祀"
-                            />
-                          </div>
-                          <div>
-                            <Label className="text-sm font-medium">主たる代表者</Label>
-                            <Input
-                              value={selectedCustomer.collectiveBurialInfo && selectedCustomer.collectiveBurialInfo.length > 0 ?
-                                selectedCustomer.collectiveBurialInfo[0].mainRepresentative : ''
-                              }
-                              className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
-                              readOnly={editingTab !== 'collective-burial'}
-                              placeholder="例: 長男、配偶者"
-                            />
-                          </div>
-                          <div>
-                            <Label className="text-sm font-medium">合祀料金総額</Label>
-                            <Input
-                              value={selectedCustomer.collectiveBurialInfo && selectedCustomer.collectiveBurialInfo.length > 0 && selectedCustomer.collectiveBurialInfo[0].totalFee ?
-                                `${selectedCustomer.collectiveBurialInfo[0].totalFee.toLocaleString()}円` : ''
-                              }
-                              className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
-                              readOnly={editingTab !== 'collective-burial'}
-                              placeholder="例: 500000円"
-                            />
-                          </div>
-                        </div>
-                        <div className="mt-4">
-                          <Label className="text-sm font-medium">特別な要望・配慮事項（宗教的配慮含む）</Label>
-                          <textarea
-                            rows={3}
-                            value={selectedCustomer.collectiveBurialInfo && selectedCustomer.collectiveBurialInfo.length > 0 ?
-                              selectedCustomer.collectiveBurialInfo[0].specialRequests || '' : ''
-                            }
-                            className={`w-full px-3 py-2 border rounded ${editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}`}
-                            readOnly={editingTab !== 'collective-burial'}
-                            placeholder="宗教的配慮、特別な要望事項などを記載してください"
-                          />
-                        </div>
-                      </div>
-
-                      {/* 合祀対象者一覧 */}
-                      <div className="bg-purple-50 p-4 rounded border">
                         <div className="flex justify-between items-center border-b pb-2 mb-3">
-                          <h4 className="font-semibold">合祀対象者一覧</h4>
-                          <Button size="sm" variant="outline">+ 対象者追加</Button>
+                          <h4 className="font-semibold">工事記録一覧</h4>
                         </div>
 
-                        {selectedCustomer.collectiveBurialInfo && selectedCustomer.collectiveBurialInfo.length > 0 ? (
+                        {selectedCustomer.constructionRecords && selectedCustomer.constructionRecords.length > 0 ? (
                           <div className="space-y-3">
-                            {selectedCustomer.collectiveBurialInfo.map((burialInfo) =>
-                              burialInfo.persons.map((person) => (
-                                <div key={person.id} className="grid grid-cols-8 gap-2 bg-white p-3 rounded border">
+                            {selectedCustomer.constructionRecords.map((record) => (
+                              <div key={record.id} className="bg-white p-4 rounded border">
+                                {/* 基本情報行 */}
+                                <div className="grid grid-cols-5 gap-4 mb-3">
                                   <div>
-                                    <Label className="text-sm font-medium">故人氏名</Label>
+                                    <Label className="text-sm font-medium">業者名</Label>
                                     <Input
-                                      value={person.name}
-                                      className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
-                                      readOnly={editingTab !== 'collective-burial'}
-                                      placeholder="故人氏名"
+                                      value={record.contractorName}
+                                      className="bg-yellow-50"
+                                      readOnly
                                     />
                                   </div>
                                   <div>
-                                    <Label className="text-sm font-medium">氏名カナ</Label>
+                                    <Label className="text-sm font-medium">工事種別</Label>
                                     <Input
-                                      value={person.nameKana}
-                                      className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
-                                      readOnly={editingTab !== 'collective-burial'}
-                                      placeholder="ふりがな"
+                                      value={CONSTRUCTION_TYPE_LABELS[record.constructionType as ConstructionType] || record.constructionType}
+                                      className="bg-yellow-50"
+                                      readOnly
                                     />
                                   </div>
                                   <div>
-                                    <Label className="text-sm font-medium">続柄</Label>
+                                    <Label className="text-sm font-medium">工事開始日</Label>
                                     <Input
-                                      value={person.relationship}
-                                      className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
-                                      readOnly={editingTab !== 'collective-burial'}
-                                      placeholder="続柄"
+                                      value={record.startDate ? formatDateWithEra(record.startDate) : ''}
+                                      className="bg-yellow-50"
+                                      readOnly
                                     />
                                   </div>
                                   <div>
-                                    <Label className="text-sm font-medium">死亡日</Label>
+                                    <Label className="text-sm font-medium">終了予定日</Label>
                                     <Input
-                                      value={person.deathDate ? formatDateWithEra(person.deathDate) : ''}
-                                      className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
-                                      readOnly={editingTab !== 'collective-burial'}
-                                      placeholder="令和○年○月○日"
+                                      value={record.scheduledEndDate ? formatDateWithEra(record.scheduledEndDate) : ''}
+                                      className="bg-yellow-50"
+                                      readOnly
                                     />
                                   </div>
                                   <div>
-                                    <Label className="text-sm font-medium">享年</Label>
+                                    <Label className="text-sm font-medium">工事終了日</Label>
                                     <Input
-                                      value={person.age ? `${person.age}歳` : ''}
-                                      className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
-                                      readOnly={editingTab !== 'collective-burial'}
-                                      placeholder="○○歳"
-                                    />
-                                  </div>
-                                  <div>
-                                    <Label className="text-sm font-medium">元の墓所</Label>
-                                    <Input
-                                      value={person.originalPlotNumber || ''}
-                                      className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
-                                      readOnly={editingTab !== 'collective-burial'}
-                                      placeholder="許可番号"
-                                    />
-                                  </div>
-                                  <div>
-                                    <Label className="text-sm font-medium">移転日</Label>
-                                    <Input
-                                      value={person.transferDate ? formatDateWithEra(person.transferDate) : ''}
-                                      className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
-                                      readOnly={editingTab !== 'collective-burial'}
-                                      placeholder="令和○年○月○日"
-                                    />
-                                  </div>
-                                  <div>
-                                    <Label className="text-sm font-medium">改葬許可証</Label>
-                                    <Input
-                                      value={person.certificateNumber || ''}
-                                      className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
-                                      readOnly={editingTab !== 'collective-burial'}
-                                      placeholder="許可証番号"
+                                      value={record.endDate ? formatDateWithEra(record.endDate) : ''}
+                                      className="bg-yellow-50"
+                                      readOnly
                                     />
                                   </div>
                                 </div>
-                              ))
-                            )}
-                          </div>
-                        ) : (
-                          <p className="text-gray-500 text-center py-8">合祀対象者が登録されていません</p>
-                        )}
-                      </div>
 
-                      {/* 合祀実施記録 */}
-                      <div className="bg-green-50 p-4 rounded border">
-                        <div className="flex justify-between items-center border-b pb-2 mb-3">
-                          <h4 className="font-semibold">合祀実施記録</h4>
-                          <Button size="sm" variant="outline">+ 実施記録追加</Button>
-                        </div>
-
-                        {selectedCustomer.collectiveBurialInfo && selectedCustomer.collectiveBurialInfo.length > 0 ? (
-                          <div className="space-y-3">
-                            {selectedCustomer.collectiveBurialInfo.map((burialInfo) =>
-                              burialInfo.ceremonies.map((ceremony) => (
-                                <div key={ceremony.id} className="grid grid-cols-6 gap-4 bg-white p-3 rounded border">
-                                  <div>
-                                    <Label className="text-sm font-medium">実施日</Label>
-                                    <Input
-                                      value={ceremony.date ? formatDateWithEra(ceremony.date) : ''}
-                                      className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
-                                      readOnly={editingTab !== 'collective-burial'}
-                                      placeholder="令和○年○月○日"
-                                    />
-                                  </div>
-                                  <div>
-                                    <Label className="text-sm font-medium">導師・執行者</Label>
-                                    <Input
-                                      value={ceremony.officiant}
-                                      className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
-                                      readOnly={editingTab !== 'collective-burial'}
-                                      placeholder="僧侶・神職名"
-                                    />
-                                  </div>
-                                  <div>
-                                    <Label className="text-sm font-medium">宗派</Label>
-                                    <Input
-                                      value={ceremony.religion}
-                                      className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
-                                      readOnly={editingTab !== 'collective-burial'}
-                                      placeholder="宗派"
-                                    />
-                                  </div>
-                                  <div>
-                                    <Label className="text-sm font-medium">参列者数</Label>
-                                    <Input
-                                      value={`${ceremony.participants}名`}
-                                      className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
-                                      readOnly={editingTab !== 'collective-burial'}
-                                      placeholder="○名"
-                                    />
-                                  </div>
-                                  <div>
-                                    <Label className="text-sm font-medium">実施場所</Label>
-                                    <Input
-                                      value={ceremony.location}
-                                      className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
-                                      readOnly={editingTab !== 'collective-burial'}
-                                      placeholder="実施場所"
-                                    />
-                                  </div>
-                                  <div>
-                                    <Label className="text-sm font-medium">実施状況</Label>
-                                    <Input
-                                      value={burialInfo.status === 'completed' ? '完了' : burialInfo.status === 'planned' ? '予定' : '中止'}
-                                      className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
-                                      readOnly={editingTab !== 'collective-burial'}
-                                      placeholder="実施状況"
-                                    />
-                                  </div>
-                                  {ceremony.memo && (
-                                    <div className="col-span-6">
-                                      <Label className="text-sm font-medium">備考</Label>
-                                      <Input
-                                        value={ceremony.memo}
-                                        className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
-                                        readOnly={editingTab !== 'collective-burial'}
-                                        placeholder="備考"
-                                      />
-                                    </div>
-                                  )}
+                                {/* 工事内容 */}
+                                <div className="mb-3">
+                                  <Label className="text-sm font-medium">工事内容</Label>
+                                  <textarea
+                                    value={record.description}
+                                    className="w-full p-2 bg-yellow-50 border rounded text-sm resize-none h-16"
+                                    readOnly
+                                  />
                                 </div>
-                              ))
-                            )}
-                          </div>
-                        ) : (
-                          <p className="text-gray-500 text-center py-8">合祀実施記録が登録されていません</p>
-                        )}
-                      </div>
 
-                      {/* 関連書類管理 */}
-                      <div className="bg-blue-50 p-4 rounded border">
-                        <div className="flex justify-between items-center border-b pb-2 mb-3">
-                          <h4 className="font-semibold">関連書類管理</h4>
-                          <Button size="sm" variant="outline">+ 書類追加</Button>
-                        </div>
-
-                        {selectedCustomer.collectiveBurialInfo && selectedCustomer.collectiveBurialInfo.length > 0 ? (
-                          <div className="space-y-3">
-                            {selectedCustomer.collectiveBurialInfo.map((burialInfo) =>
-                              burialInfo.documents && burialInfo.documents.map((document) => (
-                                <div key={document.id} className="grid grid-cols-5 gap-4 bg-white p-3 rounded border">
+                                {/* 金額情報行 */}
+                                <div className="grid grid-cols-3 gap-4">
                                   <div>
-                                    <Label className="text-sm font-medium">書類種別</Label>
+                                    <Label className="text-sm font-medium">施工金額</Label>
                                     <Input
-                                      value={
-                                        document.type === 'permit' ? '改葬許可証' :
-                                          document.type === 'certificate' ? '証明書' :
-                                            document.type === 'agreement' ? '同意書' : 'その他'
-                                      }
-                                      className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
-                                      readOnly={editingTab !== 'collective-burial'}
-                                      placeholder="書類種別"
+                                      value={record.constructionAmount ? `${record.constructionAmount.toLocaleString()}円` : ''}
+                                      className="bg-yellow-50"
+                                      readOnly
                                     />
                                   </div>
                                   <div>
-                                    <Label className="text-sm font-medium">書類名</Label>
+                                    <Label className="text-sm font-medium">入金金額</Label>
                                     <Input
-                                      value={document.name}
-                                      className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
-                                      readOnly={editingTab !== 'collective-burial'}
-                                      placeholder="書類名"
-                                    />
-                                  </div>
-                                  <div>
-                                    <Label className="text-sm font-medium">発行日</Label>
-                                    <Input
-                                      value={document.issuedDate ? formatDateWithEra(document.issuedDate) : ''}
-                                      className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
-                                      readOnly={editingTab !== 'collective-burial'}
-                                      placeholder="令和○年○月○日"
-                                    />
-                                  </div>
-                                  <div>
-                                    <Label className="text-sm font-medium">有効期限</Label>
-                                    <Input
-                                      value={document.expiryDate ? formatDateWithEra(document.expiryDate) : ''}
-                                      className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
-                                      readOnly={editingTab !== 'collective-burial'}
-                                      placeholder="令和○年○月○日"
+                                      value={record.paidAmount ? `${record.paidAmount.toLocaleString()}円` : ''}
+                                      className="bg-yellow-50"
+                                      readOnly
                                     />
                                   </div>
                                   <div>
                                     <Label className="text-sm font-medium">備考</Label>
                                     <Input
-                                      value={document.memo || ''}
-                                      className={editingTab === 'collective-burial' ? 'bg-white' : 'bg-yellow-50'}
-                                      readOnly={editingTab !== 'collective-burial'}
-                                      placeholder="備考"
+                                      value={record.notes || ''}
+                                      className="bg-yellow-50"
+                                      readOnly
                                     />
                                   </div>
                                 </div>
-                              ))
-                            )}
+                              </div>
+                            ))}
                           </div>
                         ) : (
-                          <p className="text-gray-500 text-center py-8">関連書類が登録されていません</p>
+                          <p className="text-gray-500 text-center py-8">工事記録が登録されていません</p>
                         )}
                       </div>
                     </div>
@@ -2067,18 +2037,17 @@ export default function CustomerManagement({ onNavigateToMenu }: CustomerManagem
                                     </div>
                                     <div>
                                       <Label className="text-sm font-medium text-gray-600">重要度</Label>
-                                      <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
-                                        entry.priority === '緊急' ? 'bg-red-100 text-red-800' :
+                                      <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${entry.priority === '緊急' ? 'bg-red-100 text-red-800' :
                                         entry.priority === '重要' ? 'bg-orange-100 text-orange-800' :
-                                        'bg-green-100 text-green-800'
-                                      }`}>
+                                          'bg-green-100 text-green-800'
+                                        }`}>
                                         {entry.priority}
                                       </span>
                                     </div>
                                   </div>
-                                  <Button 
-                                    size="sm" 
-                                    variant="ghost" 
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
                                     className="text-red-600 hover:text-red-800 hover:bg-red-50 ml-2"
                                     onClick={() => handleDeleteHistory(entry.id)}
                                   >
@@ -2274,26 +2243,25 @@ export default function CustomerManagement({ onNavigateToMenu }: CustomerManagem
                                 <div className="flex justify-between items-start mb-2">
                                   <div className="flex items-center gap-3">
                                     <span className="text-sm text-gray-600">{note.date}</span>
-                                    <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
-                                      note.priority === '要注意' ? 'bg-red-100 text-red-800' :
+                                    <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${note.priority === '要注意' ? 'bg-red-100 text-red-800' :
                                       note.priority === '注意' ? 'bg-orange-100 text-orange-800' :
-                                      'bg-blue-100 text-blue-800'
-                                    }`}>
+                                        'bg-blue-100 text-blue-800'
+                                      }`}>
                                       {note.priority}
                                     </span>
                                   </div>
                                   <div className="flex gap-1">
-                                    <Button 
-                                      size="sm" 
-                                      variant="ghost" 
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
                                       className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 h-7 px-2"
                                       onClick={() => handleEditNote(note)}
                                     >
                                       編集
                                     </Button>
-                                    <Button 
-                                      size="sm" 
-                                      variant="ghost" 
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
                                       className="text-red-600 hover:text-red-800 hover:bg-red-50 h-7 px-2"
                                       onClick={() => handleDeleteNote(note.id)}
                                     >
@@ -2306,6 +2274,79 @@ export default function CustomerManagement({ onNavigateToMenu }: CustomerManagem
                             ))
                           )}
                         </div>
+                      </div>
+
+                      {/* 更新履歴（契約者情報スナップショット） */}
+                      <div className="bg-purple-50 p-4 rounded border">
+                        <div className="flex justify-between items-center border-b pb-2 mb-3">
+                          <h4 className="font-semibold">更新履歴（{selectedCustomer.historyRecords?.length || 0}件）</h4>
+                        </div>
+
+                        {selectedCustomer.historyRecords && selectedCustomer.historyRecords.length > 0 ? (
+                          <div className="space-y-3 max-h-96 overflow-y-auto">
+                            {selectedCustomer.historyRecords.map((record) => (
+                              <div key={record.id} className="bg-white p-4 rounded border">
+                                {/* 履歴ヘッダー */}
+                                <div className="grid grid-cols-4 gap-4 mb-3 pb-3 border-b">
+                                  <div>
+                                    <Label className="text-sm font-medium text-gray-600">更新日時</Label>
+                                    <p className="text-sm">{record.updatedAt ? formatDateWithEra(record.updatedAt) : ''}</p>
+                                  </div>
+                                  <div>
+                                    <Label className="text-sm font-medium text-gray-600">更新者</Label>
+                                    <p className="text-sm">{record.updatedBy}</p>
+                                  </div>
+                                  <div>
+                                    <Label className="text-sm font-medium text-gray-600">更新事由</Label>
+                                    <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${record.reasonType === 'termination' ? 'bg-red-100 text-red-800' :
+                                      record.reasonType === 'new_registration' ? 'bg-green-100 text-green-800' :
+                                        'bg-blue-100 text-blue-800'
+                                      }`}>
+                                      {HISTORY_REASON_LABELS[record.reasonType as HistoryReasonType] || record.reasonType}
+                                    </span>
+                                  </div>
+                                  {record.reasonDetail && (
+                                    <div>
+                                      <Label className="text-sm font-medium text-gray-600">詳細</Label>
+                                      <p className="text-sm">{record.reasonDetail}</p>
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* 契約者スナップショット */}
+                                {record.contractorSnapshot && (
+                                  <div>
+                                    <Label className="text-xs font-medium text-gray-500 mb-2 block">更新時点の契約者情報</Label>
+                                    <div className="grid grid-cols-4 gap-3 text-sm bg-gray-50 p-3 rounded">
+                                      <div>
+                                        <span className="text-gray-500">氏名:</span>
+                                        <span className="ml-1">{record.contractorSnapshot.name}</span>
+                                      </div>
+                                      <div>
+                                        <span className="text-gray-500">かな:</span>
+                                        <span className="ml-1">{record.contractorSnapshot.nameKana}</span>
+                                      </div>
+                                      <div>
+                                        <span className="text-gray-500">電話:</span>
+                                        <span className="ml-1">{record.contractorSnapshot.phoneNumber}</span>
+                                      </div>
+                                      <div>
+                                        <span className="text-gray-500">性別:</span>
+                                        <span className="ml-1">{record.contractorSnapshot.gender === 'male' ? '男性' : record.contractorSnapshot.gender === 'female' ? '女性' : ''}</span>
+                                      </div>
+                                      <div className="col-span-4">
+                                        <span className="text-gray-500">住所:</span>
+                                        <span className="ml-1">{record.contractorSnapshot.address}</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-gray-500 text-center py-8">更新履歴はありません</p>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -2655,6 +2696,115 @@ export default function CustomerManagement({ onNavigateToMenu }: CustomerManagem
               </Button>
               <Button className="bg-blue-600 hover:bg-blue-700 text-white" onClick={handleAddHistory}>
                 追加
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 解約入力ダイアログ */}
+      {showTerminationDialog && selectedCustomer && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4">
+            <div className="bg-red-600 text-white px-6 py-4 rounded-t-lg">
+              <h3 className="text-lg font-semibold">解約入力</h3>
+              <p className="text-sm text-red-100 mt-1">{selectedCustomer.name} 様（{selectedCustomer.customerCode}）</p>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                <p className="text-red-800 text-sm font-medium">⚠️ 解約処理を行うと、契約ステータスが「解約済み」に変更されます。この操作は取り消せません。</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium">解約日 <span className="text-red-500">*</span></Label>
+                  <Input
+                    type="date"
+                    value={terminationForm.terminationDate}
+                    onChange={(e) => setTerminationForm({ ...terminationForm, terminationDate: e.target.value })}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">担当者 <span className="text-red-500">*</span></Label>
+                  <Input
+                    value={terminationForm.handledBy}
+                    onChange={(e) => setTerminationForm({ ...terminationForm, handledBy: e.target.value })}
+                    placeholder="担当者名を入力"
+                    className="mt-1"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium">処理種別 <span className="text-red-500">*</span></Label>
+                  <select
+                    value={terminationForm.processType}
+                    onChange={(e) => setTerminationForm({ ...terminationForm, processType: e.target.value as TerminationProcessType })}
+                    className="mt-1 w-full border rounded-md px-3 py-2 bg-white"
+                  >
+                    {Object.entries(TERMINATION_PROCESS_TYPE_LABELS).map(([value, label]) => (
+                      <option key={value} value={value}>{label}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">返金額</Label>
+                  <Input
+                    type="number"
+                    value={terminationForm.refundAmount}
+                    onChange={(e) => setTerminationForm({ ...terminationForm, refundAmount: e.target.value })}
+                    placeholder="0"
+                    className="mt-1"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium">解約理由 <span className="text-red-500">*</span></Label>
+                <select
+                  value={terminationForm.reason}
+                  onChange={(e) => setTerminationForm({ ...terminationForm, reason: e.target.value })}
+                  className="mt-1 w-full border rounded-md px-3 py-2 bg-white"
+                >
+                  <option value="">選択してください</option>
+                  <option value="転居のため">転居のため</option>
+                  <option value="他の墓所へ移転">他の墓所へ移転</option>
+                  <option value="永代供養へ変更">永代供養へ変更</option>
+                  <option value="墓じまい">墓じまい</option>
+                  <option value="経済的理由">経済的理由</option>
+                  <option value="承継者不在">承継者不在</option>
+                  <option value="その他">その他</option>
+                </select>
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium">処理詳細</Label>
+                <Input
+                  value={terminationForm.processDetail}
+                  onChange={(e) => setTerminationForm({ ...terminationForm, processDetail: e.target.value })}
+                  placeholder="処理の詳細（移転先など）"
+                  className="mt-1"
+                />
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium">備考</Label>
+                <textarea
+                  value={terminationForm.notes}
+                  onChange={(e) => setTerminationForm({ ...terminationForm, notes: e.target.value })}
+                  placeholder="特記事項があれば入力"
+                  className="mt-1 w-full border rounded-md px-3 py-2 bg-white resize-none h-20"
+                />
+              </div>
+            </div>
+            <div className="px-6 py-4 bg-gray-50 rounded-b-lg flex justify-end space-x-3">
+              <Button variant="outline" onClick={() => setShowTerminationDialog(false)}>
+                キャンセル
+              </Button>
+              <Button className="bg-red-600 hover:bg-red-700 text-white" onClick={handleTerminate}>
+                解約処理を実行
               </Button>
             </div>
           </div>

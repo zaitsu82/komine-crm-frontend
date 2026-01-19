@@ -1,4 +1,4 @@
-import { Customer, PlotUnit, CustomerPlotAssignment, CustomerDocument } from '@/types/customer';
+import { Customer, PlotUnit, CustomerPlotAssignment, CustomerDocument, TerminationProcessType, HistoryRecord, ConstructionType } from '@/types/customer';
 import type {
   PlotAvailabilityCheck,
   PlotStatus
@@ -94,6 +94,80 @@ export function deleteCustomer(id: string): boolean {
 
   mockCustomers.splice(customerIndex, 1);
   return true;
+}
+
+// 解約情報の型
+export interface TerminationInput {
+  terminationDate: Date;
+  reason: string;
+  processType: TerminationProcessType;
+  processDetail?: string;
+  refundAmount?: number;
+  handledBy: string;
+  notes?: string;
+}
+
+// 顧客を解約処理
+export function terminateCustomer(id: string, terminationInput: TerminationInput): Customer | null {
+  const customerIndex = mockCustomers.findIndex(customer => customer.id === id);
+
+  if (customerIndex === -1) {
+    return null;
+  }
+
+  const customer = mockCustomers[customerIndex];
+
+  // 既に解約済みの場合はエラー
+  if (customer.status === 'inactive') {
+    return null;
+  }
+
+  // 解約履歴レコードを作成
+  const terminationHistoryRecord: HistoryRecord = {
+    id: `history-${Date.now()}`,
+    updatedAt: new Date(),
+    updatedBy: terminationInput.handledBy,
+    reasonType: 'termination',
+    reasonDetail: terminationInput.reason,
+    contractorSnapshot: {
+      name: customer.name,
+      nameKana: customer.nameKana,
+      birthDate: customer.birthDate,
+      gender: customer.gender,
+      postalCode: customer.postalCode,
+      address: customer.address,
+      phoneNumber: customer.phoneNumber,
+      faxNumber: customer.faxNumber,
+      email: customer.email,
+      companyName: customer.workInfo?.companyName,
+      companyNameKana: customer.workInfo?.companyNameKana,
+      companyAddress: customer.workInfo?.workAddress,
+      companyPhone: customer.workInfo?.workPhoneNumber,
+    },
+  };
+
+  // 顧客データを更新
+  const updatedCustomer: Customer = {
+    ...customer,
+    status: 'inactive',
+    terminationInfo: {
+      terminationDate: terminationInput.terminationDate,
+      reason: terminationInput.reason,
+      processType: terminationInput.processType,
+      processDetail: terminationInput.processDetail,
+      refundAmount: terminationInput.refundAmount,
+      handledBy: terminationInput.handledBy,
+      notes: terminationInput.notes,
+    },
+    historyRecords: [
+      ...(customer.historyRecords || []),
+      terminationHistoryRecord,
+    ],
+    updatedAt: new Date(),
+  };
+
+  mockCustomers[customerIndex] = updatedCustomer;
+  return updatedCustomer;
 }
 
 // 顧客ステータス判定のビジネスロジック
@@ -208,9 +282,31 @@ export function formDataToCustomer(formData: CustomerFormData): Omit<Customer, '
   const buriedPersons = (formData.buriedPersons || []).map(person => ({
     id: person.id,
     name: person.name,
-    gender: person.gender as 'male' | 'female' | undefined,
+    nameKana: person.nameKana || undefined,
+    birthDate: parseDate(person.birthDate),
+    gender: person.gender === 'male' || person.gender === 'female' ? person.gender : undefined,
+    posthumousName: person.posthumousName || undefined,
+    deathDate: parseDate(person.deathDate),
+    age: person.age ? parseInt(person.age, 10) : undefined,
     burialDate: parseDate(person.burialDate),
+    reportDate: parseDate(person.reportDate),
+    religion: person.religion || undefined,
+    relationship: person.relationship || undefined,
     memo: person.memo || undefined,
+  }));
+
+  // 工事情報の変換
+  const constructionRecords = (formData.constructionRecords || []).map(record => ({
+    id: record.id,
+    contractorName: record.contractorName,
+    constructionType: record.constructionType as ConstructionType,
+    startDate: parseDate(record.startDate),
+    scheduledEndDate: parseDate(record.scheduledEndDate),
+    endDate: parseDate(record.endDate),
+    description: record.description || '',
+    constructionAmount: record.constructionAmount ? parseInt(record.constructionAmount, 10) : null,
+    paidAmount: record.paidAmount ? parseInt(record.paidAmount, 10) : null,
+    notes: record.notes || undefined,
   }));
 
   return {
@@ -268,14 +364,17 @@ export function formDataToCustomer(formData: CustomerFormData): Omit<Customer, '
 
     // 請求情報
     billingInfo: formData.billingInfo && (
+      formData.billingInfo.institutionName ||
       formData.billingInfo.bankName ||
       formData.billingInfo.accountNumber ||
       formData.billingInfo.billingType
     ) ? {
       billingType: formData.billingInfo.billingType || 'individual',
+      institutionName: formData.billingInfo.institutionName || '',
       bankName: formData.billingInfo.bankName || '',
       branchName: formData.billingInfo.branchName || '',
       accountType: formData.billingInfo.accountType || 'ordinary',
+      symbolNumber: formData.billingInfo.symbolNumber || '',
       accountNumber: formData.billingInfo.accountNumber || '',
       accountHolder: formData.billingInfo.accountHolder || '',
     } : undefined,
@@ -331,6 +430,7 @@ export function formDataToCustomer(formData: CustomerFormData): Omit<Customer, '
 
     familyContacts,
     buriedPersons,
+    constructionRecords,
 
     // 緊急連絡先（後方互換性）
     emergencyContact: formData.emergencyContact && formData.emergencyContact.name ? {

@@ -1,26 +1,32 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
+import { useAuth } from '@/contexts/auth-context'
 
 export function LoginForm() {
+  const router = useRouter()
+  const { login, isLoading } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
+    setError(null)
 
-    // TODO: 認証ロジックの実装
-    console.log('ログイン:', { email, password })
+    const result = await login(email, password)
 
-    setTimeout(() => {
-      setIsLoading(false)
-    }, 1000)
+    if (result.success) {
+      // ログイン成功時はメイン画面へリダイレクト
+      router.push('/')
+    } else {
+      setError(result.error || 'ログインに失敗しました')
+    }
   }
 
   return (
@@ -35,7 +41,7 @@ export function LoginForm() {
       <Card className="relative w-full max-w-md border-0 shadow-elegant-xl overflow-hidden">
         {/* 上部アクセント */}
         <div className="h-1.5 bg-gradient-to-r from-matsu via-cha to-ai" />
-        
+
         <div className="p-10">
           {/* ロゴ・タイトル */}
           <div className="text-center mb-10">
@@ -86,6 +92,13 @@ export function LoginForm() {
               />
             </div>
 
+            {/* エラーメッセージ */}
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3">
+                <p className="text-red-600 text-sm">{error}</p>
+              </div>
+            )}
+
             <Button
               type="submit"
               variant="matsu"
@@ -128,6 +141,27 @@ export function LoginForm() {
               </p>
             </div>
           </div>
+
+          {/* 開発用: テストアカウント情報 */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="mt-6 pt-4 border-t border-dashed border-gin">
+              <p className="text-xs text-hai mb-3 font-medium">テストアカウント:</p>
+              <div className="space-y-2 text-xs">
+                <div className="flex justify-between items-center bg-gofun/50 rounded px-3 py-2">
+                  <span className="text-sumi-600">管理者</span>
+                  <code className="text-matsu font-mono text-[11px]">admin@komine-cemetery.jp / admin123</code>
+                </div>
+                <div className="flex justify-between items-center bg-gofun/50 rounded px-3 py-2">
+                  <span className="text-sumi-600">マネージャー</span>
+                  <code className="text-matsu font-mono text-[11px]">manager@komine-cemetery.jp / manager123</code>
+                </div>
+                <div className="flex justify-between items-center bg-gofun/50 rounded px-3 py-2">
+                  <span className="text-sumi-600">オペレーター</span>
+                  <code className="text-matsu font-mono text-[11px]">operator@komine-cemetery.jp / operator123</code>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </Card>
     </div>

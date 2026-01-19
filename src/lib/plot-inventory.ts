@@ -183,7 +183,7 @@ export function getInventoryBySections(): { section: string; period: PlotPeriod;
 // 1区画 = 3.6㎡、半区画 = 1.8㎡
 export function getInventoryBySize(): { sizeType: 'full' | 'half'; areaSqm: number; totalCount: number; usedCount: number; remainingCount: number }[] {
   const summary = calculateInventorySummary();
-  
+
   // 全体の区画を3.6㎡として計算（実際の運用では個別管理が必要）
   return [
     {
@@ -209,13 +209,13 @@ export function getInventorySortedByUsageRate(ascending: boolean = false): PlotI
     ...item,
     usageRate: item.totalCount > 0 ? (item.usedCount / item.totalCount) * 100 : 0,
   }));
-  
+
   return items.sort((a, b) => ascending ? a.usageRate - b.usageRate : b.usageRate - a.usageRate);
 }
 
 // 残数でソート（多い順）
 export function getInventorySortedByRemaining(ascending: boolean = false): PlotInventoryItem[] {
-  return getAllPlotInventory().sort((a, b) => 
+  return getAllPlotInventory().sort((a, b) =>
     ascending ? a.remainingCount - b.remainingCount : b.remainingCount - a.remainingCount
   );
 }
