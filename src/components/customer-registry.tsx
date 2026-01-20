@@ -142,13 +142,16 @@ export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, o
           break;
         case 'nextBilling':
           // 次回請求日でソート
+          // managementFee（新）を優先し、managementFeeInfo（非推奨）にフォールバック
           const getNextBillingTimestamp = (customer: any) => {
-            if (customer.managementFeeInfo?.lastBillingMonth) {
-              const lastBilling = new Date(customer.managementFeeInfo.lastBillingMonth);
+            const lastBillingMonth = customer.managementFee?.lastBillingMonth || customer.managementFeeInfo?.lastBillingMonth;
+            const billingType = customer.managementFee?.billingType || customer.managementFeeInfo?.billingType;
+            if (lastBillingMonth) {
+              const lastBilling = new Date(lastBillingMonth);
               const nextBilling = new Date(lastBilling);
-              if (customer.managementFeeInfo.billingType === 'monthly') {
+              if (billingType === 'monthly' || billingType === '月払い') {
                 nextBilling.setMonth(nextBilling.getMonth() + 1);
-              } else if (customer.managementFeeInfo.billingType === 'yearly') {
+              } else if (billingType === 'yearly' || billingType === '年払い') {
                 nextBilling.setFullYear(nextBilling.getFullYear() + 1);
               }
               return nextBilling.getTime();
@@ -505,13 +508,16 @@ export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, o
                   };
 
                   // 次回請求日の計算
+                  // managementFee（新）を優先し、managementFeeInfo（非推奨）にフォールバック
                   const getNextBillingDate = (customer: any) => {
-                    if (customer.managementFeeInfo?.lastBillingMonth) {
-                      const lastBilling = new Date(customer.managementFeeInfo.lastBillingMonth);
+                    const lastBillingMonth = customer.managementFee?.lastBillingMonth || customer.managementFeeInfo?.lastBillingMonth;
+                    const billingType = customer.managementFee?.billingType || customer.managementFeeInfo?.billingType;
+                    if (lastBillingMonth) {
+                      const lastBilling = new Date(lastBillingMonth);
                       const nextBilling = new Date(lastBilling);
-                      if (customer.managementFeeInfo.billingType === 'monthly') {
+                      if (billingType === 'monthly' || billingType === '月払い') {
                         nextBilling.setMonth(nextBilling.getMonth() + 1);
-                      } else if (customer.managementFeeInfo.billingType === 'yearly') {
+                      } else if (billingType === 'yearly' || billingType === '年払い') {
                         nextBilling.setFullYear(nextBilling.getFullYear() + 1);
                       }
                       return `${nextBilling.getMonth() + 1}/${nextBilling.getDate()}`;

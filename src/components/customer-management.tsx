@@ -12,7 +12,8 @@ import { CustomerFormData } from '@/lib/validations';
 import CustomerSearch from '@/components/customer-search';
 import CustomerForm from '@/components/customer-form';
 import CustomerRegistry from '@/components/customer-registry';
-import CemeteryManagementList from '@/components/cemetery-management-list';
+import CollectiveBurialList from '@/components/collective-burial-list';
+import PlotAvailabilityManagement from '@/components/plot-availability-management';
 
 import InvoiceTemplate from '@/components/invoice-template';
 import PostcardTemplate from '@/components/postcard-template';
@@ -24,13 +25,16 @@ const menuItems = [
   '台帳問い合わせ',
   '台帳編集',
   '新規登録',
-  '区画管理',
   '合祀管理',
+  '区画残数管理',
   '契約訂正'
 ];
 
+type ViewType = 'registry' | 'search' | 'details' | 'register' | 'edit' | 'collective-burial' | 'plot-availability' | 'invoice' | 'document-select' | 'document-history';
+
 interface CustomerManagementProps {
   onNavigateToMenu?: () => void;
+  initialView?: ViewType;
 }
 
 // 対応履歴の型定義
@@ -43,9 +47,9 @@ interface HistoryEntry {
   content: string;
 }
 
-export default function CustomerManagement({ onNavigateToMenu }: CustomerManagementProps) {
+export default function CustomerManagement({ onNavigateToMenu, initialView = 'registry' }: CustomerManagementProps) {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-  const [currentView, setCurrentView] = useState<'registry' | 'search' | 'details' | 'register' | 'edit' | 'collective-burial' | 'invoice' | 'document-select' | 'document-history'>('registry');
+  const [currentView, setCurrentView] = useState<ViewType>(initialView);
   const [isLoading, setIsLoading] = useState(false);
   const [editingTab, setEditingTab] = useState<string | null>(null);
   const [editFormData, setEditFormData] = useState<any>({});
@@ -446,7 +450,8 @@ export default function CustomerManagement({ onNavigateToMenu }: CustomerManagem
       <div className="w-64 bg-gray-200 border-r border-gray-300 fixed top-0 left-0 h-screen overflow-y-auto z-10">
         <div className="p-4 pb-8">
           <h2 className="text-lg font-semibold text-gray-800 mb-4">
-            {currentView === 'collective-burial' ? '合祀管理メニュー' : '台帳管理メニュー'}
+            {currentView === 'collective-burial' ? '合祀管理メニュー' :
+              currentView === 'plot-availability' ? '区画残数管理メニュー' : '台帳管理メニュー'}
           </h2>
 
           {/* メインメニューに戻るボタン */}
@@ -517,7 +522,7 @@ export default function CustomerManagement({ onNavigateToMenu }: CustomerManagem
             </div>
           ) : (
             <div className="space-y-1 mb-4">
-              {(currentView === 'collective-burial' ? ['合祀管理', '台帳問い合わせ'] : menuItems).map((item, index) => (
+              {menuItems.map((item, index) => (
                 <button
                   key={index}
                   onClick={() => {
@@ -532,10 +537,11 @@ export default function CustomerManagement({ onNavigateToMenu }: CustomerManagem
                       }
                     } else if (item === '新規登録') {
                       handleNewCustomer();
-                    } else if (item === '区画管理') {
-                      alert('区画管理は「区画残数管理」メニューからご利用ください');
                     } else if (item === '合祀管理') {
                       setCurrentView('collective-burial');
+                      setSelectedCustomer(null);
+                    } else if (item === '区画残数管理') {
+                      setCurrentView('plot-availability');
                       setSelectedCustomer(null);
                     } else if (item === '契約訂正') {
                       if (selectedCustomer) {
@@ -548,7 +554,8 @@ export default function CustomerManagement({ onNavigateToMenu }: CustomerManagem
                   className={`w-full text-left px-3 py-2 text-senior-sm rounded border border-gray-400 bg-gray-100 hover:bg-blue-100 hover:border-blue-300 transition-colors btn-senior ${(item === '台帳問い合わせ' && (currentView === 'registry' || currentView === 'search')) ||
                     (item === '台帳編集' && currentView === 'edit') ||
                     (item === '契約訂正' && currentView === 'edit') ||
-                    (item === '合祀管理' && currentView === 'collective-burial') ? 'bg-blue-100 border-blue-300' : ''
+                    (item === '合祀管理' && currentView === 'collective-burial') ||
+                    (item === '区画残数管理' && currentView === 'plot-availability') ? 'bg-blue-100 border-blue-300' : ''
                     }`}
                 >
                   {item}
@@ -622,7 +629,11 @@ export default function CustomerManagement({ onNavigateToMenu }: CustomerManagem
           </>
         ) : currentView === 'collective-burial' ? (
           <div className="flex-1 overflow-auto">
-            <CemeteryManagementList />
+            <CollectiveBurialList />
+          </div>
+        ) : currentView === 'plot-availability' ? (
+          <div className="flex-1 overflow-auto">
+            <PlotAvailabilityManagement />
           </div>
         ) : currentView === 'details' && selectedCustomer && (
           <>

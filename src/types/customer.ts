@@ -47,23 +47,23 @@ export interface Customer {
     calculationType: string; // 計算区分 (セレクトボックス)
     taxType: string; // 税区分 (セレクトボックス)
     billingType: string; // 請求区分 (セレクトボックス)
-    billingYears: string; // 請求年数
+    billingYears: number | null; // 請求年数
     area: string; // 面積 例: 10㎡
-    unitPrice: string; // 単価 例: 10000
-    usageFee: string; // 使用料 例: 200000
+    unitPrice: number | null; // 単価 例: 10000
+    usageFee: number | null; // 使用料 例: 200000
     paymentMethod: string; // 支払い方法 (セレクトボックス)
   };
 
   // 管理料
   managementFee?: {
     calculationType: string; // 計算区分 (セレクトボックス)
-    taxType: string; // 税区分 (セレクトボックス)  
+    taxType: string; // 税区分 (セレクトボックス)
     billingType: string; // 請求区分 (セレクトボックス)
-    billingYears: string; // 請求年数
+    billingYears: number | null; // 請求年数
     area: string; // 面積 例: 10㎡
-    billingMonth: string; // 請求月 (1-12)
-    managementFee: string; // 管理料 例: 5000
-    unitPrice: string; // 単価 例: 500
+    billingMonth: number | null; // 請求月 (1-12)
+    managementFee: number | null; // 管理料 例: 5000
+    unitPrice: number | null; // 単価 例: 500
     lastBillingMonth: string; // 最終請求月 ----年--月
     paymentMethod: string; // 支払方法 (セレクトボックス)
   };
@@ -100,7 +100,10 @@ export interface Customer {
     notes?: string; // 備考
   }[];
 
-  // 緊急連絡先（後方互換性のため残す）
+  /**
+   * @deprecated Use familyContacts instead. Will be removed in future version.
+   * 緊急連絡先（後方互換性のため残す）
+   */
   emergencyContact?: {
     name: string;
     relationship: string;
@@ -166,7 +169,10 @@ export interface Customer {
     updatedAt: Date;
   }[];
 
-  // 勤務先・連絡情報 - 後方互換性のため残す
+  /**
+   * 勤務先・連絡情報
+   * @note zipCode, phone, address は workPostalCode, workPhoneNumber, workAddress の別名（非推奨）
+   */
   workInfo?: {
     companyName: string; // 勤務先名称
     companyNameKana: string; // 勤務先仮名
@@ -176,12 +182,17 @@ export interface Customer {
     dmSetting: 'allow' | 'deny' | 'limited'; // DM設定
     addressType: 'home' | 'work' | 'other'; // 宛先区分
     notes: string; // 備考
-    zipCode?: string; // 郵便番号（別名）
-    phone?: string; // 電話番号（別名）
-    address?: string; // 住所（別名）
+    /** @deprecated Use workPostalCode instead */
+    zipCode?: string;
+    /** @deprecated Use workPhoneNumber instead */
+    phone?: string;
+    /** @deprecated Use workAddress instead */
+    address?: string;
   };
 
-  // 請求情報 - 後方互換性のため残す
+  /**
+   * 請求情報（口座情報）
+   */
   billingInfo?: {
     billingType: 'individual' | 'corporate' | 'bank_transfer'; // 請求種別
     institutionName: string; // 機関名称（銀行・ゆうちょ等）
@@ -191,11 +202,14 @@ export interface Customer {
     accountNumber: string; // 番号
     accountHolder: string; // 口座名義
     type?: string; // 請求タイプ（表示用）
-    // 後方互換性のため残す
-    bankName?: string; // 旧: 銀行名称 → institutionName へ移行
+    /** @deprecated Use institutionName instead */
+    bankName?: string;
   };
 
-  // 墓地区画情報 - 後方互換性のため残す
+  /**
+   * @deprecated Use ownedPlots or plotAssignments instead. Will be removed in future version.
+   * 墓地区画情報（後方互換性のため残す）
+   */
   plotInfo?: {
     plotNumber: string; // 区画番号
     section: string; // 区域
@@ -220,18 +234,30 @@ export interface Customer {
   updatedAt: Date;
   status: 'active' | 'inactive'; // 契約ステータス
 
-  // 後方互換性のため残すフィールド
+  /**
+   * @deprecated Address components should be parsed from 'address' field if needed.
+   * 後方互換性のため残すフィールド
+   */
   postalCode?: string;
+  /** @deprecated Use address field instead */
   prefecture?: string;
+  /** @deprecated Use address field instead */
   city?: string;
 
-  // 追加プロパティ（コンポーネントで使用）
+  /**
+   * @deprecated Use reservationDate, permitDate, startDate directly. Will be removed in future version.
+   * 契約者情報（台帳表示用）
+   */
   contractorInfo?: {
     contractYear?: number; // 契約年
     contractDate?: Date | null; // 契約日
     startDate?: Date | null; // 開始日
   };
 
+  /**
+   * @deprecated Use workInfo.dmSetting and workInfo.addressType instead. Will be removed in future version.
+   * DM情報
+   */
   dmInfo?: {
     setting: 'allow' | 'deny' | 'limited'; // DM設定
     lastSentDate?: Date | null; // 最終送付日
@@ -239,6 +265,10 @@ export interface Customer {
     notes?: string; // 備考
   };
 
+  /**
+   * @deprecated Use constructionRecords instead. Will be removed in future version.
+   * 工事情報（単一・レガシー）
+   */
   constructionInfo?: {
     constructionType?: string; // 工事種別
     constructionDate?: Date | null; // 工事日
@@ -277,8 +307,13 @@ export interface Customer {
     paymentScheduledDate2?: Date | null; // 入金予定日2
   };
 
-  applicant?: string; // 申込者名（台帳表示用）
+  /** @deprecated Use applicantInfo.name instead */
+  applicant?: string;
 
+  /**
+   * @deprecated Use managementFee instead. Will be removed in future version.
+   * 管理料情報（台帳表示用・レガシー）
+   */
   managementFeeInfo?: {
     nextBillingDate?: Date | null; // 次回請求日
     lastBillingDate?: Date | null; // 前回請求日

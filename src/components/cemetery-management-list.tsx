@@ -86,6 +86,15 @@ export default function CemeteryManagementList({ onCustomerSelect, selectedCusto
   };
 
   const getContractYear = (customer: Customer): string => {
+    // startDate（契約者の開始年月日）を優先
+    if (customer.startDate) {
+      return new Date(customer.startDate).getFullYear().toString();
+    }
+    // 申込日にフォールバック
+    if (customer.applicantInfo?.applicationDate) {
+      return new Date(customer.applicantInfo.applicationDate).getFullYear().toString();
+    }
+    // 非推奨フィールドへのフォールバック（後方互換性）
     if (customer.contractorInfo?.startDate) {
       return new Date(customer.contractorInfo.startDate).getFullYear().toString();
     }

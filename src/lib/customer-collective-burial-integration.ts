@@ -183,9 +183,12 @@ export function getCollectiveBurialPersonsByPlot(): Record<string, number> {
   const plotCounts: Record<string, number> = {};
 
   mockCustomers.forEach(customer => {
-    if (!customer.plotInfo?.plotNumber) return;
+    // plotNumber（顧客直接フィールド）を優先、plotInfo（非推奨）にフォールバック
+    const plotNumber = customer.plotNumber || customer.plotInfo?.plotNumber;
+    if (!plotNumber) return;
 
-    const plotKey = `${customer.plotInfo.section || ''}-${customer.plotInfo.plotNumber}`;
+    const section = customer.section || customer.plotInfo?.section || '';
+    const plotKey = `${section}-${plotNumber}`;
     const personsCount = getCustomerCollectiveBurialPersonsCount(customer);
 
     plotCounts[plotKey] = personsCount;
