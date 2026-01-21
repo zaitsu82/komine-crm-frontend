@@ -1,4 +1,4 @@
-import { Customer, OwnedPlot } from '@/types/customer';
+import { Customer } from '@/types/customer';
 
 export const demoCustomers: Customer[] = [
   {

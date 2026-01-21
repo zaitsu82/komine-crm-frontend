@@ -35,12 +35,11 @@ export default function InvoiceEditor({ customer, onClose, onSave }: InvoiceEdit
 
     // 管理料から請求金額を取得
     if (customer.managementFee?.managementFee) {
-      const amount = parseInt(customer.managementFee.managementFee.replace(/[^0-9]/g, '')) || 50000;
       items.push({
         description: '墓地年間管理料',
         quantity: 1,
-        unitPrice: amount,
-        amount: amount
+        unitPrice: customer.managementFee.managementFee,
+        amount: customer.managementFee.managementFee
       });
     } else {
       items.push({

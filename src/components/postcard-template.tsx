@@ -1,15 +1,11 @@
 import React from 'react';
 import { Customer } from '@/types/customer';
-import { formatDateWithEra } from '@/lib/utils';
 
 interface PostcardTemplateProps {
     customer: Customer;
-    type?: 'ceremony_notice' | 'completion_report' | 'generic';
 }
 
-export default function PostcardTemplate({ customer, type = 'generic' }: PostcardTemplateProps) {
-    const today = new Date();
-
+export default function PostcardTemplate({ customer }: PostcardTemplateProps) {
     return (
         <div className="postcard-print-area hidden print:block bg-white text-black font-serif">
             {/* 

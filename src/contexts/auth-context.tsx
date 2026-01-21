@@ -1,13 +1,21 @@
 'use client';
 
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
+import {
+  login as apiLogin,
+  logout as apiLogout,
+  getCurrentUser,
+  isAuthenticated as checkIsAuthenticated,
+  AuthUser,
+} from '@/lib/api';
 
-// ユーザー型定義
+// ユーザー型定義（後方互換性のため維持）
 export interface User {
   id: number;
   email: string;
   name: string;
   role: 'admin' | 'manager' | 'operator' | 'viewer';
+  isActive?: boolean;
 }
 
 // 認証コンテキストの型定義
@@ -15,93 +23,80 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  error: string | null;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  logout: () => void;
+  logout: () => Promise<void>;
+  clearError: () => void;
 }
-
-// モックユーザーデータ
-const MOCK_USERS: Array<User & { password: string }> = [
-  {
-    id: 1,
-    email: 'admin@komine-cemetery.jp',
-    name: '管理者',
-    role: 'admin',
-    password: 'admin123',
-  },
-  {
-    id: 2,
-    email: 'manager@komine-cemetery.jp',
-    name: '佐藤 一郎',
-    role: 'manager',
-    password: 'manager123',
-  },
-  {
-    id: 3,
-    email: 'operator@komine-cemetery.jp',
-    name: '田中 花子',
-    role: 'operator',
-    password: 'operator123',
-  },
-];
 
 // コンテキスト作成
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// AuthUserをUserに変換
+function authUserToUser(authUser: AuthUser): User {
+  return {
+    id: authUser.id,
+    email: authUser.email,
+    name: authUser.name,
+    role: authUser.role,
+    isActive: authUser.isActive,
+  };
+}
+
 // プロバイダーコンポーネント
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(() => {
-    // クライアントサイドでのみlocalStorageを確認
-    if (typeof window !== 'undefined') {
-      const savedUser = localStorage.getItem('auth_user');
-      if (savedUser) {
-        try {
-          return JSON.parse(savedUser);
-        } catch {
-          return null;
-        }
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // 初期化時に認証状態を確認
+  useEffect(() => {
+    const initAuth = async () => {
+      if (!checkIsAuthenticated()) {
+        setIsLoading(false);
+        return;
       }
-    }
-    return null;
-  });
-  const [isLoading, setIsLoading] = useState(false);
+
+      const response = await getCurrentUser();
+      if (response.success) {
+        setUser(authUserToUser(response.data));
+      }
+      setIsLoading(false);
+    };
+
+    initAuth();
+  }, []);
 
   // ログイン処理
   const login = useCallback(async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     setIsLoading(true);
+    setError(null);
 
-    // 模擬的な遅延（ネットワーク遅延をシミュレート）
-    await new Promise(resolve => setTimeout(resolve, 800));
+    const response = await apiLogin({ email, password });
 
-    // モックユーザーで認証
-    const foundUser = MOCK_USERS.find(
-      u => u.email.toLowerCase() === email.toLowerCase() && u.password === password
-    );
-
-    if (foundUser) {
-      const { password: _, ...userWithoutPassword } = foundUser;
-      setUser(userWithoutPassword);
-
-      // localStorageに保存（モック用）
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('auth_user', JSON.stringify(userWithoutPassword));
-        localStorage.setItem('auth_token', `mock_token_${foundUser.id}_${Date.now()}`);
-      }
-
+    if (response.success) {
+      setUser(authUserToUser(response.data.user));
       setIsLoading(false);
       return { success: true };
     }
 
+    setError(response.error.message);
     setIsLoading(false);
-    return { success: false, error: 'メールアドレスまたはパスワードが正しくありません' };
+    return { success: false, error: response.error.message };
   }, []);
 
   // ログアウト処理
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
+    setIsLoading(true);
+    await apiLogout();
     setUser(null);
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('auth_user');
-      localStorage.removeItem('auth_token');
-    }
+    setError(null);
+    setIsLoading(false);
+  }, []);
+
+  // エラークリア
+  const clearError = useCallback(() => {
+    setError(null);
   }, []);
 
   return (
@@ -110,8 +105,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         isAuthenticated: !!user,
         isLoading,
+        error,
         login,
         logout,
+        clearError,
       }}
     >
       {children}
@@ -129,7 +126,4 @@ export function useAuth() {
 }
 
 // 認証状態チェック用のヘルパー関数
-export function getStoredAuthToken(): string | null {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem('auth_token');
-}
+export { getAuthToken as getStoredAuthToken } from '@/lib/api';

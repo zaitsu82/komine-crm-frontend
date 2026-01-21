@@ -9,10 +9,8 @@ import {
   CollectiveBurialYearGroup,
   CollectiveBurialListFilter,
   CollectiveBurialSection,
-  CollectiveBurialPeriodType,
   calculateCollectiveBurialPeriod,
 } from '@/types/collective-burial-list';
-import { mockCustomers } from '@/lib/data';
 
 /**
  * 合祀一覧のモックデータ（ダミーデータ）

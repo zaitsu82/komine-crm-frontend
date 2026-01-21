@@ -2,13 +2,12 @@
 
 import { useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { customerFormSchema, CustomerFormData } from '@/lib/validations';
+import { Customer } from '@/types/customer';
+import { CustomerFormData } from '@/lib/validations';
 import { Button } from '@/components/ui/button';
 import { formatDate } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-import { CustomerFormProps } from './types';
 import { BasicInfoTab1 } from './BasicInfoTab1';
 import { BasicInfoTab2 } from './BasicInfoTab2';
 import { ContactsTab } from './ContactsTab';
@@ -16,19 +15,20 @@ import { BurialInfoTab } from './BurialInfoTab';
 import { ConstructionInfoTab } from './ConstructionInfoTab';
 import { HistoryTab } from './HistoryTab';
 
-export default function CustomerForm({ customer, onSave, isLoading }: CustomerFormProps) {
-  const isEditing = !!customer;
+interface CustomerDetailViewProps {
+  customer: Customer;
+  onEdit?: () => void;
+}
 
+export function CustomerDetailView({ customer, onEdit }: CustomerDetailViewProps) {
   const {
     register,
-    handleSubmit,
-    formState: { errors },
     setValue,
     watch,
     control,
+    formState: { errors },
   } = useForm<CustomerFormData>({
-    resolver: zodResolver(customerFormSchema),
-    defaultValues: customer ? {
+    defaultValues: {
       customerCode: customer.customerCode,
       plotNumber: customer.plotNumber || '',
       plotPeriod: customer.plotPeriod || '',
@@ -46,6 +46,9 @@ export default function CustomerForm({ customer, onSave, isLoading }: CustomerFo
       email: customer.email || '',
       address: customer.address,
       registeredAddress: customer.registeredAddress || '',
+      postalCode: customer.postalCode || '',
+      prefecture: customer.prefecture || '',
+      city: customer.city || '',
       applicantInfo: customer.applicantInfo ? {
         applicationDate: customer.applicantInfo.applicationDate ? formatDate(customer.applicantInfo.applicationDate) : '',
         staffName: customer.applicantInfo.staffName || '',
@@ -85,6 +88,25 @@ export default function CustomerForm({ customer, onSave, isLoading }: CustomerFo
         surroundingArea: customer.gravestoneInfo.surroundingArea || '',
         establishmentDeadline: customer.gravestoneInfo.establishmentDeadline ? formatDate(customer.gravestoneInfo.establishmentDeadline) : '',
         establishmentDate: customer.gravestoneInfo.establishmentDate ? formatDate(customer.gravestoneInfo.establishmentDate) : '',
+      } : undefined,
+      workInfo: customer.workInfo ? {
+        companyName: customer.workInfo.companyName || '',
+        companyNameKana: customer.workInfo.companyNameKana || '',
+        workPostalCode: customer.workInfo.workPostalCode || '',
+        workPhoneNumber: customer.workInfo.workPhoneNumber || '',
+        workAddress: customer.workInfo.workAddress || '',
+        dmSetting: customer.workInfo.dmSetting || '',
+        addressType: customer.workInfo.addressType || '',
+        notes: customer.workInfo.notes || '',
+      } : undefined,
+      billingInfo: customer.billingInfo ? {
+        billingType: customer.billingInfo.billingType || '',
+        institutionName: customer.billingInfo.institutionName || '',
+        branchName: customer.billingInfo.branchName || '',
+        accountType: customer.billingInfo.accountType || '',
+        symbolNumber: customer.billingInfo.symbolNumber || '',
+        accountNumber: customer.billingInfo.accountNumber || '',
+        accountHolder: customer.billingInfo.accountHolder || '',
       } : undefined,
       familyContacts: customer.familyContacts?.map(contact => ({
         id: contact.id,
@@ -137,35 +159,6 @@ export default function CustomerForm({ customer, onSave, isLoading }: CustomerFo
         paidAmount: record.paidAmount?.toString() || '',
         notes: record.notes || '',
       })) || [],
-    } : {
-      customerCode: '',
-      plotNumber: '',
-      plotPeriod: '',
-      section: '',
-      reservationDate: '',
-      acceptanceNumber: '',
-      permitDate: '',
-      startDate: '',
-      name: '',
-      nameKana: '',
-      birthDate: '',
-      gender: '',
-      phoneNumber: '',
-      faxNumber: '',
-      email: '',
-      address: '',
-      registeredAddress: '',
-      familyContacts: [],
-      buriedPersons: [],
-      constructionRecords: [],
-      applicantInfo: undefined as any,
-      usageFee: undefined as any,
-      managementFee: undefined as any,
-      gravestoneInfo: undefined as any,
-      workInfo: undefined as any,
-      billingInfo: undefined as any,
-      plotInfo: undefined as any,
-      emergencyContact: undefined as any,
     }
   });
 
@@ -188,10 +181,6 @@ export default function CustomerForm({ customer, onSave, isLoading }: CustomerFo
   const [expandedConstructionId, setExpandedConstructionId] = useState<string | null>(null);
   const [selectedHistoryId, setSelectedHistoryId] = useState<string | null>(null);
 
-  const onSubmit = (data: CustomerFormData) => {
-    onSave(data);
-  };
-
   const tabBaseProps = {
     register,
     watch,
@@ -199,10 +188,26 @@ export default function CustomerForm({ customer, onSave, isLoading }: CustomerFo
     errors,
     control,
     customer,
+    viewMode: true,
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="w-full">
+    <div className="w-full">
+      {/* Header with Edit Button */}
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-800">
+          {customer.name} ({customer.customerCode})
+        </h2>
+        {onEdit && (
+          <Button
+            onClick={onEdit}
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            編集
+          </Button>
+        )}
+      </div>
+
       <Tabs defaultValue="basic-info-1" className="w-full">
         <TabsList className="grid w-full grid-cols-6 h-auto">
           <TabsTrigger value="basic-info-1" className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">基本情報1</TabsTrigger>
@@ -257,26 +262,10 @@ export default function CustomerForm({ customer, onSave, isLoading }: CustomerFo
             customer={customer}
             selectedHistoryId={selectedHistoryId}
             setSelectedHistoryId={setSelectedHistoryId}
+            viewMode={true}
           />
         </TabsContent>
-
       </Tabs>
-
-      {/* フォーム送信ボタン */}
-      <div className="flex justify-end space-x-4 mt-8 pt-6 border-t">
-        <Button
-          type="submit"
-          disabled={isLoading}
-          className="bg-blue-600 hover:bg-blue-700 px-6"
-        >
-          {isLoading ? '保存中...' : (isEditing ? '更新' : '登録')}
-        </Button>
-      </div>
-    </form>
+    </div>
   );
 }
-
-// Re-export types and components
-export * from './types';
-export { PlotSettingsSection } from './PlotSettingsSection';
-export { CustomerDetailView } from './CustomerDetailView';

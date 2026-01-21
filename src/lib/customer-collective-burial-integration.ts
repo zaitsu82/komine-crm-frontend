@@ -9,7 +9,6 @@ import { CollectiveBurialApplication } from '@/types/collective-burial';
 import { mockCustomers } from '@/lib/data';
 import {
   CollectiveBurialSection,
-  calculateCollectiveBurialPeriod,
 } from '@/types/collective-burial-list';
 import {
   createCollectiveBurialRecordFromCustomer,

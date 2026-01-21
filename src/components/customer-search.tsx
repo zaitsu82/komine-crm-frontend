@@ -44,8 +44,9 @@ export default function CustomerSearch({ onCustomerSelect, selectedCustomer, onN
   };
 
   // 顧客ステータスの表示関数
-  const getCustomerStatusDisplay = (customer: Customer) => {
-    // 実際のビジネスロジックに応じて調整
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const getCustomerStatusDisplay = (_customer: Customer) => {
+    // TODO: 実際のビジネスロジックに応じて_customerのプロパティを参照して調整
     const hasOverdue = false; // 滞納があるか
     const needsAttention = false; // 要対応事項があるか
 
@@ -135,7 +136,7 @@ export default function CustomerSearch({ onCustomerSelect, selectedCustomer, onN
             </h4>
           </div>
           <div className="max-h-80 overflow-y-auto">
-            {searchResults.map((customer, index) => {
+            {searchResults.map((customer) => {
               const status = getCustomerStatusDisplay(customer);
               return (
                 <div

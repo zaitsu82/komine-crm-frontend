@@ -2,7 +2,8 @@
 
 import { useState, useMemo } from 'react';
 import { Customer } from '@/types/customer';
-import { mockCustomers, filterByAiueo, sortByKana } from '@/lib/data';
+import { filterByAiueo } from '@/lib/data';
+import { getAllCustomersSync } from '@/lib/api';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { cn, calculateOwnedPlotsInfo } from '@/lib/utils';
@@ -36,7 +37,7 @@ type SortOrder = 'asc' | 'desc';
 export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, onNewCustomer, customerAttentionNotes }: CustomerRegistryProps) {
   const [activeTab, setActiveTab] = useState('全');
   const [searchQuery, setSearchQuery] = useState('');
-  const [customers] = useState<Customer[]>(mockCustomers);
+  const [customers] = useState<Customer[]>(() => getAllCustomersSync());
   const [focusedTabIndex, setFocusedTabIndex] = useState(11);
   const [sortKey, setSortKey] = useState<SortKey>('customerCode');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');

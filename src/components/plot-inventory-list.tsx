@@ -6,16 +6,12 @@ import { cn } from '@/lib/utils';
 import {
   getAllPlotInventory,
   getPlotInventoryByPeriod,
-  calculatePeriodSummary,
   calculateAllPeriodSummaries,
   calculateInventorySummary,
   getAvailablePlots,
   getSoldOutPlots,
   getInventorySortedByUsageRate,
   getInventorySortedByRemaining,
-  PlotInventoryItem,
-  PeriodSummary,
-  InventorySummary,
 } from '@/lib/plot-inventory';
 import { PlotPeriod } from '@/types/customer';
 

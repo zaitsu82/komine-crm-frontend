@@ -1,21 +1,8 @@
 import { customerFormSchema } from '@/lib/validations'
-import { z } from 'zod'
 
 describe('validations.ts - フォームバリデーション', () => {
   describe('顧客フォームスキーマ', () => {
     describe('必須フィールド', () => {
-      const requiredFields = {
-        customerCode: '',
-        name: '',
-        nameKana: '',
-        gender: 'male' as const,
-        postalCode: '',
-        prefecture: '',
-        city: '',
-        address: '',
-        phoneNumber: ''
-      }
-
       it('全ての必須フィールドが空の場合エラーが返される', () => {
         const result = customerFormSchema.safeParse({})
         

@@ -16,6 +16,8 @@ export interface TabBaseProps {
   errors: FieldErrors<CustomerFormData>;
   control: Control<CustomerFormData>;
   customer?: Customer;
+  /** 閲覧モード（trueの場合は読み取り専用表示） */
+  viewMode?: boolean;
 }
 
 export interface ContactsTabProps extends TabBaseProps {
@@ -44,6 +46,8 @@ export interface HistoryTabProps {
   customer?: Customer;
   selectedHistoryId: string | null;
   setSelectedHistoryId: (id: string | null) => void;
+  /** 閲覧モード（trueの場合は読み取り専用表示） */
+  viewMode?: boolean;
 }
 
 export interface PlotSettingsSectionProps {

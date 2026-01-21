@@ -10,13 +10,11 @@ import {
   COLLECTIVE_BURIAL_SECTION_LABELS,
 } from '@/types/collective-burial-list';
 import {
-  getCollectiveBurialListByYear,
   searchCollectiveBurialList,
   getAvailableCollectiveBurialYears,
   getCollectiveBurialStatsBySection,
   getCollectiveBurialStatsByYear,
 } from '@/lib/collective-burial-list-data';
-import { formatDateWithEra } from '@/lib/utils';
 
 interface CollectiveBurialListProps {
   onBack?: () => void;

@@ -194,7 +194,6 @@ export default function CollectiveBurialApplicationForm({ onSubmitSuccess }: Col
   const currentTotal = getCurrentTotalPersons();
   const maxCapacity = COLLECTIVE_BURIAL_LIMITS.MAX_TOTAL_CAPACITY;
   const remaining = getRemainingCapacity(currentTotal, maxCapacity);
-  const percentage = getCapacityPercentage(currentTotal, maxCapacity);
 
   return (
     <>

@@ -45,7 +45,7 @@ export default function PostcardEditor({ customer, onClose, onSave }: PostcardEd
 
   // 宛名面の編集状態
   const [recipientName, setRecipientName] = useState(customer.name);
-  const [recipientPostalCode, setRecipientPostalCode] = useState(customer.postalCode || '');
+  const [recipientPostalCode] = useState(customer.postalCode || '');
   const [recipientAddress, setRecipientAddress] = useState(customer.address || '');
 
   // 差出人情報

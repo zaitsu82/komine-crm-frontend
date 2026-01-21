@@ -14,18 +14,12 @@ import {
   getInventorySortedByUsageRate,
   getInventorySortedByRemaining,
   PlotInventoryItem,
-  PeriodSummary,
-  PERIOD_3_SPECIAL_INVENTORY,
 } from '@/lib/plot-inventory';
 import {
   getAllPlotsByArea,
   getPlotsByAreaForPeriod,
-  calculateAllPeriodAreaSummaries,
-  calculateTotalAreaSummary,
   getAvailablePlotsByArea,
   getSoldOutPlotsByArea,
-  getInventoryGroupedByArea,
-  getInventoryGroupedByType,
   PlotByAreaItem,
 } from '@/lib/plot-inventory-by-area';
 import { PlotPeriod, PLOT_SIZE } from '@/types/customer';
@@ -63,12 +57,6 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
 
   // 期別集計
   const periodSummaries = useMemo(() => calculateAllPeriodSummaries(), []);
-
-  // 面積別全体集計
-  const areaSummary = useMemo(() => calculateTotalAreaSummary(), []);
-
-  // 面積別期別集計
-  const periodAreaSummaries = useMemo(() => calculateAllPeriodAreaSummaries(), []);
 
   // 表示するデータ
   const displayData = useMemo(() => {

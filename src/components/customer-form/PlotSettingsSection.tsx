@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { calculateOwnedPlotsInfo } from '@/lib/utils';
 import { PlotSettingsSectionProps } from './types';
 
-export function PlotSettingsSection({ customer, watch, setValue }: PlotSettingsSectionProps) {
+export function PlotSettingsSection({ customer }: PlotSettingsSectionProps) {
   const [ownedPlots, setOwnedPlots] = useState<OwnedPlot[]>(customer?.ownedPlots || []);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [newPlot, setNewPlot] = useState<Partial<OwnedPlot>>({

@@ -1,11 +1,11 @@
 'use client';
 
+import { Fragment } from 'react';
 import { ConstructionType, CONSTRUCTION_TYPE_LABELS } from '@/types/customer';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { SelectItem } from '@/components/ui/select';
 import { ConstructionInfoTabProps, getDefaultConstructionRecord } from './types';
+import { ViewModeField, ViewModeSelect } from './ViewModeField';
 
 export function ConstructionInfoTab({
   register,
@@ -16,6 +16,7 @@ export function ConstructionInfoTab({
   removeConstructionRecord,
   expandedConstructionId,
   setExpandedConstructionId,
+  viewMode,
 }: ConstructionInfoTabProps) {
   const handleAddNewConstructionRecord = () => {
     const newId = `construction-${Date.now()}`;
@@ -27,26 +28,33 @@ export function ConstructionInfoTab({
     setExpandedConstructionId(expandedConstructionId === constructionId ? null : constructionId);
   };
 
+  const getConstructionTypeDisplayValue = (type: string | undefined) => {
+    if (!type) return '';
+    return CONSTRUCTION_TYPE_LABELS[type as ConstructionType] || '';
+  };
+
   return (
     <div className="space-y-6">
       {/* 工事情報一覧 */}
       <div className="space-y-4">
         <div className="flex justify-between items-center border-b pb-2">
           <h3 className="text-lg font-semibold">工事情報</h3>
-          <Button
-            type="button"
-            onClick={handleAddNewConstructionRecord}
-            className="bg-green-600 hover:bg-green-700 text-white"
-            size="sm"
-          >
-            + 新規追加
-          </Button>
+          {!viewMode && (
+            <Button
+              type="button"
+              onClick={handleAddNewConstructionRecord}
+              className="bg-green-600 hover:bg-green-700 text-white"
+              size="sm"
+            >
+              + 新規追加
+            </Button>
+          )}
         </div>
 
         {constructionRecordFields.length === 0 ? (
           <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg border border-dashed">
             <p>登録されている工事情報はありません</p>
-            <p className="text-sm mt-2">「新規追加」ボタンから追加してください</p>
+            {!viewMode && <p className="text-sm mt-2">「新規追加」ボタンから追加してください</p>}
           </div>
         ) : (
           <div className="space-y-3">
@@ -70,9 +78,8 @@ export function ConstructionInfoTab({
                     const isExpanded = expandedConstructionId === field.id;
 
                     return (
-                      <>
+                      <Fragment key={field.id}>
                         <tr
-                          key={field.id}
                           className={`border-t cursor-pointer hover:bg-gray-50 ${isExpanded ? 'bg-blue-50' : ''}`}
                           onClick={() => toggleConstructionExpansion(field.id)}
                         >
@@ -106,23 +113,25 @@ export function ConstructionInfoTab({
                                 }}
                                 className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
                               >
-                                {isExpanded ? '閉じる' : '編集'}
+                                {isExpanded ? '閉じる' : viewMode ? '詳細' : '編集'}
                               </Button>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  removeConstructionRecord(index);
-                                  if (expandedConstructionId === field.id) {
-                                    setExpandedConstructionId(null);
-                                  }
-                                }}
-                                className="text-red-600 hover:text-red-800 hover:bg-red-50"
-                              >
-                                削除
-                              </Button>
+                              {!viewMode && (
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    removeConstructionRecord(index);
+                                    if (expandedConstructionId === field.id) {
+                                      setExpandedConstructionId(null);
+                                    }
+                                  }}
+                                  className="text-red-600 hover:text-red-800 hover:bg-red-50"
+                                >
+                                  削除
+                                </Button>
+                              )}
                             </div>
                           </td>
                         </tr>
@@ -131,118 +140,89 @@ export function ConstructionInfoTab({
                             <td colSpan={7} className="px-4 py-4 bg-gray-50 border-t">
                               <div className="space-y-4">
                                 <div className="grid grid-cols-3 gap-4">
-                                  <div>
-                                    <Label className="text-sm font-medium">
-                                      業者名 <span className="text-red-500">*</span>
-                                    </Label>
-                                    <Input
-                                      {...register(`constructionRecords.${index}.contractorName`)}
-                                      className="mt-1"
-                                    />
-                                  </div>
-                                  <div>
-                                    <Label className="text-sm font-medium">
-                                      工事開始日
-                                    </Label>
-                                    <Input
-                                      type="date"
-                                      {...register(`constructionRecords.${index}.startDate`)}
-                                      className="mt-1"
-                                    />
-                                  </div>
-                                  <div>
-                                    <Label className="text-sm font-medium">
-                                      施工金額
-                                    </Label>
-                                    <Input
-                                      type="number"
-                                      {...register(`constructionRecords.${index}.constructionAmount`)}
-                                      placeholder="円"
-                                      className="mt-1"
-                                    />
-                                  </div>
+                                  <ViewModeField
+                                    label="業者名"
+                                    value={watch(`constructionRecords.${index}.contractorName`)}
+                                    viewMode={viewMode}
+                                    required
+                                    register={register(`constructionRecords.${index}.contractorName`)}
+                                  />
+                                  <ViewModeField
+                                    label="工事開始日"
+                                    value={watch(`constructionRecords.${index}.startDate`)}
+                                    viewMode={viewMode}
+                                    type="date"
+                                    register={register(`constructionRecords.${index}.startDate`)}
+                                  />
+                                  <ViewModeField
+                                    label="施工金額"
+                                    value={watch(`constructionRecords.${index}.constructionAmount`)}
+                                    viewMode={viewMode}
+                                    type="number"
+                                    placeholder="円"
+                                    register={register(`constructionRecords.${index}.constructionAmount`)}
+                                  />
                                 </div>
 
                                 <div className="grid grid-cols-3 gap-4">
-                                  <div>
-                                    <Label className="text-sm font-medium">
-                                      終了予定日
-                                    </Label>
-                                    <Input
-                                      type="date"
-                                      {...register(`constructionRecords.${index}.scheduledEndDate`)}
-                                      className="mt-1"
-                                    />
-                                  </div>
-                                  <div>
-                                    <Label className="text-sm font-medium">
-                                      工事終了日
-                                    </Label>
-                                    <Input
-                                      type="date"
-                                      {...register(`constructionRecords.${index}.endDate`)}
-                                      className="mt-1"
-                                    />
-                                  </div>
-                                  <div>
-                                    <Label className="text-sm font-medium">
-                                      入金金額
-                                    </Label>
-                                    <Input
-                                      type="number"
-                                      {...register(`constructionRecords.${index}.paidAmount`)}
-                                      placeholder="円"
-                                      className="mt-1"
-                                    />
-                                  </div>
+                                  <ViewModeField
+                                    label="終了予定日"
+                                    value={watch(`constructionRecords.${index}.scheduledEndDate`)}
+                                    viewMode={viewMode}
+                                    type="date"
+                                    register={register(`constructionRecords.${index}.scheduledEndDate`)}
+                                  />
+                                  <ViewModeField
+                                    label="工事終了日"
+                                    value={watch(`constructionRecords.${index}.endDate`)}
+                                    viewMode={viewMode}
+                                    type="date"
+                                    register={register(`constructionRecords.${index}.endDate`)}
+                                  />
+                                  <ViewModeField
+                                    label="入金金額"
+                                    value={watch(`constructionRecords.${index}.paidAmount`)}
+                                    viewMode={viewMode}
+                                    type="number"
+                                    placeholder="円"
+                                    register={register(`constructionRecords.${index}.paidAmount`)}
+                                  />
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-4">
-                                  <div>
-                                    <Label className="text-sm font-medium">
-                                      工事内容
-                                    </Label>
-                                    <Input
-                                      {...register(`constructionRecords.${index}.description`)}
-                                      className="mt-1"
-                                    />
-                                  </div>
-                                  <div>
-                                    <Label className="text-sm font-medium">
-                                      工事種別
-                                    </Label>
-                                    <Select
-                                      value={watch(`constructionRecords.${index}.constructionType`) || 'gravestone'}
-                                      onValueChange={(value) => setValue(`constructionRecords.${index}.constructionType`, value as ConstructionType)}
-                                    >
-                                      <SelectTrigger className="mt-1">
-                                        <SelectValue placeholder="選択してください" />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        <SelectItem value="gravestone">墓石工事</SelectItem>
-                                        <SelectItem value="enclosure">外柵工事</SelectItem>
-                                        <SelectItem value="additional">付帯工事</SelectItem>
-                                        <SelectItem value="repair">修繕工事</SelectItem>
-                                        <SelectItem value="other">その他</SelectItem>
-                                      </SelectContent>
-                                    </Select>
-                                  </div>
+                                  <ViewModeField
+                                    label="工事内容"
+                                    value={watch(`constructionRecords.${index}.description`)}
+                                    viewMode={viewMode}
+                                    register={register(`constructionRecords.${index}.description`)}
+                                  />
+                                  <ViewModeSelect
+                                    label="工事種別"
+                                    value={watch(`constructionRecords.${index}.constructionType`) || 'gravestone'}
+                                    displayValue={getConstructionTypeDisplayValue(watch(`constructionRecords.${index}.constructionType`))}
+                                    viewMode={viewMode}
+                                    placeholder="選択してください"
+                                    onValueChange={(value) => setValue(`constructionRecords.${index}.constructionType`, value as ConstructionType)}
+                                  >
+                                    <SelectItem value="gravestone">墓石工事</SelectItem>
+                                    <SelectItem value="enclosure">外柵工事</SelectItem>
+                                    <SelectItem value="additional">付帯工事</SelectItem>
+                                    <SelectItem value="repair">修繕工事</SelectItem>
+                                    <SelectItem value="other">その他</SelectItem>
+                                  </ViewModeSelect>
                                 </div>
 
-                                <div>
-                                  <Label className="text-sm font-medium">
-                                    備考
-                                  </Label>
-                                  <Input
-                                    {...register(`constructionRecords.${index}.notes`)}
-                                    className="mt-1"
-                                  />
-                                </div>
+                                <ViewModeField
+                                  label="備考"
+                                  value={watch(`constructionRecords.${index}.notes`)}
+                                  viewMode={viewMode}
+                                  register={register(`constructionRecords.${index}.notes`)}
+                                />
                               </div>
                             </td>
                           </tr>
                         )}
-                      </>
+                      </Fragment>
                     );
                   })}
                 </tbody>
