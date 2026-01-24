@@ -6,7 +6,7 @@
 
 import { Customer } from '@/types/customer';
 import { CollectiveBurialApplication } from '@/types/collective-burial';
-import { mockCustomers } from '@/lib/data';
+import { getAllCustomersSync } from '@/lib/api';
 import {
   CollectiveBurialSection,
 } from '@/types/collective-burial-list';
@@ -72,13 +72,15 @@ export function findCustomerByCodeOrPlot(
   plotSection?: string,
   plotNumber?: string
 ): Customer | null {
+  const customers = getAllCustomersSync();
+
   if (customerCode) {
-    const customer = mockCustomers.find(c => c.customerCode === customerCode);
+    const customer = customers.find(c => c.customerCode === customerCode);
     if (customer) return customer;
   }
 
   if (plotSection && plotNumber) {
-    const customer = mockCustomers.find(c =>
+    const customer = customers.find(c =>
       c.plotInfo?.section === plotSection &&
       c.plotInfo?.plotNumber === plotNumber
     );
@@ -154,7 +156,8 @@ export function getCustomerCollectiveBurialPersonsCount(customer: Customer): num
  * 全顧客の合祀人数を集計
  */
 export function getTotalCollectiveBurialPersons(): number {
-  return mockCustomers.reduce((total, customer) => {
+  const customers = getAllCustomersSync();
+  return customers.reduce((total, customer) => {
     return total + getCustomerCollectiveBurialPersonsCount(customer);
   }, 0);
 }
@@ -180,8 +183,9 @@ export function getCustomerLatestCollectiveBurial(
  */
 export function getCollectiveBurialPersonsByPlot(): Record<string, number> {
   const plotCounts: Record<string, number> = {};
+  const customers = getAllCustomersSync();
 
-  mockCustomers.forEach(customer => {
+  customers.forEach(customer => {
     // plotNumber（顧客直接フィールド）を優先、plotInfo（非推奨）にフォールバック
     const plotNumber = customer.plotNumber || customer.plotInfo?.plotNumber;
     if (!plotNumber) return;
@@ -308,8 +312,9 @@ export function bulkSyncCustomersToCollectiveBurialList(): {
   let successCount = 0;
   let errorCount = 0;
   const errors: string[] = [];
+  const customers = getAllCustomersSync();
 
-  mockCustomers.forEach(customer => {
+  customers.forEach(customer => {
     const result = syncCustomerToCollectiveBurialList(customer);
     if (result.success && result.recordId) {
       successCount++;

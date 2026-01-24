@@ -1,26 +1,45 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Customer } from '@/types/customer';
 import { ViewType, MENU_ITEMS } from '@/types/customer-detail';
+import { useAuth } from '@/contexts/auth-context';
 
 interface CustomerDetailSidebarProps {
   currentView: ViewType;
   selectedCustomer: Customer | null;
-  onNavigateToMenu?: () => void;
   onBackToRegistry: () => void;
   onViewChange: (view: ViewType) => void;
   onTermination: () => void;
+  onDelete?: () => void;
 }
 
 export default function CustomerDetailSidebar({
   currentView,
   selectedCustomer,
-  onNavigateToMenu,
   onBackToRegistry,
   onViewChange,
   onTermination,
+  onDelete,
 }: CustomerDetailSidebarProps) {
+  const { user, logout, isLoading } = useAuth();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await logout();
+    router.push('/login');
+  };
+
+  const getRoleLabel = (role: string) => {
+    const roleLabels: Record<string, string> = {
+      admin: '管理者',
+      manager: 'マネージャー',
+      operator: 'オペレーター',
+      viewer: '閲覧者',
+    };
+    return roleLabels[role] || role;
+  };
   const getSidebarTitle = () => {
     switch (currentView) {
       case 'collective-burial':
@@ -39,25 +58,11 @@ export default function CustomerDetailSidebar({
     selectedCustomer;
 
   return (
-    <div className="w-64 bg-gray-200 border-r border-gray-300 fixed top-0 left-0 h-screen overflow-y-auto z-10">
-      <div className="p-4 pb-8">
+    <div className="w-64 bg-gray-200 border-r border-gray-300 fixed top-0 left-0 h-screen overflow-y-auto z-10 flex flex-col">
+      <div className="p-4 pb-8 flex-1">
         <h2 className="text-lg font-semibold text-gray-800 mb-4">
           {getSidebarTitle()}
         </h2>
-
-        {/* メインメニューに戻るボタン */}
-        {onNavigateToMenu && (
-          <div className="mb-3">
-            <Button
-              onClick={onNavigateToMenu}
-              className="w-full btn-senior"
-              variant="outline"
-              size="lg"
-            >
-              ← メインメニューに戻る
-            </Button>
-          </div>
-        )}
 
         {/* Customer Context Menu (Visible when a customer is selected and in relevant views) */}
         {isCustomerDetailView ? (
@@ -121,6 +126,24 @@ export default function CustomerDetailSidebar({
             >
               {selectedCustomer.status === 'inactive' ? '解約済み' : '解約入力'}
             </Button>
+
+            {/* 削除ボタン（管理者専用） */}
+            {user?.role === 'admin' && onDelete && (
+              <>
+                <div className="border-t border-gray-300 my-4"></div>
+                <Button
+                  onClick={onDelete}
+                  className="w-full btn-senior mt-2 border-none bg-white text-red-700 hover:bg-red-100 border-red-700"
+                  variant="outline"
+                  size="lg"
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  顧客データを削除
+                </Button>
+              </>
+            )}
           </div>
         ) : (
           <div className="space-y-1 mb-4">
@@ -168,6 +191,28 @@ export default function CustomerDetailSidebar({
             })}
           </div>
         )}
+      </div>
+
+      {/* ユーザー情報とログアウト */}
+      <div className="p-4 border-t border-gray-300 bg-gray-100">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-gray-800 truncate">{user?.name || 'ゲスト'}</p>
+            <p className="text-xs text-gray-500">{user?.role ? getRoleLabel(user.role) : ''}</p>
+          </div>
+        </div>
+        <Button
+          onClick={handleLogout}
+          disabled={isLoading}
+          variant="outline"
+          size="sm"
+          className="w-full text-gray-600 hover:text-red-600 hover:border-red-300 hover:bg-red-50"
+        >
+          <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+          ログアウト
+        </Button>
       </div>
     </div>
   );

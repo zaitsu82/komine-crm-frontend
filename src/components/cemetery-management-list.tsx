@@ -2,7 +2,7 @@
 
 import { useMemo, useState, type KeyboardEvent } from 'react';
 import { Customer } from '@/types/customer';
-import { mockCustomers } from '@/lib/data';
+import { useCustomers } from '@/hooks/useCustomers';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -42,7 +42,7 @@ export default function CemeteryManagementList({ onCustomerSelect, selectedCusto
   const [searchQuery, setSearchQuery] = useState('');
   const [sortKey, setSortKey] = useState<SortKey>('name');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
-  const [customers] = useState<Customer[]>(mockCustomers);
+  const { customers, isLoading, error } = useCustomers({ limit: 1000 });
   const [selectedMenu, setSelectedMenu] = useState('台帳問い合わせ');
   const [applications, setApplications] = useState<CollectiveBurialApplication[]>(() => getCollectiveBurialApplications());
   const [lastSuccessMessage, setLastSuccessMessage] = useState<string | null>(null);
@@ -587,7 +587,22 @@ export default function CemeteryManagementList({ onCustomerSelect, selectedCusto
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredAndSortedCustomers.length > 0 ? (
+                    {isLoading ? (
+                      <tr>
+                        <td colSpan={6} className="px-6 py-8 text-center text-sm text-gray-500">
+                          <div className="flex items-center justify-center">
+                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mr-2"></div>
+                            データを読み込み中...
+                          </div>
+                        </td>
+                      </tr>
+                    ) : error ? (
+                      <tr>
+                        <td colSpan={6} className="px-6 py-8 text-center text-sm text-red-500">
+                          エラーが発生しました: {error}
+                        </td>
+                      </tr>
+                    ) : filteredAndSortedCustomers.length > 0 ? (
                       filteredAndSortedCustomers.map((customer, index) => {
                         const firstBurialDate = getFirstBurialDate(customer);
                         const contractYear = getContractYear(customer);
@@ -888,7 +903,22 @@ export default function CemeteryManagementList({ onCustomerSelect, selectedCusto
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredAndSortedCustomers.length > 0 ? (
+                    {isLoading ? (
+                      <tr>
+                        <td colSpan={6} className="px-6 py-8 text-center text-sm text-gray-500">
+                          <div className="flex items-center justify-center">
+                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mr-2"></div>
+                            データを読み込み中...
+                          </div>
+                        </td>
+                      </tr>
+                    ) : error ? (
+                      <tr>
+                        <td colSpan={6} className="px-6 py-8 text-center text-sm text-red-500">
+                          エラーが発生しました: {error}
+                        </td>
+                      </tr>
+                    ) : filteredAndSortedCustomers.length > 0 ? (
                       filteredAndSortedCustomers.map((customer, index) => {
                         const firstBurialDate = getFirstBurialDate(customer);
                         const contractYear = getContractYear(customer);

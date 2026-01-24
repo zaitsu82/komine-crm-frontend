@@ -6,7 +6,7 @@ import { ViewType, HistoryEntry, ImportantNote, TerminationFormData } from '@/ty
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { formatDateWithEra, calculateOwnedPlotsInfo } from '@/lib/utils';
-import { createCustomer, updateCustomer, formDataToCustomer, addCustomerDocument, terminateCustomer, TerminationInput } from '@/lib/data';
+import { createCustomer, updateCustomer, formDataToCustomer, addCustomerDocument, terminateCustomer, deleteCustomer, TerminationInput } from '@/lib/data';
 import { CustomerFormData } from '@/lib/validations';
 import CustomerSearch from '@/components/customer-search';
 import CustomerForm, { CustomerDetailView } from '@/components/customer-form';
@@ -27,14 +27,14 @@ import {
   NoteDialog,
   HistoryDialog,
   TerminationDialog,
+  DeleteConfirmDialog,
 } from '@/components/customer-detail';
 
 interface CustomerManagementProps {
-  onNavigateToMenu?: () => void;
   initialView?: ViewType;
 }
 
-export default function CustomerManagement({ onNavigateToMenu, initialView = 'registry' }: CustomerManagementProps) {
+export default function CustomerManagement({ initialView = 'registry' }: CustomerManagementProps) {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [currentView, setCurrentView] = useState<ViewType>(initialView);
   const [isLoading, setIsLoading] = useState(false);
@@ -97,6 +97,10 @@ export default function CustomerManagement({ onNavigateToMenu, initialView = 're
     handledBy: '',
     notes: ''
   });
+
+  // 削除ダイアログ用のstate
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // 注意事項を更新する関数
   const setImportantNotes = (notes: ImportantNote[]) => {
@@ -331,6 +335,36 @@ export default function CustomerManagement({ onNavigateToMenu, initialView = 're
     }
   };
 
+  // 削除ダイアログを開く
+  const handleOpenDeleteDialog = () => {
+    if (!selectedCustomer) return;
+    setShowDeleteDialog(true);
+  };
+
+  // 削除処理を実行
+  const handleDelete = () => {
+    if (!selectedCustomer) return;
+
+    setIsDeleting(true);
+
+    try {
+      const success = deleteCustomer(selectedCustomer.id);
+
+      if (success) {
+        setShowDeleteDialog(false);
+        setSelectedCustomer(null);
+        setCurrentView('registry');
+        alert('顧客データを削除しました。');
+      } else {
+        alert('削除に失敗しました。');
+      }
+    } catch {
+      alert('削除中にエラーが発生しました。');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const handleCloseInvoice = () => {
     setShowInvoice(false);
   };
@@ -365,10 +399,10 @@ export default function CustomerManagement({ onNavigateToMenu, initialView = 're
       <CustomerDetailSidebar
         currentView={currentView}
         selectedCustomer={selectedCustomer}
-        onNavigateToMenu={onNavigateToMenu}
         onBackToRegistry={handleBackToRegistry}
         onViewChange={handleViewChange}
         onTermination={handleOpenTerminationDialog}
+        onDelete={handleOpenDeleteDialog}
       />
 
       {/* Main Content Area */}
@@ -705,6 +739,17 @@ export default function CustomerManagement({ onNavigateToMenu, initialView = 're
           onFormChange={setTerminationForm}
           onTerminate={handleTerminate}
           onClose={() => setShowTerminationDialog(false)}
+        />
+      )}
+
+      {/* 削除確認ダイアログ */}
+      {selectedCustomer && (
+        <DeleteConfirmDialog
+          isOpen={showDeleteDialog}
+          customer={selectedCustomer}
+          isLoading={isDeleting}
+          onDelete={handleDelete}
+          onClose={() => setShowDeleteDialog(false)}
         />
       )}
     </div>

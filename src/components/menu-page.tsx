@@ -1,19 +1,63 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/auth-context';
 
 interface MenuPageProps {
   onNavigate: (view: 'customer' | 'burial' | 'plots' | 'menu') => void;
 }
 
 export default function MenuPage({ onNavigate }: MenuPageProps) {
+  const { user, logout, isLoading } = useAuth();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await logout();
+    router.push('/login');
+  };
+
+  const getRoleLabel = (role: string) => {
+    const roleLabels: Record<string, string> = {
+      admin: '管理者',
+      manager: 'マネージャー',
+      operator: 'オペレーター',
+      viewer: '閲覧者',
+    };
+    return roleLabels[role] || role;
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-warm">
+    <div className="min-h-screen bg-gradient-warm relative">
       {/* 背景装飾 */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
         <div className="absolute top-0 right-0 w-96 h-96 bg-matsu-50/30 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-cha-50/30 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+      </div>
+
+      {/* ユーザー情報とログアウトボタン */}
+      <div className="absolute top-4 right-4 z-20">
+        <div className="flex items-center gap-4 bg-white/90 backdrop-blur-sm rounded-lg shadow-elegant px-4 py-3 border border-gin/50">
+          <div className="text-right">
+            <p className="text-sm font-medium text-sumi">{user?.name || 'ゲスト'}</p>
+            <p className="text-xs text-hai">{user?.role ? getRoleLabel(user.role) : ''}</p>
+          </div>
+          <div className="w-px h-8 bg-gin" />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleLogout}
+            disabled={isLoading}
+            className="text-hai hover:text-sumi hover:bg-gofun transition-colors"
+          >
+            <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            ログアウト
+          </Button>
+        </div>
       </div>
 
       <div className="relative z-10 p-8 lg:p-12">
