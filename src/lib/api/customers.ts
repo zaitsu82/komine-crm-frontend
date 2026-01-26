@@ -21,47 +21,94 @@ import {
   ApiResponse,
   CustomerSearchParams,
   PaginatedResponse,
-  ApiPlotData,
+  ApiPlotListItem,
+  ApiPlotDetail,
 } from './types';
 
 // ===== データ変換関数 =====
 
 /**
- * APIレスポンスをフロントエンドの顧客型に変換
+ * API一覧レスポンスをフロントエンドの顧客型に変換
  */
-function apiPlotToCustomer(apiData: ApiPlotData): Customer {
-  const customer = apiData.saleContract.customer;
-  const physicalPlot = apiData.physicalPlot;
+function apiPlotListItemToCustomer(apiData: ApiPlotListItem): Customer {
+  return {
+    id: apiData.id,
+    customerCode: apiData.plotNumber, // 区画番号を顧客コードとして使用
+    plotNumber: apiData.plotNumber,
+    section: apiData.areaName,
+    reservationDate: apiData.contractDate ? new Date(apiData.contractDate) : null,
+    acceptanceNumber: undefined,
+    permitDate: null,
+    startDate: null,
+    name: apiData.customerName || '',
+    nameKana: apiData.customerNameKana || '',
+    birthDate: null,
+    gender: undefined,
+    phoneNumber: apiData.customerPhoneNumber || '',
+    faxNumber: undefined,
+    email: undefined,
+    address: apiData.customerAddress || '',
+    postalCode: undefined,
+    status: 'active',
+    usageFee: undefined,
+    managementFee: apiData.managementFee
+      ? {
+        calculationType: '',
+        taxType: '',
+        billingType: '',
+        billingYears: null,
+        area: '',
+        billingMonth: null,
+        managementFee: apiData.managementFee,
+        unitPrice: null,
+        lastBillingMonth: '',
+        paymentMethod: '',
+      }
+      : undefined,
+    plotInfo: {
+      plotNumber: apiData.plotNumber,
+      section: apiData.areaName,
+      usage: apiData.physicalPlotStatus === 'sold_out' ? 'in_use' : 'available',
+      size: `${apiData.contractAreaSqm}㎡`,
+      price: String(apiData.price),
+      contractDate: apiData.contractDate ? new Date(apiData.contractDate) : null,
+    },
+    createdAt: new Date(apiData.createdAt),
+    updatedAt: new Date(apiData.updatedAt),
+  };
+}
+
+/**
+ * API詳細レスポンスをフロントエンドの顧客型に変換
+ */
+function apiPlotDetailToCustomer(apiData: ApiPlotDetail): Customer {
+  const customer = apiData.primaryCustomer;
 
   return {
     id: apiData.id,
-    customerCode: apiData.saleContract.contractCode,
-    plotNumber: physicalPlot.plotNumber,
-    section: physicalPlot.section,
-    reservationDate: apiData.contractDate ? new Date(apiData.contractDate) : null,
-    acceptanceNumber: apiData.saleContract.acceptanceNumber || undefined,
-    permitDate: apiData.saleContract.permitDate
-      ? new Date(apiData.saleContract.permitDate)
-      : null,
-    startDate: apiData.effectiveStartDate
-      ? new Date(apiData.effectiveStartDate)
-      : null,
-    name: customer.name,
-    nameKana: customer.nameKana,
-    birthDate: customer.birthDate ? new Date(customer.birthDate) : null,
-    gender: customer.gender as 'male' | 'female' | undefined,
-    phoneNumber: customer.phoneNumber || '',
-    faxNumber: customer.faxNumber || undefined,
-    email: customer.email || undefined,
-    address: customer.address || '',
-    postalCode: customer.postalCode || undefined,
-    status: apiData.deletedAt ? 'inactive' : 'active',
+    customerCode: apiData.physicalPlot.plotNumber,
+    plotNumber: apiData.physicalPlot.plotNumber,
+    section: apiData.physicalPlot.areaName,
+    reservationDate: apiData.reservationDate ? new Date(apiData.reservationDate) : null,
+    acceptanceNumber: apiData.acceptanceNumber || undefined,
+    permitDate: apiData.permitDate ? new Date(apiData.permitDate) : null,
+    startDate: apiData.startDate ? new Date(apiData.startDate) : null,
+    name: customer?.name || '',
+    nameKana: customer?.nameKana || '',
+    birthDate: customer?.birthDate ? new Date(customer.birthDate) : null,
+    gender: customer?.gender as 'male' | 'female' | undefined,
+    phoneNumber: customer?.phoneNumber || '',
+    faxNumber: customer?.faxNumber || undefined,
+    email: customer?.email || undefined,
+    address: customer?.address || '',
+    postalCode: customer?.postalCode || undefined,
+    status: 'active',
     usageFee: apiData.usageFee
       ? {
         calculationType: apiData.usageFee.calculationType,
         taxType: apiData.usageFee.taxType,
-        billingType: apiData.usageFee.billingType,
-        billingYears: apiData.usageFee.billingYears,
+        billingType: '',
+        billingYears: null,
         area: apiData.usageFee.area || '',
         unitPrice: apiData.usageFee.unitPrice,
         usageFee: apiData.usageFee.usageFee,
@@ -83,11 +130,11 @@ function apiPlotToCustomer(apiData: ApiPlotData): Customer {
       }
       : undefined,
     plotInfo: {
-      plotNumber: physicalPlot.plotNumber,
-      section: physicalPlot.section,
-      usage: apiData.usageStatus as 'in_use' | 'available' | 'reserved',
-      size: `${apiData.contractedArea}㎡`,
-      price: String(physicalPlot.basePrice),
+      plotNumber: apiData.physicalPlot.plotNumber,
+      section: apiData.physicalPlot.areaName,
+      usage: apiData.physicalPlot.status === 'sold_out' ? 'in_use' : 'available',
+      size: `${apiData.contractAreaSqm}㎡`,
+      price: String(apiData.price),
       contractDate: apiData.contractDate ? new Date(apiData.contractDate) : null,
     },
     createdAt: new Date(apiData.createdAt),
@@ -362,6 +409,7 @@ async function mockTerminateCustomerApi(
 
 /**
  * 顧客一覧取得
+ * バックエンドは配列を直接返すため、フロントエンドでページネーション形式に変換
  */
 export async function getCustomers(
   params: CustomerSearchParams = {}
@@ -370,7 +418,8 @@ export async function getCustomers(
     return mockGetCustomers(params);
   }
 
-  const response = await apiGet<PaginatedResponse<ApiPlotData>>('/plots', {
+  // バックエンドは配列を直接返す（ページネーション未実装）
+  const response = await apiGet<ApiPlotListItem[]>('/plots', {
     page: params.page,
     limit: params.limit,
     query: params.query,
@@ -384,11 +433,19 @@ export async function getCustomers(
     return response;
   }
 
+  // 配列レスポンスをページネーション形式に変換
+  const items = response.data.map(apiPlotListItemToCustomer);
+  const page = params.page || 1;
+  const limit = params.limit || 50;
+
   return {
     success: true,
     data: {
-      ...response.data,
-      items: response.data.items.map(apiPlotToCustomer),
+      items,
+      total: items.length,
+      page,
+      limit,
+      totalPages: Math.ceil(items.length / limit),
     },
   };
 }
@@ -403,7 +460,7 @@ export async function getCustomerById(
     return mockGetCustomerByIdApi(id);
   }
 
-  const response = await apiGet<ApiPlotData>(`/plots/${id}`);
+  const response = await apiGet<ApiPlotDetail>(`/plots/${id}`);
 
   if (!response.success) {
     return response;
@@ -411,7 +468,7 @@ export async function getCustomerById(
 
   return {
     success: true,
-    data: apiPlotToCustomer(response.data),
+    data: apiPlotDetailToCustomer(response.data),
   };
 }
 
@@ -426,7 +483,7 @@ export async function createCustomer(
   }
 
   const payload = customerFormToApiPayload(formData);
-  const response = await apiPost<ApiPlotData>('/plots', payload);
+  const response = await apiPost<ApiPlotDetail>('/plots', payload);
 
   if (!response.success) {
     return response;
@@ -434,7 +491,7 @@ export async function createCustomer(
 
   return {
     success: true,
-    data: apiPlotToCustomer(response.data),
+    data: apiPlotDetailToCustomer(response.data),
   };
 }
 
@@ -450,7 +507,7 @@ export async function updateCustomer(
   }
 
   const payload = customerFormToApiPayload(formData);
-  const response = await apiPut<ApiPlotData>(`/plots/${id}`, payload);
+  const response = await apiPut<ApiPlotDetail>(`/plots/${id}`, payload);
 
   if (!response.success) {
     return response;
@@ -458,7 +515,7 @@ export async function updateCustomer(
 
   return {
     success: true,
-    data: apiPlotToCustomer(response.data),
+    data: apiPlotDetailToCustomer(response.data),
   };
 }
 
@@ -485,7 +542,7 @@ export async function terminateCustomer(
   }
 
   // APIでは解約も更新として処理
-  const response = await apiPut<ApiPlotData>(`/plots/${id}`, {
+  const response = await apiPut<ApiPlotDetail>(`/plots/${id}`, {
     termination: {
       terminationDate: input.terminationDate.toISOString(),
       reason: input.reason,
@@ -503,7 +560,7 @@ export async function terminateCustomer(
 
   return {
     success: true,
-    data: apiPlotToCustomer(response.data),
+    data: apiPlotDetailToCustomer(response.data),
   };
 }
 

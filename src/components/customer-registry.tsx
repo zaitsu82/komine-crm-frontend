@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Customer } from '@/types/customer';
 import { filterByAiueo } from '@/lib/data';
-import { getAllCustomersSync } from '@/lib/api';
+import { getCustomers } from '@/lib/api';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { cn, calculateOwnedPlotsInfo } from '@/lib/utils';
@@ -37,10 +37,34 @@ type SortOrder = 'asc' | 'desc';
 export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, onNewCustomer, customerAttentionNotes }: CustomerRegistryProps) {
   const [activeTab, setActiveTab] = useState('全');
   const [searchQuery, setSearchQuery] = useState('');
-  const [customers] = useState<Customer[]>(() => getAllCustomersSync());
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [focusedTabIndex, setFocusedTabIndex] = useState(11);
   const [sortKey, setSortKey] = useState<SortKey>('customerCode');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
+
+  // 顧客データを非同期で取得
+  useEffect(() => {
+    async function fetchCustomers() {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await getCustomers({ limit: 100 }); // バックエンドの上限は100件
+        if (response.success) {
+          setCustomers(response.data.items);
+        } else {
+          setError(response.error?.message || 'データの取得に失敗しました');
+        }
+      } catch (err) {
+        setError('ネットワークエラーが発生しました');
+        console.error('Failed to fetch customers:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchCustomers();
+  }, []);
 
   // ページネーション用state
   const [currentPage, setCurrentPage] = useState(1);
@@ -494,7 +518,36 @@ export default function CustomerRegistry({ onCustomerSelect, selectedCustomer, o
 
             {/* テーブルボディ */}
             <tbody className="bg-white divide-y divide-gin">
-              {paginatedCustomers.length > 0 ? (
+              {isLoading ? (
+                <tr>
+                  <td colSpan={11} className="px-4 py-12 text-center text-hai">
+                    <div className="flex flex-col items-center">
+                      <svg className="animate-spin w-8 h-8 text-matsu mb-3" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      <p className="text-base font-medium">データを読み込み中...</p>
+                    </div>
+                  </td>
+                </tr>
+              ) : error ? (
+                <tr>
+                  <td colSpan={11} className="px-4 py-12 text-center text-beni">
+                    <div className="flex flex-col items-center">
+                      <svg className="w-12 h-12 text-beni mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                      <p className="text-base font-medium">{error}</p>
+                      <button
+                        onClick={() => window.location.reload()}
+                        className="mt-2 text-sm text-matsu underline hover:no-underline"
+                      >
+                        再読み込み
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ) : paginatedCustomers.length > 0 ? (
                 paginatedCustomers.map((customer, index) => {
                   const absoluteIndex = startIndex + index;
                   // 利用状況による色分け

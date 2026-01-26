@@ -16,6 +16,8 @@ import {
   ApiResponse,
   LoginRequest,
   LoginResponse,
+  BackendLoginResponse,
+  BackendCurrentUserResponse,
   AuthUser,
   ChangePasswordRequest,
 } from './types';
@@ -170,6 +172,24 @@ async function mockChangePassword(
 // ===== 公開API =====
 
 /**
+ * バックエンドレスポンスをフロントエンド形式に変換
+ */
+function transformBackendLoginResponse(
+  backendResponse: BackendLoginResponse
+): LoginResponse {
+  return {
+    token: backendResponse.session.access_token,
+    user: {
+      id: backendResponse.user.id,
+      email: backendResponse.user.email,
+      name: backendResponse.user.name,
+      role: backendResponse.user.role,
+      isActive: true, // バックエンドはログイン成功時点で active
+    },
+  };
+}
+
+/**
  * ログイン
  */
 export async function login(
@@ -179,10 +199,16 @@ export async function login(
     return mockLogin(credentials);
   }
 
-  const response = await apiPost<LoginResponse>('/auth/login', credentials);
+  const response = await apiPost<BackendLoginResponse>('/auth/login', credentials);
 
   if (response.success) {
-    setAuthToken(response.data.token);
+    // バックエンドレスポンスをフロントエンド形式に変換
+    const transformedData = transformBackendLoginResponse(response.data);
+    setAuthToken(transformedData.token);
+    return {
+      success: true,
+      data: transformedData,
+    };
   }
 
   return response;
@@ -202,6 +228,21 @@ export async function logout(): Promise<ApiResponse<void>> {
 }
 
 /**
+ * バックエンド現在ユーザーレスポンスをフロントエンド形式に変換
+ */
+function transformBackendCurrentUserResponse(
+  backendResponse: BackendCurrentUserResponse
+): AuthUser {
+  return {
+    id: backendResponse.user.id,
+    email: backendResponse.user.email,
+    name: backendResponse.user.name,
+    role: backendResponse.user.role,
+    isActive: backendResponse.user.is_active,
+  };
+}
+
+/**
  * 現在のユーザー情報取得
  */
 export async function getCurrentUser(): Promise<ApiResponse<AuthUser>> {
@@ -209,7 +250,16 @@ export async function getCurrentUser(): Promise<ApiResponse<AuthUser>> {
     return mockGetCurrentUser();
   }
 
-  return apiGet<AuthUser>('/auth/me');
+  const response = await apiGet<BackendCurrentUserResponse>('/auth/me');
+
+  if (response.success) {
+    return {
+      success: true,
+      data: transformBackendCurrentUserResponse(response.data),
+    };
+  }
+
+  return response;
 }
 
 /**

@@ -189,7 +189,13 @@ export default function CustomerForm({ customer, onSave, isLoading }: CustomerFo
   const [selectedHistoryId, setSelectedHistoryId] = useState<string | null>(null);
 
   const onSubmit = (data: CustomerFormData) => {
+    console.log('Form submitted successfully:', data);
     onSave(data);
+  };
+
+  // バリデーションエラーをログに出力（デバッグ用）
+  const onError = (validationErrors: Record<string, unknown>) => {
+    console.log('Form validation errors:', validationErrors);
   };
 
   const tabBaseProps = {
@@ -201,8 +207,28 @@ export default function CustomerForm({ customer, onSave, isLoading }: CustomerFo
     customer,
   };
 
+  // エラーメッセージを整形
+  const errorMessages = Object.entries(errors).map(([key, value]) => {
+    if (typeof value === 'object' && value?.message) {
+      return `${key}: ${value.message}`;
+    }
+    return null;
+  }).filter(Boolean);
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="w-full">
+    <form onSubmit={handleSubmit(onSubmit, onError)} className="w-full">
+      {/* バリデーションエラーの表示 */}
+      {errorMessages.length > 0 && (
+        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
+          <h4 className="text-red-800 font-semibold mb-2">入力エラーがあります</h4>
+          <ul className="list-disc list-inside text-red-700 text-sm">
+            {errorMessages.map((msg, i) => (
+              <li key={i}>{msg}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       <Tabs defaultValue="basic-info-1" className="w-full">
         <TabsList className="grid w-full grid-cols-6 h-auto">
           <TabsTrigger value="basic-info-1" className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">基本情報1</TabsTrigger>

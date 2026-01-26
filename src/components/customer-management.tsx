@@ -6,7 +6,8 @@ import { ViewType, HistoryEntry, ImportantNote, TerminationFormData } from '@/ty
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { formatDateWithEra, calculateOwnedPlotsInfo } from '@/lib/utils';
-import { createCustomer, updateCustomer, formDataToCustomer, addCustomerDocument, terminateCustomer, deleteCustomer, TerminationInput } from '@/lib/data';
+import { formDataToCustomer, addCustomerDocument, terminateCustomer, deleteCustomer, TerminationInput } from '@/lib/data';
+import { createCustomer, updateCustomer, getCustomerById } from '@/lib/api';
 import { CustomerFormData } from '@/lib/validations';
 import CustomerSearch from '@/components/customer-search';
 import CustomerForm, { CustomerDetailView } from '@/components/customer-form';
@@ -120,9 +121,28 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
   });
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
 
-  const handleCustomerSelect = (customer: Customer) => {
-    setSelectedCustomer(customer);
+  const handleCustomerSelect = async (customer: Customer) => {
+    setIsLoading(true);
     setCurrentView('details');
+
+    try {
+      // APIを呼び出して顧客の詳細情報を取得
+      const response = await getCustomerById(customer.id);
+
+      if (response.success) {
+        setSelectedCustomer(response.data);
+      } else {
+        // API呼び出しが失敗した場合は一覧から渡されたデータを使用
+        console.warn('顧客詳細の取得に失敗しました。一覧データを使用します。', response.error);
+        setSelectedCustomer(customer);
+      }
+    } catch (error) {
+      console.error('顧客詳細の取得中にエラーが発生しました:', error);
+      // エラー時も一覧から渡されたデータを使用
+      setSelectedCustomer(customer);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleBackToRegistry = () => {
@@ -144,21 +164,25 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
   const handleSaveCustomer = async (data: CustomerFormData) => {
     setIsLoading(true);
     try {
-      const customerData = formDataToCustomer(data);
-
       if (currentView === 'register') {
-        // 新規登録
-        const newCustomer = createCustomer(customerData);
-        setSelectedCustomer(newCustomer);
-        setCurrentView('details');
-        alert('顧客を登録しました');
+        // 新規登録 - APIを使用
+        const response = await createCustomer(data);
+        if (response.success) {
+          setSelectedCustomer(response.data);
+          setCurrentView('details');
+          alert('顧客を登録しました');
+        } else {
+          alert(`登録に失敗しました: ${response.error?.message || '不明なエラー'}`);
+        }
       } else if (currentView === 'edit' && selectedCustomer) {
-        // 更新
-        const updatedCustomer = updateCustomer(selectedCustomer.id, customerData);
-        if (updatedCustomer) {
-          setSelectedCustomer(updatedCustomer);
+        // 更新 - APIを使用
+        const response = await updateCustomer(selectedCustomer.id, data);
+        if (response.success) {
+          setSelectedCustomer(response.data);
           setCurrentView('details');
           alert('顧客情報を更新しました');
+        } else {
+          alert(`更新に失敗しました: ${response.error?.message || '不明なエラー'}`);
         }
       }
     } catch (error) {
@@ -477,6 +501,13 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
         ) : currentView === 'staff-management' ? (
           <div className="flex-1 overflow-auto">
             <StaffManagement />
+          </div>
+        ) : currentView === 'details' && isLoading && !selectedCustomer ? (
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">顧客情報を読み込み中...</p>
+            </div>
           </div>
         ) : currentView === 'details' && selectedCustomer && (
           <>
