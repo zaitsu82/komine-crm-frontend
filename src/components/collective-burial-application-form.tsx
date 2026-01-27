@@ -14,6 +14,7 @@ import { createCollectiveBurialApplication, getCollectiveBurialApplications } fr
 import { CollectiveBurialApplication } from '@/types/collective-burial';
 import CapacityWarningDialog from '@/components/capacity-warning-dialog';
 import { COLLECTIVE_BURIAL_LIMITS, getCapacityStatus, getRemainingCapacity, getCapacityPercentage } from '@/config/collective-burial-limits';
+import { showError, showValidationError } from '@/lib/toast';
 
 interface CollectiveBurialApplicationFormProps {
   onSubmitSuccess?: (application: CollectiveBurialApplication) => void;
@@ -129,7 +130,7 @@ export default function CollectiveBurialApplicationForm({ onSubmitSuccess }: Col
 
     // 1申込あたりの上限チェック
     if (newPersonsCount > COLLECTIVE_BURIAL_LIMITS.MAX_PERSONS_PER_APPLICATION) {
-      alert(`1つの申込で登録できる故人数は${COLLECTIVE_BURIAL_LIMITS.MAX_PERSONS_PER_APPLICATION}名までです。\n現在: ${newPersonsCount}名`);
+      showValidationError(`1つの申込で登録できる故人数は${COLLECTIVE_BURIAL_LIMITS.MAX_PERSONS_PER_APPLICATION}名までです（現在: ${newPersonsCount}名）`);
       return false;
     }
 
@@ -163,7 +164,7 @@ export default function CollectiveBurialApplicationForm({ onSubmitSuccess }: Col
       });
     } catch (error) {
       console.error('Collective burial application creation failed:', error);
-      alert('合祀申込の登録に失敗しました');
+      showError('合祀申込の登録に失敗しました');
     } finally {
       setIsSubmitting(false);
       setPendingSubmitData(null);

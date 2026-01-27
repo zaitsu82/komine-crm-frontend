@@ -18,6 +18,7 @@ import {
   StaffListItem,
   UpdateStaffRequest,
 } from '@/lib/api';
+import { showSuccess, showError, showApiError } from '@/lib/toast';
 
 interface StaffManagementProps {
   // 将来的な拡張用
@@ -200,6 +201,7 @@ export default function StaffManagement({ }: StaffManagementProps) {
           // リストを再取得
           await fetchStaffList();
           setShowDialog(false);
+          showSuccess('スタッフ情報を更新しました');
         } else {
           setFormError(response.error?.message || 'スタッフの更新に失敗しました');
         }
@@ -222,11 +224,12 @@ export default function StaffManagement({ }: StaffManagementProps) {
       if (response.success) {
         // リストを再取得
         await fetchStaffList();
+        showSuccess(`${staff.name}を${staff.isActive ? '無効' : '有効'}にしました`);
       } else {
-        alert(response.error?.message || '状態の変更に失敗しました');
+        showApiError('状態の変更', response.error?.message);
       }
     } catch {
-      alert('状態の変更中にエラーが発生しました');
+      showError('状態の変更中にエラーが発生しました');
     }
   };
 
@@ -249,12 +252,13 @@ export default function StaffManagement({ }: StaffManagementProps) {
         // リストを再取得
         await fetchStaffList();
         setShowDeleteConfirm(false);
+        showSuccess(`${staffToDelete.name}を削除しました`);
         setStaffToDelete(null);
       } else {
-        alert(response.error?.message || 'スタッフの削除に失敗しました');
+        showApiError('スタッフの削除', response.error?.message);
       }
     } catch {
-      alert('スタッフの削除中にエラーが発生しました');
+      showError('スタッフの削除中にエラーが発生しました');
     } finally {
       setIsDeleting(false);
     }

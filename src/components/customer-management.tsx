@@ -9,6 +9,7 @@ import { formatDateWithEra, calculateOwnedPlotsInfo } from '@/lib/utils';
 import { formDataToCustomer, addCustomerDocument, TerminationInput } from '@/lib/data';
 import { createCustomer, updateCustomer, getCustomerById, deleteCustomer, terminateCustomer } from '@/lib/api';
 import { CustomerFormData } from '@/lib/validations';
+import { showSuccess, showError, showWarning, showValidationError, showApiSuccess, showApiError } from '@/lib/toast';
 import CustomerSearch from '@/components/customer-search';
 import CustomerForm, { CustomerDetailView } from '@/components/customer-form';
 import CustomerRegistry from '@/components/customer-registry';
@@ -170,9 +171,9 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
         if (response.success) {
           setSelectedCustomer(response.data);
           setCurrentView('details');
-          alert('顧客を登録しました');
+          showApiSuccess('作成', '顧客');
         } else {
-          alert(`登録に失敗しました: ${response.error?.message || '不明なエラー'}`);
+          showApiError('顧客登録', response.error?.message);
         }
       } else if (currentView === 'edit' && selectedCustomer) {
         // 更新 - APIを使用
@@ -180,14 +181,14 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
         if (response.success) {
           setSelectedCustomer(response.data);
           setCurrentView('details');
-          alert('顧客情報を更新しました');
+          showApiSuccess('更新', '顧客情報');
         } else {
-          alert(`更新に失敗しました: ${response.error?.message || '不明なエラー'}`);
+          showApiError('顧客情報更新', response.error?.message);
         }
       }
     } catch (error) {
       console.error('Save error:', error);
-      alert('保存に失敗しました');
+      showError('保存に失敗しました');
     } finally {
       setIsLoading(false);
     }
@@ -218,7 +219,7 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
   // 履歴を追加
   const handleAddHistory = () => {
     if (!newHistory.date || !newHistory.staff || !newHistory.content) {
-      alert('日時、担当者、対応内容は必須です');
+      showValidationError('日時、担当者、対応内容は必須です');
       return;
     }
     const newEntry: HistoryEntry = {
@@ -270,7 +271,7 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
   // 重要な連絡事項を追加・更新
   const handleSaveNote = () => {
     if (!newNote.content) {
-      alert('内容は必須です');
+      showValidationError('内容は必須です');
       return;
     }
 
@@ -304,7 +305,7 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
   const handleOpenTerminationDialog = () => {
     if (!selectedCustomer) return;
     if (selectedCustomer.status === 'inactive') {
-      alert('この顧客は既に解約済みです。');
+      showWarning('この顧客は既に解約済みです');
       return;
     }
     setTerminationForm({
@@ -325,11 +326,11 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
 
     // バリデーション
     if (!terminationForm.reason.trim()) {
-      alert('解約理由を入力してください。');
+      showValidationError('解約理由を入力してください');
       return;
     }
     if (!terminationForm.handledBy.trim()) {
-      alert('担当者を入力してください。');
+      showValidationError('担当者を入力してください');
       return;
     }
 
@@ -354,12 +355,12 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
       if (response.success && response.data) {
         setSelectedCustomer(response.data);
         setShowTerminationDialog(false);
-        alert('解約処理が完了しました。');
+        showSuccess('解約処理が完了しました');
       } else if (!response.success) {
-        alert(`解約処理に失敗しました: ${response.error?.message || '不明なエラー'}`);
+        showApiError('解約処理', response.error?.message);
       }
     } catch {
-      alert('解約処理中にエラーが発生しました。');
+      showError('解約処理中にエラーが発生しました');
     }
   };
 
@@ -382,12 +383,12 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
         setShowDeleteDialog(false);
         setSelectedCustomer(null);
         setCurrentView('registry');
-        alert('顧客データを削除しました。');
+        showApiSuccess('削除', '顧客データ');
       } else {
-        alert(`削除に失敗しました: ${response.error?.message || '不明なエラー'}`);
+        showApiError('顧客データ削除', response.error?.message);
       }
     } catch {
-      alert('削除中にエラーが発生しました。');
+      showError('削除中にエラーが発生しました');
     } finally {
       setIsDeleting(false);
     }
@@ -407,7 +408,7 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
     const doc = selectedCustomer.documents.find(d => d.id === docId);
     if (doc) {
       doc.status = 'sent';
-      alert('ステータスを発送済みに変更しました');
+      showSuccess('ステータスを発送済みに変更しました');
       setSelectedCustomer({ ...selectedCustomer });
     }
   };

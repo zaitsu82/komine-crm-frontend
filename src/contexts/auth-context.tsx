@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useCallback, useEffect, ReactNode, useRef } from 'react';
+import { toast } from 'sonner';
 import {
   login as apiLogin,
   logout as apiLogout,
@@ -60,10 +61,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // 強制ログアウト（認証期限切れ時に呼ばれる）
   const forceLogout = useCallback((message?: string) => {
-    console.log('[Auth] Force logout triggered', message);
+    const notificationMessage = message || '認証の有効期限が切れました。再度ログインしてください。';
+    console.log('[Auth] Force logout triggered', notificationMessage);
+
+    // トースト通知を表示
+    toast.warning('セッション期限切れ', {
+      description: notificationMessage,
+      duration: 6000,
+    });
+
     clearAllTokens();
     setUser(null);
-    setError(message || '認証の有効期限が切れました。再度ログインしてください。');
+    setError(notificationMessage);
     setIsLoading(false);
   }, []);
 
@@ -104,6 +113,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [user, forceLogout]);
 
+  // 複数タブでの認証状態同期（storageイベント監視）
+  useEffect(() => {
+    const handleStorageChange = (event: StorageEvent) => {
+      // auth_tokenの変更を検知
+      if (event.key === 'auth_token') {
+        // 他のタブでログアウトした場合（トークンが削除された）
+        if (event.oldValue && !event.newValue && user) {
+          console.log('[Auth] Token removed in another tab, syncing logout');
+          toast.info('他のタブでログアウトしました', {
+            description: '認証状態を同期しました',
+            duration: 4000,
+          });
+          clearAllTokens();
+          setUser(null);
+          setError(null);
+        }
+        // 他のタブでログインした場合（トークンが追加された）
+        else if (!event.oldValue && event.newValue && !user) {
+          console.log('[Auth] Token added in another tab, reloading to sync');
+          // ページをリロードして認証状態を同期
+          window.location.reload();
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [user]);
+
   // 初期化時に認証状態を確認
   useEffect(() => {
     const initAuth = async () => {
@@ -143,11 +184,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (response.success) {
       setUser(authUserToUser(response.data.user));
       setIsLoading(false);
+      toast.success('ログイン成功', {
+        description: `${response.data.user.name}さん、おかえりなさい`,
+        duration: 3000,
+      });
       return { success: true };
     }
 
     setError(response.error.message);
     setIsLoading(false);
+    toast.error('ログイン失敗', {
+      description: response.error.message,
+      duration: 5000,
+    });
     return { success: false, error: response.error.message };
   }, []);
 
@@ -158,6 +207,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     setError(null);
     setIsLoading(false);
+    toast.info('ログアウトしました', {
+      duration: 3000,
+    });
   }, []);
 
   // エラークリア

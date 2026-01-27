@@ -13,6 +13,7 @@ import CollectiveBurialApplicationForm from '@/components/collective-burial-appl
 import CollectiveBurialDetail from '@/components/collective-burial-detail';
 import CollectiveBurialPrintTemplate from '@/components/collective-burial-print-template';
 import { COLLECTIVE_BURIAL_LIMITS, getCapacityStatus, getRemainingCapacity, getCapacityPercentage } from '@/config/collective-burial-limits';
+import { showSuccess } from '@/lib/toast';
 
 interface CemeteryManagementListProps {
   onCustomerSelect?: (customer: Customer) => void;
@@ -163,7 +164,7 @@ export default function CemeteryManagementList({ onCustomerSelect, selectedCusto
       return [application, ...filtered];
     });
     setLastSuccessMessage(`申込ID「${application.id}」で登録しました。`);
-    alert('合祀申込を登録しました');
+    showSuccess('合祀申込を登録しました');
   };
 
   const handleViewDetail = (application: CollectiveBurialApplication) => {

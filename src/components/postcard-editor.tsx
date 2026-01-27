@@ -6,6 +6,7 @@ import { formatDateWithEra } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { exportPostcardToExcel } from '@/lib/excel-exporter';
+import { showWarning } from '@/lib/toast';
 
 interface PostcardEditorProps {
   customer: Customer;
@@ -92,7 +93,7 @@ export default function PostcardEditor({ customer, onClose, onSave }: PostcardEd
 
     const printWindow = window.open('', '_blank', 'width=600,height=800');
     if (!printWindow) {
-      alert('ポップアップがブロックされました。ポップアップを許可してください。');
+      showWarning('ポップアップがブロックされました', 'ブラウザの設定でポップアップを許可してください');
       return;
     }
 

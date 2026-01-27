@@ -6,6 +6,7 @@ import { formatDateWithEra } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { exportInvoiceToExcel } from '@/lib/excel-exporter';
+import { showWarning } from '@/lib/toast';
 
 interface InvoiceItem {
   description: string;
@@ -105,7 +106,7 @@ export default function InvoiceEditor({ customer, onClose, onSave }: InvoiceEdit
 
     const printWindow = window.open('', '_blank', 'width=800,height=600');
     if (!printWindow) {
-      alert('ポップアップがブロックされました。ポップアップを許可してください。');
+      showWarning('ポップアップがブロックされました', 'ブラウザの設定でポップアップを許可してください');
       return;
     }
 
