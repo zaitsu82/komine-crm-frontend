@@ -33,6 +33,13 @@ export interface PaginatedResponse<T> {
   totalPages: number;
 }
 
+export interface PaginationInfo {
+  page: number;
+  limit: number;
+  totalCount: number;
+  totalPages: number;
+}
+
 // 認証関連
 export interface LoginRequest {
   email: string;

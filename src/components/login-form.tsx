@@ -149,15 +149,19 @@ export function LoginForm() {
               <div className="space-y-2 text-xs">
                 <div className="flex justify-between items-center bg-gofun/50 rounded px-3 py-2">
                   <span className="text-sumi-600">管理者</span>
-                  <code className="text-matsu font-mono text-[11px]">admin@komine-cemetery.jp / admin123</code>
+                  <code className="text-matsu font-mono text-[11px]">admin@example.com / password123</code>
                 </div>
                 <div className="flex justify-between items-center bg-gofun/50 rounded px-3 py-2">
                   <span className="text-sumi-600">マネージャー</span>
-                  <code className="text-matsu font-mono text-[11px]">manager@komine-cemetery.jp / manager123</code>
+                  <code className="text-matsu font-mono text-[11px]">manager@example.com / password123</code>
                 </div>
                 <div className="flex justify-between items-center bg-gofun/50 rounded px-3 py-2">
                   <span className="text-sumi-600">オペレーター</span>
-                  <code className="text-matsu font-mono text-[11px]">operator@komine-cemetery.jp / operator123</code>
+                  <code className="text-matsu font-mono text-[11px]">operator@example.com / password123</code>
+                </div>
+                <div className="flex justify-between items-center bg-gofun/50 rounded px-3 py-2">
+                  <span className="text-sumi-600">閲覧者</span>
+                  <code className="text-matsu font-mono text-[11px]">viewer@example.com / password123</code>
                 </div>
               </div>
             </div>

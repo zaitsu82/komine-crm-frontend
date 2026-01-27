@@ -6,13 +6,13 @@ import { ViewType, HistoryEntry, ImportantNote, TerminationFormData } from '@/ty
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { formatDateWithEra, calculateOwnedPlotsInfo } from '@/lib/utils';
-import { formDataToCustomer, addCustomerDocument, terminateCustomer, deleteCustomer, TerminationInput } from '@/lib/data';
-import { createCustomer, updateCustomer, getCustomerById } from '@/lib/api';
+import { formDataToCustomer, addCustomerDocument, TerminationInput } from '@/lib/data';
+import { createCustomer, updateCustomer, getCustomerById, deleteCustomer, terminateCustomer } from '@/lib/api';
 import { CustomerFormData } from '@/lib/validations';
 import CustomerSearch from '@/components/customer-search';
 import CustomerForm, { CustomerDetailView } from '@/components/customer-form';
 import CustomerRegistry from '@/components/customer-registry';
-import CollectiveBurialList from '@/components/collective-burial-list';
+import CollectiveBurialManagement from '@/components/collective-burial-management';
 import PlotAvailabilityManagement from '@/components/plot-availability-management';
 import StaffManagement from '@/components/staff-management';
 
@@ -320,7 +320,7 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
   };
 
   // 解約処理を実行
-  const handleTerminate = () => {
+  const handleTerminate = async () => {
     if (!selectedCustomer) return;
 
     // バリデーション
@@ -348,14 +348,18 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
       notes: terminationForm.notes || undefined,
     };
 
-    const result = terminateCustomer(selectedCustomer.id, terminationInput);
+    try {
+      const response = await terminateCustomer(selectedCustomer.id, terminationInput);
 
-    if (result) {
-      setSelectedCustomer(result);
-      setShowTerminationDialog(false);
-      alert('解約処理が完了しました。');
-    } else {
-      alert('解約処理に失敗しました。');
+      if (response.success && response.data) {
+        setSelectedCustomer(response.data);
+        setShowTerminationDialog(false);
+        alert('解約処理が完了しました。');
+      } else if (!response.success) {
+        alert(`解約処理に失敗しました: ${response.error?.message || '不明なエラー'}`);
+      }
+    } catch {
+      alert('解約処理中にエラーが発生しました。');
     }
   };
 
@@ -366,21 +370,21 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
   };
 
   // 削除処理を実行
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!selectedCustomer) return;
 
     setIsDeleting(true);
 
     try {
-      const success = deleteCustomer(selectedCustomer.id);
+      const response = await deleteCustomer(selectedCustomer.id);
 
-      if (success) {
+      if (response.success) {
         setShowDeleteDialog(false);
         setSelectedCustomer(null);
         setCurrentView('registry');
         alert('顧客データを削除しました。');
       } else {
-        alert('削除に失敗しました。');
+        alert(`削除に失敗しました: ${response.error?.message || '不明なエラー'}`);
       }
     } catch {
       alert('削除中にエラーが発生しました。');
@@ -491,9 +495,9 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
             </div>
           </>
         ) : currentView === 'collective-burial' ? (
-          <div className="flex-1 overflow-auto">
-            <CollectiveBurialList />
-          </div>
+          <CollectiveBurialManagement
+            onBack={() => handleViewChange('registry')}
+          />
         ) : currentView === 'plot-availability' ? (
           <div className="flex-1 overflow-auto">
             <PlotAvailabilityManagement />

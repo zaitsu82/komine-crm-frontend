@@ -7,8 +7,9 @@ import { customerFormSchema, CustomerFormData } from '@/lib/validations';
 import { Button } from '@/components/ui/button';
 import { formatDate } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useMasters } from '@/hooks';
 
-import { CustomerFormProps } from './types';
+import { CustomerFormProps, MasterData } from './types';
 import { BasicInfoTab1 } from './BasicInfoTab1';
 import { BasicInfoTab2 } from './BasicInfoTab2';
 import { ContactsTab } from './ContactsTab';
@@ -18,6 +19,27 @@ import { HistoryTab } from './HistoryTab';
 
 export default function CustomerForm({ customer, onSave, isLoading }: CustomerFormProps) {
   const isEditing = !!customer;
+
+  // マスタデータの取得
+  const {
+    calcTypes,
+    taxTypes,
+    billingTypes,
+    paymentMethods,
+    accountTypes,
+    constructionTypes,
+    isLoading: isMasterLoading,
+  } = useMasters();
+
+  const masterData: MasterData = {
+    calcTypes,
+    taxTypes,
+    billingTypes,
+    paymentMethods,
+    accountTypes,
+    constructionTypes,
+    isLoading: isMasterLoading,
+  };
 
   const {
     register,
@@ -205,6 +227,7 @@ export default function CustomerForm({ customer, onSave, isLoading }: CustomerFo
     errors,
     control,
     customer,
+    masterData,
   };
 
   // エラーメッセージを整形

@@ -11,6 +11,12 @@ import {
   setAuthToken,
   clearAuthToken,
   getAuthToken,
+  setRefreshToken,
+  getRefreshToken,
+  clearAllTokens,
+  setTokenExpiresAt,
+  setTokenRefreshCallback,
+  API_CONFIG,
 } from './client';
 import {
   ApiResponse,
@@ -204,7 +210,18 @@ export async function login(
   if (response.success) {
     // バックエンドレスポンスをフロントエンド形式に変換
     const transformedData = transformBackendLoginResponse(response.data);
+
+    // トークンを保存
     setAuthToken(transformedData.token);
+
+    // リフレッシュトークンと有効期限を保存
+    if (response.data.session.refresh_token) {
+      setRefreshToken(response.data.session.refresh_token);
+    }
+    if (response.data.session.expires_at) {
+      setTokenExpiresAt(response.data.session.expires_at);
+    }
+
     return {
       success: true,
       data: transformedData,
@@ -223,7 +240,7 @@ export async function logout(): Promise<ApiResponse<void>> {
   }
 
   const response = await apiPost<void>('/auth/logout');
-  clearAuthToken();
+  clearAllTokens(); // 全てのトークン関連データをクリア
   return response;
 }
 
@@ -290,3 +307,72 @@ export function setMockCurrentUser(user: AuthUser | null): void {
     mockCurrentUser = user;
   }
 }
+
+/**
+ * アクセストークンをリフレッシュ
+ * @returns リフレッシュ成功時true、失敗時false
+ */
+export async function refreshAccessToken(): Promise<boolean> {
+  // モックモードではリフレッシュ非対応
+  if (shouldUseMockData()) {
+    return false;
+  }
+
+  const refreshToken = getRefreshToken();
+  if (!refreshToken) {
+    console.warn('[Auth] No refresh token available');
+    return false;
+  }
+
+  try {
+    const url = `${API_CONFIG.baseUrl}/auth/refresh`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ refresh_token: refreshToken }),
+    });
+
+    if (!response.ok) {
+      console.error('[Auth] Token refresh failed:', response.status);
+      // リフレッシュ失敗時は全てのトークンをクリア
+      clearAllTokens();
+      return false;
+    }
+
+    const data = await response.json();
+
+    if (data.success && data.data?.session) {
+      // 新しいトークンを保存
+      setAuthToken(data.data.session.access_token);
+      if (data.data.session.refresh_token) {
+        setRefreshToken(data.data.session.refresh_token);
+      }
+      if (data.data.session.expires_at) {
+        setTokenExpiresAt(data.data.session.expires_at);
+      }
+      console.log('[Auth] Token refreshed successfully');
+      return true;
+    }
+
+    console.error('[Auth] Token refresh response invalid:', data);
+    clearAllTokens();
+    return false;
+  } catch (error) {
+    console.error('[Auth] Token refresh error:', error);
+    clearAllTokens();
+    return false;
+  }
+}
+
+/**
+ * トークンリフレッシュコールバックを初期化
+ * アプリケーション起動時に呼び出す
+ */
+export function initializeTokenRefresh(): void {
+  setTokenRefreshCallback(refreshAccessToken);
+}
+
+// モジュール読み込み時に自動初期化
+initializeTokenRefresh();

@@ -6,7 +6,14 @@ import { SelectItem } from '@/components/ui/select';
 import { TabBaseProps } from './types';
 import { ViewModeField, ViewModeSelect } from './ViewModeField';
 
-export function BasicInfoTab2({ register, watch, setValue, viewMode }: TabBaseProps) {
+export function BasicInfoTab2({ register, watch, setValue, viewMode, masterData }: TabBaseProps) {
+  // マスタデータから選択肢を生成するヘルパー
+  const renderMasterOptions = (items: { name: string }[] | undefined) => {
+    if (!items || items.length === 0) return null;
+    return items.map((item) => (
+      <SelectItem key={item.name} value={item.name}>{item.name}</SelectItem>
+    ));
+  };
   const dmSettingLabels: Record<string, string> = {
     allow: '許可',
     deny: '拒否',
@@ -155,9 +162,16 @@ export function BasicInfoTab2({ register, watch, setValue, viewMode }: TabBasePr
             placeholder="選択してください"
             onValueChange={(value) => setValue('billingInfo.accountType', value as 'ordinary' | 'current' | 'savings')}
           >
-            <SelectItem value="ordinary">普通</SelectItem>
-            <SelectItem value="current">当座</SelectItem>
-            <SelectItem value="savings">貯蓄</SelectItem>
+            {masterData?.accountTypes && masterData.accountTypes.length > 0
+              ? renderMasterOptions(masterData.accountTypes)
+              : (
+                <>
+                  <SelectItem value="ordinary">普通</SelectItem>
+                  <SelectItem value="current">当座</SelectItem>
+                  <SelectItem value="savings">貯蓄</SelectItem>
+                </>
+              )
+            }
           </ViewModeSelect>
           <div>
             <Label className="text-sm font-medium">記号番号</Label>

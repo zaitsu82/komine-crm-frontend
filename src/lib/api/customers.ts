@@ -144,71 +144,120 @@ function apiPlotDetailToCustomer(apiData: ApiPlotDetail): Customer {
 
 /**
  * フロントエンドのフォームデータをAPI用に変換
+ * バックエンドの CreateContractPlotInput 形式に合わせる
  */
 function customerFormToApiPayload(formData: CustomerFormData): Record<string, unknown> {
+  // 面積を数値に変換（例: "3.6㎡" → 3.6）
+  const parseArea = (size?: string): number => {
+    if (!size) return 3.6; // デフォルト値
+    const match = size.match(/[\d.]+/);
+    return match ? parseFloat(match[0]) : 3.6;
+  };
+
+  // 価格を数値に変換
+  const parsePrice = (price?: string): number => {
+    if (!price) return 0;
+    const cleaned = price.replace(/[,円]/g, '');
+    return parseInt(cleaned, 10) || 0;
+  };
+
+  // 電話番号からハイフンを除去
+  const formatPhone = (phone?: string): string => {
+    if (!phone) return '';
+    return phone.replace(/[-－ー]/g, '');
+  };
+
+  // ひらがなをカタカナに変換
+  const toKatakana = (str?: string): string => {
+    if (!str) return '';
+    return str.replace(/[\u3041-\u3096]/g, (match) =>
+      String.fromCharCode(match.charCodeAt(0) + 0x60)
+    );
+  };
+
   return {
+    // 物理区画情報
     physicalPlot: {
-      plotNumber: formData.plotNumber || '',
-      section: formData.section || '',
+      plotNumber: formData.plotNumber || formData.customerCode || '',
+      areaName: formData.section || formData.plotPeriod || '',
+      areaSqm: parseArea(formData.plotInfo?.size),
     },
+    // 契約区画情報
     contractPlot: {
-      contractDate: formData.reservationDate || null,
-      effectiveStartDate: formData.startDate || null,
+      contractAreaSqm: parseArea(formData.plotInfo?.size),
     },
+    // 販売契約情報
     saleContract: {
-      contractCode: formData.customerCode,
-      acceptanceNumber: formData.acceptanceNumber || null,
-      permitDate: formData.permitDate || null,
+      contractDate: formData.plotInfo?.contractDate || formData.reservationDate || new Date().toISOString().split('T')[0],
+      price: parsePrice(formData.plotInfo?.price),
+      paymentStatus: 'unpaid',
+      customerRole: 'contractor',
+      ...(formData.reservationDate && { reservationDate: formData.reservationDate }),
+      ...(formData.acceptanceNumber && { acceptanceNumber: formData.acceptanceNumber }),
+      ...(formData.permitDate && { permitDate: formData.permitDate }),
+      ...(formData.startDate && { startDate: formData.startDate }),
     },
+    // 顧客情報
     customer: {
       name: formData.name,
-      nameKana: formData.nameKana,
-      gender: formData.gender || null,
-      birthDate: formData.birthDate || null,
-      postalCode: formData.postalCode || null,
+      nameKana: toKatakana(formData.nameKana),
+      postalCode: (formData.postalCode || '0000000').replace(/-/g, ''),
       address: formData.address,
-      phoneNumber: formData.phoneNumber,
-      faxNumber: formData.faxNumber || null,
-      email: formData.email || null,
+      phoneNumber: formatPhone(formData.phoneNumber),
+      ...(formData.gender && { gender: formData.gender }),
+      ...(formData.birthDate && { birthDate: formData.birthDate }),
+      ...(formData.registeredAddress && { registeredAddress: formData.registeredAddress }),
+      ...(formData.faxNumber && { faxNumber: formatPhone(formData.faxNumber) }),
+      ...(formData.email && { email: formData.email }),
     },
-    usageFee: formData.usageFee
+    // 勤務先情報（オプション）
+    workInfo: formData.workInfo?.companyName
       ? {
-        calculationType: formData.usageFee.calculationType,
-        taxType: formData.usageFee.taxType,
-        billingType: formData.usageFee.billingType,
-        billingYears: formData.usageFee.billingYears
-          ? parseInt(formData.usageFee.billingYears, 10)
-          : null,
-        area: formData.usageFee.area,
-        unitPrice: formData.usageFee.unitPrice
-          ? parseInt(formData.usageFee.unitPrice, 10)
-          : null,
-        usageFee: formData.usageFee.usageFee
-          ? parseInt(formData.usageFee.usageFee, 10)
-          : null,
-        paymentMethod: formData.usageFee.paymentMethod,
+        companyName: formData.workInfo.companyName,
+        companyNameKana: formData.workInfo.companyNameKana || '',
+        workPostalCode: formData.workInfo.workPostalCode || '',
+        workAddress: formData.workInfo.workAddress || '',
+        workPhoneNumber: formData.workInfo.workPhoneNumber || '',
+        dmSetting: formData.workInfo.dmSetting || 'allow',
+        addressType: formData.workInfo.addressType || 'home',
+        notes: formData.workInfo.notes || null,
       }
       : undefined,
-    managementFee: formData.managementFee
+    // 請求情報（オプション）
+    billingInfo: formData.billingInfo?.billingType
       ? {
-        calculationType: formData.managementFee.calculationType,
-        taxType: formData.managementFee.taxType,
-        billingType: formData.managementFee.billingType,
-        billingYears: formData.managementFee.billingYears
-          ? parseInt(formData.managementFee.billingYears, 10)
-          : null,
-        area: formData.managementFee.area,
-        billingMonth: formData.managementFee.billingMonth
-          ? parseInt(formData.managementFee.billingMonth, 10)
-          : null,
-        managementFee: formData.managementFee.managementFee
-          ? parseInt(formData.managementFee.managementFee, 10)
-          : null,
-        unitPrice: formData.managementFee.unitPrice
-          ? parseInt(formData.managementFee.unitPrice, 10)
-          : null,
-        lastBillingMonth: formData.managementFee.lastBillingMonth,
-        paymentMethod: formData.managementFee.paymentMethod,
+        billingType: formData.billingInfo.billingType,
+        bankName: formData.billingInfo.bankName || formData.billingInfo.institutionName || '',
+        branchName: formData.billingInfo.branchName || '',
+        accountType: formData.billingInfo.accountType || 'ordinary',
+        accountNumber: formData.billingInfo.accountNumber || '',
+        accountHolder: formData.billingInfo.accountHolder || '',
+      }
+      : undefined,
+    // 使用料情報（オプション）
+    usageFee: formData.usageFee?.usageFee
+      ? {
+        calculationType: formData.usageFee.calculationType || '',
+        taxType: formData.usageFee.taxType || '',
+        usageFee: parseInt(formData.usageFee.usageFee, 10) || 0,
+        area: parseFloat(formData.usageFee.area || '0') || 0,
+        unitPrice: parseInt(formData.usageFee.unitPrice || '0', 10) || 0,
+        paymentMethod: formData.usageFee.paymentMethod || '',
+      }
+      : undefined,
+    // 管理料情報（オプション）
+    managementFee: formData.managementFee?.managementFee
+      ? {
+        calculationType: formData.managementFee.calculationType || '',
+        taxType: formData.managementFee.taxType || '',
+        billingType: formData.managementFee.billingType || '',
+        billingYears: parseInt(formData.managementFee.billingYears || '1', 10) || 1,
+        area: parseFloat(formData.managementFee.area || '0') || 0,
+        billingMonth: formData.managementFee.billingMonth || '',
+        managementFee: parseInt(formData.managementFee.managementFee, 10) || 0,
+        unitPrice: parseInt(formData.managementFee.unitPrice || '0', 10) || 0,
+        lastBillingMonth: formData.managementFee.lastBillingMonth || '',
+        paymentMethod: formData.managementFee.paymentMethod || '',
       }
       : undefined,
   };

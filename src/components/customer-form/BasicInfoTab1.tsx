@@ -5,7 +5,14 @@ import { SelectItem } from '@/components/ui/select';
 import { TabBaseProps } from './types';
 import { ViewModeField, ViewModeSelect } from './ViewModeField';
 
-export function BasicInfoTab1({ register, watch, setValue, errors, viewMode }: TabBaseProps) {
+export function BasicInfoTab1({ register, watch, setValue, errors, viewMode, masterData }: TabBaseProps) {
+  // マスタデータから選択肢を生成するヘルパー
+  const renderMasterOptions = (items: { name: string }[] | undefined) => {
+    if (!items || items.length === 0) return null;
+    return items.map((item) => (
+      <SelectItem key={item.name} value={item.name}>{item.name}</SelectItem>
+    ));
+  };
   return (
     <div className="space-y-6">
       {/* 顧客基本情報 */}
@@ -233,10 +240,7 @@ export function BasicInfoTab1({ register, watch, setValue, errors, viewMode }: T
             placeholder="選択してください"
             onValueChange={(value) => setValue('usageFee.calculationType', value)}
           >
-            <SelectItem value="固定">固定</SelectItem>
-            <SelectItem value="変動">変動</SelectItem>
-            <SelectItem value="面積割">面積割</SelectItem>
-            <SelectItem value="その他">その他</SelectItem>
+            {renderMasterOptions(masterData?.calcTypes)}
           </ViewModeSelect>
           <ViewModeSelect
             label="税区分"
@@ -245,9 +249,7 @@ export function BasicInfoTab1({ register, watch, setValue, errors, viewMode }: T
             placeholder="選択してください"
             onValueChange={(value) => setValue('usageFee.taxType', value)}
           >
-            <SelectItem value="税込">税込</SelectItem>
-            <SelectItem value="税別">税別</SelectItem>
-            <SelectItem value="非課税">非課税</SelectItem>
+            {renderMasterOptions(masterData?.taxTypes)}
           </ViewModeSelect>
           <ViewModeSelect
             label="請求区分"
@@ -256,10 +258,7 @@ export function BasicInfoTab1({ register, watch, setValue, errors, viewMode }: T
             placeholder="選択してください"
             onValueChange={(value) => setValue('usageFee.billingType', value)}
           >
-            <SelectItem value="一括">一括</SelectItem>
-            <SelectItem value="分割">分割</SelectItem>
-            <SelectItem value="年払い">年払い</SelectItem>
-            <SelectItem value="月払い">月払い</SelectItem>
+            {renderMasterOptions(masterData?.billingTypes)}
           </ViewModeSelect>
           <ViewModeField
             label="請求年数"
@@ -299,10 +298,7 @@ export function BasicInfoTab1({ register, watch, setValue, errors, viewMode }: T
             placeholder="選択してください"
             onValueChange={(value) => setValue('usageFee.paymentMethod', value)}
           >
-            <SelectItem value="銀行振込">銀行振込</SelectItem>
-            <SelectItem value="現金">現金</SelectItem>
-            <SelectItem value="口座振替">口座振替</SelectItem>
-            <SelectItem value="クレジット">クレジット</SelectItem>
+            {renderMasterOptions(masterData?.paymentMethods)}
           </ViewModeSelect>
         </div>
       </div>
@@ -318,10 +314,7 @@ export function BasicInfoTab1({ register, watch, setValue, errors, viewMode }: T
             placeholder="選択してください"
             onValueChange={(value) => setValue('managementFee.calculationType', value)}
           >
-            <SelectItem value="固定">固定</SelectItem>
-            <SelectItem value="変動">変動</SelectItem>
-            <SelectItem value="面積割">面積割</SelectItem>
-            <SelectItem value="その他">その他</SelectItem>
+            {renderMasterOptions(masterData?.calcTypes)}
           </ViewModeSelect>
           <ViewModeSelect
             label="税区分"
@@ -330,9 +323,7 @@ export function BasicInfoTab1({ register, watch, setValue, errors, viewMode }: T
             placeholder="選択してください"
             onValueChange={(value) => setValue('managementFee.taxType', value)}
           >
-            <SelectItem value="税込">税込</SelectItem>
-            <SelectItem value="税別">税別</SelectItem>
-            <SelectItem value="非課税">非課税</SelectItem>
+            {renderMasterOptions(masterData?.taxTypes)}
           </ViewModeSelect>
           <ViewModeSelect
             label="請求区分"
@@ -341,10 +332,7 @@ export function BasicInfoTab1({ register, watch, setValue, errors, viewMode }: T
             placeholder="選択してください"
             onValueChange={(value) => setValue('managementFee.billingType', value)}
           >
-            <SelectItem value="年払い">年払い</SelectItem>
-            <SelectItem value="月払い">月払い</SelectItem>
-            <SelectItem value="四半期払い">四半期払い</SelectItem>
-            <SelectItem value="その他">その他</SelectItem>
+            {renderMasterOptions(masterData?.billingTypes)}
           </ViewModeSelect>
           <ViewModeField
             label="請求年数"
@@ -398,10 +386,7 @@ export function BasicInfoTab1({ register, watch, setValue, errors, viewMode }: T
             placeholder="選択してください"
             onValueChange={(value) => setValue('managementFee.paymentMethod', value)}
           >
-            <SelectItem value="銀行振込">銀行振込</SelectItem>
-            <SelectItem value="現金">現金</SelectItem>
-            <SelectItem value="口座振替">口座振替</SelectItem>
-            <SelectItem value="クレジット">クレジット</SelectItem>
+            {renderMasterOptions(masterData?.paymentMethods)}
           </ViewModeSelect>
         </div>
       </div>

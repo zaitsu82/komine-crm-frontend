@@ -25,7 +25,9 @@ export default function InvoiceTemplate({
 }: InvoiceTemplateProps) {
   // 管理料から請求金額を取得
   const managementFeeAmount = customer.managementFee?.managementFee
-    ? parseInt(customer.managementFee.managementFee.replace(/[^0-9]/g, ''))
+    ? (typeof customer.managementFee.managementFee === 'number'
+        ? customer.managementFee.managementFee
+        : parseInt(String(customer.managementFee.managementFee).replace(/[^0-9]/g, '')))
     : 50000;
 
   // デフォルトの請求項目（顧客の契約情報から自動生成）

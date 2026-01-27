@@ -17,7 +17,15 @@ export function ConstructionInfoTab({
   expandedConstructionId,
   setExpandedConstructionId,
   viewMode,
+  masterData,
 }: ConstructionInfoTabProps) {
+  // マスタデータから選択肢を生成するヘルパー
+  const renderMasterOptions = (items: { name: string }[] | undefined) => {
+    if (!items || items.length === 0) return null;
+    return items.map((item) => (
+      <SelectItem key={item.name} value={item.name}>{item.name}</SelectItem>
+    ));
+  };
   const handleAddNewConstructionRecord = () => {
     const newId = `construction-${Date.now()}`;
     addConstructionRecord(getDefaultConstructionRecord(newId));
@@ -204,11 +212,18 @@ export function ConstructionInfoTab({
                                     placeholder="選択してください"
                                     onValueChange={(value) => setValue(`constructionRecords.${index}.constructionType`, value as ConstructionType)}
                                   >
-                                    <SelectItem value="gravestone">墓石工事</SelectItem>
-                                    <SelectItem value="enclosure">外柵工事</SelectItem>
-                                    <SelectItem value="additional">付帯工事</SelectItem>
-                                    <SelectItem value="repair">修繕工事</SelectItem>
-                                    <SelectItem value="other">その他</SelectItem>
+                                    {masterData?.constructionTypes && masterData.constructionTypes.length > 0
+                                      ? renderMasterOptions(masterData.constructionTypes)
+                                      : (
+                                        <>
+                                          <SelectItem value="gravestone">墓石工事</SelectItem>
+                                          <SelectItem value="enclosure">外柵工事</SelectItem>
+                                          <SelectItem value="additional">付帯工事</SelectItem>
+                                          <SelectItem value="repair">修繕工事</SelectItem>
+                                          <SelectItem value="other">その他</SelectItem>
+                                        </>
+                                      )
+                                    }
                                   </ViewModeSelect>
                                 </div>
 

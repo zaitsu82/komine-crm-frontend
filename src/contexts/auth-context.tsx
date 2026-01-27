@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, ReactNode, useRef } from 'react';
 import {
   login as apiLogin,
   logout as apiLogout,
@@ -8,6 +8,7 @@ import {
   isAuthenticated as checkIsAuthenticated,
   AuthUser,
 } from '@/lib/api';
+import { clearAllTokens, isTokenExpired, isTokenExpiringSoon } from '@/lib/api/client';
 
 // ユーザー型定義（後方互換性のため維持）
 export interface User {
@@ -27,6 +28,10 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   clearError: () => void;
+  /** 認証期限切れ時の強制ログアウト（APIエラーハンドリング用） */
+  forceLogout: (message?: string) => void;
+  /** APIレスポンスのエラーコードをチェックして認証期限切れなら自動ログアウト */
+  handleAuthError: (errorCode: string) => boolean;
 }
 
 // コンテキスト作成
@@ -43,11 +48,61 @@ function authUserToUser(authUser: AuthUser): User {
   };
 }
 
+// トークン有効期限チェック間隔（1分）
+const TOKEN_CHECK_INTERVAL = 60 * 1000;
+
 // プロバイダーコンポーネント
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const checkIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // 強制ログアウト（認証期限切れ時に呼ばれる）
+  const forceLogout = useCallback((message?: string) => {
+    console.log('[Auth] Force logout triggered', message);
+    clearAllTokens();
+    setUser(null);
+    setError(message || '認証の有効期限が切れました。再度ログインしてください。');
+    setIsLoading(false);
+  }, []);
+
+  // APIエラーコードをチェックして認証期限切れなら自動ログアウト
+  const handleAuthError = useCallback((errorCode: string): boolean => {
+    if (errorCode === 'AUTH_EXPIRED' || errorCode === 'UNAUTHORIZED') {
+      forceLogout();
+      return true;
+    }
+    return false;
+  }, [forceLogout]);
+
+  // 定期的にトークン有効期限をチェック
+  useEffect(() => {
+    if (!user) return;
+
+    const checkTokenExpiration = () => {
+      if (isTokenExpired()) {
+        console.log('[Auth] Token has expired, forcing logout');
+        forceLogout('セッションの有効期限が切れました。再度ログインしてください。');
+      } else if (isTokenExpiringSoon(10)) {
+        // 10分以内に期限切れの場合は警告ログ（実際のリフレッシュはAPIリクエスト時に行われる）
+        console.log('[Auth] Token is expiring soon');
+      }
+    };
+
+    // 初回チェック
+    checkTokenExpiration();
+
+    // 定期チェック開始
+    checkIntervalRef.current = setInterval(checkTokenExpiration, TOKEN_CHECK_INTERVAL);
+
+    return () => {
+      if (checkIntervalRef.current) {
+        clearInterval(checkIntervalRef.current);
+        checkIntervalRef.current = null;
+      }
+    };
+  }, [user, forceLogout]);
 
   // 初期化時に認証状態を確認
   useEffect(() => {
@@ -57,9 +112,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
+      // トークンが既に期限切れの場合はログアウト
+      if (isTokenExpired()) {
+        console.log('[Auth] Token already expired on init');
+        clearAllTokens();
+        setIsLoading(false);
+        return;
+      }
+
       const response = await getCurrentUser();
       if (response.success) {
         setUser(authUserToUser(response.data));
+      } else if (response.error?.code === 'AUTH_EXPIRED') {
+        // 認証期限切れエラーの場合
+        clearAllTokens();
       }
       setIsLoading(false);
     };
@@ -109,6 +175,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         logout,
         clearError,
+        forceLogout,
+        handleAuthError,
       }}
     >
       {children}

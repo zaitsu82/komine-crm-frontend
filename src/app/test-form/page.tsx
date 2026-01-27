@@ -23,6 +23,9 @@ const dummyCustomer: Customer = {
   faxNumber: '03-1234-5678',
   registeredAddress: '東京都渋谷区渋谷1-1-1',
   status: 'active',
+  reservationDate: new Date('2024-01-10'),
+  permitDate: new Date('2024-01-12'),
+  startDate: new Date('2024-01-15'),
   createdAt: new Date(),
   updatedAt: new Date(),
   applicantInfo: {
@@ -75,6 +78,7 @@ const dummyCustomer: Customer = {
       address: '東京都新宿区西新宿1-1-1',
       gender: 'female',
       birthDate: new Date('1965-03-20'),
+      mailingType: 'home',
     },
   ],
   buriedPersons: [

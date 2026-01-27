@@ -15,6 +15,19 @@ export const API_CONFIG = {
 
 // トークン管理
 const TOKEN_KEY = 'auth_token';
+const REFRESH_TOKEN_KEY = 'refresh_token';
+const TOKEN_EXPIRES_AT_KEY = 'token_expires_at';
+
+// トークン更新中フラグ（複数リクエストでの重複更新を防ぐ）
+let isRefreshing = false;
+let refreshPromise: Promise<boolean> | null = null;
+
+// トークン更新コールバック（auth.tsで設定される）
+let onTokenRefresh: (() => Promise<boolean>) | null = null;
+
+export function setTokenRefreshCallback(callback: () => Promise<boolean>): void {
+  onTokenRefresh = callback;
+}
 
 export function getAuthToken(): string | null {
   if (typeof window === 'undefined') return null;
@@ -31,6 +44,91 @@ export function clearAuthToken(): void {
   localStorage.removeItem(TOKEN_KEY);
 }
 
+export function getRefreshToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem(REFRESH_TOKEN_KEY);
+}
+
+export function setRefreshToken(token: string): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(REFRESH_TOKEN_KEY, token);
+}
+
+export function clearRefreshToken(): void {
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem(REFRESH_TOKEN_KEY);
+}
+
+export function getTokenExpiresAt(): number | null {
+  if (typeof window === 'undefined') return null;
+  const value = localStorage.getItem(TOKEN_EXPIRES_AT_KEY);
+  return value ? parseInt(value, 10) : null;
+}
+
+export function setTokenExpiresAt(expiresAt: number): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(TOKEN_EXPIRES_AT_KEY, expiresAt.toString());
+}
+
+export function clearTokenExpiresAt(): void {
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem(TOKEN_EXPIRES_AT_KEY);
+}
+
+/**
+ * 全てのトークン関連データをクリア
+ */
+export function clearAllTokens(): void {
+  clearAuthToken();
+  clearRefreshToken();
+  clearTokenExpiresAt();
+}
+
+/**
+ * トークンが期限切れ間近かどうかをチェック
+ * @param thresholdMinutes 期限切れまでの閾値（分）、デフォルト5分
+ */
+export function isTokenExpiringSoon(thresholdMinutes = 5): boolean {
+  const expiresAt = getTokenExpiresAt();
+  if (!expiresAt) return false;
+
+  const now = Math.floor(Date.now() / 1000);
+  const threshold = thresholdMinutes * 60;
+  return expiresAt - now < threshold;
+}
+
+/**
+ * トークンが既に期限切れかどうかをチェック
+ */
+export function isTokenExpired(): boolean {
+  const expiresAt = getTokenExpiresAt();
+  if (!expiresAt) return false;
+
+  const now = Math.floor(Date.now() / 1000);
+  return now >= expiresAt;
+}
+
+/**
+ * トークンをリフレッシュ（重複防止付き）
+ */
+async function refreshTokenIfNeeded(): Promise<boolean> {
+  if (!onTokenRefresh) return false;
+
+  // 既にリフレッシュ中の場合は同じPromiseを返す
+  if (isRefreshing && refreshPromise) {
+    return refreshPromise;
+  }
+
+  isRefreshing = true;
+  refreshPromise = onTokenRefresh()
+    .finally(() => {
+      isRefreshing = false;
+      refreshPromise = null;
+    });
+
+  return refreshPromise;
+}
+
 // デバッグログ
 function debugLog(message: string, data?: unknown): void {
   if (API_CONFIG.debug) {
@@ -45,11 +143,20 @@ function errorLog(message: string, error?: unknown): void {
 
 /**
  * 汎用APIリクエスト関数
+ * 401エラー時は自動的にトークンリフレッシュを試行
  */
 export async function apiRequest<T>(
   endpoint: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
+  skipTokenRefresh = false
 ): Promise<ApiResponse<T>> {
+  // リクエスト前にトークンが期限切れ間近かチェック（認証が必要なエンドポイントのみ）
+  const isAuthEndpoint = endpoint.includes('/auth/');
+  if (!isAuthEndpoint && !skipTokenRefresh && isTokenExpiringSoon()) {
+    debugLog('Token is expiring soon, attempting refresh');
+    await refreshTokenIfNeeded();
+  }
+
   const url = `${API_CONFIG.baseUrl}${endpoint}`;
   const token = getAuthToken();
 
@@ -72,6 +179,28 @@ export async function apiRequest<T>(
     });
 
     clearTimeout(timeoutId);
+
+    // 401エラーの場合、トークンリフレッシュを試行
+    if (response.status === 401 && !isAuthEndpoint && !skipTokenRefresh) {
+      debugLog('Received 401, attempting token refresh');
+      const refreshed = await refreshTokenIfNeeded();
+
+      if (refreshed) {
+        debugLog('Token refreshed, retrying request');
+        // リフレッシュ成功時はリクエストを再試行（無限ループ防止のためskipTokenRefresh=true）
+        return apiRequest<T>(endpoint, options, true);
+      } else {
+        debugLog('Token refresh failed, returning 401 error');
+        // リフレッシュ失敗時は認証エラーを返す
+        return {
+          success: false,
+          error: {
+            code: 'AUTH_EXPIRED',
+            message: '認証の有効期限が切れました。再度ログインしてください。',
+          },
+        };
+      }
+    }
 
     const data = await response.json();
 

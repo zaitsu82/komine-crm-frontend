@@ -1,6 +1,18 @@
 import { UseFormRegister, UseFormWatch, UseFormSetValue, Control, FieldErrors, UseFieldArrayReturn } from 'react-hook-form';
 import { Customer, ConstructionType } from '@/types/customer';
 import { CustomerFormData } from '@/lib/validations';
+import { MasterItem, TaxTypeMasterItem } from '@/lib/api';
+
+// マスタデータの型
+export interface MasterData {
+  calcTypes: MasterItem[];
+  taxTypes: TaxTypeMasterItem[];
+  billingTypes: MasterItem[];
+  paymentMethods: MasterItem[];
+  accountTypes: MasterItem[];
+  constructionTypes: MasterItem[];
+  isLoading: boolean;
+}
 
 export interface CustomerFormProps {
   customer?: Customer;
@@ -18,6 +30,8 @@ export interface TabBaseProps {
   customer?: Customer;
   /** 閲覧モード（trueの場合は読み取り専用表示） */
   viewMode?: boolean;
+  /** マスタデータ */
+  masterData?: MasterData;
 }
 
 export interface ContactsTabProps extends TabBaseProps {
