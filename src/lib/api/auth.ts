@@ -11,10 +11,9 @@ import {
   setAuthToken,
   clearAuthToken,
   getAuthToken,
-  setRefreshToken,
-  getRefreshToken,
   clearAllTokens,
   setTokenExpiresAt,
+  getTokenExpiresAt,
   setTokenRefreshCallback,
   API_CONFIG,
 } from './client';
@@ -179,12 +178,15 @@ async function mockChangePassword(
 
 /**
  * バックエンドレスポンスをフロントエンド形式に変換
+ * 注: HttpOnly Cookie対応後、トークンはCookieに設定されるため
+ * レスポンスボディにはaccess_token/refresh_tokenは含まれない
  */
 function transformBackendLoginResponse(
   backendResponse: BackendLoginResponse
 ): LoginResponse {
   return {
-    token: backendResponse.session.access_token,
+    // HttpOnly Cookie対応後、tokenは空文字列（実際のトークンはCookieに保存）
+    token: backendResponse.session.access_token || '',
     user: {
       id: backendResponse.user.id,
       email: backendResponse.user.email,
@@ -197,6 +199,8 @@ function transformBackendLoginResponse(
 
 /**
  * ログイン
+ * HttpOnly Cookie対応: トークンはサーバーがSet-Cookieヘッダーで設定
+ * フロントエンドでは有効期限のみ保存（UI表示・事前リフレッシュ用）
  */
 export async function login(
   credentials: LoginRequest
@@ -211,16 +215,14 @@ export async function login(
     // バックエンドレスポンスをフロントエンド形式に変換
     const transformedData = transformBackendLoginResponse(response.data);
 
-    // トークンを保存
-    setAuthToken(transformedData.token);
-
-    // リフレッシュトークンと有効期限を保存
-    if (response.data.session.refresh_token) {
-      setRefreshToken(response.data.session.refresh_token);
-    }
+    // HttpOnly Cookie対応: トークンはCookieに保存されるためlocalStorageには保存しない
+    // 有効期限のみ保存（UI表示・事前リフレッシュ用）
     if (response.data.session.expires_at) {
       setTokenExpiresAt(response.data.session.expires_at);
     }
+
+    // 認証状態のフラグをlocalStorageに保存（isAuthenticated()のため）
+    setAuthToken('cookie_auth'); // 実際のトークンではなくフラグとして使用
 
     return {
       success: true,
@@ -310,6 +312,7 @@ export function setMockCurrentUser(user: AuthUser | null): void {
 
 /**
  * アクセストークンをリフレッシュ
+ * HttpOnly Cookie対応: リフレッシュトークンはCookieから自動送信される
  * @returns リフレッシュ成功時true、失敗時false
  */
 export async function refreshAccessToken(): Promise<boolean> {
@@ -318,9 +321,10 @@ export async function refreshAccessToken(): Promise<boolean> {
     return false;
   }
 
-  const refreshToken = getRefreshToken();
-  if (!refreshToken) {
-    console.warn('[Auth] No refresh token available');
+  // HttpOnly Cookie対応: 有効期限が保存されていない場合はリフレッシュ不要
+  const expiresAt = getTokenExpiresAt();
+  if (!expiresAt) {
+    console.warn('[Auth] No token expiration info available');
     return false;
   }
 
@@ -331,12 +335,13 @@ export async function refreshAccessToken(): Promise<boolean> {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ refresh_token: refreshToken }),
+      credentials: 'include', // HttpOnly Cookieを送信するために必須
+      // リフレッシュトークンはCookieから自動送信されるためbodyは不要
     });
 
     if (!response.ok) {
       console.error('[Auth] Token refresh failed:', response.status);
-      // リフレッシュ失敗時は全てのトークンをクリア
+      // リフレッシュ失敗時は全てのトークン関連データをクリア
       clearAllTokens();
       return false;
     }
@@ -344,11 +349,7 @@ export async function refreshAccessToken(): Promise<boolean> {
     const data = await response.json();
 
     if (data.success && data.data?.session) {
-      // 新しいトークンを保存
-      setAuthToken(data.data.session.access_token);
-      if (data.data.session.refresh_token) {
-        setRefreshToken(data.data.session.refresh_token);
-      }
+      // 新しい有効期限を保存（トークンはCookieに設定される）
       if (data.data.session.expires_at) {
         setTokenExpiresAt(data.data.session.expires_at);
       }

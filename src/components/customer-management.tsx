@@ -16,6 +16,7 @@ import CustomerRegistry from '@/components/customer-registry';
 import CollectiveBurialManagement from '@/components/collective-burial-management';
 import PlotAvailabilityManagement from '@/components/plot-availability-management';
 import StaffManagement from '@/components/staff-management';
+import { DocumentManagement } from '@/components/document-management';
 
 import InvoiceTemplate from '@/components/invoice-template';
 import PostcardTemplate from '@/components/postcard-template';
@@ -417,7 +418,7 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
   const handleViewChange = (view: ViewType) => {
     setCurrentView(view);
     // メインメニュー項目の場合は顧客選択をクリア
-    if (['registry', 'collective-burial', 'plot-availability', 'staff-management'].includes(view)) {
+    if (['registry', 'collective-burial', 'plot-availability', 'documents', 'staff-management'].includes(view)) {
       setSelectedCustomer(null);
     }
   };
@@ -506,6 +507,10 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
         ) : currentView === 'staff-management' ? (
           <div className="flex-1 overflow-auto">
             <StaffManagement />
+          </div>
+        ) : currentView === 'documents' ? (
+          <div className="flex-1 overflow-auto">
+            <DocumentManagement />
           </div>
         ) : currentView === 'details' && isLoading && !selectedCustomer ? (
           <div className="flex-1 flex items-center justify-center">
@@ -670,19 +675,28 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
           </>
         )}
 
+        {/* 書類履歴（顧客コンテキスト） */}
         {currentView === 'document-history' && selectedCustomer && (
-          <DocumentHistory
-            customer={selectedCustomer}
-            onNewDocument={() => setCurrentView('document-select')}
-            onMarkAsSent={handleMarkAsSent}
-          />
+          <div className="flex-1 overflow-auto">
+            <DocumentManagement
+              customerId={selectedCustomer.id}
+              customerName={selectedCustomer.name}
+              initialMode="list"
+              onBack={() => setCurrentView('details')}
+            />
+          </div>
         )}
 
+        {/* 書類作成（顧客コンテキスト） */}
         {currentView === 'document-select' && selectedCustomer && (
-          <DocumentSelect
-            onInvoiceClick={() => setShowInvoiceEditor(true)}
-            onPostcardClick={() => setShowPostcardEditor(true)}
-          />
+          <div className="flex-1 overflow-auto">
+            <DocumentManagement
+              customerId={selectedCustomer.id}
+              customerName={selectedCustomer.name}
+              initialMode="create"
+              onBack={() => setCurrentView('details')}
+            />
+          </div>
         )}
       </div>
 

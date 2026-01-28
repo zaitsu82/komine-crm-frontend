@@ -114,3 +114,34 @@ export type {
   DocumentInfo,
   NotesData,
 } from './collective-burials';
+
+// 書類管理APIのエクスポート
+export {
+  getDocuments,
+  getDocumentById,
+  createDocument,
+  updateDocument,
+  deleteDocument,
+  uploadDocumentFile,
+  getDocumentDownloadUrl,
+  generatePdf,
+  downloadPdfFromBase64,
+  DOCUMENT_TYPE_LABELS,
+  DOCUMENT_STATUS_LABELS,
+  DOCUMENT_STATUS_COLORS,
+} from './documents';
+export type {
+  DocumentType,
+  DocumentStatus,
+  DocumentListItem,
+  DocumentDetail,
+  DocumentListResponse,
+  DocumentSearchParams,
+  CreateDocumentRequest,
+  UpdateDocumentRequest,
+  DownloadUrlResponse,
+  GeneratePdfRequest,
+  GeneratePdfResponse,
+  InvoiceTemplateData,
+  PostcardTemplateData,
+} from './documents';

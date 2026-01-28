@@ -14,9 +14,11 @@ export const API_CONFIG = {
 };
 
 // トークン管理
-const TOKEN_KEY = 'auth_token';
-const REFRESH_TOKEN_KEY = 'refresh_token';
-const TOKEN_EXPIRES_AT_KEY = 'token_expires_at';
+// 注: HttpOnly Cookie対応後、アクセストークン・リフレッシュトークンはCookieに保存される
+// localStorageには有効期限情報のみ保存（UIでの期限表示・事前リフレッシュ用）
+const TOKEN_KEY = 'auth_token'; // 非推奨: HttpOnly Cookie移行後は使用しない
+const REFRESH_TOKEN_KEY = 'refresh_token'; // 非推奨: HttpOnly Cookie移行後は使用しない
+const TOKEN_EXPIRES_AT_KEY = 'token_expires_at'; // 有効期限のみ保存（バックエンドから取得）
 
 // トークン更新中フラグ（複数リクエストでの重複更新を防ぐ）
 let isRefreshing = false;
@@ -158,11 +160,11 @@ export async function apiRequest<T>(
   }
 
   const url = `${API_CONFIG.baseUrl}${endpoint}`;
-  const token = getAuthToken();
 
+  // HttpOnly Cookie認証を使用するため、Authorizationヘッダーは不要
+  // Cookieはブラウザが自動的に送信する（credentials: 'include'が必要）
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...options.headers,
   };
 
@@ -175,6 +177,7 @@ export async function apiRequest<T>(
     const response = await fetch(url, {
       ...options,
       headers,
+      credentials: 'include', // HttpOnly Cookieを送信するために必須
       signal: controller.signal,
     });
 

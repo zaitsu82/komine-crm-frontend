@@ -46,6 +46,8 @@ export default function CustomerDetailSidebar({
         return '合祀管理メニュー';
       case 'plot-availability':
         return '区画残数管理メニュー';
+      case 'documents':
+        return '書類管理メニュー';
       case 'staff-management':
         return 'スタッフ管理メニュー';
       default:
@@ -156,6 +158,8 @@ export default function CustomerDetailSidebar({
                     return 'collective-burial';
                   case '区画残数管理':
                     return 'plot-availability';
+                  case '書類管理':
+                    return 'documents';
                   case 'スタッフ管理':
                     return 'staff-management';
                   default:
@@ -171,6 +175,8 @@ export default function CustomerDetailSidebar({
                     return currentView === 'collective-burial';
                   case '区画残数管理':
                     return currentView === 'plot-availability';
+                  case '書類管理':
+                    return currentView === 'documents';
                   case 'スタッフ管理':
                     return currentView === 'staff-management';
                   default:

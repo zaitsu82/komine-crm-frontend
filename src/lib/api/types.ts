@@ -53,6 +53,8 @@ export interface LoginResponse {
 }
 
 // バックエンドから返されるログインレスポンス形式
+// 注: HttpOnly Cookie対応後、トークンはSet-Cookieヘッダーで設定されるため
+// レスポンスボディにはaccess_token/refresh_tokenは含まれない（オプショナル）
 export interface BackendLoginResponse {
   user: {
     id: number;
@@ -62,9 +64,9 @@ export interface BackendLoginResponse {
     supabase_uid: string;
   };
   session: {
-    access_token: string;
-    refresh_token: string;
-    expires_at: number;
+    access_token?: string;  // HttpOnly Cookie対応後は含まれない
+    refresh_token?: string; // HttpOnly Cookie対応後は含まれない
+    expires_at: number;     // 有効期限のみレスポンスボディに含まれる
   };
 }
 
@@ -397,3 +399,11 @@ export interface AllMasterData {
   recipientTypes: MasterDataItem[];
   constructionTypes: MasterDataItem[];
 }
+
+// 書類管理型（詳細はdocuments.tsで定義）
+export type { DocumentType, DocumentStatus } from './documents';
+export type { DocumentListItem, DocumentDetail } from './documents';
+export type { DocumentListResponse, DocumentSearchParams } from './documents';
+export type { CreateDocumentRequest, UpdateDocumentRequest } from './documents';
+export type { DownloadUrlResponse, GeneratePdfRequest, GeneratePdfResponse } from './documents';
+export type { InvoiceTemplateData, PostcardTemplateData } from './documents';

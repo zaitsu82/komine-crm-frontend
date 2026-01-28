@@ -51,6 +51,14 @@ export default function CollectiveBurialManagement({ onBack }: CollectiveBurialM
     setViewMode('list');
   }, []);
 
+  // 削除成功時
+  const handleDelete = useCallback(() => {
+    // リストを再読み込みして一覧に戻る
+    setListRefreshKey(prev => prev + 1);
+    setSelectedId(null);
+    setViewMode('list');
+  }, []);
+
   // フォームキャンセル
   const handleCancelForm = useCallback(() => {
     if (selectedId) {
@@ -124,6 +132,7 @@ export default function CollectiveBurialManagement({ onBack }: CollectiveBurialM
         onClose={handleCloseDetail}
         onEdit={handleEdit}
         onRefresh={refreshDetail}
+        onDelete={handleDelete}
       />
     );
   }

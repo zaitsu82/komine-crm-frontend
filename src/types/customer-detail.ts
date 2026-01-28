@@ -10,6 +10,7 @@ export type ViewType =
   | 'collective-burial'
   | 'plot-availability'
   | 'staff-management'
+  | 'documents'
   | 'invoice'
   | 'document-select'
   | 'document-history';
@@ -48,6 +49,7 @@ export const MENU_ITEMS = [
   '台帳問い合わせ',
   '合祀管理',
   '区画残数管理',
+  '書類管理',
   'スタッフ管理',
 ] as const;
 

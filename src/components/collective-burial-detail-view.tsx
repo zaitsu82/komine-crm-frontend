@@ -24,6 +24,7 @@ interface CollectiveBurialDetailViewProps {
   onClose?: () => void;
   onEdit?: () => void;
   onRefresh?: () => void;
+  onDelete?: () => void;
 }
 
 const burialTypeLabels = {
@@ -44,12 +45,15 @@ export default function CollectiveBurialDetailView({
   onClose,
   onEdit,
   onRefresh,
+  onDelete,
 }: CollectiveBurialDetailViewProps) {
   const [activeTab, setActiveTab] = useState('basic');
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  const { updateBillingStatus, syncBurialCount } = useCollectiveBurialMutations();
+  const { updateBillingStatus, syncBurialCount, deleteCollectiveBurial } = useCollectiveBurialMutations();
 
   // notesからパースしたデータ
   const notesData = parseNotesData(data.notes);
@@ -79,6 +83,20 @@ export default function CollectiveBurialDetailView({
       }
     } finally {
       setIsSyncing(false);
+    }
+  };
+
+  // 削除処理
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      const success = await deleteCollectiveBurial(data.id);
+      if (success) {
+        setShowDeleteConfirm(false);
+        onDelete?.();
+      }
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -114,6 +132,14 @@ export default function CollectiveBurialDetailView({
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                 </svg>
                 編集
+              </Button>
+            )}
+            {onDelete && (
+              <Button onClick={() => setShowDeleteConfirm(true)} variant="destructive" size="default">
+                <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                削除
               </Button>
             )}
             {onClose && (
@@ -254,9 +280,8 @@ export default function CollectiveBurialDetailView({
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-3">
                     <div
-                      className={`h-3 rounded-full transition-all ${
-                        isCapacityReached ? 'bg-beni' : capacityPercentage >= 80 ? 'bg-kohaku' : 'bg-matsu'
-                      }`}
+                      className={`h-3 rounded-full transition-all ${isCapacityReached ? 'bg-beni' : capacityPercentage >= 80 ? 'bg-kohaku' : 'bg-matsu'
+                        }`}
                       style={{ width: `${Math.min(capacityPercentage, 100)}%` }}
                     />
                   </div>
@@ -347,11 +372,10 @@ export default function CollectiveBurialDetailView({
                   </div>
                   <div className="p-4 bg-ai-50 rounded-elegant border border-ai-100">
                     <Label className="text-sm text-ai">請求ステータス</Label>
-                    <p className={`text-2xl font-bold mt-2 ${
-                      data.billingStatus === 'paid' ? 'text-matsu-dark' :
+                    <p className={`text-2xl font-bold mt-2 ${data.billingStatus === 'paid' ? 'text-matsu-dark' :
                       data.billingStatus === 'billed' ? 'text-ai-dark' :
-                      'text-kohaku-dark'
-                    }`}>
+                        'text-kohaku-dark'
+                      }`}>
                       {BILLING_STATUS_LABELS[data.billingStatus as BillingStatus]}
                     </p>
                   </div>
@@ -547,6 +571,53 @@ export default function CollectiveBurialDetailView({
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* 削除確認ダイアログ */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-elegant-lg shadow-elegant-lg max-w-md w-full mx-4 overflow-hidden">
+            <div className="px-6 py-5 bg-beni-50 border-b border-beni-200">
+              <h3 className="text-lg font-semibold text-beni-dark flex items-center">
+                <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                削除の確認
+              </h3>
+            </div>
+            <div className="px-6 py-5">
+              <p className="text-sumi mb-2">
+                以下の合祀記録を削除しますか？
+              </p>
+              <div className="bg-kinari p-4 rounded-lg border border-gin mb-4">
+                <p className="font-semibold text-sumi">区画: {data.plotNumber}</p>
+                <p className="text-sm text-hai mt-1">区域: {data.areaName}</p>
+                {data.applicant && (
+                  <p className="text-sm text-hai mt-1">契約者: {data.applicant.name}</p>
+                )}
+              </div>
+              <p className="text-sm text-hai">
+                ※ この操作は論理削除となります。データは完全には削除されません。
+              </p>
+            </div>
+            <div className="px-6 py-4 bg-kinari border-t border-gin flex justify-end space-x-3">
+              <Button
+                variant="outline"
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={isDeleting}
+              >
+                キャンセル
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleDelete}
+                disabled={isDeleting}
+              >
+                {isDeleting ? '削除中...' : '削除する'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
