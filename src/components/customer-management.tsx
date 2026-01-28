@@ -25,8 +25,6 @@ import PostcardEditor from '@/components/postcard-editor';
 
 import {
   CustomerDetailSidebar,
-  DocumentHistory,
-  DocumentSelect,
   NoteDialog,
   HistoryDialog,
   TerminationDialog,
