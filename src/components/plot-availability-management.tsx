@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -11,10 +11,6 @@ import {
   usePlotInventorySections,
   usePlotInventoryAreas,
 } from '@/hooks/usePlotInventory';
-import type {
-  SectionInventoryItem,
-  AreaInventoryItem,
-} from '@/lib/api/plot-inventory';
 
 interface PlotAvailabilityManagementProps {
   onNavigateToMenu?: () => void;

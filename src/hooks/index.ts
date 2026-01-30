@@ -2,8 +2,19 @@
  * カスタムフックのエントリーポイント
  */
 
-// 認証フック
-export { AuthProvider, useAuth, useRequireAuth, useHasPermission } from './useAuth';
+// 汎用データフェッチフック
+export { useAsyncData, clearAllAsyncDataCache, clearAsyncDataCacheByPattern } from './useAsyncData';
+export { useAsyncList } from './useAsyncList';
+
+// 認証フック（auth-contextから統合されたエクスポート）
+export {
+  AuthProvider,
+  useAuth,
+  useRequireAuth,
+  useHasPermission,
+  type User,
+  type AuthContextType,
+} from '@/contexts/auth-context';
 
 // 顧客フック
 export { useCustomers, useCustomerDetail, useCreateCustomer } from './useCustomers';

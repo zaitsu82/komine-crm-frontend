@@ -6,7 +6,7 @@ import { ViewType, HistoryEntry, ImportantNote, TerminationFormData } from '@/ty
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { formatDateWithEra, calculateOwnedPlotsInfo } from '@/lib/utils';
-import { formDataToCustomer, addCustomerDocument, TerminationInput } from '@/lib/data';
+import { addCustomerDocument, TerminationInput } from '@/lib/data';
 import { createCustomer, updateCustomer, getCustomerById, deleteCustomer, terminateCustomer } from '@/lib/api';
 import { CustomerFormData } from '@/lib/validations';
 import { showSuccess, showError, showWarning, showValidationError, showApiSuccess, showApiError } from '@/lib/toast';
@@ -399,17 +399,6 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
 
   const handleClosePostcard = () => {
     setShowPostcard(false);
-  };
-
-  // 書類を発送済みにマークするハンドラー
-  const handleMarkAsSent = (docId: string) => {
-    if (!selectedCustomer?.documents) return;
-    const doc = selectedCustomer.documents.find(d => d.id === docId);
-    if (doc) {
-      doc.status = 'sent';
-      showSuccess('ステータスを発送済みに変更しました');
-      setSelectedCustomer({ ...selectedCustomer });
-    }
   };
 
   // サイドバーのビュー切り替えハンドラー

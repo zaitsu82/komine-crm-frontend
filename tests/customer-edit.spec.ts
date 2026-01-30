@@ -153,7 +153,8 @@ test.describe('顧客情報編集機能', () => {
   test('部分的な編集が正常に動作することを確認', async ({ page }) => {
     // 一つのフィールドのみを変更
     const emailField = page.getByLabel('メールアドレス');
-    const originalEmail = await emailField.inputValue();
+    // Store original value for potential future assertions
+    void await emailField.inputValue();
 
     await emailField.clear();
     await emailField.fill('newemail@example.com');
@@ -173,7 +174,8 @@ test.describe('顧客情報編集機能', () => {
   test('キャンセルボタンで編集をキャンセルできることを確認', async ({ page }) => {
     // フィールドを変更
     const nameField = page.getByLabel('契約者氏名');
-    const originalName = await nameField.inputValue();
+    // Store original value for potential future assertions
+    void await nameField.inputValue();
     await nameField.clear();
     await nameField.fill('変更テスト');
 

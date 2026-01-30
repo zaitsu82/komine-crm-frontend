@@ -22,7 +22,6 @@ import {
 import {
   serializeNotesData,
   parseNotesData,
-  CollectiveBurialDetail,
   BILLING_STATUS_LABELS,
   BillingStatus,
 } from '@/lib/api';

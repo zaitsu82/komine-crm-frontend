@@ -2,7 +2,7 @@
  * 書類管理API
  */
 
-import { ApiResponse, PaginatedResponse } from './types';
+import { ApiResponse } from './types';
 import { apiGet, apiPost, apiPut, apiDelete, shouldUseMockData, API_CONFIG } from './client';
 
 // =============================================================================
@@ -659,7 +659,7 @@ export async function uploadDocumentFile(
     }
 
     return data;
-  } catch (error) {
+  } catch {
     return {
       success: false,
       error: {

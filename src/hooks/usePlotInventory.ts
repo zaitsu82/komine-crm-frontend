@@ -100,7 +100,7 @@ export function usePlotInventorySummary(
       } else {
         setError(response.error?.message || 'サマリーの取得に失敗しました');
       }
-    } catch (err) {
+    } catch {
       setError('ネットワークエラーが発生しました');
     } finally {
       setIsLoading(false);
@@ -144,7 +144,7 @@ export function usePlotInventoryPeriods(
       } else {
         setError(response.error?.message || '期別サマリーの取得に失敗しました');
       }
-    } catch (err) {
+    } catch {
       setError('ネットワークエラーが発生しました');
     } finally {
       setIsLoading(false);
@@ -199,7 +199,7 @@ export function usePlotInventorySections(
       } else {
         setError(response.error?.message || 'セクション別集計の取得に失敗しました');
       }
-    } catch (err) {
+    } catch {
       setError('ネットワークエラーが発生しました');
     } finally {
       setIsLoading(false);
@@ -292,7 +292,7 @@ export function usePlotInventoryAreas(
       } else {
         setError(response.error?.message || '面積別集計の取得に失敗しました');
       }
-    } catch (err) {
+    } catch {
       setError('ネットワークエラーが発生しました');
     } finally {
       setIsLoading(false);

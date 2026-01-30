@@ -3,7 +3,7 @@
  */
 
 import { apiGet, shouldUseMockData } from './client';
-import { ApiResponse, PaginatedResponse } from './types';
+import { ApiResponse } from './types';
 import { PlotPeriod } from '@/types/customer';
 import {
   getAllPlotInventory,

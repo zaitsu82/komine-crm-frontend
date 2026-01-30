@@ -608,7 +608,7 @@ export async function updatePlotStatus(
  * 複数の区画割当を保存時に検証・連携
  */
 export async function savePlotAssignmentsWithSync(
-  customerId: string,
+  _customerId: string,
   assignments: CustomerPlotAssignment[]
 ): Promise<{
   success: boolean;

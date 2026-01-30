@@ -6,8 +6,10 @@ import {
   login as apiLogin,
   logout as apiLogout,
   getCurrentUser,
+  changePassword as apiChangePassword,
   isAuthenticated as checkIsAuthenticated,
   AuthUser,
+  ChangePasswordRequest,
 } from '@/lib/api';
 import { clearAllTokens, isTokenExpired, isTokenExpiringSoon } from '@/lib/api/client';
 
@@ -33,6 +35,10 @@ interface AuthContextType {
   forceLogout: (message?: string) => void;
   /** APIレスポンスのエラーコードをチェックして認証期限切れなら自動ログアウト */
   handleAuthError: (errorCode: string) => boolean;
+  /** パスワード変更 */
+  changePassword: (request: ChangePasswordRequest) => Promise<{ success: boolean; error?: string }>;
+  /** ユーザー情報の再取得 */
+  refreshUser: () => Promise<void>;
 }
 
 // コンテキスト作成
@@ -217,6 +223,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setError(null);
   }, []);
 
+  // パスワード変更
+  const changePassword = useCallback(async (request: ChangePasswordRequest): Promise<{ success: boolean; error?: string }> => {
+    setIsLoading(true);
+    setError(null);
+
+    const response = await apiChangePassword(request);
+
+    if (response.success) {
+      setIsLoading(false);
+      toast.success('パスワードを変更しました', {
+        duration: 3000,
+      });
+      return { success: true };
+    }
+
+    setError(response.error.message);
+    setIsLoading(false);
+    toast.error('パスワード変更に失敗しました', {
+      description: response.error.message,
+      duration: 5000,
+    });
+    return { success: false, error: response.error.message };
+  }, []);
+
+  // ユーザー情報の再取得
+  const refreshUser = useCallback(async () => {
+    if (!checkIsAuthenticated()) {
+      setUser(null);
+      return;
+    }
+
+    const response = await getCurrentUser();
+    if (response.success) {
+      setUser(authUserToUser(response.data));
+    } else if (response.error?.code === 'AUTH_EXPIRED') {
+      clearAllTokens();
+      setUser(null);
+    }
+  }, []);
+
   return (
     <AuthContext.Provider
       value={{
@@ -229,6 +275,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         clearError,
         forceLogout,
         handleAuthError,
+        changePassword,
+        refreshUser,
       }}
     >
       {children}
@@ -245,5 +293,37 @@ export function useAuth() {
   return context;
 }
 
+/**
+ * 認証必須フック
+ * 認証されていない場合はエラーをスロー
+ */
+export function useRequireAuth(): AuthContextType & { user: User } {
+  const auth = useAuth();
+
+  if (!auth.isLoading && !auth.isAuthenticated) {
+    throw new Error('Authentication required');
+  }
+
+  return auth as AuthContextType & { user: User };
+}
+
+/**
+ * 権限チェックフック
+ */
+export function useHasPermission(
+  requiredRoles: User['role'][]
+): boolean {
+  const { user, isAuthenticated } = useAuth();
+
+  if (!isAuthenticated || !user) {
+    return false;
+  }
+
+  return requiredRoles.includes(user.role);
+}
+
 // 認証状態チェック用のヘルパー関数
 export { getAuthToken as getStoredAuthToken } from '@/lib/api';
+
+// Re-export AuthContextType for external use
+export type { AuthContextType };
