@@ -1,28 +1,20 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import {
-  getAllPlotInventory,
-  getPlotInventoryByPeriod,
-  calculateAllPeriodSummaries,
-  calculateInventorySummary,
-  getAvailablePlots,
-  getSoldOutPlots,
-  getInventorySortedByUsageRate,
-  getInventorySortedByRemaining,
-  PlotInventoryItem,
-} from '@/lib/plot-inventory';
-import {
-  getAllPlotsByArea,
-  getPlotsByAreaForPeriod,
-  getAvailablePlotsByArea,
-  getSoldOutPlotsByArea,
-  PlotByAreaItem,
-} from '@/lib/plot-inventory-by-area';
 import { PlotPeriod, PLOT_SIZE } from '@/types/customer';
+import {
+  usePlotInventorySummary,
+  usePlotInventoryPeriods,
+  usePlotInventorySections,
+  usePlotInventoryAreas,
+} from '@/hooks/usePlotInventory';
+import type {
+  SectionInventoryItem,
+  AreaInventoryItem,
+} from '@/lib/api/plot-inventory';
 
 interface PlotAvailabilityManagementProps {
   onNavigateToMenu?: () => void;
@@ -52,99 +44,73 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // 全体集計
-  const summary = useMemo(() => calculateInventorySummary(), []);
+  // API Hooks
+  const { summary: inventorySummary, isLoading: isSummaryLoading } = usePlotInventorySummary();
+  const { periods: periodSummaries, isLoading: isPeriodsLoading } = usePlotInventoryPeriods();
+  const sectionsHook = usePlotInventorySections();
+  const areasHook = usePlotInventoryAreas();
 
-  // 期別集計
-  const periodSummaries = useMemo(() => calculateAllPeriodSummaries(), []);
-
-  // 表示するデータ
-  const displayData = useMemo(() => {
-    let data: PlotInventoryItem[] = [];
-
-    switch (viewMode) {
-      case 'all':
-        if (selectedPeriod === 'all') {
-          data = getAllPlotInventory();
-        } else {
-          data = getPlotInventoryByPeriod(selectedPeriod);
-        }
-        break;
-      case 'available':
-        data = getAvailablePlots().filter(item =>
-          selectedPeriod === 'all' || item.period === selectedPeriod
-        );
-        break;
-      case 'soldout':
-        data = getSoldOutPlots().filter(item =>
-          selectedPeriod === 'all' || item.period === selectedPeriod
-        );
-        break;
-      case 'usage-rate':
-        data = getInventorySortedByUsageRate(sortOrder === 'asc').filter(item =>
-          selectedPeriod === 'all' || item.period === selectedPeriod
-        );
-        break;
-      case 'remaining':
-        data = getInventorySortedByRemaining(sortOrder === 'asc').filter(item =>
-          selectedPeriod === 'all' || item.period === selectedPeriod
-        );
-        break;
-      default:
-        data = getAllPlotInventory();
+  // 期の変更をセクション・面積フックに反映
+  useEffect(() => {
+    if (selectedPeriod === 'all') {
+      sectionsHook.setPeriod(undefined);
+      areasHook.setPeriod(undefined);
+    } else {
+      sectionsHook.setPeriod(selectedPeriod);
+      areasHook.setPeriod(selectedPeriod);
     }
+  }, [selectedPeriod]);
 
-    // 検索フィルタ
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      data = data.filter(item =>
-        item.section.toLowerCase().includes(query) ||
-        item.period.toLowerCase().includes(query) ||
-        (item.category && item.category.toLowerCase().includes(query))
-      );
+  // 表示モード変更時のステータスフィルタ
+  useEffect(() => {
+    if (viewMode === 'available') {
+      sectionsHook.setStatus('available');
+    } else if (viewMode === 'soldout') {
+      sectionsHook.setStatus('sold_out');
+    } else {
+      sectionsHook.setStatus(undefined);
     }
+  }, [viewMode]);
 
-    // ソート（使用率順・残数順以外の場合）
-    if (viewMode !== 'usage-rate' && viewMode !== 'remaining') {
-      data = [...data].sort((a, b) => {
-        let aValue: any = '';
-        let bValue: any = '';
+  // 検索クエリの反映
+  useEffect(() => {
+    sectionsHook.setSearch(searchQuery);
+    areasHook.setSearch(searchQuery);
+  }, [searchQuery]);
 
-        switch (sortKey) {
-          case 'period':
-            aValue = a.period;
-            bValue = b.period;
-            break;
-          case 'section':
-            aValue = a.section;
-            bValue = b.section;
-            break;
-          case 'totalCount':
-            aValue = a.totalCount;
-            bValue = b.totalCount;
-            break;
-          case 'usedCount':
-            aValue = a.usedCount;
-            bValue = b.usedCount;
-            break;
-          case 'remainingCount':
-            aValue = a.remainingCount;
-            bValue = b.remainingCount;
-            break;
-          case 'usageRate':
-            aValue = a.totalCount > 0 ? a.usedCount / a.totalCount : 0;
-            bValue = b.totalCount > 0 ? b.usedCount / b.totalCount : 0;
-            break;
-        }
+  // ソートの反映
+  useEffect(() => {
+    sectionsHook.setSort(sortKey, sortOrder);
+  }, [sortKey, sortOrder]);
 
-        if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
-        if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
-        return 0;
-      });
-    }
+  useEffect(() => {
+    areasHook.setSort(areaSortKey, sortOrder);
+  }, [areaSortKey, sortOrder]);
 
-    return data;
-  }, [viewMode, selectedPeriod, sortKey, sortOrder, searchQuery]);
+  // 全体サマリー（デフォルト値付き）
+  const summary = inventorySummary ?? {
+    totalCount: 0,
+    usedCount: 0,
+    remainingCount: 0,
+    usageRate: 0,
+    totalAreaSqm: 0,
+    remainingAreaSqm: 0,
+    lastUpdated: '',
+  };
+
+  // 表示データ
+  const displayData = sectionsHook.items;
+  const displayAreaData = areasHook.items;
+
+  // 平米数計算（APIから取得したサマリーを使用）
+  const areaStats = {
+    totalArea: summary.totalAreaSqm,
+    usedArea: summary.totalAreaSqm - summary.remainingAreaSqm,
+    remainingArea: summary.remainingAreaSqm,
+  };
+
+  // ローディング状態
+  const isLoading = isSummaryLoading || isPeriodsLoading || sectionsHook.isLoading || areasHook.isLoading;
 
   // 使用率に応じた色を取得
   const getUsageRateColor = (usageRate: number) => {
@@ -180,101 +146,6 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
       setSortOrder('asc');
     }
   };
-
-  // 面積別表示データ
-  const displayAreaData = useMemo(() => {
-    let data: PlotByAreaItem[] = [];
-
-    switch (viewMode) {
-      case 'all':
-        if (selectedPeriod === 'all') {
-          data = getAllPlotsByArea();
-        } else {
-          data = getPlotsByAreaForPeriod(selectedPeriod);
-        }
-        break;
-      case 'available':
-        data = getAvailablePlotsByArea().filter(item =>
-          selectedPeriod === 'all' || item.period === selectedPeriod
-        );
-        break;
-      case 'soldout':
-        data = getSoldOutPlotsByArea().filter(item =>
-          selectedPeriod === 'all' || item.period === selectedPeriod
-        );
-        break;
-      default:
-        if (selectedPeriod === 'all') {
-          data = getAllPlotsByArea();
-        } else {
-          data = getPlotsByAreaForPeriod(selectedPeriod);
-        }
-    }
-
-    // 検索フィルタ
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      data = data.filter(item =>
-        item.plotType.toLowerCase().includes(query) ||
-        item.period.toLowerCase().includes(query) ||
-        item.areaSqm.toString().includes(query)
-      );
-    }
-
-    // ソート
-    data = [...data].sort((a, b) => {
-      let aValue: any = '';
-      let bValue: any = '';
-
-      switch (areaSortKey) {
-        case 'period':
-          aValue = a.period;
-          bValue = b.period;
-          break;
-        case 'areaSqm':
-          aValue = a.areaSqm;
-          bValue = b.areaSqm;
-          break;
-        case 'totalCount':
-          aValue = a.totalCount;
-          bValue = b.totalCount;
-          break;
-        case 'usedCount':
-          aValue = a.usedCount;
-          bValue = b.usedCount;
-          break;
-        case 'remainingCount':
-          aValue = a.remainingCount;
-          bValue = b.remainingCount;
-          break;
-        case 'remainingAreaSqm':
-          aValue = a.remainingAreaSqm;
-          bValue = b.remainingAreaSqm;
-          break;
-        case 'plotType':
-          aValue = a.plotType;
-          bValue = b.plotType;
-          break;
-      }
-
-      if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
-      if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
-      return 0;
-    });
-
-    return data;
-  }, [viewMode, selectedPeriod, areaSortKey, sortOrder, searchQuery]);
-
-  // 平米数計算
-  const calculateAreaStats = () => {
-    const allPlots = getAllPlotInventory();
-    const totalArea = allPlots.reduce((sum, item) => sum + (item.totalCount * PLOT_SIZE.FULL), 0);
-    const usedArea = allPlots.reduce((sum, item) => sum + (item.usedCount * PLOT_SIZE.FULL), 0);
-    const remainingArea = allPlots.reduce((sum, item) => sum + (item.remainingCount * PLOT_SIZE.FULL), 0);
-    return { totalArea, usedArea, remainingArea };
-  };
-
-  const areaStats = calculateAreaStats();
 
   return (
     <div className="flex h-screen bg-shiro">
@@ -416,7 +287,17 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
       </div>
 
       {/* メインコンテンツ */}
-      <div className="flex-1 overflow-auto p-6 bg-gradient-warm">
+      <div className="flex-1 overflow-auto p-6 bg-gradient-warm relative">
+        {/* ローディングオーバーレイ */}
+        {isLoading && (
+          <div className="absolute inset-0 bg-white/60 z-10 flex items-center justify-center">
+            <div className="flex flex-col items-center">
+              <div className="w-8 h-8 border-4 border-ai border-t-transparent rounded-full animate-spin"></div>
+              <span className="mt-2 text-sm text-hai">読み込み中...</span>
+            </div>
+          </div>
+        )}
+
         {/* 全体サマリー */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
           <div className="bg-white border border-matsu-200 rounded-elegant-lg p-5 text-center shadow-elegant">
@@ -633,9 +514,10 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
                 </thead>
                 <tbody className="divide-y divide-gin">
                   {displayData.map((item, index) => {
-                    const usageRate = item.totalCount > 0
+                    // APIから直接usageRateを取得（フォールバック計算も維持）
+                    const usageRate = item.usageRate ?? (item.totalCount > 0
                       ? Math.round((item.usedCount / item.totalCount) * 100 * 10) / 10
-                      : 0;
+                      : 0);
                     const remainingArea = item.remainingCount * PLOT_SIZE.FULL;
                     const periodColors = {
                       '1期': 'bg-matsu-50 text-matsu',

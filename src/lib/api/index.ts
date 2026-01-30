@@ -145,3 +145,26 @@ export type {
   InvoiceTemplateData,
   PostcardTemplateData,
 } from './documents';
+
+// 区画在庫管理APIのエクスポート
+export {
+  getInventorySummary,
+  getInventoryPeriods,
+  getInventorySections,
+  getInventoryAreas,
+} from './plot-inventory';
+export type {
+  PlotStatus,
+  SectionSortKey,
+  AreaSortKey,
+  SortOrder,
+  InventorySummary,
+  PeriodSummary,
+  SectionInventoryItem,
+  AreaInventoryItem,
+  InventoryPeriodsResponse,
+  InventorySectionsResponse,
+  InventoryAreasResponse,
+  InventorySectionsParams,
+  InventoryAreasParams,
+} from './plot-inventory';
