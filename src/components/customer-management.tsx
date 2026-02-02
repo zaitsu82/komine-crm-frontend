@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Customer } from '@/types/customer';
-import { ViewType, HistoryEntry, ImportantNote, TerminationFormData } from '@/types/customer-detail';
+import { ViewType, TerminationFormData } from '@/types/customer-detail';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { formatDateWithEra, calculateOwnedPlotsInfo } from '@/lib/utils';
@@ -25,8 +25,6 @@ import PostcardEditor from '@/components/postcard-editor';
 
 import {
   CustomerDetailSidebar,
-  NoteDialog,
-  HistoryDialog,
   TerminationDialog,
   DeleteConfirmDialog,
 } from '@/components/customer-detail';
@@ -44,49 +42,6 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
   const [showInvoiceEditor, setShowInvoiceEditor] = useState(false);
   const [showPostcardEditor, setShowPostcardEditor] = useState(false);
 
-  // 履歴追加用のstate
-  const [showHistoryDialog, setShowHistoryDialog] = useState(false);
-  const [historyEntries, setHistoryEntries] = useState<HistoryEntry[]>([
-    {
-      id: 'history-1',
-      date: '2024年1月15日 14:30',
-      staff: '山田 太郎',
-      type: '電話対応',
-      priority: '通常',
-      content: '工事進捗についてお問い合わせ。基礎工事が完了し、墓石設置は3月予定であることをご説明。'
-    },
-    {
-      id: 'history-2',
-      date: '2023年12月20日 10:15',
-      staff: '佐藤 花子',
-      type: '来所相談',
-      priority: '重要',
-      content: '契約内容の変更について相談。墓石の種類変更を希望。見積もりを作成し後日回答予定。'
-    }
-  ]);
-  const [newHistory, setNewHistory] = useState<Omit<HistoryEntry, 'id'>>({
-    date: '',
-    staff: '',
-    type: '電話対応',
-    priority: '通常',
-    content: ''
-  });
-
-  // 重要な連絡事項・注意事項用のstate（顧客IDごとに管理）
-  const [customerNotes, setCustomerNotes] = useState<Record<string, ImportantNote[]>>({
-    'DEMO001': [
-      {
-        id: 'note-1',
-        date: '2023年12月22日',
-        priority: '要注意',
-        content: 'ご高齢のため、重要な説明は家族同席の上で行うこと。'
-      }
-    ]
-  });
-
-  // 現在選択中の顧客の注意事項を取得
-  const importantNotes = selectedCustomer ? (customerNotes[selectedCustomer.id] || []) : [];
-
   // 解約ダイアログ用のstate
   const [showTerminationDialog, setShowTerminationDialog] = useState(false);
   const [terminationForm, setTerminationForm] = useState<TerminationFormData>({
@@ -102,24 +57,6 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
   // 削除ダイアログ用のstate
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-
-  // 注意事項を更新する関数
-  const setImportantNotes = (notes: ImportantNote[]) => {
-    if (selectedCustomer) {
-      setCustomerNotes(prev => ({
-        ...prev,
-        [selectedCustomer.id]: notes
-      }));
-    }
-  };
-
-  const [showNoteDialog, setShowNoteDialog] = useState(false);
-  const [newNote, setNewNote] = useState<Omit<ImportantNote, 'id'>>({
-    date: '',
-    priority: '注意',
-    content: ''
-  });
-  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
 
   const handleCustomerSelect = async (customer: Customer) => {
     setIsLoading(true);
@@ -198,105 +135,6 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
       setCurrentView('details');
     } else {
       setCurrentView('search');
-    }
-  };
-
-  // 履歴追加ダイアログを開く
-  const handleOpenHistoryDialog = () => {
-    const now = new Date();
-    const formattedDate = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日 ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-    setNewHistory({
-      date: formattedDate,
-      staff: '',
-      type: '電話対応',
-      priority: '通常',
-      content: ''
-    });
-    setShowHistoryDialog(true);
-  };
-
-  // 履歴を追加
-  const handleAddHistory = () => {
-    if (!newHistory.date || !newHistory.staff || !newHistory.content) {
-      showValidationError('日時、担当者、対応内容は必須です');
-      return;
-    }
-    const newEntry: HistoryEntry = {
-      id: `history-${Date.now()}`,
-      ...newHistory
-    };
-    setHistoryEntries([newEntry, ...historyEntries]);
-    setShowHistoryDialog(false);
-    setNewHistory({
-      date: '',
-      staff: '',
-      type: '電話対応',
-      priority: '通常',
-      content: ''
-    });
-  };
-
-  // 履歴を削除
-  const handleDeleteHistory = (id: string) => {
-    if (confirm('この履歴を削除しますか？')) {
-      setHistoryEntries(historyEntries.filter(entry => entry.id !== id));
-    }
-  };
-
-  // 重要な連絡事項ダイアログを開く（新規）
-  const handleOpenNoteDialog = () => {
-    const now = new Date();
-    const formattedDate = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日`;
-    setNewNote({
-      date: formattedDate,
-      priority: '注意',
-      content: ''
-    });
-    setEditingNoteId(null);
-    setShowNoteDialog(true);
-  };
-
-  // 重要な連絡事項ダイアログを開く（編集）
-  const handleEditNote = (note: typeof importantNotes[0]) => {
-    setNewNote({
-      date: note.date,
-      priority: note.priority,
-      content: note.content
-    });
-    setEditingNoteId(note.id);
-    setShowNoteDialog(true);
-  };
-
-  // 重要な連絡事項を追加・更新
-  const handleSaveNote = () => {
-    if (!newNote.content) {
-      showValidationError('内容は必須です');
-      return;
-    }
-
-    if (editingNoteId) {
-      // 編集モード
-      setImportantNotes(importantNotes.map(note =>
-        note.id === editingNoteId
-          ? { ...note, ...newNote }
-          : note
-      ));
-    } else {
-      // 新規追加
-      const newEntry: typeof importantNotes[0] = {
-        id: `note-${Date.now()}`,
-        ...newNote
-      };
-      setImportantNotes([newEntry, ...importantNotes]);
-    }
-    setShowNoteDialog(false);
-    setEditingNoteId(null);
-  };
-
-  // 重要な連絡事項を削除
-  const handleDeleteNote = (id: string) => {
-    if (confirm('この連絡事項を削除しますか？')) {
-      setImportantNotes(importantNotes.filter(note => note.id !== id));
     }
   };
 
@@ -431,16 +269,6 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
               onCustomerSelect={handleCustomerSelect}
               selectedCustomer={selectedCustomer || undefined}
               onNewCustomer={handleNewCustomer}
-              customerAttentionNotes={Object.fromEntries(
-                Object.entries(customerNotes).map(([customerId, notes]) => {
-                  if (notes.length === 0) return [customerId, null];
-                  const priorityOrder = ['要注意', '注意', '参考'];
-                  const sorted = [...notes].sort((a, b) =>
-                    priorityOrder.indexOf(a.priority) - priorityOrder.indexOf(b.priority)
-                  );
-                  return [customerId, { content: sorted[0].content, priority: sorted[0].priority }];
-                }).filter(([, v]) => v !== null)
-              )}
             />
           </div>
         ) : currentView === 'search' ? (
@@ -553,111 +381,6 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
                 customer={selectedCustomer}
                 onEdit={() => setCurrentView('edit')}
               />
-
-              {/* 追加セクション: 対応履歴・重要な連絡事項 */}
-              <div className="mt-8 space-y-6">
-                {/* 対応履歴 */}
-                <div className="bg-blue-50 p-4 rounded border">
-                  <div className="flex justify-between items-center border-b pb-2 mb-3">
-                    <h4 className="font-semibold">対応履歴（{historyEntries.length}件）</h4>
-                    <Button size="sm" variant="outline" onClick={handleOpenHistoryDialog}>+ 履歴追加</Button>
-                  </div>
-                  <div className="space-y-3 max-h-64 overflow-y-auto">
-                    {historyEntries.length === 0 ? (
-                      <p className="text-gray-500 text-center py-4">対応履歴がありません</p>
-                    ) : (
-                      historyEntries.map((entry) => (
-                        <div key={entry.id} className="bg-white p-3 rounded border">
-                          <div className="flex justify-between items-start">
-                            <div className="grid grid-cols-4 gap-4 flex-1 text-sm">
-                              <div>
-                                <Label className="text-xs text-gray-600">日時</Label>
-                                <p>{entry.date}</p>
-                              </div>
-                              <div>
-                                <Label className="text-xs text-gray-600">担当者</Label>
-                                <p>{entry.staff}</p>
-                              </div>
-                              <div>
-                                <Label className="text-xs text-gray-600">対応種別</Label>
-                                <p>{entry.type}</p>
-                              </div>
-                              <div>
-                                <Label className="text-xs text-gray-600">重要度</Label>
-                                <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${entry.priority === '緊急' ? 'bg-red-100 text-red-800' :
-                                  entry.priority === '重要' ? 'bg-orange-100 text-orange-800' :
-                                    'bg-green-100 text-green-800'
-                                  }`}>
-                                  {entry.priority}
-                                </span>
-                              </div>
-                            </div>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="text-red-600 hover:text-red-800 hover:bg-red-50"
-                              onClick={() => handleDeleteHistory(entry.id)}
-                            >
-                              削除
-                            </Button>
-                          </div>
-                          <div className="mt-2">
-                            <p className="text-sm bg-gray-50 p-2 rounded">{entry.content}</p>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-
-                {/* 重要な連絡事項 */}
-                <div className="bg-red-50 p-4 rounded border border-red-200">
-                  <div className="flex justify-between items-center border-b border-red-200 pb-2 mb-3">
-                    <h4 className="font-semibold text-red-700">重要な連絡事項・注意事項（{importantNotes.length}件）</h4>
-                    <Button size="sm" variant="outline" className="border-red-300 text-red-700 hover:bg-red-100" onClick={handleOpenNoteDialog}>+ 追加</Button>
-                  </div>
-                  <div className="space-y-3 max-h-48 overflow-y-auto">
-                    {importantNotes.length === 0 ? (
-                      <p className="text-gray-500 text-center py-4">登録された連絡事項・注意事項はありません</p>
-                    ) : (
-                      importantNotes.map((note) => (
-                        <div key={note.id} className="bg-white p-3 rounded border border-red-200">
-                          <div className="flex justify-between items-start mb-2">
-                            <div className="flex items-center gap-3">
-                              <span className="text-sm text-gray-600">{note.date}</span>
-                              <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${note.priority === '要注意' ? 'bg-red-100 text-red-800' :
-                                note.priority === '注意' ? 'bg-orange-100 text-orange-800' :
-                                  'bg-blue-100 text-blue-800'
-                                }`}>
-                                {note.priority}
-                              </span>
-                            </div>
-                            <div className="flex gap-1">
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 h-7 px-2"
-                                onClick={() => handleEditNote(note)}
-                              >
-                                編集
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="text-red-600 hover:text-red-800 hover:bg-red-50 h-7 px-2"
-                                onClick={() => handleDeleteNote(note.id)}
-                              >
-                                削除
-                              </Button>
-                            </div>
-                          </div>
-                          <p className="text-sm bg-red-50 p-2 rounded">{note.content}</p>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-              </div>
             </div>
           </>
         )}
@@ -747,25 +470,6 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
           }}
         />
       )}
-
-      {/* 重要な連絡事項追加・編集ダイアログ */}
-      <NoteDialog
-        isOpen={showNoteDialog}
-        editingNoteId={editingNoteId}
-        newNote={newNote}
-        onNoteChange={setNewNote}
-        onSave={handleSaveNote}
-        onClose={() => { setShowNoteDialog(false); setEditingNoteId(null); }}
-      />
-
-      {/* 履歴追加ダイアログ */}
-      <HistoryDialog
-        isOpen={showHistoryDialog}
-        newHistory={newHistory}
-        onHistoryChange={setNewHistory}
-        onAdd={handleAddHistory}
-        onClose={() => setShowHistoryDialog(false)}
-      />
 
       {/* 解約入力ダイアログ */}
       {selectedCustomer && (
