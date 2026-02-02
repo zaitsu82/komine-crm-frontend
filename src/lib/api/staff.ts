@@ -3,7 +3,7 @@
  * モックデータとリアルAPIの切り替えをサポート
  */
 
-import { apiGet, apiPut, apiDelete, shouldUseMockData } from './client';
+import { apiGet, apiPost, apiPut, apiDelete, shouldUseMockData } from './client';
 import { ApiResponse } from './types';
 
 // スタッフロール
@@ -37,6 +37,13 @@ export interface PaginationInfo {
 export interface StaffListResponse {
   items: StaffListItem[];
   pagination: PaginationInfo;
+}
+
+// スタッフ作成リクエスト
+export interface CreateStaffRequest {
+  name: string;
+  email: string;
+  role: StaffRole;
 }
 
 // スタッフ更新リクエスト
@@ -188,6 +195,48 @@ async function mockGetStaffById(id: number): Promise<ApiResponse<StaffDetail>> {
 }
 
 /**
+ * モック: スタッフ作成
+ */
+async function mockCreateStaff(
+  data: CreateStaffRequest
+): Promise<ApiResponse<StaffDetail>> {
+  await new Promise((resolve) => setTimeout(resolve, 300));
+
+  // メールアドレスの重複チェック
+  const existing = MOCK_STAFF.find((s) => s.email === data.email);
+  if (existing) {
+    return {
+      success: false,
+      error: {
+        code: 'CONFLICT',
+        message: 'このメールアドレスは既に使用されています',
+      },
+    };
+  }
+
+  // 新規スタッフ作成
+  const newId = Math.max(...MOCK_STAFF.map((s) => s.id)) + 1;
+  const now = new Date().toISOString();
+  const newStaff: StaffDetail = {
+    id: newId,
+    name: data.name,
+    email: data.email,
+    role: data.role,
+    isActive: true,
+    lastLoginAt: null,
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  MOCK_STAFF.push(newStaff);
+
+  return {
+    success: true,
+    data: newStaff,
+  };
+}
+
+/**
  * モック: スタッフ更新
  */
 async function mockUpdateStaff(
@@ -304,6 +353,19 @@ export async function getStaffList(
   };
 
   return apiGet<StaffListResponse>('/staff', queryParams);
+}
+
+/**
+ * スタッフ作成
+ */
+export async function createStaff(
+  data: CreateStaffRequest
+): Promise<ApiResponse<StaffDetail>> {
+  if (shouldUseMockData()) {
+    return mockCreateStaff(data);
+  }
+
+  return apiPost<StaffDetail>('/staff', data);
 }
 
 /**

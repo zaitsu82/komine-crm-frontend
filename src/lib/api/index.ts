@@ -64,6 +64,7 @@ export type { MasterItem, TaxTypeMasterItem, AllMastersData } from './masters';
 export {
   getStaffList,
   getStaffById,
+  createStaff,
   updateStaff,
   deleteStaff,
   toggleStaffActive,
@@ -74,6 +75,7 @@ export type {
   StaffListItem,
   StaffDetail,
   StaffListResponse,
+  CreateStaffRequest,
   UpdateStaffRequest,
   ToggleActiveResponse,
   StaffSearchParams,

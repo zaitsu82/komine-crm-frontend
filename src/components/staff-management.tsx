@@ -12,10 +12,12 @@ import {
 } from '@/types/staff';
 import {
   getStaffList,
+  createStaff as apiCreateStaff,
   updateStaff as apiUpdateStaff,
   deleteStaff as apiDeleteStaff,
   toggleStaffActive as apiToggleStaffActive,
   StaffListItem,
+  CreateStaffRequest,
   UpdateStaffRequest,
 } from '@/lib/api';
 import { showSuccess, showError, showApiError } from '@/lib/toast';
@@ -206,8 +208,22 @@ export default function StaffManagement({ }: StaffManagementProps) {
           setFormError(response.error?.message || 'スタッフの更新に失敗しました');
         }
       } else {
-        // 新規作成はAPIが未実装のためエラー
-        setFormError('新規作成機能は現在利用できません');
+        // 新規作成
+        const createData: CreateStaffRequest = {
+          name: formData.name,
+          email: formData.email,
+          role: formData.role,
+        };
+        const response = await apiCreateStaff(createData);
+
+        if (response.success) {
+          // リストを再取得
+          await fetchStaffList();
+          setShowDialog(false);
+          showSuccess('スタッフを作成しました');
+        } else {
+          setFormError(response.error?.message || 'スタッフの作成に失敗しました');
+        }
       }
     } catch {
       setFormError('エラーが発生しました');
