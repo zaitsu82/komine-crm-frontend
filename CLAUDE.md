@@ -169,6 +169,32 @@ npm run test:e2e
 npm run test:e2e:ui
 ```
 
+## データ統合ガイド
+
+### データ一元管理
+
+すべての情報は **顧客データ（Customer）を中心** に一元管理。
+
+```
+Customer
+├── 基本情報（customerCode, name, address...）
+├── 区画情報（plotInfo）
+└── 合祀情報（collectiveBurialInfo[]）
+```
+
+### データフロー
+
+```
+合祀申込 → 区画番号で顧客検索 → 顧客のcollectiveBurialInfoに追加
+```
+
+### 主要な統合関数
+
+- `integrateCollectiveBurialToCustomer()` - 合祀申込を顧客データに統合
+- `getTotalCollectiveBurialPersons()` - 全顧客の合祀人数を集計
+
+---
+
 ## トラブルシューティング
 
 ### CORS エラー
