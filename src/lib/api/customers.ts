@@ -457,8 +457,21 @@ async function mockTerminateCustomerApi(
 // ===== 公開API =====
 
 /**
+ * バックエンドからのページネーション付きレスポンス
+ */
+interface ApiPaginatedResponse {
+  data: ApiPlotListItem[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
+
+/**
  * 顧客一覧取得
- * バックエンドは配列を直接返すため、フロントエンドでページネーション形式に変換
+ * サーバーサイド検索・ページネーション対応
  */
 export async function getCustomers(
   params: CustomerSearchParams = {}
@@ -467,34 +480,30 @@ export async function getCustomers(
     return mockGetCustomers(params);
   }
 
-  // バックエンドは配列を直接返す（ページネーション未実装）
-  const response = await apiGet<ApiPlotListItem[]>('/plots', {
+  // サーバーサイド検索・ページネーション
+  const response = await apiGet<ApiPaginatedResponse>('/plots', {
     page: params.page,
     limit: params.limit,
-    query: params.query,
+    search: params.query, // 'query' を 'search' に変換
     status: params.status,
-    section: params.section,
-    sortBy: params.sortBy,
-    sortOrder: params.sortOrder,
+    cemeteryType: params.section, // 'section' を 'cemeteryType' に変換
   });
 
   if (!response.success) {
     return response;
   }
 
-  // 配列レスポンスをページネーション形式に変換
-  const items = response.data.map(apiPlotListItemToCustomer);
-  const page = params.page || 1;
-  const limit = params.limit || 50;
+  // サーバーのページネーション情報を使用
+  const items = response.data.data.map(apiPlotListItemToCustomer);
 
   return {
     success: true,
     data: {
       items,
-      total: items.length,
-      page,
-      limit,
-      totalPages: Math.ceil(items.length / limit),
+      total: response.data.pagination.total,
+      page: response.data.pagination.page,
+      limit: response.data.pagination.limit,
+      totalPages: response.data.pagination.totalPages,
     },
   };
 }
