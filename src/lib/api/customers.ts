@@ -175,6 +175,29 @@ function customerFormToApiPayload(formData: CustomerFormData): Record<string, un
     );
   };
 
+  // 日付をISO形式（YYYY-MM-DD）に変換
+  // 入力: 2024/02/01 または 2024-02-01 または Date
+  const toIsoDate = (date?: string | Date | null): string | undefined => {
+    if (!date) return undefined;
+    if (date instanceof Date) {
+      return date.toISOString().split('T')[0];
+    }
+    // 既にISO形式の場合はそのまま返す
+    if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      return date;
+    }
+    // 日本語形式（YYYY/MM/DD）をISO形式に変換
+    if (/^\d{4}\/\d{1,2}\/\d{1,2}$/.test(date)) {
+      return date.replace(/\//g, '-').replace(/-(\d)(?=-|$)/g, '-0$1');
+    }
+    // その他の形式はDateオブジェクトを経由して変換
+    const parsed = new Date(date);
+    if (!isNaN(parsed.getTime())) {
+      return parsed.toISOString().split('T')[0];
+    }
+    return undefined;
+  };
+
   return {
     // 物理区画情報
     physicalPlot: {
@@ -188,14 +211,14 @@ function customerFormToApiPayload(formData: CustomerFormData): Record<string, un
     },
     // 販売契約情報
     saleContract: {
-      contractDate: formData.plotInfo?.contractDate || formData.reservationDate || new Date().toISOString().split('T')[0],
+      contractDate: toIsoDate(formData.plotInfo?.contractDate) || toIsoDate(formData.reservationDate) || new Date().toISOString().split('T')[0],
       price: parsePrice(formData.plotInfo?.price),
       paymentStatus: 'unpaid',
       customerRole: 'contractor',
-      ...(formData.reservationDate && { reservationDate: formData.reservationDate }),
+      ...(formData.reservationDate && { reservationDate: toIsoDate(formData.reservationDate) }),
       ...(formData.acceptanceNumber && { acceptanceNumber: formData.acceptanceNumber }),
-      ...(formData.permitDate && { permitDate: formData.permitDate }),
-      ...(formData.startDate && { startDate: formData.startDate }),
+      ...(formData.permitDate && { permitDate: toIsoDate(formData.permitDate) }),
+      ...(formData.startDate && { startDate: toIsoDate(formData.startDate) }),
     },
     // 顧客情報
     customer: {
@@ -205,7 +228,7 @@ function customerFormToApiPayload(formData: CustomerFormData): Record<string, un
       address: formData.address,
       phoneNumber: formatPhone(formData.phoneNumber),
       ...(formData.gender && { gender: formData.gender }),
-      ...(formData.birthDate && { birthDate: formData.birthDate }),
+      ...(formData.birthDate && { birthDate: toIsoDate(formData.birthDate) }),
       ...(formData.registeredAddress && { registeredAddress: formData.registeredAddress }),
       ...(formData.faxNumber && { faxNumber: formatPhone(formData.faxNumber) }),
       ...(formData.email && { email: formData.email }),
@@ -234,28 +257,28 @@ function customerFormToApiPayload(formData: CustomerFormData): Record<string, un
         accountHolder: formData.billingInfo.accountHolder || '',
       }
       : undefined,
-    // 使用料情報（オプション）
+    // 使用料情報（オプション）- バックエンドは文字列を期待
     usageFee: formData.usageFee?.usageFee
       ? {
         calculationType: formData.usageFee.calculationType || '',
         taxType: formData.usageFee.taxType || '',
-        usageFee: parseInt(formData.usageFee.usageFee, 10) || 0,
-        area: parseFloat(formData.usageFee.area || '0') || 0,
-        unitPrice: parseInt(formData.usageFee.unitPrice || '0', 10) || 0,
+        usageFee: formData.usageFee.usageFee || '',
+        area: formData.usageFee.area || '',
+        unitPrice: formData.usageFee.unitPrice || '',
         paymentMethod: formData.usageFee.paymentMethod || '',
       }
       : undefined,
-    // 管理料情報（オプション）
+    // 管理料情報（オプション）- バックエンドは文字列を期待
     managementFee: formData.managementFee?.managementFee
       ? {
         calculationType: formData.managementFee.calculationType || '',
         taxType: formData.managementFee.taxType || '',
         billingType: formData.managementFee.billingType || '',
-        billingYears: parseInt(formData.managementFee.billingYears || '1', 10) || 1,
-        area: parseFloat(formData.managementFee.area || '0') || 0,
+        billingYears: formData.managementFee.billingYears || '',
+        area: formData.managementFee.area || '',
         billingMonth: formData.managementFee.billingMonth || '',
-        managementFee: parseInt(formData.managementFee.managementFee, 10) || 0,
-        unitPrice: parseInt(formData.managementFee.unitPrice || '0', 10) || 0,
+        managementFee: formData.managementFee.managementFee || '',
+        unitPrice: formData.managementFee.unitPrice || '',
         lastBillingMonth: formData.managementFee.lastBillingMonth || '',
         paymentMethod: formData.managementFee.paymentMethod || '',
       }
