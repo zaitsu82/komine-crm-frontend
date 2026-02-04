@@ -1,8 +1,34 @@
 /**
  * API統合レイヤーの型定義
+ *
+ * 注: @komine/types への段階的移行中
+ * 新規コードでは @komine/types からインポートすることを推奨
  */
 
-// APIレスポンスの基本型
+// ===== @komine/types Enums の再エクスポート =====
+// これらのEnumは共有パッケージから使用可能
+export {
+  PhysicalPlotStatus,
+  PaymentStatus,
+  ContractStatus,
+  Gender,
+  ContractRole,
+  AddressType,
+  DmSetting,
+  BillingType,
+  AccountType,
+  BillingStatus,
+  StaffRole,
+  DocumentType as SharedDocumentType,
+  DocumentStatus as SharedDocumentStatus,
+} from '@komine/types';
+
+// 型ガード関数
+export { isSuccessResponse, isErrorResponse } from '@komine/types';
+
+// ===== フロントエンド固有のAPIレスポンス型 =====
+// 注: details が optional なのはフロントエンドの既存実装との互換性のため
+
 export interface ApiSuccessResponse<T> {
   success: true;
   data: T;
@@ -40,21 +66,18 @@ export interface PaginationInfo {
   totalPages: number;
 }
 
-// 認証関連
+// ===== 認証関連 =====
+
 export interface LoginRequest {
   email: string;
   password: string;
 }
 
-// フロントエンド内部で使用するログインレスポンス形式
 export interface LoginResponse {
   token: string;
   user: AuthUser;
 }
 
-// バックエンドから返されるログインレスポンス形式
-// 注: HttpOnly Cookie対応後、トークンはSet-Cookieヘッダーで設定されるため
-// レスポンスボディにはaccess_token/refresh_tokenは含まれない（オプショナル）
 export interface BackendLoginResponse {
   user: {
     id: number;
@@ -64,9 +87,9 @@ export interface BackendLoginResponse {
     supabase_uid: string;
   };
   session: {
-    access_token?: string;  // HttpOnly Cookie対応後は含まれない
-    refresh_token?: string; // HttpOnly Cookie対応後は含まれない
-    expires_at: number;     // 有効期限のみレスポンスボディに含まれる
+    access_token?: string;
+    refresh_token?: string;
+    expires_at: number;
   };
 }
 
@@ -78,7 +101,6 @@ export interface AuthUser {
   isActive: boolean;
 }
 
-// バックエンドから返される現在ユーザーレスポンス形式
 export interface BackendCurrentUserResponse {
   user: {
     id: number;
@@ -98,7 +120,8 @@ export interface ChangePasswordRequest {
   newPassword: string;
 }
 
-// 顧客/区画検索
+// ===== 顧客/区画検索 =====
+
 export interface CustomerSearchParams extends PaginationParams {
   query?: string;
   status?: string;
@@ -107,7 +130,8 @@ export interface CustomerSearchParams extends PaginationParams {
   sortOrder?: 'asc' | 'desc';
 }
 
-// バックエンドの区画一覧データ型（GET /plots 応答形式）
+// ===== バックエンドの区画データ型 =====
+
 export interface ApiPlotListItem {
   id: string;
   contractAreaSqm: number;
@@ -137,7 +161,6 @@ export interface ApiPlotListItem {
   updatedAt: string;
 }
 
-// バックエンドの区画詳細データ型（GET /plots/:id 応答形式）
 export interface ApiPlotDetail {
   id: string;
   contractAreaSqm: number;
@@ -312,7 +335,8 @@ export interface ApiPlotDetail {
   } | null;
 }
 
-// 後方互換性のための旧型定義（非推奨）
+// ===== 後方互換性のための旧型定義 =====
+
 /** @deprecated Use ApiPlotListItem or ApiPlotDetail instead */
 export interface ApiPlotData {
   id: string;
@@ -383,7 +407,8 @@ export interface ApiPlotData {
   };
 }
 
-// マスタデータ
+// ===== マスタデータ =====
+
 export interface MasterDataItem {
   code: string;
   name: string;
@@ -400,7 +425,7 @@ export interface AllMasterData {
   constructionTypes: MasterDataItem[];
 }
 
-// 書類管理型（詳細はdocuments.tsで定義）
+// ===== 書類管理型 =====
 export type { DocumentType, DocumentStatus } from './documents';
 export type { DocumentListItem, DocumentDetail } from './documents';
 export type { DocumentListResponse, DocumentSearchParams } from './documents';
