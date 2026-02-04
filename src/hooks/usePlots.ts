@@ -104,7 +104,7 @@ export function usePlots(options: UsePlotsOptions = {}): UsePlotsReturn {
         setError(response.error.message);
         setPlots([]);
       }
-    } catch (err) {
+    } catch {
       setError('データの取得に失敗しました');
       setPlots([]);
     } finally {
@@ -190,7 +190,7 @@ export function usePlotDetail(id: string | null): UsePlotDetailReturn {
         setError(response.error.message);
         setPlot(null);
       }
-    } catch (err) {
+    } catch {
       setError('データの取得に失敗しました');
       setPlot(null);
     } finally {
@@ -237,7 +237,7 @@ export function usePlotMutations(): UsePlotMutationsReturn {
         setError(response.error.message);
         return null;
       }
-    } catch (err) {
+    } catch {
       setError('作成に失敗しました');
       return null;
     } finally {
@@ -258,7 +258,7 @@ export function usePlotMutations(): UsePlotMutationsReturn {
         setError(response.error.message);
         return null;
       }
-    } catch (err) {
+    } catch {
       setError('更新に失敗しました');
       return null;
     } finally {
@@ -279,7 +279,7 @@ export function usePlotMutations(): UsePlotMutationsReturn {
         setError(response.error.message);
         return false;
       }
-    } catch (err) {
+    } catch {
       setError('削除に失敗しました');
       return false;
     } finally {
