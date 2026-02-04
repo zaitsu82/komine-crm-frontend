@@ -23,9 +23,9 @@ describe('utils.ts - ユーティリティ関数', () => {
   describe('formatDateWithEra', () => {
     describe('令和時代の日付', () => {
       it('令和元年の日付を正しくフォーマットする', () => {
-        const date = new Date(2019, 3, 15) // 2019年4月15日
+        const date = new Date(2019, 4, 1) // 2019年5月1日（令和改元日）
         const formatted = formatDateWithEra(date)
-        expect(formatted).toBe('令和1年 4月15日')
+        expect(formatted).toBe('令和1年 5月1日')
       })
 
       it('令和5年の日付を正しくフォーマットする', () => {
@@ -55,18 +55,18 @@ describe('utils.ts - ユーティリティ関数', () => {
       })
 
       it('平成31年の日付を正しくフォーマットする', () => {
-        const date = new Date(2019, 2, 15) // 2019年3月15日（令和元年前）
+        const date = new Date(2019, 3, 30) // 2019年4月30日（平成最後の日）
         const formatted = formatDateWithEra(date)
-        expect(formatted).toBe('平成31年 3月15日')
+        expect(formatted).toBe('平成31年 4月30日')
       })
     })
 
     describe('昭和時代の日付', () => {
-      it('昭和64年の日付はフォーマットされない（範囲外）', () => {
-        const date = new Date(1988, 11, 31) // 1988年12月31日
+      it('昭和時代の日付は西暦で表示される', () => {
+        const date = new Date(1988, 11, 31) // 1988年12月31日（昭和63年）
         const formatted = formatDateWithEra(date)
-        // 昭和時代は実装されていないため、空文字または特定の形式が期待される
-        expect(formatted).toBe('年 12月31日') // 元号部分が空になる
+        // 昭和時代は実装されていないため、西暦表示
+        expect(formatted).toBe('1988年 12月31日')
       })
     })
 
@@ -85,33 +85,33 @@ describe('utils.ts - ユーティリティ関数', () => {
       it('平成最後の日（2019年4月30日）を正しく処理する', () => {
         const date = new Date(2019, 3, 30) // 2019年4月30日
         const formatted = formatDateWithEra(date)
-        expect(formatted).toBe('令和1年 4月30日')
+        expect(formatted).toBe('平成31年 4月30日')
       })
     })
 
     describe('境界値テスト', () => {
-      it('2019年1月1日は令和1年', () => {
-        const date = new Date(2019, 0, 1)
+      it('2019年5月1日は令和1年', () => {
+        const date = new Date(2019, 4, 1)
         const formatted = formatDateWithEra(date)
-        expect(formatted).toBe('令和1年 1月1日')
+        expect(formatted).toBe('令和1年 5月1日')
       })
 
-      it('2018年12月31日は平成30年', () => {
-        const date = new Date(2018, 11, 31)
+      it('2019年4月30日は平成31年', () => {
+        const date = new Date(2019, 3, 30)
         const formatted = formatDateWithEra(date)
-        expect(formatted).toBe('平成30年 12月31日')
+        expect(formatted).toBe('平成31年 4月30日')
       })
 
-      it('1989年1月1日は平成1年', () => {
-        const date = new Date(1989, 0, 1)
+      it('1989年1月8日は平成1年', () => {
+        const date = new Date(1989, 0, 8)
         const formatted = formatDateWithEra(date)
-        expect(formatted).toBe('平成1年 1月1日')
+        expect(formatted).toBe('平成1年 1月8日')
       })
 
-      it('1988年12月31日は範囲外（昭和）', () => {
-        const date = new Date(1988, 11, 31)
+      it('1989年1月7日は昭和（西暦表示）', () => {
+        const date = new Date(1989, 0, 7)
         const formatted = formatDateWithEra(date)
-        expect(formatted).toBe('年 12月31日')
+        expect(formatted).toBe('1989年 1月7日')
       })
     })
 
@@ -144,31 +144,31 @@ describe('utils.ts - ユーティリティ関数', () => {
     describe('年の計算', () => {
       it('令和年数の計算が正しい', () => {
         const testCases = [
-          { year: 2019, expected: 1 },
-          { year: 2020, expected: 2 },
-          { year: 2023, expected: 5 },
-          { year: 2024, expected: 6 }
+          { year: 2019, month: 5, expected: 1 },  // 2019年5月以降が令和
+          { year: 2020, month: 1, expected: 2 },
+          { year: 2023, month: 1, expected: 5 },
+          { year: 2024, month: 1, expected: 6 }
         ]
 
-        testCases.forEach(({ year, expected }) => {
-          const date = new Date(year, 0, 1)
+        testCases.forEach(({ year, month, expected }) => {
+          const date = new Date(year, month - 1, 1)
           const formatted = formatDateWithEra(date)
-          expect(formatted).toBe(`令和${expected}年 1月1日`)
+          expect(formatted).toBe(`令和${expected}年 ${month}月1日`)
         })
       })
 
       it('平成年数の計算が正しい', () => {
         const testCases = [
-          { year: 1989, expected: 1 },
-          { year: 1990, expected: 2 },
-          { year: 2000, expected: 12 },
-          { year: 2018, expected: 30 }
+          { year: 1989, month: 2, expected: 1 },  // 1989年1月8日以降が平成
+          { year: 1990, month: 1, expected: 2 },
+          { year: 2000, month: 1, expected: 12 },
+          { year: 2018, month: 1, expected: 30 }
         ]
 
-        testCases.forEach(({ year, expected }) => {
-          const date = new Date(year, 0, 1)
+        testCases.forEach(({ year, month, expected }) => {
+          const date = new Date(year, month - 1, 1)
           const formatted = formatDateWithEra(date)
-          expect(formatted).toBe(`平成${expected}年 1月1日`)
+          expect(formatted).toBe(`平成${expected}年 ${month}月1日`)
         })
       })
     })

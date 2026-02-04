@@ -23,19 +23,25 @@ export function formatDateWithEra(date: Date | string | null) {
   // 無効な日付の場合は空文字列を返す
   if (isNaN(dateObj.getTime())) return ""
 
-  const year = dateObj.getFullYear()
-  const heiseiStart = 1989
-  const reiwaStart = 2019
+  // 元号境界日（日本標準時）
+  const reiwaStart = new Date(2019, 4, 1)  // 2019年5月1日
+  const heiseiStart = new Date(1989, 0, 8) // 1989年1月8日
 
   let era = ""
   let eraYear = 0
 
-  if (year >= reiwaStart) {
+  if (dateObj >= reiwaStart) {
     era = "令和"
-    eraYear = year - reiwaStart + 1
-  } else if (year >= heiseiStart) {
+    eraYear = dateObj.getFullYear() - 2018 // 2019年が令和1年
+  } else if (dateObj >= heiseiStart) {
     era = "平成"
-    eraYear = year - heiseiStart + 1
+    eraYear = dateObj.getFullYear() - 1988 // 1989年が平成1年
+  }
+  // 昭和以前は元号なし
+
+  // 元号がない場合は西暦表示
+  if (!era) {
+    return `${dateObj.getFullYear()}年 ${dateObj.getMonth() + 1}月${dateObj.getDate()}日`
   }
 
   return `${era}${eraYear}年 ${dateObj.getMonth() + 1}月${dateObj.getDate()}日`
