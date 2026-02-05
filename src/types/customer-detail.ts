@@ -5,6 +5,7 @@ export type ViewType =
   | 'registry'
   | 'search'
   | 'details'
+  | 'plot-details'
   | 'register'
   | 'edit'
   | 'collective-burial'

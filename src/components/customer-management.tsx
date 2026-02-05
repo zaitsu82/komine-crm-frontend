@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Customer } from '@/types/customer';
+import { PlotListItem } from '@komine/types';
 import { ViewType, TerminationFormData } from '@/types/customer-detail';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -12,7 +13,8 @@ import { CustomerFormData } from '@/lib/validations';
 import { showSuccess, showError, showWarning, showValidationError, showApiSuccess, showApiError } from '@/lib/toast';
 import CustomerSearch from '@/components/customer-search';
 import CustomerForm, { CustomerDetailView } from '@/components/customer-form';
-import CustomerRegistry from '@/components/customer-registry';
+import PlotRegistry from '@/components/plot-registry';
+import PlotDetailView from '@/components/plot-detail-view';
 import CollectiveBurialManagement from '@/components/collective-burial-management';
 import PlotAvailabilityManagement from '@/components/plot-availability-management';
 import StaffManagement from '@/components/staff-management';
@@ -35,6 +37,7 @@ interface CustomerManagementProps {
 
 export default function CustomerManagement({ initialView = 'registry' }: CustomerManagementProps) {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [selectedPlotId, setSelectedPlotId] = useState<string | null>(null);
   const [currentView, setCurrentView] = useState<ViewType>(initialView);
   const [isLoading, setIsLoading] = useState(false);
   const [showInvoice, setShowInvoice] = useState(false);
@@ -57,6 +60,13 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
   // 削除ダイアログ用のstate
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // 区画選択 → 区画詳細ビューへ遷移
+  const handlePlotSelect = (plot: PlotListItem) => {
+    setSelectedPlotId(plot.id);
+    setSelectedCustomer(null);
+    setCurrentView('plot-details');
+  };
 
   const handleCustomerSelect = async (customer: Customer) => {
     setIsLoading(true);
@@ -87,8 +97,15 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
       setCurrentView('details');
       return;
     }
+    // 顧客詳細から区画詳細に戻る場合
+    if (currentView === 'details' && selectedPlotId) {
+      setSelectedCustomer(null);
+      setCurrentView('plot-details');
+      return;
+    }
     setCurrentView('registry');
     setSelectedCustomer(null);
+    setSelectedPlotId(null);
   };
 
 
@@ -242,9 +259,10 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
   // サイドバーのビュー切り替えハンドラー
   const handleViewChange = (view: ViewType) => {
     setCurrentView(view);
-    // メインメニュー項目の場合は顧客選択をクリア
+    // メインメニュー項目の場合は選択をクリア
     if (['registry', 'collective-burial', 'plot-availability', 'documents', 'staff-management'].includes(view)) {
       setSelectedCustomer(null);
+      setSelectedPlotId(null);
     }
   };
 
@@ -265,10 +283,24 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
         {/* Conditional Content Based on Current View */}
         {currentView === 'registry' ? (
           <div className="flex-1 p-6">
-            <CustomerRegistry
-              onCustomerSelect={handleCustomerSelect}
-              selectedCustomer={selectedCustomer || undefined}
-              onNewCustomer={handleNewCustomer}
+            <PlotRegistry
+              onPlotSelect={handlePlotSelect}
+              selectedPlotId={selectedPlotId || undefined}
+              onNewPlot={handleNewCustomer}
+            />
+          </div>
+        ) : currentView === 'plot-details' && selectedPlotId ? (
+          <div className="flex-1 p-6 overflow-auto">
+            <PlotDetailView
+              plotId={selectedPlotId}
+              onBack={() => {
+                setSelectedPlotId(null);
+                setCurrentView('registry');
+              }}
+              onEdit={() => {
+                // 将来的にPlot編集フォームに遷移
+                // 現状は顧客詳細へブリッジ
+              }}
             />
           </div>
         ) : currentView === 'search' ? (

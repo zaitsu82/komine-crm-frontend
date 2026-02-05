@@ -42,6 +42,8 @@ export default function CustomerDetailSidebar({
   };
   const getSidebarTitle = () => {
     switch (currentView) {
+      case 'plot-details':
+        return '区画詳細';
       case 'collective-burial':
         return '合祀管理メニュー';
       case 'plot-availability':
@@ -59,6 +61,8 @@ export default function CustomerDetailSidebar({
     (currentView === 'details' || currentView === 'document-select' || currentView === 'document-history') &&
     selectedCustomer;
 
+  const isPlotDetailView = currentView === 'plot-details';
+
   return (
     <div className="w-64 bg-gray-200 border-r border-gray-300 fixed top-0 left-0 h-screen overflow-y-auto z-10 flex flex-col">
       <div className="p-4 pb-8 flex-1">
@@ -66,8 +70,20 @@ export default function CustomerDetailSidebar({
           {getSidebarTitle()}
         </h2>
 
-        {/* Customer Context Menu (Visible when a customer is selected and in relevant views) */}
-        {isCustomerDetailView ? (
+        {/* Plot Detail Context Menu */}
+        {isPlotDetailView ? (
+          <div className="space-y-1 mb-4">
+            <Button
+              onClick={onBackToRegistry}
+              className="w-full btn-senior mb-4"
+              variant="default"
+              size="lg"
+            >
+              台帳一覧に戻る
+            </Button>
+          </div>
+        ) : /* Customer Context Menu (Visible when a customer is selected and in relevant views) */
+        isCustomerDetailView ? (
           <div className="space-y-1 mb-4">
             <Button
               onClick={onBackToRegistry}
