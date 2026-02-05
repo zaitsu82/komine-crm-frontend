@@ -1,29 +1,22 @@
 'use client';
 
 import { useState } from 'react';
-import { Customer } from '@/types/customer';
-import { PlotListItem } from '@komine/types';
+import { PlotListItem, ContractStatus } from '@komine/types';
 import { ViewType, TerminationFormData } from '@/types/customer-detail';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { formatDateWithEra, calculateOwnedPlotsInfo } from '@/lib/utils';
-import { addCustomerDocument, TerminationInput } from '@/lib/data';
-import { createCustomer, updateCustomer, getCustomerById, deleteCustomer, terminateCustomer } from '@/lib/api';
+import { createPlot, updatePlot, deletePlot, terminatePlot } from '@/lib/api/plots';
+import type { TerminationInput } from '@/lib/api/plots';
+import { formDataToCreateRequest, formDataToUpdateRequest } from '@/lib/adapters/plot-customer-bridge';
 import { CustomerFormData } from '@/lib/validations';
 import { showSuccess, showError, showWarning, showValidationError, showApiSuccess, showApiError } from '@/lib/toast';
-import CustomerSearch from '@/components/customer-search';
-import CustomerForm, { CustomerDetailView } from '@/components/customer-form';
+import CustomerForm from '@/components/customer-form';
 import PlotRegistry from '@/components/plot-registry';
 import PlotDetailView from '@/components/plot-detail-view';
 import CollectiveBurialManagement from '@/components/collective-burial-management';
 import PlotAvailabilityManagement from '@/components/plot-availability-management';
 import StaffManagement from '@/components/staff-management';
 import { DocumentManagement } from '@/components/document-management';
-
-import InvoiceTemplate from '@/components/invoice-template';
-import PostcardTemplate from '@/components/postcard-template';
-import InvoiceEditor from '@/components/invoice-editor';
-import PostcardEditor from '@/components/postcard-editor';
+import { usePlotDetail } from '@/hooks/usePlots';
 
 import {
   CustomerDetailSidebar,
@@ -36,14 +29,16 @@ interface CustomerManagementProps {
 }
 
 export default function CustomerManagement({ initialView = 'registry' }: CustomerManagementProps) {
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [selectedPlotId, setSelectedPlotId] = useState<string | null>(null);
+  const [selectedPlotName, setSelectedPlotName] = useState<string>('');
+  const [selectedPlotCode, setSelectedPlotCode] = useState<string>('');
   const [currentView, setCurrentView] = useState<ViewType>(initialView);
   const [isLoading, setIsLoading] = useState(false);
-  const [showInvoice, setShowInvoice] = useState(false);
-  const [showPostcard, setShowPostcard] = useState(false);
-  const [showInvoiceEditor, setShowInvoiceEditor] = useState(false);
-  const [showPostcardEditor, setShowPostcardEditor] = useState(false);
+
+  // 選択中の区画詳細を取得（解約状態の判定等に使用）
+  const { plot: selectedPlotDetail } = usePlotDetail(selectedPlotId || '');
+  const isTerminated = selectedPlotDetail?.contractStatus === ContractStatus.Terminated
+    || selectedPlotDetail?.contractStatus === ContractStatus.Cancelled;
 
   // 解約ダイアログ用のstate
   const [showTerminationDialog, setShowTerminationDialog] = useState(false);
@@ -64,53 +59,24 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
   // 区画選択 → 区画詳細ビューへ遷移
   const handlePlotSelect = (plot: PlotListItem) => {
     setSelectedPlotId(plot.id);
-    setSelectedCustomer(null);
+    setSelectedPlotName(plot.customerName || '');
+    setSelectedPlotCode(plot.plotNumber);
     setCurrentView('plot-details');
-  };
-
-  const handleCustomerSelect = async (customer: Customer) => {
-    setIsLoading(true);
-    setCurrentView('details');
-
-    try {
-      // APIを呼び出して顧客の詳細情報を取得
-      const response = await getCustomerById(customer.id);
-
-      if (response.success) {
-        setSelectedCustomer(response.data);
-      } else {
-        // API呼び出しが失敗した場合は一覧から渡されたデータを使用
-        console.warn('顧客詳細の取得に失敗しました。一覧データを使用します。', response.error);
-        setSelectedCustomer(customer);
-      }
-    } catch (error) {
-      console.error('顧客詳細の取得中にエラーが発生しました:', error);
-      // エラー時も一覧から渡されたデータを使用
-      setSelectedCustomer(customer);
-    } finally {
-      setIsLoading(false);
-    }
   };
 
   const handleBackToRegistry = () => {
     if (currentView === 'document-select' || currentView === 'document-history') {
-      setCurrentView('details');
-      return;
-    }
-    // 顧客詳細から区画詳細に戻る場合
-    if (currentView === 'details' && selectedPlotId) {
-      setSelectedCustomer(null);
       setCurrentView('plot-details');
       return;
     }
     setCurrentView('registry');
-    setSelectedCustomer(null);
     setSelectedPlotId(null);
+    setSelectedPlotName('');
+    setSelectedPlotCode('');
   };
 
 
   const handleNewCustomer = () => {
-    setSelectedCustomer(null);
     setCurrentView('register');
   };
 
@@ -119,24 +85,24 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
     setIsLoading(true);
     try {
       if (currentView === 'register') {
-        // 新規登録 - APIを使用
-        const response = await createCustomer(data);
+        // 新規登録 - Plot API を使用
+        const request = formDataToCreateRequest(data);
+        const response = await createPlot(request);
         if (response.success) {
-          setSelectedCustomer(response.data);
-          setCurrentView('details');
-          showApiSuccess('作成', '顧客');
+          setCurrentView('registry');
+          showApiSuccess('作成', '区画');
         } else {
-          showApiError('顧客登録', response.error?.message);
+          showApiError('区画登録', response.error?.message);
         }
-      } else if (currentView === 'edit' && selectedCustomer) {
-        // 更新 - APIを使用
-        const response = await updateCustomer(selectedCustomer.id, data);
+      } else if (currentView === 'edit' && selectedPlotId) {
+        // 更新 - Plot API を使用
+        const request = formDataToUpdateRequest(data);
+        const response = await updatePlot(selectedPlotId, request);
         if (response.success) {
-          setSelectedCustomer(response.data);
-          setCurrentView('details');
-          showApiSuccess('更新', '顧客情報');
+          setCurrentView('plot-details');
+          showApiSuccess('更新', '区画情報');
         } else {
-          showApiError('顧客情報更新', response.error?.message);
+          showApiError('区画情報更新', response.error?.message);
         }
       }
     } catch (error) {
@@ -148,18 +114,18 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
   };
 
   const handleCancelForm = () => {
-    if (selectedCustomer) {
-      setCurrentView('details');
+    if (selectedPlotId) {
+      setCurrentView('plot-details');
     } else {
-      setCurrentView('search');
+      setCurrentView('registry');
     }
   };
 
   // 解約ダイアログを開く
   const handleOpenTerminationDialog = () => {
-    if (!selectedCustomer) return;
-    if (selectedCustomer.status === 'inactive') {
-      showWarning('この顧客は既に解約済みです');
+    if (!selectedPlotId) return;
+    if (isTerminated) {
+      showWarning('この区画は既に解約済みです');
       return;
     }
     setTerminationForm({
@@ -176,7 +142,7 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
 
   // 解約処理を実行
   const handleTerminate = async () => {
-    if (!selectedCustomer) return;
+    if (!selectedPlotId) return;
 
     // バリデーション
     if (!terminationForm.reason.trim()) {
@@ -189,7 +155,7 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
     }
 
     // 確認ダイアログ
-    if (!confirm(`${selectedCustomer.name} 様の契約を解約処理します。\nこの操作は取り消せません。よろしいですか？`)) {
+    if (!confirm(`${selectedPlotName || selectedPlotCode} の契約を解約処理します。\nこの操作は取り消せません。よろしいですか？`)) {
       return;
     }
 
@@ -204,13 +170,12 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
     };
 
     try {
-      const response = await terminateCustomer(selectedCustomer.id, terminationInput);
+      const response = await terminatePlot(selectedPlotId, terminationInput);
 
-      if (response.success && response.data) {
-        setSelectedCustomer(response.data);
+      if (response.success) {
         setShowTerminationDialog(false);
         showSuccess('解約処理が完了しました');
-      } else if (!response.success) {
+      } else {
         showApiError('解約処理', response.error?.message);
       }
     } catch {
@@ -220,26 +185,28 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
 
   // 削除ダイアログを開く
   const handleOpenDeleteDialog = () => {
-    if (!selectedCustomer) return;
+    if (!selectedPlotId) return;
     setShowDeleteDialog(true);
   };
 
   // 削除処理を実行
   const handleDelete = async () => {
-    if (!selectedCustomer) return;
+    if (!selectedPlotId) return;
 
     setIsDeleting(true);
 
     try {
-      const response = await deleteCustomer(selectedCustomer.id);
+      const response = await deletePlot(selectedPlotId);
 
       if (response.success) {
         setShowDeleteDialog(false);
-        setSelectedCustomer(null);
+        setSelectedPlotId(null);
+        setSelectedPlotName('');
+        setSelectedPlotCode('');
         setCurrentView('registry');
-        showApiSuccess('削除', '顧客データ');
+        showApiSuccess('削除', '区画データ');
       } else {
-        showApiError('顧客データ削除', response.error?.message);
+        showApiError('データ削除', response.error?.message);
       }
     } catch {
       showError('削除中にエラーが発生しました');
@@ -248,21 +215,14 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
     }
   };
 
-  const handleCloseInvoice = () => {
-    setShowInvoice(false);
-  };
-
-  const handleClosePostcard = () => {
-    setShowPostcard(false);
-  };
-
   // サイドバーのビュー切り替えハンドラー
   const handleViewChange = (view: ViewType) => {
     setCurrentView(view);
     // メインメニュー項目の場合は選択をクリア
     if (['registry', 'collective-burial', 'plot-availability', 'documents', 'staff-management'].includes(view)) {
-      setSelectedCustomer(null);
       setSelectedPlotId(null);
+      setSelectedPlotName('');
+      setSelectedPlotCode('');
     }
   };
 
@@ -271,7 +231,8 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
       {/* Left Sidebar Menu */}
       <CustomerDetailSidebar
         currentView={currentView}
-        selectedCustomer={selectedCustomer}
+        selectedPlotId={selectedPlotId}
+        isTerminated={isTerminated}
         onBackToRegistry={handleBackToRegistry}
         onViewChange={handleViewChange}
         onTermination={handleOpenTerminationDialog}
@@ -295,23 +256,16 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
               plotId={selectedPlotId}
               onBack={() => {
                 setSelectedPlotId(null);
+                setSelectedPlotName('');
+                setSelectedPlotCode('');
                 setCurrentView('registry');
               }}
               onEdit={() => {
-                // 将来的にPlot編集フォームに遷移
-                // 現状は顧客詳細へブリッジ
+                setCurrentView('edit');
               }}
             />
           </div>
-        ) : currentView === 'search' ? (
-          <div className="flex-1 p-6">
-            <CustomerSearch
-              onCustomerSelect={handleCustomerSelect}
-              selectedCustomer={selectedCustomer || undefined}
-              onNewCustomer={handleNewCustomer}
-            />
-          </div>
-        ) : currentView === 'register' || (currentView === 'edit' && selectedCustomer) ? (
+        ) : currentView === 'register' || (currentView === 'edit' && selectedPlotId) ? (
           <>
             {/* Customer Info Header for Register/Edit */}
             <div className="bg-yellow-100 border-b border-gray-300 px-6 py-3">
@@ -336,7 +290,7 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
             {/* Customer Form with Tab Layout */}
             <div className="flex-1 p-6">
               <CustomerForm
-                customer={currentView === 'edit' ? selectedCustomer || undefined : undefined}
+                customer={undefined}
                 onSave={handleSaveCustomer}
                 onCancel={handleCancelForm}
                 isLoading={isLoading}
@@ -359,155 +313,39 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
           <div className="flex-1 overflow-auto">
             <DocumentManagement />
           </div>
-        ) : currentView === 'details' && isLoading && !selectedCustomer ? (
-          <div className="flex-1 flex items-center justify-center">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <p className="text-gray-600">顧客情報を読み込み中...</p>
-            </div>
-          </div>
-        ) : currentView === 'details' && selectedCustomer && (
-          <>
-            {/* Customer Info Header */}
-            <div className="bg-yellow-100 border-b border-gray-300 px-6 py-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <Label className="text-sm font-medium">墓園</Label>
-                    <div className="px-2 py-1 bg-white border rounded text-sm">{selectedCustomer.plotInfo?.section || '小霊園区'}</div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Label className="text-sm font-medium">区石</Label>
-                    <div className="px-2 py-1 bg-white border rounded text-sm font-medium">{selectedCustomer.customerCode}</div>
-                  </div>
-                  {/* 複数区画情報の表示 */}
-                  {selectedCustomer.ownedPlots && selectedCustomer.ownedPlots.length > 0 && (
-                    <div className="flex items-center space-x-2">
-                      <Label className="text-sm font-medium">所有区画</Label>
-                      <div className="px-2 py-1 bg-green-100 border border-green-300 rounded text-sm font-medium text-green-800">
-                        {calculateOwnedPlotsInfo(selectedCustomer.ownedPlots).displayText}
-                      </div>
-                    </div>
-                  )}
-                </div>
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <Label className="text-sm font-medium">管理区分</Label>
-                    <div className="px-2 py-1 bg-white border rounded text-sm">基地</div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Label className="text-sm font-medium">利用状況</Label>
-                    <div className="px-2 py-1 bg-white border rounded text-sm">
-                      {selectedCustomer.plotInfo?.usage === 'in_use' ? '利用中' :
-                        selectedCustomer.plotInfo?.usage === 'reserved' ? '予約済み' : '利用可能'}
-                    </div>
-                  </div>
-                  <Button size="sm" variant="outline">表示</Button>
-                </div>
-              </div>
-            </div>
+        ) : null}
 
-            {/* Customer Details - Using CustomerDetailView */}
-            <div className="flex-1 p-6 overflow-auto">
-              <CustomerDetailView
-                customer={selectedCustomer}
-                onEdit={() => setCurrentView('edit')}
-              />
-            </div>
-          </>
-        )}
-
-        {/* 書類履歴（顧客コンテキスト） */}
-        {currentView === 'document-history' && selectedCustomer && (
+        {/* 書類履歴（区画コンテキスト） */}
+        {currentView === 'document-history' && selectedPlotId && (
           <div className="flex-1 overflow-auto">
             <DocumentManagement
-              customerId={selectedCustomer.id}
-              customerName={selectedCustomer.name}
+              customerId={selectedPlotId}
+              customerName={selectedPlotName || selectedPlotCode}
               initialMode="list"
-              onBack={() => setCurrentView('details')}
+              onBack={() => setCurrentView('plot-details')}
             />
           </div>
         )}
 
-        {/* 書類作成（顧客コンテキスト） */}
-        {currentView === 'document-select' && selectedCustomer && (
+        {/* 書類作成（区画コンテキスト） */}
+        {currentView === 'document-select' && selectedPlotId && (
           <div className="flex-1 overflow-auto">
             <DocumentManagement
-              customerId={selectedCustomer.id}
-              customerName={selectedCustomer.name}
+              customerId={selectedPlotId}
+              customerName={selectedPlotName || selectedPlotCode}
               initialMode="create"
-              onBack={() => setCurrentView('details')}
+              onBack={() => setCurrentView('plot-details')}
             />
           </div>
         )}
       </div>
 
-      {/* 請求書モーダル */}
-      {/* Hidden Invoice Template for Printing */}
-      {showInvoice && selectedCustomer && (
-        <div className="fixed inset-0 z-50 bg-white overflow-auto">
-          <div className="p-4 no-print flex justify-end">
-            <Button onClick={handleCloseInvoice} variant="outline">閉じる</Button>
-          </div>
-          <InvoiceTemplate
-            customer={selectedCustomer}
-            invoiceDate={new Date()}
-            invoiceNumber={`INV-${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${selectedCustomer.customerCode}`}
-          />
-        </div>
-      )}
-
-      {/* Hidden Postcard Template for Printing */}
-      {showPostcard && selectedCustomer && (
-        <div className="fixed inset-0 z-50 bg-white overflow-auto">
-          <div className="p-4 no-print flex justify-end">
-            <Button onClick={handleClosePostcard} variant="outline">閉じる</Button>
-          </div>
-          <div className="flex justify-center gap-8 p-8 bg-gray-100 min-h-screen">
-            <div className="bg-white shadow-lg">
-              <PostcardTemplate customer={selectedCustomer} />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 請求書エディタ（プレビュー・編集・印刷） */}
-      {showInvoiceEditor && selectedCustomer && (
-        <InvoiceEditor
-          customer={selectedCustomer}
-          onClose={() => setShowInvoiceEditor(false)}
-          onSave={() => {
-            addCustomerDocument(selectedCustomer.id, {
-              type: 'invoice',
-              name: `請求書_${formatDateWithEra(new Date())}`,
-              status: 'generated'
-            });
-            setSelectedCustomer({ ...selectedCustomer });
-          }}
-        />
-      )}
-
-      {/* はがきエディタ（プレビュー・編集・印刷） */}
-      {showPostcardEditor && selectedCustomer && (
-        <PostcardEditor
-          customer={selectedCustomer}
-          onClose={() => setShowPostcardEditor(false)}
-          onSave={() => {
-            addCustomerDocument(selectedCustomer.id, {
-              type: 'postcard',
-              name: `はがきデータ_${formatDateWithEra(new Date())}`,
-              status: 'generated'
-            });
-            setSelectedCustomer({ ...selectedCustomer });
-          }}
-        />
-      )}
-
       {/* 解約入力ダイアログ */}
-      {selectedCustomer && (
+      {selectedPlotId && (
         <TerminationDialog
           isOpen={showTerminationDialog}
-          customer={selectedCustomer}
+          targetName={selectedPlotName || selectedPlotCode}
+          targetCode={selectedPlotCode}
           formData={terminationForm}
           onFormChange={setTerminationForm}
           onTerminate={handleTerminate}
@@ -516,10 +354,11 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
       )}
 
       {/* 削除確認ダイアログ */}
-      {selectedCustomer && (
+      {selectedPlotId && (
         <DeleteConfirmDialog
           isOpen={showDeleteDialog}
-          customer={selectedCustomer}
+          targetName={selectedPlotName || selectedPlotCode}
+          targetCode={selectedPlotCode}
           isLoading={isDeleting}
           onDelete={handleDelete}
           onClose={() => setShowDeleteDialog(false)}

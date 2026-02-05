@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { PlotPeriod } from '@/types/customer';
+import { PlotPeriod } from '@/types/plot-constants';
 import {
   getInventorySummary,
   getInventoryPeriods,

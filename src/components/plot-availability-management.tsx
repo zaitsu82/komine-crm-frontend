@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { PlotPeriod, PLOT_SIZE } from '@/types/customer';
+import { PlotPeriod, PLOT_SIZE } from '@/types/plot-constants';
 import {
   usePlotInventorySummary,
   usePlotInventoryPeriods,

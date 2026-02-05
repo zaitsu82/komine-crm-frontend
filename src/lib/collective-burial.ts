@@ -6,7 +6,6 @@ import {
   CollectiveBurialPerson,
   CollectiveBurialStatus,
 } from '@/types/collective-burial';
-import { integrateCollectiveBurialToCustomer } from '@/lib/customer-collective-burial-integration';
 
 const parseDate = (value?: string): Date | null => {
   if (!value) return null;
@@ -200,17 +199,6 @@ export const createCollectiveBurialApplication = async (
   };
 
   mockCollectiveBurialApplications.unshift(newApplication);
-
-  // 顧客データに合祀情報を統合（顧客コードがある場合のみ）
-  // 申込者名から顧客を推測することも可能だが、ここでは区画情報で紐付け
-  const integrationResult = integrateCollectiveBurialToCustomer(newApplication);
-
-  if (!integrationResult.success) {
-    console.warn('合祀申込の顧客データへの統合に失敗:', integrationResult.error);
-    // エラーでも申込自体は作成済みなので継続
-  } else {
-    console.log('合祀申込を顧客データに統合しました:', integrationResult.customer?.customerCode);
-  }
 
   return newApplication;
 };

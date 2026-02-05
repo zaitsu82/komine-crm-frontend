@@ -1,7 +1,7 @@
 // 区画在庫データ（2025年6月末現在）
 // 基本ルール: 1区画 = 3.6㎡、必要に応じて1.8㎡×2に分割販売
 
-import { PlotPeriod } from '@/types/customer';
+import { PlotPeriod } from '@/types/plot-constants';
 
 // 区画在庫情報の型定義
 export interface PlotInventoryItem {

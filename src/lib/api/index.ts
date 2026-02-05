@@ -34,17 +34,25 @@ export {
   initializeTokenRefresh,
 } from './auth';
 
-// 顧客APIのエクスポート
+// 区画APIのエクスポート
 export {
-  getCustomers,
-  getCustomerById,
-  createCustomer,
-  updateCustomer,
-  deleteCustomer,
-  terminateCustomer,
-  getAllCustomersSync,
-  searchCustomersSync,
-} from './customers';
+  getPlots,
+  getPlotById,
+  createPlot,
+  updatePlot,
+  deletePlot,
+  terminatePlot,
+  getPrimaryCustomer,
+  getPlotDisplayStatus,
+  sortPlotsByNumber,
+  sortPlotsByCustomerKana,
+  filterPlotsByAiueo,
+} from './plots';
+export type {
+  PlotSearchParams,
+  PlotListResult,
+  TerminationInput,
+} from './plots';
 
 // マスタAPIのエクスポート
 export {

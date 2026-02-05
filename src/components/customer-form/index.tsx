@@ -328,4 +328,3 @@ export default function CustomerForm({ customer, onSave, isLoading }: CustomerFo
 // Re-export types and components
 export * from './types';
 export { PlotSettingsSection } from './PlotSettingsSection';
-export { CustomerDetailView } from './CustomerDetailView';

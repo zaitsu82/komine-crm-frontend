@@ -4,11 +4,13 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Customer } from '@/types/customer';
 
 interface DeleteConfirmDialogProps {
   isOpen: boolean;
-  customer: Customer;
+  targetName: string;
+  targetCode: string;
+  plotSection?: string;
+  plotNumber?: string;
   isLoading?: boolean;
   onDelete: () => void;
   onClose: () => void;
@@ -16,7 +18,10 @@ interface DeleteConfirmDialogProps {
 
 export default function DeleteConfirmDialog({
   isOpen,
-  customer,
+  targetName,
+  targetCode,
+  plotSection,
+  plotNumber,
   isLoading = false,
   onDelete,
   onClose,
@@ -25,7 +30,7 @@ export default function DeleteConfirmDialog({
 
   if (!isOpen) return null;
 
-  const isConfirmValid = confirmText === customer.customerCode;
+  const isConfirmValid = confirmText === targetCode;
 
   const handleClose = () => {
     setConfirmText('');
@@ -47,7 +52,7 @@ export default function DeleteConfirmDialog({
             <svg className="w-6 h-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
-            顧客データの削除
+            データの削除
           </h3>
         </div>
 
@@ -65,22 +70,22 @@ export default function DeleteConfirmDialog({
           </div>
 
           <div className="bg-gray-50 rounded-lg p-4">
-            <p className="text-sm text-gray-600 mb-1">削除対象の顧客:</p>
-            <p className="font-semibold text-gray-900">{customer.name} 様</p>
-            <p className="text-sm text-gray-600">顧客コード: {customer.customerCode}</p>
-            {customer.plotInfo?.section && (
-              <p className="text-sm text-gray-600">区画: {customer.plotInfo.section} - {customer.plotInfo.plotNumber}</p>
+            <p className="text-sm text-gray-600 mb-1">削除対象:</p>
+            <p className="font-semibold text-gray-900">{targetName} 様</p>
+            <p className="text-sm text-gray-600">コード: {targetCode}</p>
+            {plotSection && (
+              <p className="text-sm text-gray-600">区画: {plotSection} - {plotNumber}</p>
             )}
           </div>
 
           <div>
             <Label className="text-sm font-medium text-gray-700">
-              確認のため、顧客コード <span className="font-mono bg-gray-100 px-1 rounded">{customer.customerCode}</span> を入力してください
+              確認のため、コード <span className="font-mono bg-gray-100 px-1 rounded">{targetCode}</span> を入力してください
             </Label>
             <Input
               value={confirmText}
               onChange={(e) => setConfirmText(e.target.value)}
-              placeholder="顧客コードを入力"
+              placeholder="コードを入力"
               className="mt-2"
               autoComplete="off"
             />

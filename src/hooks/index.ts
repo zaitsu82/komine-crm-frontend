@@ -16,9 +16,6 @@ export {
   type AuthContextType,
 } from '@/contexts/auth-context';
 
-// 顧客フック
-export { useCustomers, useCustomerDetail, useCreateCustomer } from './useCustomers';
-
 // マスタフック
 export {
   useMasters,

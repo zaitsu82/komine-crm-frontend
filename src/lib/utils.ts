@@ -56,9 +56,9 @@ import type {
   PlotAssignmentValidation,
   OwnedPlot,
   OwnedPlotsInfo
-} from "@/types/customer";
+} from "@/types/plot-constants";
 
-import { PLOT_SIZE } from "@/types/customer";
+import { PLOT_SIZE } from "@/types/plot-constants";
 
 /**
  * 顧客の所有区画情報を集計

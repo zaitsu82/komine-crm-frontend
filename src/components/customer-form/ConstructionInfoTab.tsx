@@ -1,7 +1,7 @@
 'use client';
 
 import { Fragment } from 'react';
-import { ConstructionType, CONSTRUCTION_TYPE_LABELS } from '@/types/customer';
+import { ConstructionType, CONSTRUCTION_TYPE_LABELS } from '@/types/plot-constants';
 import { Button } from '@/components/ui/button';
 import { SelectItem } from '@/components/ui/select';
 import { ConstructionInfoTabProps, getDefaultConstructionRecord } from './types';

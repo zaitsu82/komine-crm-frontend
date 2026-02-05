@@ -2,7 +2,6 @@ import '@testing-library/jest-dom'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import CustomerForm from '@/components/customer-form'
-import { mockCustomers } from '@/lib/data'
 
 // fetch のモック（useMastersがAPIを呼び出すため）
 global.fetch = jest.fn(() =>
@@ -63,7 +62,22 @@ describe('CustomerForm', () => {
   })
 
   describe('編集モード', () => {
-    const customer = mockCustomers[0]
+    const customer = {
+      id: 'test-1',
+      customerCode: 'A-001',
+      name: '田中太郎',
+      nameKana: 'たなかたろう',
+      phoneNumber: '090-1234-5678',
+      address: '東京都新宿区1-1-1',
+      gender: 'male' as const,
+      birthDate: null,
+      reservationDate: null,
+      permitDate: null,
+      startDate: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      status: 'active' as const,
+    }
 
     it('既存の顧客データが正しく表示される', async () => {
       render(

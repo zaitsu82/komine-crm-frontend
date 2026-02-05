@@ -428,6 +428,53 @@ export async function updatePlot(
 }
 
 /**
+ * 解約入力パラメータ
+ */
+export interface TerminationInput {
+  terminationDate: Date;
+  reason: string;
+  processType: string;
+  processDetail?: string;
+  refundAmount?: number;
+  handledBy: string;
+  notes?: string;
+}
+
+/**
+ * 区画解約
+ */
+export async function terminatePlot(
+  id: string,
+  input: TerminationInput
+): Promise<ApiResponse<PlotDetailResponse>> {
+  if (shouldUseMockData()) {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    // モック: 既存データを返す（ステータス変更のシミュレーション）
+    const response = await getPlotById(id);
+    if (!response.success) return response;
+    return {
+      success: true,
+      data: {
+        ...response.data,
+        contractStatus: 'terminated' as ContractStatus,
+      },
+    };
+  }
+
+  return apiPut<PlotDetailResponse>(`/plots/${id}`, {
+    termination: {
+      terminationDate: input.terminationDate.toISOString(),
+      reason: input.reason,
+      processType: input.processType,
+      processDetail: input.processDetail,
+      refundAmount: input.refundAmount,
+      handledBy: input.handledBy,
+      notes: input.notes,
+    },
+  });
+}
+
+/**
  * 区画削除（論理削除）
  */
 export async function deletePlot(id: string): Promise<ApiResponse<void>> {

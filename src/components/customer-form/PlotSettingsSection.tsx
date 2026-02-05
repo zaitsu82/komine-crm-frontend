@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { OwnedPlot, PLOT_SIZE, PLOT_SIZE_LABELS, PlotSizeType, PlotPeriod, PLOT_SECTIONS_BY_PERIOD } from '@/types/customer';
+import { OwnedPlot, PLOT_SIZE, PLOT_SIZE_LABELS, PlotSizeType, PlotPeriod, PLOT_SECTIONS_BY_PERIOD } from '@/types/plot-constants';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';

@@ -1,7 +1,7 @@
 // 期別・㎡別 区画残数データ（2025年3月末現在）
 // 各区画を面積別に分類したデータ
 
-import { PlotPeriod } from '@/types/customer';
+import { PlotPeriod } from '@/types/plot-constants';
 
 // 面積別区画情報の型定義
 export interface PlotByAreaItem {

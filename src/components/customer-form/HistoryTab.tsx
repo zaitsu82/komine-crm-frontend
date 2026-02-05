@@ -1,6 +1,6 @@
 'use client';
 
-import { HISTORY_REASON_LABELS } from '@/types/customer';
+import { HISTORY_REASON_LABELS } from '@/types/plot-constants';
 import { Label } from '@/components/ui/label';
 import { formatDate } from '@/lib/utils';
 import { HistoryTabProps } from './types';

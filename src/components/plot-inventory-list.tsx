@@ -13,7 +13,7 @@ import {
   getInventorySortedByUsageRate,
   getInventorySortedByRemaining,
 } from '@/lib/plot-inventory';
-import { PlotPeriod } from '@/types/customer';
+import { PlotPeriod } from '@/types/plot-constants';
 
 type ViewMode = 'all' | 'period' | 'available' | 'soldout' | 'usage-rate' | 'remaining';
 type SelectedPeriod = PlotPeriod | 'all';

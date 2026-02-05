@@ -1,6 +1,6 @@
 'use client';
 
-import { PLOT_SECTIONS_BY_PERIOD, PlotPeriod } from '@/types/customer';
+import { PLOT_SECTIONS_BY_PERIOD, PlotPeriod } from '@/types/plot-constants';
 import { SelectItem } from '@/components/ui/select';
 import { TabBaseProps } from './types';
 import { ViewModeField, ViewModeSelect } from './ViewModeField';

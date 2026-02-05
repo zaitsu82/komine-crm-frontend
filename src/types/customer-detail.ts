@@ -1,10 +1,8 @@
-import { TerminationProcessType } from './customer';
+import { TerminationProcessType } from './plot-constants';
 
 // 顧客詳細画面のビュータイプ
 export type ViewType =
   | 'registry'
-  | 'search'
-  | 'details'
   | 'plot-details'
   | 'register'
   | 'edit'
@@ -12,7 +10,6 @@ export type ViewType =
   | 'plot-availability'
   | 'staff-management'
   | 'documents'
-  | 'invoice'
   | 'document-select'
   | 'document-history';
 

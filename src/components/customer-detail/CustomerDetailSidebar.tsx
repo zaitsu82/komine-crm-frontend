@@ -2,13 +2,13 @@
 
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Customer } from '@/types/customer';
 import { ViewType, MENU_ITEMS } from '@/types/customer-detail';
 import { useAuth } from '@/contexts/auth-context';
 
 interface CustomerDetailSidebarProps {
   currentView: ViewType;
-  selectedCustomer: Customer | null;
+  selectedPlotId: string | null;
+  isTerminated?: boolean;
   onBackToRegistry: () => void;
   onViewChange: (view: ViewType) => void;
   onTermination: () => void;
@@ -17,7 +17,8 @@ interface CustomerDetailSidebarProps {
 
 export default function CustomerDetailSidebar({
   currentView,
-  selectedCustomer,
+  selectedPlotId,
+  isTerminated = false,
   onBackToRegistry,
   onViewChange,
   onTermination,
@@ -43,6 +44,8 @@ export default function CustomerDetailSidebar({
   const getSidebarTitle = () => {
     switch (currentView) {
       case 'plot-details':
+      case 'document-select':
+      case 'document-history':
         return '区画詳細';
       case 'collective-burial':
         return '合祀管理メニュー';
@@ -57,11 +60,9 @@ export default function CustomerDetailSidebar({
     }
   };
 
-  const isCustomerDetailView =
-    (currentView === 'details' || currentView === 'document-select' || currentView === 'document-history') &&
-    selectedCustomer;
-
-  const isPlotDetailView = currentView === 'plot-details';
+  const isPlotContextView =
+    (currentView === 'plot-details' || currentView === 'document-select' || currentView === 'document-history') &&
+    selectedPlotId;
 
   return (
     <div className="w-64 bg-gray-200 border-r border-gray-300 fixed top-0 left-0 h-screen overflow-y-auto z-10 flex flex-col">
@@ -70,20 +71,8 @@ export default function CustomerDetailSidebar({
           {getSidebarTitle()}
         </h2>
 
-        {/* Plot Detail Context Menu */}
-        {isPlotDetailView ? (
-          <div className="space-y-1 mb-4">
-            <Button
-              onClick={onBackToRegistry}
-              className="w-full btn-senior mb-4"
-              variant="default"
-              size="lg"
-            >
-              台帳一覧に戻る
-            </Button>
-          </div>
-        ) : /* Customer Context Menu (Visible when a customer is selected and in relevant views) */
-        isCustomerDetailView ? (
+        {/* Plot Context Menu (Visible when a plot is selected and in relevant views) */}
+        {isPlotContextView ? (
           <div className="space-y-1 mb-4">
             <Button
               onClick={onBackToRegistry}
@@ -97,15 +86,15 @@ export default function CustomerDetailSidebar({
             <div className="border-t border-gray-300 my-4"></div>
 
             <Button
-              onClick={() => onViewChange('details')}
-              className={`w-full btn-senior mt-2 border-none ${currentView === 'details'
+              onClick={() => onViewChange('plot-details')}
+              className={`w-full btn-senior mt-2 border-none ${currentView === 'plot-details'
                 ? 'bg-gray-700 text-white hover:bg-gray-800'
                 : 'bg-white text-gray-700 hover:bg-gray-100 border-gray-300'
                 }`}
-              variant={currentView === 'details' ? 'default' : 'outline'}
+              variant={currentView === 'plot-details' ? 'default' : 'outline'}
               size="lg"
             >
-              顧客詳細
+              区画詳細
             </Button>
             <Button
               onClick={() => onViewChange('document-select')}
@@ -134,15 +123,15 @@ export default function CustomerDetailSidebar({
 
             <Button
               onClick={onTermination}
-              className={`w-full btn-senior mt-2 border-none ${selectedCustomer.status === 'inactive'
+              className={`w-full btn-senior mt-2 border-none ${isTerminated
                 ? 'bg-gray-400 text-white cursor-not-allowed'
                 : 'bg-white text-red-600 hover:bg-red-50 border-red-600'
                 }`}
               variant="outline"
               size="lg"
-              disabled={selectedCustomer.status === 'inactive'}
+              disabled={isTerminated}
             >
-              {selectedCustomer.status === 'inactive' ? '解約済み' : '解約入力'}
+              {isTerminated ? '解約済み' : '解約入力'}
             </Button>
 
             {/* 削除ボタン（管理者専用） */}
@@ -158,7 +147,7 @@ export default function CustomerDetailSidebar({
                   <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                   </svg>
-                  顧客データを削除
+                  データを削除
                 </Button>
               </>
             )}
@@ -186,7 +175,7 @@ export default function CustomerDetailSidebar({
               const isActive = () => {
                 switch (item) {
                   case '台帳問い合わせ':
-                    return currentView === 'registry' || currentView === 'search';
+                    return currentView === 'registry';
                   case '合祀管理':
                     return currentView === 'collective-burial';
                   case '区画残数管理':

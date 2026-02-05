@@ -4,7 +4,7 @@
 
 import { apiGet, shouldUseMockData } from './client';
 import { ApiResponse } from './types';
-import { PlotPeriod } from '@/types/customer';
+import { PlotPeriod } from '@/types/plot-constants';
 import {
   getAllPlotInventory,
   calculateInventorySummary,

@@ -3,12 +3,13 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Customer, TerminationProcessType, TERMINATION_PROCESS_TYPE_LABELS } from '@/types/customer';
+import { TerminationProcessType, TERMINATION_PROCESS_TYPE_LABELS } from '@/types/plot-constants';
 import { TerminationFormData } from '@/types/customer-detail';
 
 interface TerminationDialogProps {
   isOpen: boolean;
-  customer: Customer;
+  targetName: string;
+  targetCode: string;
   formData: TerminationFormData;
   onFormChange: (data: TerminationFormData) => void;
   onTerminate: () => void;
@@ -17,7 +18,8 @@ interface TerminationDialogProps {
 
 export default function TerminationDialog({
   isOpen,
-  customer,
+  targetName,
+  targetCode,
   formData,
   onFormChange,
   onTerminate,
@@ -30,7 +32,7 @@ export default function TerminationDialog({
       <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4">
         <div className="bg-red-600 text-white px-6 py-4 rounded-t-lg">
           <h3 className="text-lg font-semibold">解約入力</h3>
-          <p className="text-sm text-red-100 mt-1">{customer.name} 様（{customer.customerCode}）</p>
+          <p className="text-sm text-red-100 mt-1">{targetName} 様（{targetCode}）</p>
         </div>
         <div className="p-6 space-y-4">
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
