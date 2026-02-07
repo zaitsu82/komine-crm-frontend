@@ -261,7 +261,7 @@ export const plotUpdateFormSchema = z.object({
 export type PhysicalPlotFormData = z.infer<typeof physicalPlotSchema>;
 export type ContractPlotFormData = z.infer<typeof contractPlotSchema>;
 export type SaleContractFormData = z.infer<typeof saleContractSchema>;
-export type CustomerFormDataNew = z.infer<typeof customerSchema>;
+export type CustomerSectionFormData = z.infer<typeof customerSchema>;
 export type WorkInfoFormData = z.infer<typeof workInfoSchema>;
 export type BillingInfoFormData = z.infer<typeof billingInfoSchema>;
 export type UsageFeeFormData = z.infer<typeof usageFeeSchema>;
@@ -300,7 +300,7 @@ export const defaultSaleContract: SaleContractFormData = {
   notes: null,
 };
 
-export const defaultCustomer: CustomerFormDataNew = {
+export const defaultCustomer: CustomerSectionFormData = {
   name: '',
   nameKana: '',
   birthDate: null,
@@ -332,7 +332,7 @@ export const defaultPlotFormData: PlotFormData = {
 
 // ===== フォームデータ → APIリクエスト変換 =====
 
-import type { CreatePlotRequest, UpdatePlotRequest } from '@komine/types';
+import type { CreatePlotRequest, UpdatePlotRequest, PlotDetailResponse } from '@komine/types';
 
 /**
  * PlotFormData を CreatePlotRequest に変換
@@ -561,4 +561,147 @@ export function plotFormDataToUpdateRequest(formData: PlotUpdateFormData): Updat
   request.collectiveBurial = formData.collectiveBurial;
 
   return request;
+}
+
+// ===== PlotDetailResponse → PlotFormData 変換（編集時のデフォルト値生成） =====
+
+/**
+ * PlotDetailResponse を PlotFormData に変換
+ * 編集フォームの defaultValues として使用
+ */
+export function plotDetailToFormData(detail: PlotDetailResponse): PlotFormData {
+  // Primary contractor を取得（最初の Contractor ロール、なければ最初のロール）
+  const primaryRole = detail.roles.find((r) => r.role === ContractRole.Contractor) || detail.roles[0];
+  const customer = primaryRole?.customer;
+
+  return {
+    physicalPlot: {
+      plotNumber: detail.physicalPlot.plotNumber,
+      areaName: detail.physicalPlot.areaName,
+      areaSqm: detail.physicalPlot.areaSqm,
+      notes: detail.physicalPlot.notes,
+    },
+    contractPlot: {
+      contractAreaSqm: detail.contractAreaSqm,
+      locationDescription: detail.locationDescription,
+    },
+    saleContract: {
+      contractDate: detail.contractDate,
+      price: detail.price,
+      paymentStatus: detail.paymentStatus,
+      reservationDate: detail.reservationDate || '',
+      acceptanceNumber: detail.acceptanceNumber || '',
+      permitDate: detail.permitDate || '',
+      permitNumber: detail.permitNumber || '',
+      startDate: detail.startDate || '',
+      notes: detail.contractNotes,
+    },
+    customer: {
+      name: customer?.name || '',
+      nameKana: customer?.nameKana || '',
+      birthDate: customer?.birthDate || null,
+      gender: customer?.gender || null,
+      postalCode: customer?.postalCode || '',
+      address: customer?.address || '',
+      registeredAddress: customer?.registeredAddress || null,
+      phoneNumber: customer?.phoneNumber || '',
+      faxNumber: customer?.faxNumber || null,
+      email: customer?.email || null,
+      notes: customer?.notes || null,
+      role: primaryRole?.role || ContractRole.Contractor,
+    },
+    workInfo: customer?.workInfo
+      ? {
+          companyName: customer.workInfo.companyName || '',
+          companyNameKana: customer.workInfo.companyNameKana || '',
+          workAddress: customer.workInfo.workAddress || '',
+          workPostalCode: customer.workInfo.workPostalCode || '',
+          workPhoneNumber: customer.workInfo.workPhoneNumber || '',
+          dmSetting: customer.workInfo.dmSetting || DmSetting.Allow,
+          addressType: customer.workInfo.addressType || AddressType.Home,
+          notes: customer.workInfo.notes || null,
+        }
+      : null,
+    billingInfo: customer?.billingInfo
+      ? {
+          billingType: customer.billingInfo.billingType || BillingType.Individual,
+          bankName: customer.billingInfo.bankName || '',
+          branchName: customer.billingInfo.branchName || '',
+          accountType: customer.billingInfo.accountType || AccountType.Ordinary,
+          accountNumber: customer.billingInfo.accountNumber || '',
+          accountHolder: customer.billingInfo.accountHolder || '',
+        }
+      : null,
+    usageFee: detail.usageFee
+      ? {
+          calculationType: detail.usageFee.calculationType,
+          taxType: detail.usageFee.taxType,
+          billingType: detail.usageFee.billingType,
+          billingYears: detail.usageFee.billingYears,
+          usageFee: detail.usageFee.usageFee,
+          area: detail.usageFee.area,
+          unitPrice: detail.usageFee.unitPrice,
+          paymentMethod: detail.usageFee.paymentMethod,
+        }
+      : null,
+    managementFee: detail.managementFee
+      ? {
+          calculationType: detail.managementFee.calculationType,
+          taxType: detail.managementFee.taxType,
+          billingType: detail.managementFee.billingType,
+          billingYears: detail.managementFee.billingYears,
+          area: detail.managementFee.area,
+          billingMonth: detail.managementFee.billingMonth,
+          managementFee: detail.managementFee.managementFee,
+          unitPrice: detail.managementFee.unitPrice,
+          lastBillingMonth: detail.managementFee.lastBillingMonth,
+          paymentMethod: detail.managementFee.paymentMethod,
+        }
+      : null,
+    gravestoneInfo: detail.gravestoneInfo
+      ? {
+          gravestoneBase: detail.gravestoneInfo.gravestoneBase,
+          enclosurePosition: detail.gravestoneInfo.enclosurePosition,
+          gravestoneDealer: detail.gravestoneInfo.gravestoneDealer,
+          gravestoneType: detail.gravestoneInfo.gravestoneType,
+          surroundingArea: detail.gravestoneInfo.surroundingArea,
+          establishmentDeadline: detail.gravestoneInfo.establishmentDeadline,
+          establishmentDate: detail.gravestoneInfo.establishmentDate,
+        }
+      : null,
+    familyContacts: detail.familyContacts.map((fc) => ({
+      id: fc.id,
+      emergencyContactFlag: false,
+      name: fc.name,
+      birthDate: fc.birthDate || null,
+      relationship: fc.relationship,
+      postalCode: fc.postalCode,
+      address: fc.address,
+      phoneNumber: fc.phoneNumber,
+      faxNumber: fc.faxNumber,
+      email: fc.email,
+      registeredAddress: fc.registeredAddress,
+      mailingType: fc.mailingType,
+      notes: fc.notes,
+    })),
+    buriedPersons: detail.buriedPersons.map((bp) => ({
+      id: bp.id,
+      name: bp.name,
+      nameKana: bp.nameKana,
+      relationship: bp.relationship,
+      deathDate: bp.deathDate || null,
+      age: bp.age,
+      gender: bp.gender,
+      burialDate: bp.burialDate || null,
+      notes: bp.notes,
+    })),
+    collectiveBurial: detail.collectiveBurial
+      ? {
+          burialCapacity: detail.collectiveBurial.burialCapacity,
+          validityPeriodYears: detail.collectiveBurial.validityPeriodYears,
+          billingAmount: detail.collectiveBurial.billingAmount,
+          notes: detail.collectiveBurial.notes,
+        }
+      : null,
+  };
 }

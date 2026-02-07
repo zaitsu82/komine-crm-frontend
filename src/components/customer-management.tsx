@@ -6,10 +6,9 @@ import { ViewType, TerminationFormData } from '@/types/customer-detail';
 import { Button } from '@/components/ui/button';
 import { createPlot, updatePlot, deletePlot, terminatePlot } from '@/lib/api/plots';
 import type { TerminationInput } from '@/lib/api/plots';
-import { formDataToCreateRequest, formDataToUpdateRequest } from '@/lib/adapters/plot-customer-bridge';
-import { CustomerFormData } from '@/lib/validations';
+import { PlotFormData, plotFormDataToCreateRequest, plotFormDataToUpdateRequest } from '@/lib/validations/plot-form';
 import { showSuccess, showError, showWarning, showValidationError, showApiSuccess, showApiError } from '@/lib/toast';
-import CustomerForm from '@/components/customer-form';
+import PlotForm from '@/components/plot-form';
 import PlotRegistry from '@/components/plot-registry';
 import PlotDetailView from '@/components/plot-detail-view';
 import CollectiveBurialManagement from '@/components/collective-burial-management';
@@ -81,12 +80,11 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
   };
 
 
-  const handleSaveCustomer = async (data: CustomerFormData) => {
+  const handleSavePlot = async (data: PlotFormData) => {
     setIsLoading(true);
     try {
       if (currentView === 'register') {
-        // 新規登録 - Plot API を使用
-        const request = formDataToCreateRequest(data);
+        const request = plotFormDataToCreateRequest(data);
         const response = await createPlot(request);
         if (response.success) {
           setCurrentView('registry');
@@ -95,8 +93,7 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
           showApiError('区画登録', response.error?.message);
         }
       } else if (currentView === 'edit' && selectedPlotId) {
-        // 更新 - Plot API を使用
-        const request = formDataToUpdateRequest(data);
+        const request = plotFormDataToUpdateRequest(data);
         const response = await updatePlot(selectedPlotId, request);
         if (response.success) {
           setCurrentView('plot-details');
@@ -105,8 +102,7 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
           showApiError('区画情報更新', response.error?.message);
         }
       }
-    } catch (error) {
-      console.error('Save error:', error);
+    } catch {
       showError('保存に失敗しました');
     } finally {
       setIsLoading(false);
@@ -267,12 +263,11 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
           </div>
         ) : currentView === 'register' || (currentView === 'edit' && selectedPlotId) ? (
           <>
-            {/* Customer Info Header for Register/Edit */}
             <div className="bg-yellow-100 border-b border-gray-300 px-6 py-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
                   <h2 className="text-lg font-semibold">
-                    {currentView === 'register' ? '新規顧客登録' : '顧客情報編集'}
+                    {currentView === 'register' ? '新規区画登録' : '区画情報編集'}
                   </h2>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -287,11 +282,10 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
               </div>
             </div>
 
-            {/* Customer Form with Tab Layout */}
             <div className="flex-1 p-6">
-              <CustomerForm
-                customer={undefined}
-                onSave={handleSaveCustomer}
+              <PlotForm
+                plotDetail={currentView === 'edit' ? selectedPlotDetail || undefined : undefined}
+                onSave={handleSavePlot}
                 onCancel={handleCancelForm}
                 isLoading={isLoading}
               />

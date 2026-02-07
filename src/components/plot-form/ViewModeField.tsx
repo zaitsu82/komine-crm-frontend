@@ -17,9 +17,6 @@ interface ViewModeFieldProps {
   className?: string;
 }
 
-/**
- * 閲覧モードと編集モードを切り替え可能なフィールドコンポーネント
- */
 export function ViewModeField({
   label,
   value,
@@ -71,9 +68,6 @@ interface ViewModeSelectProps {
   children: React.ReactNode;
 }
 
-/**
- * 閲覧モードと編集モードを切り替え可能なセレクトコンポーネント
- */
 export function ViewModeSelect({
   label,
   value,
@@ -119,9 +113,6 @@ interface ViewModeTextareaProps {
   rows?: number;
 }
 
-/**
- * 閲覧モードと編集モードを切り替え可能なテキストエリアコンポーネント
- */
 export function ViewModeTextarea({
   label,
   value,
