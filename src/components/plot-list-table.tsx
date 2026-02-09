@@ -100,7 +100,7 @@ export default function PlotListTable({
     setSearch,
     setAiueoTab,
     refresh,
-  } = usePlots({ limit: 1000 });
+  } = usePlots({ fetchAll: true });
 
   // 検索入力（デバウンス用）
   const [searchInput, setSearchInput] = useState('');

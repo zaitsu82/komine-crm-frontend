@@ -14,6 +14,7 @@ import {
 } from '@komine/types';
 import {
   getPlots,
+  getAllPlots,
   getPlotById,
   createPlot,
   updatePlot,
@@ -53,10 +54,11 @@ interface UsePlotsOptions {
   initialPage?: number;
   limit?: number;
   autoFetch?: boolean;
+  fetchAll?: boolean;
 }
 
 export function usePlots(options: UsePlotsOptions = {}): UsePlotsReturn {
-  const { initialPage = 1, limit = 50, autoFetch = true } = options;
+  const { initialPage = 1, limit = 50, autoFetch = true, fetchAll = false } = options;
 
   // 状態
   const [plots, setPlots] = useState<PlotListItem[]>([]);
@@ -77,32 +79,56 @@ export function usePlots(options: UsePlotsOptions = {}): UsePlotsReturn {
     setError(null);
 
     try {
-      const params: PlotSearchParams = {
-        page,
-        limit,
-        search: searchQuery || undefined,
-        areaName,
-      };
+      if (fetchAll) {
+        // 全件取得モード（クライアントサイドで絞り込み/ソートする場合）
+        const response = await getAllPlots({
+          search: searchQuery || undefined,
+          areaName,
+        });
 
-      const response = await getPlots(params);
+        if (response.success) {
+          let items = response.data;
 
-      if (response.success) {
-        let items = response.data.items;
+          if (aiueoTab !== 'all') {
+            items = filterPlotsByAiueo(items, aiueoTab);
+          }
 
-        // あいうえおタブでフィルタ（クライアントサイド）
-        if (aiueoTab !== 'all') {
-          items = filterPlotsByAiueo(items, aiueoTab);
+          items = sortPlotsByCustomerKana(items);
+
+          setPlots(items);
+          setTotal(items.length);
+          setTotalPages(1);
+        } else {
+          setError(response.error.message);
+          setPlots([]);
         }
-
-        // カナ順でソート
-        items = sortPlotsByCustomerKana(items);
-
-        setPlots(items);
-        setTotal(response.data.total);
-        setTotalPages(response.data.totalPages);
       } else {
-        setError(response.error.message);
-        setPlots([]);
+        // ページネーションモード
+        const params: PlotSearchParams = {
+          page,
+          limit,
+          search: searchQuery || undefined,
+          areaName,
+        };
+
+        const response = await getPlots(params);
+
+        if (response.success) {
+          let items = response.data.items;
+
+          if (aiueoTab !== 'all') {
+            items = filterPlotsByAiueo(items, aiueoTab);
+          }
+
+          items = sortPlotsByCustomerKana(items);
+
+          setPlots(items);
+          setTotal(response.data.total);
+          setTotalPages(response.data.totalPages);
+        } else {
+          setError(response.error.message);
+          setPlots([]);
+        }
       }
     } catch {
       setError('データの取得に失敗しました');
@@ -110,7 +136,7 @@ export function usePlots(options: UsePlotsOptions = {}): UsePlotsReturn {
     } finally {
       setIsLoading(false);
     }
-  }, [page, limit, searchQuery, areaName, aiueoTab]);
+  }, [page, limit, searchQuery, areaName, aiueoTab, fetchAll]);
 
   // 初回・依存変更時に自動取得
   useEffect(() => {

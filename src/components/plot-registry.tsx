@@ -11,8 +11,7 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { PlotListItem, PaymentStatus } from '@komine/types';
 import {
-  getPlots,
-  PlotSearchParams,
+  getAllPlots,
   filterPlotsByAiueo,
   getPlotDisplayStatus,
 } from '@/lib/api/plots';
@@ -106,10 +105,9 @@ export default function PlotRegistry({
     setIsLoading(true);
     setError(null);
     try {
-      const params: PlotSearchParams = { limit: 1000 };
-      const response = await getPlots(params);
+      const response = await getAllPlots();
       if (response.success) {
-        setPlots(response.data.items);
+        setPlots(response.data);
       } else {
         setError(response.error?.message || 'データの取得に失敗しました');
       }

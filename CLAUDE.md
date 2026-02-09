@@ -60,8 +60,8 @@ src/
 │   ├── useAsyncData.ts   # 非同期データ取得
 │   └── useAsyncList.ts   # ページネーション付きリスト
 ├── lib/                   # ユーティリティ
-│   ├── api.ts            # APIクライアント
-│   ├── validations.ts    # Zodスキーマ
+│   ├── api/              # APIクライアント（plots.ts, auth.ts, masters.ts等）
+│   ├── validations/      # Zodスキーマ（plot-form.ts）
 │   └── utils.ts          # 共通ユーティリティ
 ├── config/               # 設定
 │   └── api.ts            # API設定
@@ -169,29 +169,27 @@ npm run test:e2e
 npm run test:e2e:ui
 ```
 
-## データ統合ガイド
+## データモデル（区画ベース）
 
-### データ一元管理
-
-すべての情報は **顧客データ（Customer）を中心** に一元管理。
+システムは**区画（Plot）を中心**に設計。顧客中心ではない。
 
 ```
-Customer
-├── 基本情報（customerCode, name, address...）
-├── 区画情報（plotInfo）
-└── 合祀情報（collectiveBurialInfo[]）
+PhysicalPlot (物理区画)
+  ↓ 1:N
+ContractPlot (契約区画)
+  ↓ 1:1
+SaleContract (販売契約)
+  ↓ N:M via roles
+Customer (顧客 — 申込者・契約者)
 ```
 
-### データフロー
+### 主要モジュール
 
-```
-合祀申込 → 区画番号で顧客検索 → 顧客のcollectiveBurialInfoに追加
-```
-
-### 主要な統合関数
-
-- `integrateCollectiveBurialToCustomer()` - 合祀申込を顧客データに統合
-- `getTotalCollectiveBurialPersons()` - 全顧客の合祀人数を集計
+- `src/lib/api/plots.ts` — 区画APIクライアント（@komine/types使用）
+- `src/components/plot-form/` — 区画フォーム（BasicInfo, WorkBilling, Contacts, BurialInfo, History）
+- `src/lib/validations/plot-form.ts` — Zodバリデーション
+- `src/components/plot-list-table.tsx` — 区画一覧テーブル
+- `src/components/plot-detail-view.tsx` — 区画詳細表示
 
 ---
 
