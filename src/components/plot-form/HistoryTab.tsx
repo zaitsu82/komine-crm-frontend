@@ -39,9 +39,8 @@ export function HistoryTab({ plotDetail }: HistoryTabProps) {
         {histories.map((history) => (
           <div
             key={history.id}
-            className={`grid grid-cols-4 gap-4 px-3 py-2 text-sm cursor-pointer hover:bg-blue-50 ${
-              selectedId === history.id ? 'bg-blue-50' : ''
-            }`}
+            className={`grid grid-cols-4 gap-4 px-3 py-2 text-sm cursor-pointer hover:bg-blue-50 ${selectedId === history.id ? 'bg-blue-50' : ''
+              }`}
             onClick={() => setSelectedId(selectedId === history.id ? null : history.id)}
           >
             <span>{new Date(history.createdAt).toLocaleString('ja-JP')}</span>

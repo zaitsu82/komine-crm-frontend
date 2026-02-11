@@ -307,9 +307,8 @@ export default function CollectiveBurialListView({
                         return (
                           <tr
                             key={record.id}
-                            className={`cursor-pointer transition-all duration-200 hover:bg-cha-50 ${
-                              isCapacityReached ? 'bg-beni-50/30' : ''
-                            }`}
+                            className={`cursor-pointer transition-all duration-200 hover:bg-cha-50 ${isCapacityReached ? 'bg-beni-50/30' : ''
+                              }`}
                             onClick={() => onSelectRecord?.(record)}
                           >
                             <td className="px-4 py-3">

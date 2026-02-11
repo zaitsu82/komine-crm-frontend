@@ -377,62 +377,62 @@ export function plotFormDataToCreateRequest(formData: PlotFormData): CreatePlotR
     },
     workInfo: formData.workInfo
       ? {
-          companyName: formData.workInfo.companyName,
-          companyNameKana: formData.workInfo.companyNameKana,
-          workAddress: formData.workInfo.workAddress,
-          workPostalCode: formData.workInfo.workPostalCode,
-          workPhoneNumber: formData.workInfo.workPhoneNumber,
-          dmSetting: formData.workInfo.dmSetting,
-          addressType: formData.workInfo.addressType,
-          notes: formData.workInfo.notes || undefined,
-        }
+        companyName: formData.workInfo.companyName,
+        companyNameKana: formData.workInfo.companyNameKana,
+        workAddress: formData.workInfo.workAddress,
+        workPostalCode: formData.workInfo.workPostalCode,
+        workPhoneNumber: formData.workInfo.workPhoneNumber,
+        dmSetting: formData.workInfo.dmSetting,
+        addressType: formData.workInfo.addressType,
+        notes: formData.workInfo.notes || undefined,
+      }
       : undefined,
     billingInfo: formData.billingInfo
       ? {
-          billingType: formData.billingInfo.billingType,
-          bankName: formData.billingInfo.bankName,
-          branchName: formData.billingInfo.branchName,
-          accountType: formData.billingInfo.accountType,
-          accountNumber: formData.billingInfo.accountNumber,
-          accountHolder: formData.billingInfo.accountHolder,
-        }
+        billingType: formData.billingInfo.billingType,
+        bankName: formData.billingInfo.bankName,
+        branchName: formData.billingInfo.branchName,
+        accountType: formData.billingInfo.accountType,
+        accountNumber: formData.billingInfo.accountNumber,
+        accountHolder: formData.billingInfo.accountHolder,
+      }
       : undefined,
     usageFee: formData.usageFee
       ? {
-          calculationType: formData.usageFee.calculationType || undefined,
-          taxType: formData.usageFee.taxType || undefined,
-          billingType: formData.usageFee.billingType || undefined,
-          billingYears: formData.usageFee.billingYears || undefined,
-          usageFee: formData.usageFee.usageFee || undefined,
-          area: formData.usageFee.area || undefined,
-          unitPrice: formData.usageFee.unitPrice || undefined,
-          paymentMethod: formData.usageFee.paymentMethod || undefined,
-        }
+        calculationType: formData.usageFee.calculationType || undefined,
+        taxType: formData.usageFee.taxType || undefined,
+        billingType: formData.usageFee.billingType || undefined,
+        billingYears: formData.usageFee.billingYears || undefined,
+        usageFee: formData.usageFee.usageFee || undefined,
+        area: formData.usageFee.area || undefined,
+        unitPrice: formData.usageFee.unitPrice || undefined,
+        paymentMethod: formData.usageFee.paymentMethod || undefined,
+      }
       : undefined,
     managementFee: formData.managementFee
       ? {
-          calculationType: formData.managementFee.calculationType || undefined,
-          taxType: formData.managementFee.taxType || undefined,
-          billingType: formData.managementFee.billingType || undefined,
-          billingYears: formData.managementFee.billingYears || undefined,
-          area: formData.managementFee.area || undefined,
-          billingMonth: formData.managementFee.billingMonth || undefined,
-          managementFee: formData.managementFee.managementFee || undefined,
-          unitPrice: formData.managementFee.unitPrice || undefined,
-          lastBillingMonth: formData.managementFee.lastBillingMonth || undefined,
-          paymentMethod: formData.managementFee.paymentMethod || undefined,
-        }
+        calculationType: formData.managementFee.calculationType || undefined,
+        taxType: formData.managementFee.taxType || undefined,
+        billingType: formData.managementFee.billingType || undefined,
+        billingYears: formData.managementFee.billingYears || undefined,
+        area: formData.managementFee.area || undefined,
+        billingMonth: formData.managementFee.billingMonth || undefined,
+        managementFee: formData.managementFee.managementFee || undefined,
+        unitPrice: formData.managementFee.unitPrice || undefined,
+        lastBillingMonth: formData.managementFee.lastBillingMonth || undefined,
+        paymentMethod: formData.managementFee.paymentMethod || undefined,
+      }
       : undefined,
     gravestoneInfo: formData.gravestoneInfo
       ? {
-          gravestoneBase: formData.gravestoneInfo.gravestoneBase || undefined,
-          enclosurePosition: formData.gravestoneInfo.enclosurePosition || undefined,
-          gravestoneDealer: formData.gravestoneInfo.gravestoneDealer || undefined,
-          gravestoneType: formData.gravestoneInfo.gravestoneType || undefined,
-          surroundingArea: formData.gravestoneInfo.surroundingArea || undefined,
-          establishmentDeadline: formData.gravestoneInfo.establishmentDeadline || undefined,
-          establishmentDate: formData.gravestoneInfo.establishmentDate || undefined,
-        }
+        gravestoneBase: formData.gravestoneInfo.gravestoneBase || undefined,
+        enclosurePosition: formData.gravestoneInfo.enclosurePosition || undefined,
+        gravestoneDealer: formData.gravestoneInfo.gravestoneDealer || undefined,
+        gravestoneType: formData.gravestoneInfo.gravestoneType || undefined,
+        surroundingArea: formData.gravestoneInfo.surroundingArea || undefined,
+        establishmentDeadline: formData.gravestoneInfo.establishmentDeadline || undefined,
+        establishmentDate: formData.gravestoneInfo.establishmentDate || undefined,
+      }
       : undefined,
     familyContacts: formData.familyContacts?.map((fc) => ({
       emergencyContactFlag: fc.emergencyContactFlag,
@@ -460,11 +460,11 @@ export function plotFormDataToCreateRequest(formData: PlotFormData): CreatePlotR
     })),
     collectiveBurial: formData.collectiveBurial
       ? {
-          burialCapacity: formData.collectiveBurial.burialCapacity,
-          validityPeriodYears: formData.collectiveBurial.validityPeriodYears,
-          billingAmount: formData.collectiveBurial.billingAmount || undefined,
-          notes: formData.collectiveBurial.notes || undefined,
-        }
+        burialCapacity: formData.collectiveBurial.burialCapacity,
+        validityPeriodYears: formData.collectiveBurial.validityPeriodYears,
+        billingAmount: formData.collectiveBurial.billingAmount || undefined,
+        notes: formData.collectiveBurial.notes || undefined,
+      }
       : undefined,
   };
 }
@@ -612,62 +612,62 @@ export function plotDetailToFormData(detail: PlotDetailResponse): PlotFormData {
     },
     workInfo: customer?.workInfo
       ? {
-          companyName: customer.workInfo.companyName || '',
-          companyNameKana: customer.workInfo.companyNameKana || '',
-          workAddress: customer.workInfo.workAddress || '',
-          workPostalCode: customer.workInfo.workPostalCode || '',
-          workPhoneNumber: customer.workInfo.workPhoneNumber || '',
-          dmSetting: customer.workInfo.dmSetting || DmSetting.Allow,
-          addressType: customer.workInfo.addressType || AddressType.Home,
-          notes: customer.workInfo.notes || null,
-        }
+        companyName: customer.workInfo.companyName || '',
+        companyNameKana: customer.workInfo.companyNameKana || '',
+        workAddress: customer.workInfo.workAddress || '',
+        workPostalCode: customer.workInfo.workPostalCode || '',
+        workPhoneNumber: customer.workInfo.workPhoneNumber || '',
+        dmSetting: customer.workInfo.dmSetting || DmSetting.Allow,
+        addressType: customer.workInfo.addressType || AddressType.Home,
+        notes: customer.workInfo.notes || null,
+      }
       : null,
     billingInfo: customer?.billingInfo
       ? {
-          billingType: customer.billingInfo.billingType || BillingType.Individual,
-          bankName: customer.billingInfo.bankName || '',
-          branchName: customer.billingInfo.branchName || '',
-          accountType: customer.billingInfo.accountType || AccountType.Ordinary,
-          accountNumber: customer.billingInfo.accountNumber || '',
-          accountHolder: customer.billingInfo.accountHolder || '',
-        }
+        billingType: customer.billingInfo.billingType || BillingType.Individual,
+        bankName: customer.billingInfo.bankName || '',
+        branchName: customer.billingInfo.branchName || '',
+        accountType: customer.billingInfo.accountType || AccountType.Ordinary,
+        accountNumber: customer.billingInfo.accountNumber || '',
+        accountHolder: customer.billingInfo.accountHolder || '',
+      }
       : null,
     usageFee: detail.usageFee
       ? {
-          calculationType: detail.usageFee.calculationType,
-          taxType: detail.usageFee.taxType,
-          billingType: detail.usageFee.billingType,
-          billingYears: detail.usageFee.billingYears,
-          usageFee: detail.usageFee.usageFee,
-          area: detail.usageFee.area,
-          unitPrice: detail.usageFee.unitPrice,
-          paymentMethod: detail.usageFee.paymentMethod,
-        }
+        calculationType: detail.usageFee.calculationType,
+        taxType: detail.usageFee.taxType,
+        billingType: detail.usageFee.billingType,
+        billingYears: detail.usageFee.billingYears,
+        usageFee: detail.usageFee.usageFee,
+        area: detail.usageFee.area,
+        unitPrice: detail.usageFee.unitPrice,
+        paymentMethod: detail.usageFee.paymentMethod,
+      }
       : null,
     managementFee: detail.managementFee
       ? {
-          calculationType: detail.managementFee.calculationType,
-          taxType: detail.managementFee.taxType,
-          billingType: detail.managementFee.billingType,
-          billingYears: detail.managementFee.billingYears,
-          area: detail.managementFee.area,
-          billingMonth: detail.managementFee.billingMonth,
-          managementFee: detail.managementFee.managementFee,
-          unitPrice: detail.managementFee.unitPrice,
-          lastBillingMonth: detail.managementFee.lastBillingMonth,
-          paymentMethod: detail.managementFee.paymentMethod,
-        }
+        calculationType: detail.managementFee.calculationType,
+        taxType: detail.managementFee.taxType,
+        billingType: detail.managementFee.billingType,
+        billingYears: detail.managementFee.billingYears,
+        area: detail.managementFee.area,
+        billingMonth: detail.managementFee.billingMonth,
+        managementFee: detail.managementFee.managementFee,
+        unitPrice: detail.managementFee.unitPrice,
+        lastBillingMonth: detail.managementFee.lastBillingMonth,
+        paymentMethod: detail.managementFee.paymentMethod,
+      }
       : null,
     gravestoneInfo: detail.gravestoneInfo
       ? {
-          gravestoneBase: detail.gravestoneInfo.gravestoneBase,
-          enclosurePosition: detail.gravestoneInfo.enclosurePosition,
-          gravestoneDealer: detail.gravestoneInfo.gravestoneDealer,
-          gravestoneType: detail.gravestoneInfo.gravestoneType,
-          surroundingArea: detail.gravestoneInfo.surroundingArea,
-          establishmentDeadline: detail.gravestoneInfo.establishmentDeadline,
-          establishmentDate: detail.gravestoneInfo.establishmentDate,
-        }
+        gravestoneBase: detail.gravestoneInfo.gravestoneBase,
+        enclosurePosition: detail.gravestoneInfo.enclosurePosition,
+        gravestoneDealer: detail.gravestoneInfo.gravestoneDealer,
+        gravestoneType: detail.gravestoneInfo.gravestoneType,
+        surroundingArea: detail.gravestoneInfo.surroundingArea,
+        establishmentDeadline: detail.gravestoneInfo.establishmentDeadline,
+        establishmentDate: detail.gravestoneInfo.establishmentDate,
+      }
       : null,
     familyContacts: detail.familyContacts.map((fc) => ({
       id: fc.id,
@@ -697,11 +697,11 @@ export function plotDetailToFormData(detail: PlotDetailResponse): PlotFormData {
     })),
     collectiveBurial: detail.collectiveBurial
       ? {
-          burialCapacity: detail.collectiveBurial.burialCapacity,
-          validityPeriodYears: detail.collectiveBurial.validityPeriodYears,
-          billingAmount: detail.collectiveBurial.billingAmount,
-          notes: detail.collectiveBurial.notes,
-        }
+        burialCapacity: detail.collectiveBurial.burialCapacity,
+        validityPeriodYears: detail.collectiveBurial.validityPeriodYears,
+        billingAmount: detail.collectiveBurial.billingAmount,
+        notes: detail.collectiveBurial.notes,
+      }
       : null,
   };
 }

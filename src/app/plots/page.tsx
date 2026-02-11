@@ -68,11 +68,10 @@ function SidebarItem({
   return (
     <button
       onClick={onClick}
-      className={`w-full text-left px-4 py-2 rounded-md transition-colors ${
-        active
+      className={`w-full text-left px-4 py-2 rounded-md transition-colors ${active
           ? 'bg-blue-100 text-blue-700 font-semibold'
           : 'hover:bg-gray-100 text-gray-700'
-      }`}
+        }`}
     >
       {label}
     </button>

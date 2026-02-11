@@ -15,9 +15,9 @@ const buttonVariants = cva(
           "border-2 border-gin bg-white text-sumi shadow-elegant-sm hover:border-matsu hover:bg-matsu-50 hover:text-matsu hover:shadow-elegant hover:-translate-y-0.5 active:translate-y-0",
         secondary:
           "bg-kinari text-sumi border border-gin shadow-elegant-sm hover:bg-cha-50 hover:border-cha hover:shadow-elegant hover:-translate-y-0.5 active:translate-y-0",
-        ghost: 
+        ghost:
           "text-sumi hover:bg-kinari hover:text-matsu",
-        link: 
+        link:
           "text-matsu underline-offset-4 hover:underline hover:text-matsu-light",
         matsu:
           "bg-matsu text-white shadow-matsu hover:bg-matsu-light hover:shadow-elegant-lg hover:-translate-y-0.5 active:translate-y-0",
@@ -44,7 +44,7 @@ const buttonVariants = cva(
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
+  VariantProps<typeof buttonVariants> {
   asChild?: boolean
 }
 
