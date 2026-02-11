@@ -3,18 +3,17 @@
 /**
  * PlotRegistry - 区画台帳一覧コンポーネント
  *
- * CustomerRegistry の Plot-centric 版。
+ * サーバーサイド検索・ソート・ページネーション対応
  * @komine/types の PlotListItem を直接使用し、Customer型への変換なし。
- * Phase 3: 既存コンポーネントの移行
  */
 
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { PlotListItem, PaymentStatus } from '@komine/types';
 import {
-  getAllPlots,
-  filterPlotsByAiueo,
+  getPlots,
   getPlotDisplayStatus,
 } from '@/lib/api/plots';
+import type { PlotSearchParams } from '@/lib/api/plots';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -29,23 +28,39 @@ interface PlotRegistryProps {
 
 // ===== あいう順タブ =====
 
-const AIUEO_TABS = [
-  { key: 'あ', label: 'あ行', shortLabel: 'あ' },
-  { key: 'か', label: 'か行', shortLabel: 'か' },
-  { key: 'さ', label: 'さ行', shortLabel: 'さ' },
-  { key: 'た', label: 'た行', shortLabel: 'た' },
-  { key: 'な', label: 'な行', shortLabel: 'な' },
-  { key: 'は', label: 'は行', shortLabel: 'は' },
-  { key: 'ま', label: 'ま行', shortLabel: 'ま' },
-  { key: 'や', label: 'や行', shortLabel: 'や' },
-  { key: 'ら', label: 'ら行', shortLabel: 'ら' },
-  { key: 'わ', label: 'わ行', shortLabel: 'わ' },
+interface AiueoTab {
+  key: string;
+  label: string;
+  shortLabel: string;
+  kataKey?: string;
+}
+
+const AIUEO_TABS: AiueoTab[] = [
+  { key: 'あ', label: 'あ行', shortLabel: 'あ', kataKey: 'ア' },
+  { key: 'か', label: 'か行', shortLabel: 'か', kataKey: 'カ' },
+  { key: 'さ', label: 'さ行', shortLabel: 'さ', kataKey: 'サ' },
+  { key: 'た', label: 'た行', shortLabel: 'た', kataKey: 'タ' },
+  { key: 'な', label: 'な行', shortLabel: 'な', kataKey: 'ナ' },
+  { key: 'は', label: 'は行', shortLabel: 'は', kataKey: 'ハ' },
+  { key: 'ま', label: 'ま行', shortLabel: 'ま', kataKey: 'マ' },
+  { key: 'や', label: 'や行', shortLabel: 'や', kataKey: 'ヤ' },
+  { key: 'ら', label: 'ら行', shortLabel: 'ら', kataKey: 'ラ' },
+  { key: 'わ', label: 'わ行', shortLabel: 'わ', kataKey: 'ワ' },
   { key: 'その他', label: 'その他', shortLabel: '他' },
   { key: '全', label: '全て表示', shortLabel: '全' },
 ];
 
 type SortKey = 'status' | 'plotNumber' | 'customerName' | 'phoneNumber' | 'areaName' | 'contractDate' | 'paymentStatus' | 'managementFee';
 type SortOrder = 'asc' | 'desc';
+
+// サーバーサイドソート対応マッピング
+const SERVER_SORT_MAP: Partial<Record<SortKey, string>> = {
+  plotNumber: 'plotNumber',
+  customerName: 'customerName',
+  contractDate: 'contractDate',
+  paymentStatus: 'paymentStatus',
+  managementFee: 'managementFee',
+};
 
 // ===== 支払ステータス表示 =====
 
@@ -70,18 +85,11 @@ function formatContractDate(dateStr: string | null | undefined): string {
   }
 }
 
-function filterByAiueoLocal(plots: PlotListItem[], tab: string): PlotListItem[] {
-  if (tab === '全') return plots;
-  if (tab === 'その他') {
-    return plots.filter(p => {
-      const kana = p.customerNameKana || '';
-      if (!kana) return true;
-      // カタカナ範囲外のものを「その他」に
-      const firstChar = kana.charAt(0);
-      return firstChar < 'ア' || firstChar > 'ン';
-    });
-  }
-  return filterPlotsByAiueo(plots, tab);
+function formatMoneyString(value: string | null | undefined): string {
+  if (!value) return '-';
+  const num = Number(value.replace(/,/g, ''));
+  if (isNaN(num)) return '-';
+  return `${num.toLocaleString()}円`;
 }
 
 // ===== コンポーネント =====
@@ -92,6 +100,7 @@ export default function PlotRegistry({
   onNewPlot,
 }: PlotRegistryProps) {
   const [activeTab, setActiveTab] = useState('全');
+  const [searchInput, setSearchInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [plots, setPlots] = useState<PlotListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -100,14 +109,44 @@ export default function PlotRegistry({
   const [sortKey, setSortKey] = useState<SortKey>('plotNumber');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
 
-  // 区画データを非同期で取得
+  // サーバーサイドページネーション
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(50);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+
+  // サーバーサイドデータ取得
   const fetchPlots = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await getAllPlots();
+      const params: PlotSearchParams = {
+        page: currentPage,
+        limit: itemsPerPage,
+      };
+
+      if (searchQuery.trim()) {
+        params.search = searchQuery.trim();
+      }
+
+      // あいう順タブ → カタカナキーに変換してサーバーへ送信
+      const tabDef = AIUEO_TABS.find(t => t.key === activeTab);
+      if (tabDef?.kataKey) {
+        params.nameKanaPrefix = tabDef.kataKey;
+      }
+
+      // サーバー対応ソートキーのみ送信
+      const serverSortKey = SERVER_SORT_MAP[sortKey];
+      if (serverSortKey) {
+        params.sortBy = serverSortKey;
+        params.sortOrder = sortOrder;
+      }
+
+      const response = await getPlots(params);
       if (response.success) {
-        setPlots(response.data);
+        setPlots(response.data.items);
+        setTotalItems(response.data.total);
+        setTotalPages(response.data.totalPages);
       } else {
         setError(response.error?.message || 'データの取得に失敗しました');
       }
@@ -116,19 +155,24 @@ export default function PlotRegistry({
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [currentPage, itemsPerPage, searchQuery, activeTab, sortKey, sortOrder]);
 
   useEffect(() => {
     fetchPlots();
   }, [fetchPlots]);
 
-  // ページネーション用state
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(50);
+  // 検索実行（Enterキーまたは検索ボタンクリック）
+  const handleSearch = () => {
+    setSearchQuery(searchInput);
+    setCurrentPage(1);
+    if (searchInput.trim()) {
+      setActiveTab('全');
+    }
+  };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
-      handleSearchWithReset();
+      handleSearch();
     }
   };
 
@@ -139,100 +183,17 @@ export default function PlotRegistry({
       setSortKey(key);
       setSortOrder('asc');
     }
-  };
-
-  // フィルタ + ソート
-  const filteredPlots = useMemo(() => {
-    let filtered = plots;
-
-    // 検索クエリでフィルタ
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(plot =>
-        plot.plotNumber.toLowerCase().includes(query) ||
-        (plot.customerName?.toLowerCase().includes(query)) ||
-        (plot.customerNameKana?.toLowerCase().includes(query)) ||
-        (plot.customerPhoneNumber?.includes(query)) ||
-        (plot.areaName?.toLowerCase().includes(query))
-      );
-    }
-
-    // あいう順タブでフィルタ
-    filtered = filterByAiueoLocal(filtered, activeTab);
-
-    // ソート処理
-    filtered = [...filtered].sort((a, b) => {
-      let aValue: string | number = '';
-      let bValue: string | number = '';
-
-      switch (sortKey) {
-        case 'status': {
-          const statusOrder: Record<string, number> = { active: 0, attention: 1, overdue: 2 };
-          aValue = statusOrder[getPlotDisplayStatus(a)] ?? 0;
-          bValue = statusOrder[getPlotDisplayStatus(b)] ?? 0;
-          break;
-        }
-        case 'plotNumber':
-          aValue = a.plotNumber || '';
-          bValue = b.plotNumber || '';
-          break;
-        case 'customerName':
-          aValue = a.customerNameKana || a.customerName || '';
-          bValue = b.customerNameKana || b.customerName || '';
-          break;
-        case 'phoneNumber':
-          aValue = a.customerPhoneNumber || '';
-          bValue = b.customerPhoneNumber || '';
-          break;
-        case 'areaName':
-          aValue = a.areaName || '';
-          bValue = b.areaName || '';
-          break;
-        case 'contractDate':
-          aValue = a.contractDate || '';
-          bValue = b.contractDate || '';
-          break;
-        case 'paymentStatus':
-          aValue = a.paymentStatus || '';
-          bValue = b.paymentStatus || '';
-          break;
-        case 'managementFee':
-          aValue = parseFloat(a.managementFee || '0');
-          bValue = parseFloat(b.managementFee || '0');
-          break;
-      }
-
-      if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
-      if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
-      return 0;
-    });
-
-    return filtered;
-  }, [plots, searchQuery, activeTab, sortKey, sortOrder]);
-
-  // ページネーション計算
-  const totalItems = filteredPlots.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
-
-  const paginatedPlots = useMemo(() => {
-    return filteredPlots.slice(startIndex, endIndex);
-  }, [filteredPlots, startIndex, endIndex]);
-
-  const resetPage = () => setCurrentPage(1);
-
-  const handleSearchWithReset = () => {
-    resetPage();
-    if (searchQuery.trim()) {
-      setActiveTab('全');
-    }
+    setCurrentPage(1);
   };
 
   const handleTabChange = (tabKey: string) => {
     setActiveTab(tabKey);
-    resetPage();
+    setCurrentPage(1);
   };
+
+  // ページネーション表示用
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + plots.length;
 
   const goToPage = (page: number) => {
     if (page >= 1 && page <= totalPages) {
@@ -260,10 +221,6 @@ export default function PlotRegistry({
       e.preventDefault();
       handleTabChange(AIUEO_TABS[index].key);
     }
-  };
-
-  const getPlotCountForTab = (tabKey: string) => {
-    return filterByAiueoLocal(plots, tabKey).length;
   };
 
   // ステータスバッジ
@@ -309,14 +266,14 @@ export default function PlotRegistry({
           <Input
             type="text"
             placeholder="氏名・フリガナ・区画番号・電話番号で検索..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
             onKeyPress={handleKeyPress}
             className="h-10 text-sm"
           />
         </div>
         <Button
-          onClick={handleSearchWithReset}
+          onClick={handleSearch}
           variant="matsu"
           size="default"
           className="h-10"
@@ -349,7 +306,6 @@ export default function PlotRegistry({
           aria-label="あいう順で絞り込み"
         >
           {AIUEO_TABS.map((tab, index) => {
-            const plotCount = getPlotCountForTab(tab.key);
             const isActive = activeTab === tab.key;
 
             return (
@@ -366,17 +322,8 @@ export default function PlotRegistry({
                   "min-w-[44px] min-h-[44px] text-base",
                   isActive && "active"
                 )}
-                disabled={plotCount === 0 && tab.key !== '全'}
               >
                 {tab.shortLabel}
-                {plotCount > 0 && tab.key !== '全' && (
-                  <span className={cn(
-                    "ml-1 text-xs",
-                    isActive ? "text-white/80" : "text-hai"
-                  )}>
-                    {plotCount > 99 ? '99+' : plotCount}
-                  </span>
-                )}
               </button>
             );
           })}
@@ -537,8 +484,8 @@ export default function PlotRegistry({
                     </div>
                   </td>
                 </tr>
-              ) : paginatedPlots.length > 0 ? (
-                paginatedPlots.map((plot, index) => {
+              ) : plots.length > 0 ? (
+                plots.map((plot, index) => {
                   const absoluteIndex = startIndex + index;
                   const paymentStatus = plot.paymentStatus as PaymentStatus;
 
@@ -591,7 +538,7 @@ export default function PlotRegistry({
                         </span>
                       </td>
                       <td className="px-2 py-2 text-xs text-hai text-center">
-                        {plot.managementFee ? `${Number(plot.managementFee).toLocaleString()}円` : '-'}
+                        {formatMoneyString(plot.managementFee)}
                       </td>
                       <td className="px-2 py-2 text-xs text-hai truncate">
                         {plot.nextBillingDate ? new Date(plot.nextBillingDate).toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric' }) : '-'}
@@ -629,10 +576,6 @@ export default function PlotRegistry({
             {activeTab !== '全' && (
               <span className="ml-2">（{AIUEO_TABS.find(t => t.key === activeTab)?.label}）</span>
             )}
-          </div>
-          <div className="text-gin">|</div>
-          <div>
-            全 <span className="font-semibold text-sumi">{plots.length}</span> 件
           </div>
         </div>
 

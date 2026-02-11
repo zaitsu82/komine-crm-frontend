@@ -1,13 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { PlotListItem, ContractStatus } from '@komine/types';
-import { ViewType, TerminationFormData } from '@/types/customer-detail';
+import { PlotListItem } from '@komine/types';
+import { ViewType } from '@/types/customer-detail';
 import { Button } from '@/components/ui/button';
-import { createPlot, updatePlot, deletePlot, terminatePlot } from '@/lib/api/plots';
-import type { TerminationInput } from '@/lib/api/plots';
+import { createPlot, updatePlot, deletePlot } from '@/lib/api/plots';
 import { PlotFormData, plotFormDataToCreateRequest, plotFormDataToUpdateRequest } from '@/lib/validations/plot-form';
-import { showSuccess, showError, showWarning, showValidationError, showApiSuccess, showApiError } from '@/lib/toast';
+import { showError, showApiSuccess, showApiError } from '@/lib/toast';
 import PlotForm from '@/components/plot-form';
 import PlotRegistry from '@/components/plot-registry';
 import PlotDetailView from '@/components/plot-detail-view';
@@ -19,7 +18,6 @@ import { usePlotDetail } from '@/hooks/usePlots';
 
 import {
   CustomerDetailSidebar,
-  TerminationDialog,
   DeleteConfirmDialog,
 } from '@/components/customer-detail';
 
@@ -34,22 +32,8 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
   const [currentView, setCurrentView] = useState<ViewType>(initialView);
   const [isLoading, setIsLoading] = useState(false);
 
-  // 選択中の区画詳細を取得（解約状態の判定等に使用）
+  // 選択中の区画詳細を取得（編集モードで使用）
   const { plot: selectedPlotDetail } = usePlotDetail(selectedPlotId || '');
-  const isTerminated = selectedPlotDetail?.contractStatus === ContractStatus.Terminated
-    || selectedPlotDetail?.contractStatus === ContractStatus.Cancelled;
-
-  // 解約ダイアログ用のstate
-  const [showTerminationDialog, setShowTerminationDialog] = useState(false);
-  const [terminationForm, setTerminationForm] = useState<TerminationFormData>({
-    terminationDate: new Date().toISOString().split('T')[0],
-    reason: '',
-    processType: 'return',
-    processDetail: '',
-    refundAmount: '',
-    handledBy: '',
-    notes: ''
-  });
 
   // 削除ダイアログ用のstate
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -117,68 +101,6 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
     }
   };
 
-  // 解約ダイアログを開く
-  const handleOpenTerminationDialog = () => {
-    if (!selectedPlotId) return;
-    if (isTerminated) {
-      showWarning('この区画は既に解約済みです');
-      return;
-    }
-    setTerminationForm({
-      terminationDate: new Date().toISOString().split('T')[0],
-      reason: '',
-      processType: 'return',
-      processDetail: '',
-      refundAmount: '',
-      handledBy: '',
-      notes: ''
-    });
-    setShowTerminationDialog(true);
-  };
-
-  // 解約処理を実行
-  const handleTerminate = async () => {
-    if (!selectedPlotId) return;
-
-    // バリデーション
-    if (!terminationForm.reason.trim()) {
-      showValidationError('解約理由を入力してください');
-      return;
-    }
-    if (!terminationForm.handledBy.trim()) {
-      showValidationError('担当者を入力してください');
-      return;
-    }
-
-    // 確認ダイアログ
-    if (!confirm(`${selectedPlotName || selectedPlotCode} の契約を解約処理します。\nこの操作は取り消せません。よろしいですか？`)) {
-      return;
-    }
-
-    const terminationInput: TerminationInput = {
-      terminationDate: new Date(terminationForm.terminationDate),
-      reason: terminationForm.reason,
-      processType: terminationForm.processType,
-      processDetail: terminationForm.processDetail || undefined,
-      refundAmount: terminationForm.refundAmount ? parseInt(terminationForm.refundAmount, 10) : undefined,
-      handledBy: terminationForm.handledBy,
-      notes: terminationForm.notes || undefined,
-    };
-
-    try {
-      const response = await terminatePlot(selectedPlotId, terminationInput);
-
-      if (response.success) {
-        setShowTerminationDialog(false);
-        showSuccess('解約処理が完了しました');
-      } else {
-        showApiError('解約処理', response.error?.message);
-      }
-    } catch {
-      showError('解約処理中にエラーが発生しました');
-    }
-  };
-
   // 削除ダイアログを開く
   const handleOpenDeleteDialog = () => {
     if (!selectedPlotId) return;
@@ -228,10 +150,8 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
       <CustomerDetailSidebar
         currentView={currentView}
         selectedPlotId={selectedPlotId}
-        isTerminated={isTerminated}
         onBackToRegistry={handleBackToRegistry}
         onViewChange={handleViewChange}
-        onTermination={handleOpenTerminationDialog}
         onDelete={handleOpenDeleteDialog}
       />
 
@@ -333,19 +253,6 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
           </div>
         )}
       </div>
-
-      {/* 解約入力ダイアログ */}
-      {selectedPlotId && (
-        <TerminationDialog
-          isOpen={showTerminationDialog}
-          targetName={selectedPlotName || selectedPlotCode}
-          targetCode={selectedPlotCode}
-          formData={terminationForm}
-          onFormChange={setTerminationForm}
-          onTerminate={handleTerminate}
-          onClose={() => setShowTerminationDialog(false)}
-        />
-      )}
 
       {/* 削除確認ダイアログ */}
       {selectedPlotId && (

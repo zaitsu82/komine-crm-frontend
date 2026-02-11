@@ -5,17 +5,6 @@
  * Customer 型に依存しない共通定数として使用。
  */
 
-// ===== 解約処理型定義 =====
-
-export type TerminationProcessType = 'return' | 'transfer' | 'perpetual_memorial' | 'other';
-
-export const TERMINATION_PROCESS_TYPE_LABELS: Record<TerminationProcessType, string> = {
-  return: '返還（墓石撤去）',
-  transfer: '移転',
-  perpetual_memorial: '永代供養へ移行',
-  other: 'その他',
-};
-
 // ===== 工事情報型定義 =====
 
 export type ConstructionType = 'gravestone' | 'enclosure' | 'additional' | 'repair' | 'other';

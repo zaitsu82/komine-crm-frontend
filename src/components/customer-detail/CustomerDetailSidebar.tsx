@@ -8,20 +8,16 @@ import { useAuth } from '@/contexts/auth-context';
 interface CustomerDetailSidebarProps {
   currentView: ViewType;
   selectedPlotId: string | null;
-  isTerminated?: boolean;
   onBackToRegistry: () => void;
   onViewChange: (view: ViewType) => void;
-  onTermination: () => void;
   onDelete?: () => void;
 }
 
 export default function CustomerDetailSidebar({
   currentView,
   selectedPlotId,
-  isTerminated = false,
   onBackToRegistry,
   onViewChange,
-  onTermination,
   onDelete,
 }: CustomerDetailSidebarProps) {
   const { user, logout, isLoading } = useAuth();
@@ -117,21 +113,6 @@ export default function CustomerDetailSidebar({
               size="lg"
             >
               書類履歴
-            </Button>
-
-            <div className="border-t border-gray-300 my-4"></div>
-
-            <Button
-              onClick={onTermination}
-              className={`w-full btn-senior mt-2 border-none ${isTerminated
-                ? 'bg-gray-400 text-white cursor-not-allowed'
-                : 'bg-white text-red-600 hover:bg-red-50 border-red-600'
-                }`}
-              variant="outline"
-              size="lg"
-              disabled={isTerminated}
-            >
-              {isTerminated ? '解約済み' : '解約入力'}
             </Button>
 
             {/* 削除ボタン（管理者専用） */}

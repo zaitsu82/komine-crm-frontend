@@ -18,8 +18,6 @@ import { BasicInfoTab } from './BasicInfoTab';
 import { WorkBillingTab } from './WorkBillingTab';
 import { ContactsTab } from './ContactsTab';
 import { BurialInfoTab } from './BurialInfoTab';
-import { HistoryTab } from './HistoryTab';
-
 export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProps) {
   const isEditing = !!plotDetail;
 
@@ -110,7 +108,7 @@ export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProp
       )}
 
       <Tabs defaultValue="basic-info" className="w-full">
-        <TabsList className="grid w-full grid-cols-5 h-auto">
+        <TabsList className="grid w-full grid-cols-4 h-auto">
           <TabsTrigger
             value="basic-info"
             className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white"
@@ -134,12 +132,6 @@ export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProp
             className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white"
           >
             埋葬情報
-          </TabsTrigger>
-          <TabsTrigger
-            value="history"
-            className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white"
-          >
-            履歴情報
           </TabsTrigger>
         </TabsList>
 
@@ -171,9 +163,6 @@ export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProp
           />
         </TabsContent>
 
-        <TabsContent value="history" className="space-y-6 mt-6">
-          <HistoryTab plotDetail={plotDetail} />
-        </TabsContent>
       </Tabs>
 
       <div className="flex justify-end space-x-4 mt-8 pt-6 border-t">

@@ -46,6 +46,7 @@ export interface PlotSearchParams {
   contractStatus?: ContractStatus;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
+  nameKanaPrefix?: string;
 }
 
 /**
@@ -223,17 +224,17 @@ async function mockGetPlotById(
     usageFee: null,
     managementFee: plot.managementFee
       ? {
-          calculationType: null,
-          taxType: null,
-          billingType: null,
-          billingYears: null,
-          area: null,
-          billingMonth: null,
-          managementFee: plot.managementFee,
-          unitPrice: null,
-          lastBillingMonth: null,
-          paymentMethod: null,
-        }
+        calculationType: null,
+        taxType: null,
+        billingType: null,
+        billingYears: null,
+        area: null,
+        billingMonth: null,
+        managementFee: plot.managementFee,
+        unitPrice: null,
+        lastBillingMonth: null,
+        paymentMethod: null,
+      }
       : null,
     buriedPersons: [],
     familyContacts: [],
@@ -368,6 +369,7 @@ export async function getPlots(
     contractStatus: params.contractStatus,
     sortBy: params.sortBy,
     sortOrder: params.sortOrder,
+    nameKanaPrefix: params.nameKanaPrefix,
   });
 
   if (!response.success) {
@@ -396,7 +398,7 @@ export async function getAllPlots(
   const allItems: PlotListItem[] = [];
   let page = 1;
 
-  for (;;) {
+  for (; ;) {
     const response = await getPlots({ ...params, page, limit: 100 });
 
     if (!response.success) {
@@ -416,13 +418,19 @@ export async function getAllPlots(
  * 区画詳細取得
  */
 export async function getPlotById(
-  id: string
+  id: string,
+  options?: { includeHistory?: boolean }
 ): Promise<ApiResponse<PlotDetailResponse>> {
   if (shouldUseMockData()) {
     return mockGetPlotById(id);
   }
 
-  return apiGet<PlotDetailResponse>(`/plots/${id}`);
+  const params = new URLSearchParams();
+  if (options?.includeHistory) {
+    params.set('includeHistory', 'true');
+  }
+  const query = params.toString();
+  return apiGet<PlotDetailResponse>(`/plots/${id}${query ? `?${query}` : ''}`);
 }
 
 /**
@@ -451,53 +459,6 @@ export async function updatePlot(
   }
 
   return apiPut<PlotDetailResponse>(`/plots/${id}`, request);
-}
-
-/**
- * 解約入力パラメータ
- */
-export interface TerminationInput {
-  terminationDate: Date;
-  reason: string;
-  processType: string;
-  processDetail?: string;
-  refundAmount?: number;
-  handledBy: string;
-  notes?: string;
-}
-
-/**
- * 区画解約
- */
-export async function terminatePlot(
-  id: string,
-  input: TerminationInput
-): Promise<ApiResponse<PlotDetailResponse>> {
-  if (shouldUseMockData()) {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    // モック: 既存データを返す（ステータス変更のシミュレーション）
-    const response = await getPlotById(id);
-    if (!response.success) return response;
-    return {
-      success: true,
-      data: {
-        ...response.data,
-        contractStatus: 'terminated' as ContractStatus,
-      },
-    };
-  }
-
-  return apiPut<PlotDetailResponse>(`/plots/${id}`, {
-    termination: {
-      terminationDate: input.terminationDate.toISOString(),
-      reason: input.reason,
-      processType: input.processType,
-      processDetail: input.processDetail,
-      refundAmount: input.refundAmount,
-      handledBy: input.handledBy,
-      notes: input.notes,
-    },
-  });
 }
 
 /**

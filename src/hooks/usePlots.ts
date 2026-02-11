@@ -14,14 +14,11 @@ import {
 } from '@komine/types';
 import {
   getPlots,
-  getAllPlots,
   getPlotById,
   createPlot,
   updatePlot,
   deletePlot,
   PlotSearchParams,
-  sortPlotsByCustomerKana,
-  filterPlotsByAiueo,
 } from '@/lib/api/plots';
 
 // ===== usePlots: 区画一覧フック =====
@@ -50,15 +47,20 @@ interface UsePlotsReturn extends UsePlotsState, UsePlotsActions {
   aiueoTab: string;
 }
 
+// ひらがな → カタカナ変換マッピング（サーバーサイドフィルタ用）
+const HIRAGANA_TO_KATAKANA_MAP: Record<string, string> = {
+  'あ': 'ア', 'か': 'カ', 'さ': 'サ', 'た': 'タ', 'な': 'ナ',
+  'は': 'ハ', 'ま': 'マ', 'や': 'ヤ', 'ら': 'ラ', 'わ': 'ワ',
+};
+
 interface UsePlotsOptions {
   initialPage?: number;
   limit?: number;
   autoFetch?: boolean;
-  fetchAll?: boolean;
 }
 
 export function usePlots(options: UsePlotsOptions = {}): UsePlotsReturn {
-  const { initialPage = 1, limit = 50, autoFetch = true, fetchAll = false } = options;
+  const { initialPage = 1, limit = 50, autoFetch = true } = options;
 
   // 状態
   const [plots, setPlots] = useState<PlotListItem[]>([]);
@@ -73,62 +75,36 @@ export function usePlots(options: UsePlotsOptions = {}): UsePlotsReturn {
   const [areaName, setAreaName] = useState<string | undefined>(undefined);
   const [aiueoTab, setAiueoTab] = useState('all');
 
-  // データ取得
+  // サーバーサイドデータ取得
   const fetchPlots = useCallback(async () => {
     setIsLoading(true);
     setError(null);
 
     try {
-      if (fetchAll) {
-        // 全件取得モード（クライアントサイドで絞り込み/ソートする場合）
-        const response = await getAllPlots({
-          search: searchQuery || undefined,
-          areaName,
-        });
+      const params: PlotSearchParams = {
+        page,
+        limit,
+        search: searchQuery || undefined,
+        areaName,
+      };
 
-        if (response.success) {
-          let items = response.data;
-
-          if (aiueoTab !== 'all') {
-            items = filterPlotsByAiueo(items, aiueoTab);
-          }
-
-          items = sortPlotsByCustomerKana(items);
-
-          setPlots(items);
-          setTotal(items.length);
-          setTotalPages(1);
-        } else {
-          setError(response.error.message);
-          setPlots([]);
+      // あいう順タブ → カタカナキーに変換してサーバーへ送信
+      if (aiueoTab !== 'all') {
+        const kataKey = HIRAGANA_TO_KATAKANA_MAP[aiueoTab];
+        if (kataKey) {
+          params.nameKanaPrefix = kataKey;
         }
+      }
+
+      const response = await getPlots(params);
+
+      if (response.success) {
+        setPlots(response.data.items);
+        setTotal(response.data.total);
+        setTotalPages(response.data.totalPages);
       } else {
-        // ページネーションモード
-        const params: PlotSearchParams = {
-          page,
-          limit,
-          search: searchQuery || undefined,
-          areaName,
-        };
-
-        const response = await getPlots(params);
-
-        if (response.success) {
-          let items = response.data.items;
-
-          if (aiueoTab !== 'all') {
-            items = filterPlotsByAiueo(items, aiueoTab);
-          }
-
-          items = sortPlotsByCustomerKana(items);
-
-          setPlots(items);
-          setTotal(response.data.total);
-          setTotalPages(response.data.totalPages);
-        } else {
-          setError(response.error.message);
-          setPlots([]);
-        }
+        setError(response.error.message);
+        setPlots([]);
       }
     } catch {
       setError('データの取得に失敗しました');
@@ -136,7 +112,7 @@ export function usePlots(options: UsePlotsOptions = {}): UsePlotsReturn {
     } finally {
       setIsLoading(false);
     }
-  }, [page, limit, searchQuery, areaName, aiueoTab, fetchAll]);
+  }, [page, limit, searchQuery, areaName, aiueoTab]);
 
   // 初回・依存変更時に自動取得
   useEffect(() => {
@@ -208,7 +184,7 @@ export function usePlotDetail(id: string | null): UsePlotDetailReturn {
     setError(null);
 
     try {
-      const response = await getPlotById(id);
+      const response = await getPlotById(id, { includeHistory: true });
 
       if (response.success) {
         setPlot(response.data);

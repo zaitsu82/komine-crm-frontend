@@ -90,9 +90,10 @@ export default function PlotListTable({
   const [sortKey, setSortKey] = useState<SortKey>('customerName');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
 
-  // usePlotsフックを使用
+  // usePlotsフックを使用（サーバーサイド検索）
   const {
     plots,
+    total,
     isLoading,
     error,
     searchQuery,
@@ -100,7 +101,7 @@ export default function PlotListTable({
     setSearch,
     setAiueoTab,
     refresh,
-  } = usePlots({ fetchAll: true });
+  } = usePlots();
 
   // 検索入力（デバウンス用）
   const [searchInput, setSearchInput] = useState('');
@@ -431,7 +432,7 @@ export default function PlotListTable({
 
       {/* フッター */}
       <div className="text-right text-sm text-gray-600">
-        全 {sortedPlots.length} 件
+        全 {total} 件
       </div>
     </div>
   );

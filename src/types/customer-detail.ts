@@ -1,5 +1,3 @@
-import { TerminationProcessType } from './plot-constants';
-
 // 顧客詳細画面のビュータイプ
 export type ViewType =
   | 'registry'
@@ -29,17 +27,6 @@ export interface ImportantNote {
   date: string;
   priority: '要注意' | '注意' | '参考';
   content: string;
-}
-
-// 解約フォームの型定義
-export interface TerminationFormData {
-  terminationDate: string;
-  reason: string;
-  processType: TerminationProcessType;
-  processDetail: string;
-  refundAmount: string;
-  handledBy: string;
-  notes: string;
 }
 
 // サイドバーメニュー項目

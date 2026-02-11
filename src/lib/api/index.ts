@@ -41,17 +41,14 @@ export {
   createPlot,
   updatePlot,
   deletePlot,
-  terminatePlot,
   getPrimaryCustomer,
   getPlotDisplayStatus,
   sortPlotsByNumber,
   sortPlotsByCustomerKana,
-  filterPlotsByAiueo,
 } from './plots';
 export type {
   PlotSearchParams,
   PlotListResult,
-  TerminationInput,
 } from './plots';
 
 // マスタAPIのエクスポート

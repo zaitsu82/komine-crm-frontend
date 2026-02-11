@@ -55,6 +55,31 @@ function authUserToUser(authUser: AuthUser): User {
   };
 }
 
+// ===== ログインエラーメッセージマッピング =====
+
+/**
+ * エラーコードからユーザー向けメッセージを返す
+ * client.ts のエラーコードとバックエンドのエラーコードの両方に対応
+ */
+function getLoginErrorMessage(code: string, fallbackMessage?: string): string {
+  switch (code) {
+    case 'INVALID_CREDENTIALS':
+      return 'メールアドレスまたはパスワードが正しくありません';
+    case 'USER_INACTIVE':
+      return 'このアカウントは無効です。管理者にお問い合わせください';
+    case 'NETWORK_ERROR':
+      return 'サーバーに接続できません。ネットワーク接続を確認してください';
+    case 'TIMEOUT':
+      return 'サーバーからの応答がありません。しばらく待ってから再度お試しください';
+    default:
+      // HTTP_5xx系のエラー（503等）
+      if (code.startsWith('HTTP_5')) {
+        return 'サーバーが一時的に利用できません。しばらく待ってから再度お試しください';
+      }
+      return fallbackMessage || 'ログインに失敗しました。しばらく待ってから再度お試しください';
+  }
+}
+
 // トークン有効期限チェック間隔（1分）
 const TOKEN_CHECK_INTERVAL = 60 * 1000;
 
@@ -197,13 +222,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { success: true };
     }
 
-    setError(response.error.message);
+    const errorMessage = getLoginErrorMessage(response.error.code, response.error.message);
+    setError(errorMessage);
     setIsLoading(false);
     toast.error('ログイン失敗', {
-      description: response.error.message,
+      description: errorMessage,
       duration: 5000,
     });
-    return { success: false, error: response.error.message };
+    return { success: false, error: errorMessage };
   }, []);
 
   // ログアウト処理
