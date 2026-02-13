@@ -14,7 +14,7 @@ import {
   getAvailableCollectiveBurialYears,
   getCollectiveBurialStatsBySection,
   getCollectiveBurialStatsByYear,
-} from '@/lib/collective-burial-list-data';
+} from '@/lib/mock-data/collective-burial-list-data';
 
 interface CollectiveBurialListProps {
   onBack?: () => void;

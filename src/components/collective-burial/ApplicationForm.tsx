@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { collectiveBurialApplicationSchema, CollectiveBurialApplicationFormValues } from '@/lib/validations';
-import { createCollectiveBurialApplication, getCollectiveBurialApplications } from '@/lib/collective-burial';
+import { createCollectiveBurialApplication, getCollectiveBurialApplications } from '@/lib/mock-data/collective-burial';
 import { CollectiveBurialApplication } from '@/types/collective-burial';
 import CapacityWarningDialog from '@/components/capacity-warning-dialog';
 import { COLLECTIVE_BURIAL_LIMITS, getCapacityStatus, getRemainingCapacity, getCapacityPercentage } from '@/config/collective-burial-limits';

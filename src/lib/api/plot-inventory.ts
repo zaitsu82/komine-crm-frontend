@@ -13,12 +13,12 @@ import {
   PlotInventoryItem,
   InventorySummary as MockInventorySummary,
   PeriodSummary as MockPeriodSummary,
-} from '../plot-inventory';
+} from '../mock-data/plot-inventory';
 import {
   getAllPlotsByArea,
   getPlotsByAreaForPeriod,
   PlotByAreaItem,
-} from '../plot-inventory-by-area';
+} from '../mock-data/plot-inventory-by-area';
 
 // ==================== 型定義 ====================
 

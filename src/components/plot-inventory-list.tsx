@@ -12,7 +12,7 @@ import {
   getSoldOutPlots,
   getInventorySortedByUsageRate,
   getInventorySortedByRemaining,
-} from '@/lib/plot-inventory';
+} from '@/lib/mock-data/plot-inventory';
 import { PlotPeriod } from '@/types/plot-constants';
 
 type ViewMode = 'all' | 'period' | 'available' | 'soldout' | 'usage-rate' | 'remaining';
