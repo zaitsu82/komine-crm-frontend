@@ -149,14 +149,13 @@ export function BurialInfoTab({
 
                   {/* Gender */}
                   <div>
-                    <Label htmlFor={`buriedPersons.${index}.gender`}>性別</Label>
                     <ViewModeSelect
-                      name={`buriedPersons.${index}.gender`}
+                      label="性別"
                       value={watch(`buriedPersons.${index}.gender`) || ''}
-                      onChange={(value) =>
+                      onValueChange={(value: string) =>
                         setValue(`buriedPersons.${index}.gender`, value as Gender)
                       }
-                      isViewMode={false}
+                      viewMode={false}
                     >
                       {Object.entries(genderLabels).map(([value, label]) => (
                         <SelectItem key={value} value={value}>

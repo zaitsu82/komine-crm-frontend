@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useForm, useFieldArray, Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   plotFormSchema,
@@ -47,7 +47,7 @@ export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProp
     watch,
     control,
   } = useForm<PlotFormData>({
-    resolver: zodResolver(plotFormSchema),
+    resolver: zodResolver(plotFormSchema) as Resolver<PlotFormData>,
     defaultValues: plotDetail
       ? plotDetailToFormData(plotDetail)
       : defaultPlotFormData,

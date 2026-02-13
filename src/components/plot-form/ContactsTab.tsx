@@ -259,14 +259,13 @@ export function ContactsTab({
 
                 {/* Mailing Type */}
                 <div>
-                  <Label htmlFor={`familyContacts.${index}.mailingType`}>宛先区分</Label>
                   <ViewModeSelect
-                    name={`familyContacts.${index}.mailingType`}
+                    label="宛先区分"
                     value={watch(`familyContacts.${index}.mailingType`) || ''}
-                    onChange={(value) =>
+                    onValueChange={(value: string) =>
                       setValue(`familyContacts.${index}.mailingType`, value as AddressType)
                     }
-                    isViewMode={false}
+                    viewMode={false}
                   >
                     {Object.entries(addressTypeLabels).map(([value, label]) => (
                       <SelectItem key={value} value={value}>
