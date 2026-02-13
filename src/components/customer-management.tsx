@@ -10,7 +10,7 @@ import { showError, showApiSuccess, showApiError } from '@/lib/toast';
 import PlotForm from '@/components/plot-form';
 import PlotRegistry from '@/components/plot-registry';
 import PlotDetailView from '@/components/plot-detail-view';
-import CollectiveBurialManagement from '@/components/collective-burial-management';
+import CollectiveBurialManagement from '@/components/collective-burial';
 import PlotAvailabilityManagement from '@/components/plot-availability-management';
 import StaffManagement from '@/components/staff-management';
 import { DocumentManagement } from '@/components/document-management';

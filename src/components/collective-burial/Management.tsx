@@ -6,9 +6,9 @@
  */
 
 import { useState, useCallback } from 'react';
-import CollectiveBurialListView from '@/components/collective-burial-list-view';
-import CollectiveBurialDetailView from '@/components/collective-burial-detail-view';
-import CollectiveBurialForm from '@/components/collective-burial-form';
+import CollectiveBurialListView from './ListView';
+import CollectiveBurialDetailView from './DetailView';
+import CollectiveBurialForm from './Form';
 import { useCollectiveBurialDetail } from '@/hooks/useCollectiveBurials';
 import { CollectiveBurialListItem } from '@/lib/api';
 
