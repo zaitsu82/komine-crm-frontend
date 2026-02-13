@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { PlotListItem } from '@komine/types';
-import { ViewType } from '@/types/customer-detail';
+import { ViewType } from '@/types/plot-detail';
 import { Button } from '@/components/ui/button';
 import { createPlot, updatePlot, deletePlot } from '@/lib/api/plots';
 import { PlotFormData, plotFormDataToCreateRequest, plotFormDataToUpdateRequest } from '@/lib/validations/plot-form';
@@ -17,15 +17,15 @@ import { DocumentManagement } from '@/components/document-management';
 import { usePlotDetail } from '@/hooks/usePlots';
 
 import {
-  CustomerDetailSidebar,
+  PlotDetailSidebar,
   DeleteConfirmDialog,
-} from '@/components/customer-detail';
+} from '@/components/plot-detail-sidebar';
 
-interface CustomerManagementProps {
+interface PlotManagementProps {
   initialView?: ViewType;
 }
 
-export default function CustomerManagement({ initialView = 'registry' }: CustomerManagementProps) {
+export default function PlotManagement({ initialView = 'registry' }: PlotManagementProps) {
   const [selectedPlotId, setSelectedPlotId] = useState<string | null>(null);
   const [selectedPlotName, setSelectedPlotName] = useState<string>('');
   const [selectedPlotCode, setSelectedPlotCode] = useState<string>('');
@@ -147,7 +147,7 @@ export default function CustomerManagement({ initialView = 'registry' }: Custome
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Left Sidebar Menu */}
-      <CustomerDetailSidebar
+      <PlotDetailSidebar
         currentView={currentView}
         selectedPlotId={selectedPlotId}
         onBackToRegistry={handleBackToRegistry}

@@ -2,10 +2,10 @@
 
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ViewType, MENU_ITEMS } from '@/types/customer-detail';
+import { ViewType, MENU_ITEMS } from '@/types/plot-detail';
 import { useAuth } from '@/contexts/auth-context';
 
-interface CustomerDetailSidebarProps {
+interface PlotDetailSidebarProps {
   currentView: ViewType;
   selectedPlotId: string | null;
   onBackToRegistry: () => void;
@@ -13,13 +13,13 @@ interface CustomerDetailSidebarProps {
   onDelete?: () => void;
 }
 
-export default function CustomerDetailSidebar({
+export default function PlotDetailSidebar({
   currentView,
   selectedPlotId,
   onBackToRegistry,
   onViewChange,
   onDelete,
-}: CustomerDetailSidebarProps) {
+}: PlotDetailSidebarProps) {
   const { user, logout, isLoading } = useAuth();
   const router = useRouter();
 
