@@ -335,15 +335,15 @@ export default function PlotRegistry({
         <div className="overflow-auto h-full">
           <table className="w-full divide-y divide-gin text-sm table-fixed">
             <colgroup>
-              <col className="w-[44px]" />
-              <col className="w-[72px]" />
-              <col className="w-[56px]" />
-              <col className="w-[110px]" />
-              <col className="w-[100px]" />
-              <col className="w-[68px]" />
-              <col className="w-[72px]" />
-              <col className="w-[68px]" />
-              <col />
+              <col className="w-[44px]" />   {/* 状態 — バッジアイコン */}
+              <col className="w-[72px]" />   {/* 区画No */}
+              <col className="w-[60px]" />   {/* エリア */}
+              <col />                        {/* 契約者 — 残り幅を優先配分 */}
+              <col className="w-[110px]" />  {/* 電話 */}
+              <col className="w-[68px]" />   {/* 契約日 */}
+              <col className="w-[68px]" />   {/* 入金 */}
+              <col className="w-[80px]" />   {/* 管理料 */}
+              <col className="w-[68px]" />   {/* 次請求 */}
             </colgroup>
             <thead className="bg-gradient-matsu sticky top-0 z-10">
               <tr>
@@ -502,23 +502,23 @@ export default function PlotRegistry({
                       <td className="px-2 py-2 text-center">
                         {getStatusBadge(plot)}
                       </td>
-                      <td className="px-2 py-2 font-mono text-matsu font-medium text-xs truncate">
+                      <td className="px-2 py-2 font-mono text-matsu font-medium text-xs truncate" title={plot.plotNumber}>
                         {plot.plotNumber}
                       </td>
-                      <td className="px-2 py-2 text-xs text-hai truncate">
+                      <td className="px-2 py-2 text-xs text-hai truncate" title={plot.areaName || undefined}>
                         {plot.areaName || '-'}
                       </td>
                       <td className="px-2 py-2">
                         <div className="truncate">
-                          <div className="font-medium text-sumi text-sm truncate">
+                          <div className="font-medium text-sumi text-sm truncate" title={plot.customerName || undefined}>
                             {plot.customerName || '-'}
                           </div>
-                          <div className="text-xs text-hai truncate">
+                          <div className="text-xs text-hai truncate" title={plot.customerNameKana || undefined}>
                             {plot.customerNameKana || ''}
                           </div>
                         </div>
                       </td>
-                      <td className="px-2 py-2 text-xs text-hai truncate">
+                      <td className="px-2 py-2 text-xs text-hai truncate" title={plot.customerPhoneNumber || undefined}>
                         {plot.customerPhoneNumber || '-'}
                       </td>
                       <td className="px-2 py-2 text-xs text-hai text-center">
@@ -540,7 +540,7 @@ export default function PlotRegistry({
                       <td className="px-2 py-2 text-xs text-hai text-center">
                         {formatMoneyString(plot.managementFee)}
                       </td>
-                      <td className="px-2 py-2 text-xs text-hai truncate">
+                      <td className="px-2 py-2 text-xs text-hai truncate" title={plot.nextBillingDate ? new Date(plot.nextBillingDate).toLocaleDateString('ja-JP', { year: 'numeric', month: 'numeric', day: 'numeric' }) : undefined}>
                         {plot.nextBillingDate ? new Date(plot.nextBillingDate).toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric' }) : '-'}
                       </td>
                     </tr>
