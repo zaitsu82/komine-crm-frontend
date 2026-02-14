@@ -432,7 +432,7 @@ describe('PlotForm', () => {
     PlotForm = mod.default;
   });
 
-  it('5つのタブを表示する', () => {
+  it('4つのタブを表示する', () => {
     render(
       <PlotForm onSave={jest.fn()} onCancel={jest.fn()} />
     );
@@ -441,7 +441,6 @@ describe('PlotForm', () => {
     expect(screen.getByText('勤務先・請求')).toBeInTheDocument();
     expect(screen.getByText('連絡先/家族')).toBeInTheDocument();
     expect(screen.getByText('埋葬情報')).toBeInTheDocument();
-    expect(screen.getByText('履歴情報')).toBeInTheDocument();
   });
 
   it('新規作成モードで「登録」ボタンを表示する', () => {
