@@ -13,6 +13,8 @@ import {
 } from '@/lib/api';
 import { clearAllTokens, isTokenExpired, isTokenExpiringSoon } from '@/lib/api/client';
 
+const isDev = process.env.NODE_ENV === 'development';
+
 // ユーザー型定義（後方互換性のため維持）
 export interface User {
   id: number;
@@ -93,7 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // 強制ログアウト（認証期限切れ時に呼ばれる）
   const forceLogout = useCallback((message?: string) => {
     const notificationMessage = message || '認証の有効期限が切れました。再度ログインしてください。';
-    console.log('[Auth] Force logout triggered', notificationMessage);
+    if (isDev) console.log('[Auth] Force logout triggered', notificationMessage);
 
     // トースト通知を表示
     toast.warning('セッション期限切れ', {
@@ -122,11 +124,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const checkTokenExpiration = () => {
       if (isTokenExpired()) {
-        console.log('[Auth] Token has expired, forcing logout');
+        if (isDev) console.log('[Auth] Token has expired, forcing logout');
         forceLogout('セッションの有効期限が切れました。再度ログインしてください。');
       } else if (isTokenExpiringSoon(10)) {
         // 10分以内に期限切れの場合は警告ログ（実際のリフレッシュはAPIリクエスト時に行われる）
-        console.log('[Auth] Token is expiring soon');
+        if (isDev) console.log('[Auth] Token is expiring soon');
       }
     };
 
@@ -151,7 +153,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (event.key === 'auth_token') {
         // 他のタブでログアウトした場合（トークンが削除された）
         if (event.oldValue && !event.newValue && user) {
-          console.log('[Auth] Token removed in another tab, syncing logout');
+          if (isDev) console.log('[Auth] Token removed in another tab, syncing logout');
           toast.info('他のタブでログアウトしました', {
             description: '認証状態を同期しました',
             duration: 4000,
@@ -162,7 +164,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         // 他のタブでログインした場合（トークンが追加された）
         else if (!event.oldValue && event.newValue && !user) {
-          console.log('[Auth] Token added in another tab, reloading to sync');
+          if (isDev) console.log('[Auth] Token added in another tab, reloading to sync');
           // ページをリロードして認証状態を同期
           window.location.reload();
         }
@@ -186,7 +188,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // トークンが既に期限切れの場合はログアウト
       if (isTokenExpired()) {
-        console.log('[Auth] Token already expired on init');
+        if (isDev) console.log('[Auth] Token already expired on init');
         clearAllTokens();
         setIsLoading(false);
         return;

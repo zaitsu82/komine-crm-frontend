@@ -81,7 +81,7 @@ const mockMasterData: AllMastersData = {
  */
 export async function getAllMasters(): Promise<ApiResponse<AllMastersData>> {
   if (shouldUseMockData()) {
-    console.log('[API] Using mock data for getAllMasters');
+    if (process.env.NODE_ENV === 'development') console.log('[API] Using mock data for getAllMasters');
     return {
       success: true,
       data: mockMasterData,

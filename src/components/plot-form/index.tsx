@@ -71,8 +71,8 @@ export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProp
     onSave(data);
   };
 
-  const onError = (validationErrors: Record<string, unknown>) => {
-    console.log('Form validation errors:', validationErrors);
+  const onError = (_validationErrors: Record<string, unknown>) => {
+    // Validation errors are displayed inline via the form UI
   };
 
   const tabBaseProps = {

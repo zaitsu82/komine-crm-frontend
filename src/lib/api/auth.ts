@@ -324,7 +324,7 @@ export async function refreshAccessToken(): Promise<boolean> {
   // HttpOnly Cookie対応: 有効期限が保存されていない場合はリフレッシュ不要
   const expiresAt = getTokenExpiresAt();
   if (!expiresAt) {
-    console.warn('[Auth] No token expiration info available');
+    if (process.env.NODE_ENV === 'development') console.warn('[Auth] No token expiration info available');
     return false;
   }
 
@@ -340,7 +340,7 @@ export async function refreshAccessToken(): Promise<boolean> {
     });
 
     if (!response.ok) {
-      console.error('[Auth] Token refresh failed:', response.status);
+      if (process.env.NODE_ENV === 'development') console.error('[Auth] Token refresh failed:', response.status);
       // リフレッシュ失敗時は全てのトークン関連データをクリア
       clearAllTokens();
       return false;
@@ -353,15 +353,15 @@ export async function refreshAccessToken(): Promise<boolean> {
       if (data.data.session.expires_at) {
         setTokenExpiresAt(data.data.session.expires_at);
       }
-      console.log('[Auth] Token refreshed successfully');
+      if (process.env.NODE_ENV === 'development') console.log('[Auth] Token refreshed successfully');
       return true;
     }
 
-    console.error('[Auth] Token refresh response invalid:', data);
+    if (process.env.NODE_ENV === 'development') console.error('[Auth] Token refresh response invalid:', data);
     clearAllTokens();
     return false;
   } catch (error) {
-    console.error('[Auth] Token refresh error:', error);
+    if (process.env.NODE_ENV === 'development') console.error('[Auth] Token refresh error:', error);
     clearAllTokens();
     return false;
   }
