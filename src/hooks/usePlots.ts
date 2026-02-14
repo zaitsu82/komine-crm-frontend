@@ -5,7 +5,7 @@
  * @komine/types の型を直接使用し、変換なしでAPIレスポンスを扱う
  */
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import {
   PlotListItem,
   PlotDetailResponse,
@@ -20,6 +20,44 @@ import {
   deletePlot,
   PlotSearchParams,
 } from '@/lib/api/plots';
+
+// ===== リスト状態キャッシュ =====
+
+const CACHE_KEY = 'plots-list-cache';
+const CACHE_TTL = 5 * 60 * 1000; // 5分
+
+interface CachedListState {
+  plots: PlotListItem[];
+  total: number;
+  page: number;
+  totalPages: number;
+  searchQuery: string;
+  aiueoTab: string;
+  timestamp: number;
+}
+
+function getCachedState(): CachedListState | null {
+  try {
+    const cached = sessionStorage.getItem(CACHE_KEY);
+    if (!cached) return null;
+    const state = JSON.parse(cached) as CachedListState;
+    if (Date.now() - state.timestamp > CACHE_TTL) {
+      sessionStorage.removeItem(CACHE_KEY);
+      return null;
+    }
+    return state;
+  } catch {
+    return null;
+  }
+}
+
+function saveCachedState(state: Omit<CachedListState, 'timestamp'>): void {
+  try {
+    sessionStorage.setItem(CACHE_KEY, JSON.stringify({ ...state, timestamp: Date.now() }));
+  } catch {
+    // sessionStorage unavailable
+  }
+}
 
 // ===== usePlots: 区画一覧フック =====
 
@@ -62,22 +100,33 @@ interface UsePlotsOptions {
 export function usePlots(options: UsePlotsOptions = {}): UsePlotsReturn {
   const { initialPage = 1, limit = 50, autoFetch = true } = options;
 
-  // 状態
-  const [plots, setPlots] = useState<PlotListItem[]>([]);
-  const [total, setTotal] = useState(0);
-  const [page, setPage] = useState(initialPage);
-  const [totalPages, setTotalPages] = useState(0);
+  // キャッシュから初期状態を復元
+  const cached = useRef(getCachedState());
+  const initialState = cached.current;
+
+  // 状態（キャッシュがあればそこから復元）
+  const [plots, setPlots] = useState<PlotListItem[]>(initialState?.plots ?? []);
+  const [total, setTotal] = useState(initialState?.total ?? 0);
+  const [page, setPage] = useState(initialState?.page ?? initialPage);
+  const [totalPages, setTotalPages] = useState(initialState?.totalPages ?? 0);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // フィルタ状態
-  const [searchQuery, setSearchQuery] = useState('');
+  // フィルタ状態（キャッシュがあればそこから復元）
+  const [searchQuery, setSearchQuery] = useState(initialState?.searchQuery ?? '');
   const [areaName, setAreaName] = useState<string | undefined>(undefined);
-  const [aiueoTab, setAiueoTab] = useState('all');
+  const [aiueoTab, setAiueoTab] = useState(initialState?.aiueoTab ?? 'all');
+
+  // キャッシュ復元済みフラグ（初回フェッチ時のローディング制御に使用）
+  const restoredFromCache = useRef(initialState !== null);
 
   // サーバーサイドデータ取得
   const fetchPlots = useCallback(async () => {
-    setIsLoading(true);
+    // キャッシュから復元済みならバックグラウンドで取得（ローディング非表示）
+    if (!restoredFromCache.current) {
+      setIsLoading(true);
+    }
+    restoredFromCache.current = false;
     setError(null);
 
     try {
@@ -102,6 +151,16 @@ export function usePlots(options: UsePlotsOptions = {}): UsePlotsReturn {
         setPlots(response.data.items);
         setTotal(response.data.total);
         setTotalPages(response.data.totalPages);
+
+        // キャッシュに保存
+        saveCachedState({
+          plots: response.data.items,
+          total: response.data.total,
+          page,
+          totalPages: response.data.totalPages,
+          searchQuery,
+          aiueoTab,
+        });
       } else {
         setError(response.error.message);
         setPlots([]);

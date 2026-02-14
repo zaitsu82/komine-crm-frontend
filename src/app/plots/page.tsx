@@ -1,15 +1,39 @@
 'use client';
 
+import { useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { PlotListItem } from '@komine/types';
 import { AuthGuard } from '@/components/auth-guard';
 import PlotListTable from '@/components/plot-list-table';
 import { Button } from '@/components/ui/button';
 
+const SCROLL_KEY = 'plots-list-scroll';
+
 export default function PlotsPage() {
   const router = useRouter();
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // スクロール位置の復元
+  useEffect(() => {
+    const saved = sessionStorage.getItem(SCROLL_KEY);
+    if (saved && scrollRef.current) {
+      const scrollTop = parseInt(saved, 10);
+      // DOM描画後にスクロール復元（データ表示を待つ）
+      requestAnimationFrame(() => {
+        scrollRef.current?.scrollTo(0, scrollTop);
+      });
+    }
+  }, []);
+
+  // スクロール位置の保存
+  const saveScrollPosition = useCallback(() => {
+    if (scrollRef.current) {
+      sessionStorage.setItem(SCROLL_KEY, String(scrollRef.current.scrollTop));
+    }
+  }, []);
 
   const handlePlotSelect = (plot: PlotListItem) => {
+    saveScrollPosition();
     router.push(`/plots/${plot.id}`);
   };
 
@@ -42,7 +66,7 @@ export default function PlotsPage() {
         </div>
 
         {/* メインコンテンツ */}
-        <div className="flex-1 overflow-auto p-4">
+        <div ref={scrollRef} className="flex-1 overflow-auto p-4">
           <PlotListTable
             onPlotSelect={handlePlotSelect}
             title="台帳問い合わせ"

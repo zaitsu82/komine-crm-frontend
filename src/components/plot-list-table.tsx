@@ -103,8 +103,8 @@ export default function PlotListTable({
     refresh,
   } = usePlots();
 
-  // 検索入力（デバウンス用）
-  const [searchInput, setSearchInput] = useState('');
+  // 検索入力（キャッシュされたsearchQueryから復元）
+  const [searchInput, setSearchInput] = useState(searchQuery);
 
   const handleSearch = () => {
     setSearch(searchInput);

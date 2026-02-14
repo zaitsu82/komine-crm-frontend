@@ -10,7 +10,7 @@ export default function PlotDetailPage() {
   const plotId = params.id as string;
 
   const handleBack = () => {
-    router.push('/plots');
+    router.back();
   };
 
   const handleEdit = () => {
