@@ -43,11 +43,11 @@ export default function PlotsPage() {
 
   return (
     <AuthGuard>
-      <div className="flex h-screen bg-gray-100">
+      <div className="flex h-screen bg-shiro">
         {/* サイドバー */}
-        <div className="w-56 bg-white border-r border-gray-200 shadow-md flex flex-col">
-          <div className="p-4 bg-blue-600 text-white">
-            <h3 className="text-lg font-semibold">区画管理台帳</h3>
+        <div className="w-56 bg-white border-r border-gin shadow-elegant flex flex-col">
+          <div className="p-4 bg-gradient-matsu text-white">
+            <h3 className="font-mincho text-lg font-semibold tracking-wide">区画管理台帳</h3>
           </div>
           <div className="p-2 flex-1">
             <Button
@@ -66,7 +66,7 @@ export default function PlotsPage() {
         </div>
 
         {/* メインコンテンツ */}
-        <div ref={scrollRef} className="flex-1 overflow-auto p-4">
+        <div ref={scrollRef} className="flex-1 overflow-auto p-6">
           <PlotListTable
             onPlotSelect={handlePlotSelect}
             title="台帳問い合わせ"
@@ -93,8 +93,8 @@ function SidebarItem({
     <button
       onClick={onClick}
       className={`w-full text-left px-4 py-2 rounded-md transition-colors ${active
-        ? 'bg-blue-100 text-blue-700 font-semibold'
-        : 'hover:bg-gray-100 text-gray-700'
+        ? 'bg-matsu-50 text-matsu font-semibold'
+        : 'hover:bg-kinari text-sumi'
         }`}
     >
       {label}

@@ -20,7 +20,7 @@ export default function PlotDetailPage() {
 
   return (
     <AuthGuard>
-      <div className="min-h-screen bg-gray-100">
+      <div className="min-h-screen bg-shiro">
         <div className="max-w-7xl mx-auto p-4">
           <PlotDetailView
             plotId={plotId}

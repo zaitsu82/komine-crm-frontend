@@ -57,12 +57,12 @@ const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
 };
 
 const PAYMENT_STATUS_COLORS: Record<PaymentStatus, string> = {
-  [PaymentStatus.Unpaid]: 'text-yellow-600 bg-yellow-50',
-  [PaymentStatus.Paid]: 'text-green-600 bg-green-50',
-  [PaymentStatus.PartialPaid]: 'text-orange-600 bg-orange-50',
-  [PaymentStatus.Overdue]: 'text-red-600 bg-red-50',
-  [PaymentStatus.Refunded]: 'text-blue-600 bg-blue-50',
-  [PaymentStatus.Cancelled]: 'text-gray-600 bg-gray-50',
+  [PaymentStatus.Unpaid]: 'text-kohaku-dark bg-kohaku-50',
+  [PaymentStatus.Paid]: 'text-matsu bg-matsu-50',
+  [PaymentStatus.PartialPaid]: 'text-kohaku-dark bg-kohaku-50',
+  [PaymentStatus.Overdue]: 'text-beni bg-beni-50',
+  [PaymentStatus.Refunded]: 'text-ai bg-ai-50',
+  [PaymentStatus.Cancelled]: 'text-hai bg-kinari',
 };
 
 // ===== ヘルパー関数 =====
@@ -167,126 +167,131 @@ export default function PlotListTable({
   // ソートインジケーター
   const renderSortIndicator = (key: SortKey) => (
     <div className="ml-1 flex flex-col">
-      <span className={cn('text-xs', sortKey === key && sortOrder === 'asc' && 'text-blue-600')}>▲</span>
-      <span className={cn('text-xs -mt-1', sortKey === key && sortOrder === 'desc' && 'text-blue-600')}>▼</span>
+      <span className={cn('text-xs', sortKey === key && sortOrder === 'asc' && 'text-cha')}>▲</span>
+      <span className={cn('text-xs -mt-1', sortKey === key && sortOrder === 'desc' && 'text-cha')}>▼</span>
     </div>
   );
 
   return (
     <div className="space-y-4">
       {/* ヘッダー */}
-      <div className="bg-white p-4 rounded-lg shadow">
-        <h2 className="text-xl font-bold mb-4">{title}</h2>
+      <div className="bg-white border border-gin rounded-elegant-lg shadow-elegant-sm overflow-hidden">
+        <div className="bg-gradient-to-r from-matsu-50 to-kinari border-b border-gin px-6 py-5">
+          <h2 className="font-mincho text-2xl font-semibold text-sumi tracking-wide">{title}</h2>
+        </div>
 
-        {/* あいうえおタブ */}
-        {showAiueoTabs && (
-          <div className="flex flex-wrap gap-1 mb-4 p-2 bg-gray-50 rounded-lg border border-gray-200">
-            {AIUEO_TABS.map((tab) => (
-              <Button
-                key={tab.key}
-                onClick={() => setAiueoTab(tab.key)}
-                variant={aiueoTab === tab.key ? 'default' : 'outline'}
-                size="sm"
-                className={cn(
-                  'min-w-[40px]',
-                  aiueoTab === tab.key && 'bg-blue-600 hover:bg-blue-700'
-                )}
-              >
-                {tab.label}
-              </Button>
-            ))}
-          </div>
-        )}
-
-        {/* ソートコントロール */}
-        {showSortControls && (
-          <div className="flex flex-wrap items-center gap-4 mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
-            <span className="text-sm font-medium text-gray-700">並び替え:</span>
-            <div className="flex items-center gap-2">
-              <Select value={sortKey} onValueChange={(value: SortKey) => setSortKey(value)}>
-                <SelectTrigger className="w-[160px] bg-white">
-                  <SelectValue placeholder="項目を選択" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="customerName">氏名</SelectItem>
-                  <SelectItem value="areaName">エリア</SelectItem>
-                  <SelectItem value="plotNumber">区画番号</SelectItem>
-                  <SelectItem value="contractDate">契約日</SelectItem>
-                  <SelectItem value="paymentStatus">入金状況</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={sortOrder} onValueChange={(value: SortOrder) => setSortOrder(value)}>
-                <SelectTrigger className="w-[120px] bg-white">
-                  <SelectValue placeholder="順序" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="asc">昇順 ↑</SelectItem>
-                  <SelectItem value="desc">降順 ↓</SelectItem>
-                </SelectContent>
-              </Select>
+        <div className="p-5 space-y-4">
+          {/* あいうえおタブ */}
+          {showAiueoTabs && (
+            <div className="flex flex-wrap gap-1 p-2 bg-kinari rounded-elegant border border-gin">
+              {AIUEO_TABS.map((tab) => (
+                <Button
+                  key={tab.key}
+                  onClick={() => setAiueoTab(tab.key)}
+                  variant={aiueoTab === tab.key ? 'default' : 'outline'}
+                  size="sm"
+                  className="min-w-[40px]"
+                >
+                  {tab.label}
+                </Button>
+              ))}
             </div>
-            <div className="flex gap-2 flex-wrap">
-              <Button
-                onClick={() => { setSortKey('areaName'); setSortOrder('asc'); }}
-                variant={sortKey === 'areaName' ? 'default' : 'outline'}
-                size="sm"
-                className={sortKey === 'areaName' ? 'bg-blue-600 hover:bg-blue-700' : ''}
-              >
-                エリア順
+          )}
+
+          {/* ソートコントロール */}
+          {showSortControls && (
+            <div className="flex flex-wrap items-center gap-4 p-3 bg-kinari rounded-elegant border border-gin">
+              <span className="text-sm font-medium text-sumi">並び替え:</span>
+              <div className="flex items-center gap-2">
+                <Select value={sortKey} onValueChange={(value: SortKey) => setSortKey(value)}>
+                  <SelectTrigger className="w-[160px] bg-white">
+                    <SelectValue placeholder="項目を選択" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="customerName">氏名</SelectItem>
+                    <SelectItem value="areaName">エリア</SelectItem>
+                    <SelectItem value="plotNumber">区画番号</SelectItem>
+                    <SelectItem value="contractDate">契約日</SelectItem>
+                    <SelectItem value="paymentStatus">入金状況</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={sortOrder} onValueChange={(value: SortOrder) => setSortOrder(value)}>
+                  <SelectTrigger className="w-[120px] bg-white">
+                    <SelectValue placeholder="順序" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="asc">昇順 ↑</SelectItem>
+                    <SelectItem value="desc">降順 ↓</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex gap-2 flex-wrap">
+                <Button
+                  onClick={() => { setSortKey('areaName'); setSortOrder('asc'); }}
+                  variant={sortKey === 'areaName' ? 'default' : 'outline'}
+                  size="sm"
+                >
+                  エリア順
+                </Button>
+                <Button
+                  onClick={() => { setSortKey('customerName'); setSortOrder('asc'); }}
+                  variant={sortKey === 'customerName' ? 'default' : 'outline'}
+                  size="sm"
+                >
+                  氏名順
+                </Button>
+                <Button
+                  onClick={() => { setSortKey('contractDate'); setSortOrder('desc'); }}
+                  variant={sortKey === 'contractDate' ? 'default' : 'outline'}
+                  size="sm"
+                >
+                  契約日順
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* 検索エリア */}
+          {showSearch && (
+            <div className="flex items-center space-x-2">
+              <Input
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="氏名、区画番号、電話番号で検索..."
+                className="flex-1"
+              />
+              <Button onClick={() => { setSearchInput(''); setSearch(''); }} variant="outline" size="sm">
+                クリア
               </Button>
-              <Button
-                onClick={() => { setSortKey('customerName'); setSortOrder('asc'); }}
-                variant={sortKey === 'customerName' ? 'default' : 'outline'}
-                size="sm"
-                className={sortKey === 'customerName' ? 'bg-blue-600 hover:bg-blue-700' : ''}
-              >
-                氏名順
+              <Button onClick={handleSearch} variant="default" size="sm">
+                検索
               </Button>
-              <Button
-                onClick={() => { setSortKey('contractDate'); setSortOrder('desc'); }}
-                variant={sortKey === 'contractDate' ? 'default' : 'outline'}
-                size="sm"
-                className={sortKey === 'contractDate' ? 'bg-blue-600 hover:bg-blue-700' : ''}
-              >
-                契約日順
+              <Button onClick={refresh} variant="outline" size="sm">
+                更新
               </Button>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* 検索エリア */}
-        {showSearch && (
-          <div className="flex items-center space-x-2">
-            <Input
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="氏名、区画番号、電話番号で検索..."
-              className="flex-1"
-            />
-            <Button onClick={() => { setSearchInput(''); setSearch(''); }} variant="outline" size="sm">
-              クリア
-            </Button>
-            <Button onClick={handleSearch} size="sm" className="bg-blue-600 hover:bg-blue-700">
-              検索
-            </Button>
-            <Button onClick={refresh} variant="outline" size="sm">
-              更新
-            </Button>
+          {/* 件数表示 */}
+          <div className="flex items-center justify-between pt-3 border-t border-gin">
+            <p className="text-sm text-hai">
+              検索結果: <span className="font-bold text-sumi text-lg">{total}</span> 件
+            </p>
           </div>
-        )}
+        </div>
       </div>
 
       {/* テーブル */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="bg-white rounded-elegant-lg shadow-elegant border border-gin overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full">
+            <thead className="bg-kinari border-b border-gin">
               <tr>
                 <th
                   className={cn(
-                    'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100',
-                    sortKey === 'customerName' && 'bg-gray-100'
+                    'px-4 py-3 text-left text-sm font-semibold text-sumi cursor-pointer transition-colors hover:bg-cha-50',
+                    sortKey === 'customerName' && 'bg-cha-50'
                   )}
                   onClick={() => handleSort('customerName')}
                 >
@@ -297,8 +302,8 @@ export default function PlotListTable({
                 </th>
                 <th
                   className={cn(
-                    'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100',
-                    sortKey === 'areaName' && 'bg-gray-100'
+                    'px-4 py-3 text-left text-sm font-semibold text-sumi cursor-pointer transition-colors hover:bg-cha-50',
+                    sortKey === 'areaName' && 'bg-cha-50'
                   )}
                   onClick={() => handleSort('areaName')}
                 >
@@ -309,8 +314,8 @@ export default function PlotListTable({
                 </th>
                 <th
                   className={cn(
-                    'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100',
-                    sortKey === 'plotNumber' && 'bg-gray-100'
+                    'px-4 py-3 text-left text-sm font-semibold text-sumi cursor-pointer transition-colors hover:bg-cha-50',
+                    sortKey === 'plotNumber' && 'bg-cha-50'
                   )}
                   onClick={() => handleSort('plotNumber')}
                 >
@@ -321,8 +326,8 @@ export default function PlotListTable({
                 </th>
                 <th
                   className={cn(
-                    'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100',
-                    sortKey === 'contractDate' && 'bg-gray-100'
+                    'px-4 py-3 text-left text-sm font-semibold text-sumi cursor-pointer transition-colors hover:bg-cha-50',
+                    sortKey === 'contractDate' && 'bg-cha-50'
                   )}
                   onClick={() => handleSort('contractDate')}
                 >
@@ -331,13 +336,13 @@ export default function PlotListTable({
                     {renderSortIndicator('contractDate')}
                   </div>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-sm font-semibold text-sumi">
                   電話番号
                 </th>
                 <th
                   className={cn(
-                    'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100',
-                    sortKey === 'paymentStatus' && 'bg-gray-100'
+                    'px-4 py-3 text-left text-sm font-semibold text-sumi cursor-pointer transition-colors hover:bg-cha-50',
+                    sortKey === 'paymentStatus' && 'bg-cha-50'
                   )}
                   onClick={() => handleSort('paymentStatus')}
                 >
@@ -348,19 +353,19 @@ export default function PlotListTable({
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="divide-y divide-gin">
               {isLoading ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-sm text-gray-500">
+                  <td colSpan={6} className="px-6 py-8 text-center text-sm text-hai">
                     <div className="flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mr-2"></div>
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-matsu mr-2"></div>
                       データを読み込み中...
                     </div>
                   </td>
                 </tr>
               ) : error ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-sm text-red-500">
+                  <td colSpan={6} className="px-6 py-8 text-center text-sm text-beni">
                     エラーが発生しました: {error}
                   </td>
                 </tr>
@@ -373,39 +378,39 @@ export default function PlotListTable({
                     <tr
                       key={plot.id}
                       className={cn(
-                        'cursor-pointer hover:bg-gray-50',
-                        selectedPlotId === plot.id && 'bg-blue-50',
-                        index % 2 === 1 && 'bg-gray-50'
+                        'cursor-pointer transition-all duration-200 hover:bg-cha-50',
+                        selectedPlotId === plot.id && 'bg-matsu-50',
+                        index % 2 === 1 && 'bg-kinari/50'
                       )}
                       onClick={() => onPlotSelect?.(plot)}
                     >
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 py-3 whitespace-nowrap">
                         <div>
-                          <div className="text-sm font-medium text-gray-900">
+                          <div className="text-sm font-semibold text-sumi">
                             {plot.customerName || '-'}
                           </div>
-                          <div className="text-sm text-gray-500">
+                          <div className="text-sm text-hai">
                             {plot.customerNameKana || ''}
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-sumi">
                         {plot.areaName || '-'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm font-semibold text-sumi">
                         {plot.plotNumber || '-'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-sumi">
                         {contractYear}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-sumi">
                         {plot.customerPhoneNumber || '-'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm">
                         {paymentStatus && (
                           <span
                             className={cn(
-                              'px-2 py-1 rounded-full text-xs font-medium',
+                              'px-2 py-1 rounded text-xs font-medium',
                               PAYMENT_STATUS_COLORS[paymentStatus]
                             )}
                           >
@@ -418,7 +423,7 @@ export default function PlotListTable({
                 })
               ) : (
                 <tr>
-                  <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">
+                  <td colSpan={6} className="px-6 py-4 text-center text-sm text-hai">
                     {searchQuery.trim()
                       ? '検索条件に該当するデータが見つかりませんでした'
                       : 'データがありません'}
@@ -428,11 +433,6 @@ export default function PlotListTable({
             </tbody>
           </table>
         </div>
-      </div>
-
-      {/* フッター */}
-      <div className="text-right text-sm text-gray-600">
-        全 {total} 件
       </div>
     </div>
   );
