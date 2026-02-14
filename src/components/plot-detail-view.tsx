@@ -92,17 +92,22 @@ function formatPrice(price: number | null | undefined): string {
 function InfoField({ label, value }: { label: string; value: string | null | undefined }) {
   return (
     <div className="py-2">
-      <dt className="text-sm font-medium text-gray-500">{label}</dt>
-      <dd className="mt-1 text-sm text-gray-900">{value || '-'}</dd>
+      <dt className="text-sm text-hai">{label}</dt>
+      <dd className="mt-1 font-semibold text-sumi text-sm">{value || '-'}</dd>
     </div>
   );
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white rounded-lg shadow p-4 mb-4">
-      <h3 className="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">{title}</h3>
-      <dl className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="bg-white border border-gin rounded-elegant-lg shadow-elegant-sm overflow-hidden mb-4">
+      <div className="px-5 py-4 bg-kinari border-b border-gin">
+        <h3 className="font-semibold text-sumi flex items-center">
+          <span className="w-1 h-5 bg-matsu rounded-full mr-3" />
+          {title}
+        </h3>
+      </div>
+      <dl className="p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {children}
       </dl>
     </div>
@@ -195,7 +200,7 @@ function FeeInfoTab({ plot }: { plot: PlotDetailResponse }) {
       )}
 
       {!plot.usageFee && !plot.managementFee && (
-        <div className="text-center text-gray-500 py-8">
+        <div className="text-center text-hai py-8">
           料金情報が登録されていません
         </div>
       )}
@@ -210,7 +215,7 @@ function ContactsTab({ plot }: { plot: PlotDetailResponse }) {
       <Section title="契約関係者">
         {plot.roles.length > 0 ? (
           plot.roles.map((role, idx) => (
-            <div key={role.id || idx} className="col-span-full border rounded p-4 mb-2">
+            <div key={role.id || idx} className="col-span-full border border-gin rounded-elegant p-4 mb-2 bg-kinari/30">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <InfoField label="役割" value={CONTRACT_ROLE_LABELS[role.role as ContractRole]} />
                 <InfoField label="氏名" value={role.customer.name} />
@@ -223,7 +228,7 @@ function ContactsTab({ plot }: { plot: PlotDetailResponse }) {
             </div>
           ))
         ) : (
-          <div className="col-span-full text-center text-gray-500 py-4">
+          <div className="col-span-full text-center text-hai py-4">
             契約関係者が登録されていません
           </div>
         )}
@@ -233,7 +238,7 @@ function ContactsTab({ plot }: { plot: PlotDetailResponse }) {
       <Section title="家族連絡先">
         {plot.familyContacts && plot.familyContacts.length > 0 ? (
           plot.familyContacts.map((contact, idx) => (
-            <div key={contact.id || idx} className="col-span-full border rounded p-4 mb-2">
+            <div key={contact.id || idx} className="col-span-full border border-gin rounded-elegant p-4 mb-2 bg-kinari/30">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <InfoField label="氏名" value={contact.name} />
                 <InfoField label="続柄" value={contact.relationship} />
@@ -244,7 +249,7 @@ function ContactsTab({ plot }: { plot: PlotDetailResponse }) {
             </div>
           ))
         ) : (
-          <div className="col-span-full text-center text-gray-500 py-4">
+          <div className="col-span-full text-center text-hai py-4">
             家族連絡先が登録されていません
           </div>
         )}
@@ -260,7 +265,7 @@ function BurialInfoTab({ plot }: { plot: PlotDetailResponse }) {
       <Section title="埋葬者一覧">
         {plot.buriedPersons && plot.buriedPersons.length > 0 ? (
           plot.buriedPersons.map((person, idx) => (
-            <div key={person.id || idx} className="col-span-full border rounded p-4 mb-2">
+            <div key={person.id || idx} className="col-span-full border border-gin rounded-elegant p-4 mb-2 bg-kinari/30">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <InfoField label="氏名" value={person.name} />
                 <InfoField label="ふりがな" value={person.nameKana} />
@@ -274,7 +279,7 @@ function BurialInfoTab({ plot }: { plot: PlotDetailResponse }) {
             </div>
           ))
         ) : (
-          <div className="col-span-full text-center text-gray-500 py-4">
+          <div className="col-span-full text-center text-hai py-4">
             埋葬者が登録されていません
           </div>
         )}
@@ -321,26 +326,31 @@ function HistoryInfoTab({ plot }: { plot: PlotDetailResponse }) {
 
   if (histories.length === 0) {
     return (
-      <div className="text-center text-gray-500 py-8">
+      <div className="text-center text-hai py-8">
         履歴データはありません
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg shadow p-4">
-      <h3 className="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">履歴情報</h3>
-      <div className="grid grid-cols-4 gap-4 px-3 py-2 bg-gray-100 border rounded-t-md text-sm font-medium text-gray-600">
+    <div className="bg-white border border-gin rounded-elegant-lg shadow-elegant-sm overflow-hidden">
+      <div className="px-5 py-4 bg-kinari border-b border-gin">
+        <h3 className="font-semibold text-sumi flex items-center">
+          <span className="w-1 h-5 bg-matsu rounded-full mr-3" />
+          履歴情報
+        </h3>
+      </div>
+      <div className="grid grid-cols-4 gap-4 px-4 py-2 bg-kinari/50 border-b border-gin text-sm font-medium text-hai">
         <span>日時</span>
         <span>操作</span>
         <span>変更フィールド</span>
         <span>変更者</span>
       </div>
-      <div className="border border-t-0 rounded-b-md divide-y">
+      <div className="divide-y divide-gin">
         {histories.map((history) => (
           <div
             key={history.id}
-            className="grid grid-cols-4 gap-4 px-3 py-2 text-sm hover:bg-blue-50"
+            className="grid grid-cols-4 gap-4 px-4 py-2 text-sm hover:bg-matsu-50/30"
           >
             <span>{new Date(history.createdAt).toLocaleString('ja-JP')}</span>
             <span>{ACTION_TYPE_LABELS[history.actionType] || history.actionType}</span>
@@ -361,7 +371,7 @@ function ConstructionInfoTab({ plot }: { plot: PlotDetailResponse }) {
       <Section title="工事記録">
         {plot.constructionInfos && plot.constructionInfos.length > 0 ? (
           plot.constructionInfos.map((record, idx) => (
-            <div key={record.id || idx} className="col-span-full border rounded p-4 mb-2">
+            <div key={record.id || idx} className="col-span-full border border-gin rounded-elegant p-4 mb-2 bg-kinari/30">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <InfoField label="施工業者" value={record.contractor} />
                 <InfoField label="監督者" value={record.supervisor} />
@@ -377,10 +387,10 @@ function ConstructionInfoTab({ plot }: { plot: PlotDetailResponse }) {
               {/* 工事項目 */}
               {(record.workItem1 || record.workItem2) && (
                 <div className="mt-4 border-t pt-4">
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">工事項目</h4>
+                  <h4 className="text-sm font-medium text-sumi mb-2">工事項目</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {record.workItem1 && (
-                      <div className="border rounded p-2">
+                      <div className="border border-gin rounded-elegant p-2">
                         <InfoField label="項目1" value={record.workItem1} />
                         <InfoField label="日付" value={formatDate(record.workDate1)} />
                         <InfoField label="金額" value={formatPrice(record.workAmount1)} />
@@ -388,7 +398,7 @@ function ConstructionInfoTab({ plot }: { plot: PlotDetailResponse }) {
                       </div>
                     )}
                     {record.workItem2 && (
-                      <div className="border rounded p-2">
+                      <div className="border border-gin rounded-elegant p-2">
                         <InfoField label="項目2" value={record.workItem2} />
                         <InfoField label="日付" value={formatDate(record.workDate2)} />
                         <InfoField label="金額" value={formatPrice(record.workAmount2)} />
@@ -401,7 +411,7 @@ function ConstructionInfoTab({ plot }: { plot: PlotDetailResponse }) {
             </div>
           ))
         ) : (
-          <div className="col-span-full text-center text-gray-500 py-4">
+          <div className="col-span-full text-center text-hai py-4">
             工事記録が登録されていません
           </div>
         )}
@@ -418,8 +428,8 @@ export default function PlotDetailView({ plotId, onEdit, onBack }: PlotDetailVie
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mr-3"></div>
-        <span className="text-gray-600">読み込み中...</span>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-matsu mr-3"></div>
+        <span className="text-hai">読み込み中...</span>
       </div>
     );
   }
@@ -437,8 +447,8 @@ export default function PlotDetailView({ plotId, onEdit, onBack }: PlotDetailVie
 
   if (!plot) {
     return (
-      <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center">
-        <p className="text-gray-600">区画が見つかりません</p>
+      <div className="bg-kinari border border-gin rounded-elegant-lg p-6 text-center">
+        <p className="text-hai">区画が見つかりません</p>
         {onBack && (
           <Button onClick={onBack} variant="outline" className="mt-4">
             戻る
@@ -454,13 +464,13 @@ export default function PlotDetailView({ plotId, onEdit, onBack }: PlotDetailVie
   return (
     <div className="w-full">
       {/* ヘッダー */}
-      <div className="flex justify-between items-center mb-6 bg-white rounded-lg shadow p-4">
+      <div className="flex justify-between items-center mb-6 bg-white border border-gin rounded-elegant-lg shadow-elegant-sm p-5">
         <div>
-          <h2 className="text-2xl font-bold text-gray-800">
+          <h2 className="text-2xl font-bold text-sumi">
             {plot.physicalPlot.plotNumber} - {plot.physicalPlot.areaName}
           </h2>
           {primaryCustomer && (
-            <p className="text-gray-600 mt-1">
+            <p className="text-hai mt-1">
               契約者: {primaryCustomer.name}
               {primaryCustomer.nameKana && ` (${primaryCustomer.nameKana})`}
             </p>
@@ -476,7 +486,7 @@ export default function PlotDetailView({ plotId, onEdit, onBack }: PlotDetailVie
             更新
           </Button>
           {onEdit && (
-            <Button onClick={onEdit} className="bg-blue-600 hover:bg-blue-700 text-white">
+            <Button onClick={onEdit} className="bg-matsu hover:bg-matsu-dark text-white">
               編集
             </Button>
           )}
@@ -487,18 +497,18 @@ export default function PlotDetailView({ plotId, onEdit, onBack }: PlotDetailVie
       <div className="flex gap-2 mb-4">
         <span className={cn(
           'px-3 py-1 rounded-full text-sm font-medium',
-          plot.paymentStatus === PaymentStatus.Paid ? 'bg-green-100 text-green-800' :
-            plot.paymentStatus === PaymentStatus.Unpaid ? 'bg-yellow-100 text-yellow-800' :
-              plot.paymentStatus === PaymentStatus.Overdue ? 'bg-red-100 text-red-800' :
-                'bg-gray-100 text-gray-800'
+          plot.paymentStatus === PaymentStatus.Paid ? 'bg-matsu-50 text-matsu' :
+            plot.paymentStatus === PaymentStatus.Unpaid ? 'bg-kohaku-50 text-kohaku-dark' :
+              plot.paymentStatus === PaymentStatus.Overdue ? 'bg-beni-50 text-beni' :
+                'bg-kinari text-hai'
         )}>
           {PAYMENT_STATUS_LABELS[plot.paymentStatus as PaymentStatus]}
         </span>
         <span className={cn(
           'px-3 py-1 rounded-full text-sm font-medium',
-          plot.contractStatus === ContractStatus.Active ? 'bg-blue-100 text-blue-800' :
-            plot.contractStatus === ContractStatus.Suspended ? 'bg-orange-100 text-orange-800' :
-              'bg-gray-100 text-gray-800'
+          plot.contractStatus === ContractStatus.Active ? 'bg-ai-50 text-ai-dark' :
+            plot.contractStatus === ContractStatus.Suspended ? 'bg-kohaku-50 text-kohaku-dark' :
+              'bg-kinari text-hai'
         )}>
           {CONTRACT_STATUS_LABELS[plot.contractStatus as ContractStatus]}
         </span>
@@ -507,22 +517,22 @@ export default function PlotDetailView({ plotId, onEdit, onBack }: PlotDetailVie
       {/* タブ */}
       <Tabs defaultValue="basic" className="w-full">
         <TabsList className="grid w-full grid-cols-6 h-auto">
-          <TabsTrigger value="basic" className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">
+          <TabsTrigger value="basic" className="py-2 data-[state=active]:bg-matsu data-[state=active]:text-white">
             基本情報
           </TabsTrigger>
-          <TabsTrigger value="fee" className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">
+          <TabsTrigger value="fee" className="py-2 data-[state=active]:bg-matsu data-[state=active]:text-white">
             料金情報
           </TabsTrigger>
-          <TabsTrigger value="contacts" className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">
+          <TabsTrigger value="contacts" className="py-2 data-[state=active]:bg-matsu data-[state=active]:text-white">
             連絡先
           </TabsTrigger>
-          <TabsTrigger value="burial" className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">
+          <TabsTrigger value="burial" className="py-2 data-[state=active]:bg-matsu data-[state=active]:text-white">
             埋葬情報
           </TabsTrigger>
-          <TabsTrigger value="construction" className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">
+          <TabsTrigger value="construction" className="py-2 data-[state=active]:bg-matsu data-[state=active]:text-white">
             工事情報
           </TabsTrigger>
-          <TabsTrigger value="history" className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">
+          <TabsTrigger value="history" className="py-2 data-[state=active]:bg-matsu data-[state=active]:text-white">
             履歴情報
           </TabsTrigger>
         </TabsList>
