@@ -516,7 +516,7 @@ export default function PlotDetailView({ plotId, onEdit, onBack }: PlotDetailVie
 
       {/* タブ */}
       <Tabs defaultValue="basic" className="w-full">
-        <TabsList className="grid w-full grid-cols-6 h-auto">
+        <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 h-auto gap-1">
           <TabsTrigger value="basic" className="py-2 data-[state=active]:bg-matsu data-[state=active]:text-white">
             基本情報
           </TabsTrigger>

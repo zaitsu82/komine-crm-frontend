@@ -228,11 +228,11 @@ export default function PlotRegistry({
     const status = getPlotDisplayStatus(plot);
     switch (status) {
       case 'overdue':
-        return <span className="inline-block w-5 h-5 rounded-full bg-beni text-white text-[10px] leading-5 text-center" title="滞納">滞</span>;
+        return <span className="inline-block w-6 h-6 rounded-full bg-beni text-white text-xs leading-6 text-center" title="滞納">滞</span>;
       case 'attention':
-        return <span className="inline-block w-5 h-5 rounded-full bg-kohaku text-white text-[10px] leading-5 text-center" title="未入金">未</span>;
+        return <span className="inline-block w-6 h-6 rounded-full bg-kohaku text-white text-xs leading-6 text-center" title="未入金">未</span>;
       default:
-        return <span className="inline-block w-5 h-5 rounded-full bg-matsu text-white text-[10px] leading-5 text-center" title="正常">正</span>;
+        return <span className="inline-block w-6 h-6 rounded-full bg-matsu text-white text-xs leading-6 text-center" title="正常">正</span>;
     }
   };
 
@@ -640,7 +640,7 @@ export default function PlotRegistry({
           <select
             value={itemsPerPage}
             onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
-            className="h-8 px-2 border border-gin rounded text-sm bg-white text-sumi focus:outline-none focus:ring-2 focus:ring-matsu"
+            className="h-10 px-3 border border-gin rounded-elegant text-sm bg-white text-sumi focus:outline-none focus:ring-2 focus:ring-matsu transition-all duration-250 cursor-pointer"
           >
             <option value={50}>50件</option>
             <option value={100}>100件</option>

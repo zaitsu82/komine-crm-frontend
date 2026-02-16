@@ -79,13 +79,13 @@ export default function PlotDetailSidebar({
               台帳一覧に戻る
             </Button>
 
-            <div className="border-t border-gray-300 my-4"></div>
+            <div className="border-t border-gin my-4"></div>
 
             <Button
               onClick={() => onViewChange('plot-details')}
               className={`w-full btn-senior mt-2 border-none ${currentView === 'plot-details'
-                ? 'bg-gray-700 text-white hover:bg-gray-800'
-                : 'bg-white text-gray-700 hover:bg-gray-100 border-gray-300'
+                ? 'bg-sumi text-white hover:bg-sumi/90'
+                : 'bg-white text-sumi hover:bg-kinari border-gin'
                 }`}
               variant={currentView === 'plot-details' ? 'default' : 'outline'}
               size="lg"
@@ -95,8 +95,8 @@ export default function PlotDetailSidebar({
             <Button
               onClick={() => onViewChange('document-select')}
               className={`w-full btn-senior mt-2 border-none ${currentView === 'document-select'
-                ? 'bg-green-600 text-white hover:bg-green-700'
-                : 'bg-white text-green-600 hover:bg-green-50 border-green-600'
+                ? 'bg-matsu text-white hover:bg-matsu-dark'
+                : 'bg-white text-matsu hover:bg-matsu-50 border-matsu'
                 }`}
               variant={currentView === 'document-select' ? 'default' : 'outline'}
               size="lg"
@@ -106,8 +106,8 @@ export default function PlotDetailSidebar({
             <Button
               onClick={() => onViewChange('document-history')}
               className={`w-full btn-senior mt-2 border-none ${currentView === 'document-history'
-                ? 'bg-blue-600 text-white hover:bg-blue-700'
-                : 'bg-white text-blue-600 hover:bg-blue-50 border-blue-600'
+                ? 'bg-ai text-white hover:bg-ai-dark'
+                : 'bg-white text-ai hover:bg-ai-50 border-ai'
                 }`}
               variant={currentView === 'document-history' ? 'default' : 'outline'}
               size="lg"
@@ -118,10 +118,10 @@ export default function PlotDetailSidebar({
             {/* 削除ボタン（管理者専用） */}
             {user?.role === 'admin' && onDelete && (
               <>
-                <div className="border-t border-gray-300 my-4"></div>
+                <div className="border-t border-gin my-4"></div>
                 <Button
                   onClick={onDelete}
-                  className="w-full btn-senior mt-2 border-none bg-white text-red-700 hover:bg-red-100 border-red-700"
+                  className="w-full btn-senior mt-2 border-none bg-white text-beni hover:bg-beni-50 border-beni"
                   variant="outline"
                   size="lg"
                 >
@@ -174,7 +174,7 @@ export default function PlotDetailSidebar({
                 <button
                   key={index}
                   onClick={() => onViewChange(getViewForItem(item))}
-                  className={`w-full text-left px-3 py-2 text-senior-sm rounded border border-gray-400 bg-gray-100 hover:bg-blue-100 hover:border-blue-300 transition-colors btn-senior ${isActive() ? 'bg-blue-100 border-blue-300' : ''
+                  className={`w-full text-left px-3 py-2 text-senior-sm rounded-elegant border border-gin bg-kinari hover:bg-matsu-50 hover:border-matsu-200 transition-colors btn-senior ${isActive() ? 'bg-matsu-50 border-matsu-200' : ''
                     }`}
                 >
                   {item}
@@ -186,11 +186,11 @@ export default function PlotDetailSidebar({
       </div>
 
       {/* ユーザー情報とログアウト */}
-      <div className="p-4 border-t border-gray-300 bg-gray-100">
+      <div className="p-4 border-t border-gin bg-kinari">
         <div className="flex items-center justify-between mb-3">
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-800 truncate">{user?.name || 'ゲスト'}</p>
-            <p className="text-xs text-gray-500">{user?.role ? getRoleLabel(user.role) : ''}</p>
+            <p className="text-sm font-medium text-sumi truncate">{user?.name || 'ゲスト'}</p>
+            <p className="text-xs text-hai">{user?.role ? getRoleLabel(user.role) : ''}</p>
           </div>
         </div>
         <Button

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { ClipboardList, Check, X, BarChart3, Hash } from 'lucide-react';
 import { PlotPeriod, PLOT_SIZE } from '@/types/plot-constants';
 import {
   usePlotInventorySummary,
@@ -24,11 +25,11 @@ type AreaSortKey = 'period' | 'areaSqm' | 'totalCount' | 'usedCount' | 'remainin
 type SortOrder = 'asc' | 'desc';
 
 const menuItems = [
-  { key: 'all', label: '全区画表示', icon: '📋', description: '全ての区画を一覧表示' },
-  { key: 'available', label: '空き区画のみ', icon: '✓', description: '残数のある区画' },
-  { key: 'soldout', label: '完売区画', icon: '×', description: '残数0の区画' },
-  { key: 'usage-rate', label: '使用率順', icon: '📊', description: '使用率でソート' },
-  { key: 'remaining', label: '残数順', icon: '🔢', description: '残数でソート' },
+  { key: 'all', label: '全区画表示', icon: ClipboardList, description: '全ての区画を一覧表示' },
+  { key: 'available', label: '空き区画のみ', icon: Check, description: '残数のある区画' },
+  { key: 'soldout', label: '完売区画', icon: X, description: '残数0の区画' },
+  { key: 'usage-rate', label: '使用率順', icon: BarChart3, description: '使用率でソート' },
+  { key: 'remaining', label: '残数順', icon: Hash, description: '残数でソート' },
 ];
 
 export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAvailabilityManagementProps) {
@@ -152,7 +153,7 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
           <div className="relative">
             <div className="flex items-center space-x-3 mb-2">
               <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center">
-                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                 </svg>
               </div>
@@ -173,7 +174,7 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
               variant="outline"
               size="lg"
             >
-              <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
               メインメニューに戻る
@@ -224,7 +225,7 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
                       : 'hover:bg-kinari text-hai hover:text-sumi border border-transparent'
                   )}
                 >
-                  <span className="w-6">{item.icon}</span>
+                  <item.icon className="w-4 h-4 mr-2 shrink-0" />
                   <span>{item.label}</span>
                 </button>
               ))}
