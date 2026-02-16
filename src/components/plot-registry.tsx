@@ -334,17 +334,8 @@ export default function PlotRegistry({
       <div className="bg-white rounded-elegant-lg border border-gin shadow-elegant overflow-hidden flex-1">
         <div className="overflow-auto h-full">
           <table className="w-full divide-y divide-gin text-sm table-fixed">
-            <colgroup>
-              <col className="w-[44px]" />   {/* 状態 — バッジアイコン */}
-              <col className="w-[72px]" />   {/* 区画No */}
-              <col className="w-[60px]" />   {/* エリア */}
-              <col />                        {/* 契約者 — 残り幅を優先配分 */}
-              <col className="w-[110px]" />  {/* 電話 */}
-              <col className="w-[68px]" />   {/* 契約日 */}
-              <col className="w-[68px]" />   {/* 入金 */}
-              <col className="w-[80px]" />   {/* 管理料 */}
-              <col className="w-[68px]" />   {/* 次請求 */}
-            </colgroup>
+{/* 状態 / 区画No / エリア / 契約者(残り幅) / 電話 / 契約日 / 入金 / 管理料 / 次請求 */}
+            <colgroup><col className="w-[44px]" /><col className="w-[72px]" /><col className="w-[60px]" /><col /><col className="w-[110px]" /><col className="w-[68px]" /><col className="w-[68px]" /><col className="w-[80px]" /><col className="w-[68px]" /></colgroup>
             <thead className="bg-gradient-matsu sticky top-0 z-10">
               <tr>
                 <th
