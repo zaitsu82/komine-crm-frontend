@@ -94,8 +94,8 @@ export function LoginForm() {
 
             {/* エラーメッセージ */}
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3">
-                <p className="text-red-600 text-sm">{error}</p>
+              <div className="bg-beni-50 border border-beni-200 rounded-elegant px-4 py-3">
+                <p className="text-beni text-sm">{error}</p>
               </div>
             )}
 
@@ -123,7 +123,7 @@ export function LoginForm() {
           <div className="mt-8 text-center">
             <a
               href="#"
-              className="text-sm text-matsu hover:text-matsu-light transition-colors duration-normal"
+              className="text-sm text-matsu hover:text-matsu-light hover:underline transition-colors duration-normal cursor-pointer"
             >
               パスワードをお忘れの方
             </a>

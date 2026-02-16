@@ -16,18 +16,18 @@ export function HistoryTab({ plotDetail }: HistoryTabProps) {
   if (histories.length === 0) {
     return (
       <div className="border rounded-lg p-4">
-        <h3 className="text-sm font-semibold text-gray-700 mb-3">履歴情報</h3>
-        <p className="text-sm text-gray-500">履歴データはありません</p>
+        <h3 className="text-sm font-semibold text-sumi mb-3">履歴情報</h3>
+        <p className="text-sm text-hai">履歴データはありません</p>
       </div>
     );
   }
 
   return (
     <div className="border rounded-lg p-4">
-      <h3 className="text-sm font-semibold text-gray-700 mb-3">履歴情報</h3>
+      <h3 className="text-sm font-semibold text-sumi mb-3">履歴情報</h3>
 
       {/* ヘッダー */}
-      <div className="grid grid-cols-4 gap-4 px-3 py-2 bg-gray-100 border rounded-t-md text-sm font-medium text-gray-600">
+      <div className="grid grid-cols-4 gap-4 px-3 py-2 bg-kinari border rounded-t-md text-sm font-medium text-hai">
         <span>日時</span>
         <span>操作</span>
         <span>変更フィールド</span>
@@ -39,7 +39,7 @@ export function HistoryTab({ plotDetail }: HistoryTabProps) {
         {histories.map((history) => (
           <div
             key={history.id}
-            className={`grid grid-cols-4 gap-4 px-3 py-2 text-sm cursor-pointer hover:bg-blue-50 ${selectedId === history.id ? 'bg-blue-50' : ''
+            className={`grid grid-cols-4 gap-4 px-3 py-2 text-sm cursor-pointer hover:bg-matsu-50 ${selectedId === history.id ? 'bg-matsu-50' : ''
               }`}
             onClick={() => setSelectedId(selectedId === history.id ? null : history.id)}
           >

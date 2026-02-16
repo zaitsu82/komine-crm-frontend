@@ -106,7 +106,7 @@ export function BasicInfoTab({
           <div>
             <Label className="text-sm font-medium">
               区画（期）
-              <span className="text-red-500"> *</span>
+              <span className="text-beni"> *</span>
             </Label>
             {viewMode ? (
               <div className="mt-1 px-3 py-2 bg-yellow-50 border rounded-md min-h-[38px] text-sm">
@@ -148,7 +148,7 @@ export function BasicInfoTab({
               </div>
             )}
             {errors.physicalPlot?.areaName && (
-              <p className="text-red-500 text-sm mt-1">{errors.physicalPlot.areaName.message}</p>
+              <p className="text-beni text-sm mt-1">{errors.physicalPlot.areaName.message}</p>
             )}
           </div>
 
@@ -386,7 +386,7 @@ export function BasicInfoTab({
             <button
               type="button"
               onClick={toggleUsageFee}
-              className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+              className="px-3 py-1 text-sm bg-matsu text-white rounded hover:bg-matsu-dark"
             >
               {hasUsageFee ? '使用料を削除' : '使用料を追加'}
             </button>
@@ -494,7 +494,7 @@ export function BasicInfoTab({
             <button
               type="button"
               onClick={toggleManagementFee}
-              className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+              className="px-3 py-1 text-sm bg-matsu text-white rounded hover:bg-matsu-dark"
             >
               {hasManagementFee ? '管理料を削除' : '管理料を追加'}
             </button>
@@ -618,7 +618,7 @@ export function BasicInfoTab({
             <button
               type="button"
               onClick={toggleGravestoneInfo}
-              className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+              className="px-3 py-1 text-sm bg-matsu text-white rounded hover:bg-matsu-dark"
             >
               {hasGravestoneInfo ? '墓石情報を削除' : '墓石情報を追加'}
             </button>

@@ -97,9 +97,9 @@ export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProp
   return (
     <form onSubmit={handleSubmit(onSubmit, onError)} className="w-full">
       {errorMessages.length > 0 && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
-          <h4 className="text-red-800 font-semibold mb-2">入力エラーがあります</h4>
-          <ul className="list-disc list-inside text-red-700 text-sm">
+        <div className="mb-4 p-4 bg-beni-50 border border-beni-200 rounded-elegant">
+          <h4 className="text-beni-dark font-semibold mb-2">入力エラーがあります</h4>
+          <ul className="list-disc list-inside text-beni text-sm">
             {errorMessages.map((msg, i) => (
               <li key={i}>{msg}</li>
             ))}
@@ -111,25 +111,25 @@ export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProp
         <TabsList className="grid w-full grid-cols-4 h-auto">
           <TabsTrigger
             value="basic-info"
-            className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white"
+            className="py-2 data-[state=active]:bg-matsu data-[state=active]:text-white"
           >
             区画・契約情報
           </TabsTrigger>
           <TabsTrigger
             value="work-billing"
-            className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white"
+            className="py-2 data-[state=active]:bg-matsu data-[state=active]:text-white"
           >
             勤務先・請求
           </TabsTrigger>
           <TabsTrigger
             value="contacts"
-            className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white"
+            className="py-2 data-[state=active]:bg-matsu data-[state=active]:text-white"
           >
             連絡先/家族
           </TabsTrigger>
           <TabsTrigger
             value="burial-info"
-            className="py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white"
+            className="py-2 data-[state=active]:bg-matsu data-[state=active]:text-white"
           >
             埋葬情報
           </TabsTrigger>
@@ -169,7 +169,7 @@ export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProp
         <Button
           type="submit"
           disabled={isLoading}
-          className="bg-blue-600 hover:bg-blue-700 px-6"
+          className="bg-matsu hover:bg-matsu-dark text-white px-6"
         >
           {isLoading ? '保存中...' : isEditing ? '更新' : '登録'}
         </Button>

@@ -59,7 +59,7 @@ const defaultValues: CollectiveBurialApplicationFormValues = {
 
 const errorText = (message?: string) => {
   if (!message) return null;
-  return <p className="mt-1 text-xs text-red-600">{message}</p>;
+  return <p className="mt-1 text-xs text-beni">{message}</p>;
 };
 
 export default function CollectiveBurialApplicationForm({ onSubmitSuccess }: CollectiveBurialApplicationFormProps) {
@@ -594,7 +594,7 @@ export default function CollectiveBurialApplicationForm({ onSubmitSuccess }: Col
         </Tabs>
 
         {lastCreatedId && (
-          <div className="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">
+          <div className="rounded-elegant border border-matsu-200 bg-matsu-50 p-3 text-sm text-matsu-dark">
             申込ID「{lastCreatedId}」で登録しました。合祀実施記録タブから内容を確認できます。
           </div>
         )}
@@ -610,7 +610,7 @@ export default function CollectiveBurialApplicationForm({ onSubmitSuccess }: Col
           >
             リセット
           </Button>
-          <Button type="submit" disabled={isSubmitting} className="bg-purple-600 hover:bg-purple-700">
+          <Button type="submit" disabled={isSubmitting} className="bg-matsu hover:bg-matsu-dark text-white">
             {isSubmitting ? '登録中...' : '登録'}
           </Button>
         </div>

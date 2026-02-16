@@ -85,7 +85,7 @@ export function BurialInfoTab({
                       removeBuriedPerson(index);
                     }}
                   >
-                    <Trash2 className="h-4 w-4 text-red-500" />
+                    <Trash2 className="h-4 w-4 text-beni" />
                   </Button>
                   {expandedBurialId === field.id ? (
                     <ChevronUp className="h-4 w-4" />
@@ -101,15 +101,15 @@ export function BurialInfoTab({
                   {/* Name */}
                   <div>
                     <Label htmlFor={`buriedPersons.${index}.name`}>
-                      氏名 <span className="text-red-500">*</span>
+                      氏名 <span className="text-beni">*</span>
                     </Label>
                     <Input
                       id={`buriedPersons.${index}.name`}
                       {...register(`buriedPersons.${index}.name`)}
-                      className={errors.buriedPersons?.[index]?.name ? 'border-red-500' : ''}
+                      className={errors.buriedPersons?.[index]?.name ? 'border-beni' : ''}
                     />
                     {errors.buriedPersons?.[index]?.name && (
-                      <p className="text-sm text-red-500 mt-1">
+                      <p className="text-sm text-beni mt-1">
                         {errors.buriedPersons[index]?.name?.message}
                       </p>
                     )}
@@ -121,10 +121,10 @@ export function BurialInfoTab({
                     <Input
                       id={`buriedPersons.${index}.nameKana`}
                       {...register(`buriedPersons.${index}.nameKana`)}
-                      className={errors.buriedPersons?.[index]?.nameKana ? 'border-red-500' : ''}
+                      className={errors.buriedPersons?.[index]?.nameKana ? 'border-beni' : ''}
                     />
                     {errors.buriedPersons?.[index]?.nameKana && (
-                      <p className="text-sm text-red-500 mt-1">
+                      <p className="text-sm text-beni mt-1">
                         {errors.buriedPersons[index]?.nameKana?.message}
                       </p>
                     )}
@@ -137,11 +137,11 @@ export function BurialInfoTab({
                       id={`buriedPersons.${index}.relationship`}
                       {...register(`buriedPersons.${index}.relationship`)}
                       className={
-                        errors.buriedPersons?.[index]?.relationship ? 'border-red-500' : ''
+                        errors.buriedPersons?.[index]?.relationship ? 'border-beni' : ''
                       }
                     />
                     {errors.buriedPersons?.[index]?.relationship && (
-                      <p className="text-sm text-red-500 mt-1">
+                      <p className="text-sm text-beni mt-1">
                         {errors.buriedPersons[index]?.relationship?.message}
                       </p>
                     )}
@@ -164,7 +164,7 @@ export function BurialInfoTab({
                       ))}
                     </ViewModeSelect>
                     {errors.buriedPersons?.[index]?.gender && (
-                      <p className="text-sm text-red-500 mt-1">
+                      <p className="text-sm text-beni mt-1">
                         {errors.buriedPersons[index]?.gender?.message}
                       </p>
                     )}
@@ -177,10 +177,10 @@ export function BurialInfoTab({
                       id={`buriedPersons.${index}.deathDate`}
                       type="date"
                       {...register(`buriedPersons.${index}.deathDate`)}
-                      className={errors.buriedPersons?.[index]?.deathDate ? 'border-red-500' : ''}
+                      className={errors.buriedPersons?.[index]?.deathDate ? 'border-beni' : ''}
                     />
                     {errors.buriedPersons?.[index]?.deathDate && (
-                      <p className="text-sm text-red-500 mt-1">
+                      <p className="text-sm text-beni mt-1">
                         {errors.buriedPersons[index]?.deathDate?.message}
                       </p>
                     )}
@@ -195,10 +195,10 @@ export function BurialInfoTab({
                       {...register(`buriedPersons.${index}.age`, {
                         valueAsNumber: true,
                       })}
-                      className={errors.buriedPersons?.[index]?.age ? 'border-red-500' : ''}
+                      className={errors.buriedPersons?.[index]?.age ? 'border-beni' : ''}
                     />
                     {errors.buriedPersons?.[index]?.age && (
-                      <p className="text-sm text-red-500 mt-1">
+                      <p className="text-sm text-beni mt-1">
                         {errors.buriedPersons[index]?.age?.message}
                       </p>
                     )}
@@ -212,11 +212,11 @@ export function BurialInfoTab({
                       type="date"
                       {...register(`buriedPersons.${index}.burialDate`)}
                       className={
-                        errors.buriedPersons?.[index]?.burialDate ? 'border-red-500' : ''
+                        errors.buriedPersons?.[index]?.burialDate ? 'border-beni' : ''
                       }
                     />
                     {errors.buriedPersons?.[index]?.burialDate && (
-                      <p className="text-sm text-red-500 mt-1">
+                      <p className="text-sm text-beni mt-1">
                         {errors.buriedPersons[index]?.burialDate?.message}
                       </p>
                     )}
@@ -228,10 +228,10 @@ export function BurialInfoTab({
                     <Input
                       id={`buriedPersons.${index}.notes`}
                       {...register(`buriedPersons.${index}.notes`)}
-                      className={errors.buriedPersons?.[index]?.notes ? 'border-red-500' : ''}
+                      className={errors.buriedPersons?.[index]?.notes ? 'border-beni' : ''}
                     />
                     {errors.buriedPersons?.[index]?.notes && (
-                      <p className="text-sm text-red-500 mt-1">
+                      <p className="text-sm text-beni mt-1">
                         {errors.buriedPersons[index]?.notes?.message}
                       </p>
                     )}

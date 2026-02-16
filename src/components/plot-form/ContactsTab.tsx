@@ -75,7 +75,7 @@ export function ContactsTab({
                     removeFamilyContact(index);
                   }}
                 >
-                  <Trash2 className="h-4 w-4 text-red-500" />
+                  <Trash2 className="h-4 w-4 text-beni" />
                 </Button>
                 {expandedContactId === field.id ? (
                   <ChevronUp className="h-4 w-4" />
@@ -104,15 +104,15 @@ export function ContactsTab({
                 {/* Name */}
                 <div>
                   <Label htmlFor={`familyContacts.${index}.name`}>
-                    氏名 <span className="text-red-500">*</span>
+                    氏名 <span className="text-beni">*</span>
                   </Label>
                   <Input
                     id={`familyContacts.${index}.name`}
                     {...register(`familyContacts.${index}.name`)}
-                    className={errors.familyContacts?.[index]?.name ? 'border-red-500' : ''}
+                    className={errors.familyContacts?.[index]?.name ? 'border-beni' : ''}
                   />
                   {errors.familyContacts?.[index]?.name && (
-                    <p className="text-sm text-red-500 mt-1">
+                    <p className="text-sm text-beni mt-1">
                       {errors.familyContacts[index]?.name?.message}
                     </p>
                   )}
@@ -121,17 +121,17 @@ export function ContactsTab({
                 {/* Relationship */}
                 <div>
                   <Label htmlFor={`familyContacts.${index}.relationship`}>
-                    続柄 <span className="text-red-500">*</span>
+                    続柄 <span className="text-beni">*</span>
                   </Label>
                   <Input
                     id={`familyContacts.${index}.relationship`}
                     {...register(`familyContacts.${index}.relationship`)}
                     className={
-                      errors.familyContacts?.[index]?.relationship ? 'border-red-500' : ''
+                      errors.familyContacts?.[index]?.relationship ? 'border-beni' : ''
                     }
                   />
                   {errors.familyContacts?.[index]?.relationship && (
-                    <p className="text-sm text-red-500 mt-1">
+                    <p className="text-sm text-beni mt-1">
                       {errors.familyContacts[index]?.relationship?.message}
                     </p>
                   )}
@@ -145,11 +145,11 @@ export function ContactsTab({
                     type="date"
                     {...register(`familyContacts.${index}.birthDate`)}
                     className={
-                      errors.familyContacts?.[index]?.birthDate ? 'border-red-500' : ''
+                      errors.familyContacts?.[index]?.birthDate ? 'border-beni' : ''
                     }
                   />
                   {errors.familyContacts?.[index]?.birthDate && (
-                    <p className="text-sm text-red-500 mt-1">
+                    <p className="text-sm text-beni mt-1">
                       {errors.familyContacts[index]?.birthDate?.message}
                     </p>
                   )}
@@ -163,11 +163,11 @@ export function ContactsTab({
                     {...register(`familyContacts.${index}.postalCode`)}
                     placeholder="123-4567"
                     className={
-                      errors.familyContacts?.[index]?.postalCode ? 'border-red-500' : ''
+                      errors.familyContacts?.[index]?.postalCode ? 'border-beni' : ''
                     }
                   />
                   {errors.familyContacts?.[index]?.postalCode && (
-                    <p className="text-sm text-red-500 mt-1">
+                    <p className="text-sm text-beni mt-1">
                       {errors.familyContacts[index]?.postalCode?.message}
                     </p>
                   )}
@@ -176,15 +176,15 @@ export function ContactsTab({
                 {/* Address */}
                 <div className="col-span-2">
                   <Label htmlFor={`familyContacts.${index}.address`}>
-                    住所 <span className="text-red-500">*</span>
+                    住所 <span className="text-beni">*</span>
                   </Label>
                   <Input
                     id={`familyContacts.${index}.address`}
                     {...register(`familyContacts.${index}.address`)}
-                    className={errors.familyContacts?.[index]?.address ? 'border-red-500' : ''}
+                    className={errors.familyContacts?.[index]?.address ? 'border-beni' : ''}
                   />
                   {errors.familyContacts?.[index]?.address && (
-                    <p className="text-sm text-red-500 mt-1">
+                    <p className="text-sm text-beni mt-1">
                       {errors.familyContacts[index]?.address?.message}
                     </p>
                   )}
@@ -193,17 +193,17 @@ export function ContactsTab({
                 {/* Phone Number */}
                 <div>
                   <Label htmlFor={`familyContacts.${index}.phoneNumber`}>
-                    電話番号 <span className="text-red-500">*</span>
+                    電話番号 <span className="text-beni">*</span>
                   </Label>
                   <Input
                     id={`familyContacts.${index}.phoneNumber`}
                     {...register(`familyContacts.${index}.phoneNumber`)}
                     className={
-                      errors.familyContacts?.[index]?.phoneNumber ? 'border-red-500' : ''
+                      errors.familyContacts?.[index]?.phoneNumber ? 'border-beni' : ''
                     }
                   />
                   {errors.familyContacts?.[index]?.phoneNumber && (
-                    <p className="text-sm text-red-500 mt-1">
+                    <p className="text-sm text-beni mt-1">
                       {errors.familyContacts[index]?.phoneNumber?.message}
                     </p>
                   )}
@@ -215,10 +215,10 @@ export function ContactsTab({
                   <Input
                     id={`familyContacts.${index}.faxNumber`}
                     {...register(`familyContacts.${index}.faxNumber`)}
-                    className={errors.familyContacts?.[index]?.faxNumber ? 'border-red-500' : ''}
+                    className={errors.familyContacts?.[index]?.faxNumber ? 'border-beni' : ''}
                   />
                   {errors.familyContacts?.[index]?.faxNumber && (
-                    <p className="text-sm text-red-500 mt-1">
+                    <p className="text-sm text-beni mt-1">
                       {errors.familyContacts[index]?.faxNumber?.message}
                     </p>
                   )}
@@ -231,10 +231,10 @@ export function ContactsTab({
                     id={`familyContacts.${index}.email`}
                     type="email"
                     {...register(`familyContacts.${index}.email`)}
-                    className={errors.familyContacts?.[index]?.email ? 'border-red-500' : ''}
+                    className={errors.familyContacts?.[index]?.email ? 'border-beni' : ''}
                   />
                   {errors.familyContacts?.[index]?.email && (
-                    <p className="text-sm text-red-500 mt-1">
+                    <p className="text-sm text-beni mt-1">
                       {errors.familyContacts[index]?.email?.message}
                     </p>
                   )}
@@ -247,11 +247,11 @@ export function ContactsTab({
                     id={`familyContacts.${index}.registeredAddress`}
                     {...register(`familyContacts.${index}.registeredAddress`)}
                     className={
-                      errors.familyContacts?.[index]?.registeredAddress ? 'border-red-500' : ''
+                      errors.familyContacts?.[index]?.registeredAddress ? 'border-beni' : ''
                     }
                   />
                   {errors.familyContacts?.[index]?.registeredAddress && (
-                    <p className="text-sm text-red-500 mt-1">
+                    <p className="text-sm text-beni mt-1">
                       {errors.familyContacts[index]?.registeredAddress?.message}
                     </p>
                   )}
@@ -274,7 +274,7 @@ export function ContactsTab({
                     ))}
                   </ViewModeSelect>
                   {errors.familyContacts?.[index]?.mailingType && (
-                    <p className="text-sm text-red-500 mt-1">
+                    <p className="text-sm text-beni mt-1">
                       {errors.familyContacts[index]?.mailingType?.message}
                     </p>
                   )}
@@ -286,10 +286,10 @@ export function ContactsTab({
                   <Input
                     id={`familyContacts.${index}.notes`}
                     {...register(`familyContacts.${index}.notes`)}
-                    className={errors.familyContacts?.[index]?.notes ? 'border-red-500' : ''}
+                    className={errors.familyContacts?.[index]?.notes ? 'border-beni' : ''}
                   />
                   {errors.familyContacts?.[index]?.notes && (
-                    <p className="text-sm text-red-500 mt-1">
+                    <p className="text-sm text-beni mt-1">
                       {errors.familyContacts[index]?.notes?.message}
                     </p>
                   )}

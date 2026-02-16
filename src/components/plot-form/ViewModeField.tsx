@@ -34,7 +34,7 @@ export function ViewModeField({
     <div className={className}>
       <Label className="text-sm font-medium">
         {label}
-        {required && <span className="text-red-500"> *</span>}
+        {required && <span className="text-beni"> *</span>}
       </Label>
       {viewMode ? (
         <div className="mt-1 px-3 py-2 bg-yellow-50 border rounded-md min-h-[38px] text-sm">
@@ -49,7 +49,7 @@ export function ViewModeField({
             {...register}
             required={required}
           />
-          {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+          {error && <p className="text-beni text-sm mt-1">{error}</p>}
         </>
       )}
     </div>
@@ -83,7 +83,7 @@ export function ViewModeSelect({
     <div>
       <Label className="text-sm font-medium">
         {label}
-        {required && <span className="text-red-500"> *</span>}
+        {required && <span className="text-beni"> *</span>}
       </Label>
       {viewMode ? (
         <div className="mt-1 px-3 py-2 bg-yellow-50 border rounded-md min-h-[38px] text-sm">
@@ -126,7 +126,7 @@ export function ViewModeTextarea({
     <div>
       <Label className="text-sm font-medium">
         {label}
-        {required && <span className="text-red-500"> *</span>}
+        {required && <span className="text-beni"> *</span>}
       </Label>
       {viewMode ? (
         <div className="mt-1 px-3 py-2 bg-yellow-50 border rounded-md min-h-[60px] text-sm whitespace-pre-wrap">

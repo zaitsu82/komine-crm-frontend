@@ -19,6 +19,7 @@ import { usePlotDetail } from '@/hooks/usePlots';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
 
 // ===== 型定義 =====
 
@@ -350,7 +351,7 @@ function HistoryInfoTab({ plot }: { plot: PlotDetailResponse }) {
         {histories.map((history) => (
           <div
             key={history.id}
-            className="grid grid-cols-4 gap-4 px-4 py-2 text-sm hover:bg-matsu-50/30"
+            className="grid grid-cols-4 gap-4 px-4 py-2 text-sm hover:bg-matsu-50 transition-colors duration-200 cursor-default"
           >
             <span>{new Date(history.createdAt).toLocaleString('ja-JP')}</span>
             <span>{ACTION_TYPE_LABELS[history.actionType] || history.actionType}</span>
@@ -427,17 +428,30 @@ export default function PlotDetailView({ plotId, onEdit, onBack }: PlotDetailVie
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-matsu mr-3"></div>
-        <span className="text-hai">読み込み中...</span>
+      <div className="space-y-4 p-4">
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-8 w-24" />
+          <Skeleton className="h-8 w-32" />
+          <Skeleton className="h-6 w-20" />
+        </div>
+        <Skeleton className="h-10 w-full" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="space-y-2">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-6 w-full" />
+            </div>
+          ))}
+        </div>
+        <Skeleton className="h-40 w-full" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-        <p className="text-red-600 mb-4">エラーが発生しました: {error}</p>
+      <div className="bg-beni-50 border border-beni-200 rounded-elegant-lg p-6 text-center">
+        <p className="text-beni mb-4">エラーが発生しました: {error}</p>
         <Button onClick={refresh} variant="outline">
           再読み込み
         </Button>

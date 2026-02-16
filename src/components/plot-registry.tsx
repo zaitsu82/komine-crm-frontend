@@ -17,6 +17,8 @@ import type { PlotSearchParams } from '@/lib/api/plots';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 // ===== 型定義 =====
 
@@ -277,11 +279,19 @@ export default function PlotRegistry({
           variant="matsu"
           size="default"
           className="h-10"
+          disabled={isLoading}
         >
-          <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          検索
+          {isLoading ? (
+            <svg className="animate-spin w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+            </svg>
+          ) : (
+            <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          )}
+          {isLoading ? '検索中...' : '検索'}
         </Button>
         {onNewPlot && (
           <Button
@@ -447,17 +457,21 @@ export default function PlotRegistry({
 
             <tbody className="bg-white divide-y divide-gin">
               {isLoading ? (
-                <tr>
-                  <td colSpan={9} className="px-4 py-12 text-center text-hai">
-                    <div className="flex flex-col items-center">
-                      <svg className="animate-spin w-8 h-8 text-matsu mb-3" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      <p className="text-base font-medium">データを読み込み中...</p>
-                    </div>
-                  </td>
-                </tr>
+                <>
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <tr key={i}>
+                      <td className="px-2 py-2.5 text-center"><Skeleton className="h-6 w-6 rounded-full mx-auto" /></td>
+                      <td className="px-2 py-2.5"><Skeleton className="h-4 w-14" /></td>
+                      <td className="px-2 py-2.5"><Skeleton className="h-4 w-10" /></td>
+                      <td className="px-2 py-2.5"><Skeleton className="h-4 w-full" /></td>
+                      <td className="px-2 py-2.5"><Skeleton className="h-4 w-24" /></td>
+                      <td className="px-2 py-2.5"><Skeleton className="h-4 w-16" /></td>
+                      <td className="px-2 py-2.5"><Skeleton className="h-4 w-12" /></td>
+                      <td className="px-2 py-2.5"><Skeleton className="h-4 w-16" /></td>
+                      <td className="px-2 py-2.5"><Skeleton className="h-4 w-16" /></td>
+                    </tr>
+                  ))}
+                </>
               ) : error ? (
                 <tr>
                   <td colSpan={9} className="px-4 py-12 text-center text-beni">
@@ -637,14 +651,15 @@ export default function PlotRegistry({
 
         <div className="flex items-center gap-2 text-hai">
           <span>表示件数:</span>
-          <select
-            value={itemsPerPage}
-            onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
-            className="h-10 px-3 border border-gin rounded-elegant text-sm bg-white text-sumi focus:outline-none focus:ring-2 focus:ring-matsu transition-all duration-250 cursor-pointer"
-          >
-            <option value={50}>50件</option>
-            <option value={100}>100件</option>
-          </select>
+          <Select value={String(itemsPerPage)} onValueChange={(v) => handleItemsPerPageChange(Number(v))}>
+            <SelectTrigger className="w-24 h-10">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="50">50件</SelectItem>
+              <SelectItem value="100">100件</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
     </div>
