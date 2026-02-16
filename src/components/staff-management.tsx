@@ -296,7 +296,7 @@ export default function StaffManagement({ }: StaffManagementProps) {
   // ソートアイコン
   const SortIcon = ({ columnKey }: { columnKey: SortKey }) => {
     if (sortKey !== columnKey) {
-      return <span className="ml-1 text-gray-400">⇅</span>;
+      return <span className="ml-1 text-gin">⇅</span>;
     }
     return <span className="ml-1">{sortOrder === 'asc' ? '↑' : '↓'}</span>;
   };
@@ -305,8 +305,8 @@ export default function StaffManagement({ }: StaffManagementProps) {
     <div className="p-6">
       {/* ヘッダー */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-800 mb-2">スタッフ管理</h1>
-        <p className="text-gray-600">
+        <h1 className="text-2xl font-bold text-sumi mb-2">スタッフ管理</h1>
+        <p className="text-hai">
           {isAdminUser
             ? 'スタッフの登録・編集・削除ができます'
             : 'スタッフ情報を閲覧できます（編集は管理者のみ）'}
@@ -333,7 +333,7 @@ export default function StaffManagement({ }: StaffManagementProps) {
         </div>
         {isAdminUser && (
           <Button onClick={handleOpenCreateDialog}>
-            <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
             新規登録
@@ -343,7 +343,7 @@ export default function StaffManagement({ }: StaffManagementProps) {
 
       {/* エラー表示 */}
       {loadError && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded">
+        <div className="mb-4 p-4 bg-beni-50 border border-beni-200 text-beni rounded-elegant">
           {loadError}
           <Button
             variant="outline"
@@ -357,64 +357,64 @@ export default function StaffManagement({ }: StaffManagementProps) {
       )}
 
       {/* スタッフ一覧テーブル */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-elegant-lg border border-gin overflow-hidden shadow-elegant">
         {isLoading ? (
-          <div className="p-8 text-center text-gray-500">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <div className="p-8 text-center text-hai">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-matsu mx-auto mb-4"></div>
             読み込み中...
           </div>
         ) : (
           <table className="w-full">
-            <thead className="bg-gray-50">
+            <thead className="bg-kinari">
               <tr>
                 <th
-                  className="px-4 py-3 text-left text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-100"
+                  className="px-4 py-3 text-left text-sm font-semibold text-sumi cursor-pointer hover:bg-matsu-50 transition-colors"
                   onClick={() => handleSort('id')}
                 >
                   ID <SortIcon columnKey="id" />
                 </th>
                 <th
-                  className="px-4 py-3 text-left text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-100"
+                  className="px-4 py-3 text-left text-sm font-semibold text-sumi cursor-pointer hover:bg-matsu-50 transition-colors"
                   onClick={() => handleSort('name')}
                 >
                   氏名 <SortIcon columnKey="name" />
                 </th>
                 <th
-                  className="px-4 py-3 text-left text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-100"
+                  className="px-4 py-3 text-left text-sm font-semibold text-sumi cursor-pointer hover:bg-matsu-50 transition-colors"
                   onClick={() => handleSort('email')}
                 >
                   メールアドレス <SortIcon columnKey="email" />
                 </th>
                 <th
-                  className="px-4 py-3 text-left text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-100"
+                  className="px-4 py-3 text-left text-sm font-semibold text-sumi cursor-pointer hover:bg-matsu-50 transition-colors"
                   onClick={() => handleSort('role')}
                 >
                   権限 <SortIcon columnKey="role" />
                 </th>
                 <th
-                  className="px-4 py-3 text-left text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-100"
+                  className="px-4 py-3 text-left text-sm font-semibold text-sumi cursor-pointer hover:bg-matsu-50 transition-colors"
                   onClick={() => handleSort('isActive')}
                 >
                   状態 <SortIcon columnKey="isActive" />
                 </th>
                 <th
-                  className="px-4 py-3 text-left text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-100"
+                  className="px-4 py-3 text-left text-sm font-semibold text-sumi cursor-pointer hover:bg-matsu-50 transition-colors"
                   onClick={() => handleSort('lastLoginAt')}
                 >
                   最終ログイン <SortIcon columnKey="lastLoginAt" />
                 </th>
                 {isAdminUser && (
-                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700">
+                  <th className="px-4 py-3 text-center text-sm font-semibold text-sumi">
                     操作
                   </th>
                 )}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-gin">
               {sortedStaff.map((staff) => (
                 <tr
                   key={staff.id}
-                  className={`hover:bg-gray-50 ${!staff.isActive ? 'bg-gray-100 text-gray-500' : ''}`}
+                  className={`hover:bg-matsu-50 transition-colors ${!staff.isActive ? 'bg-kinari text-hai' : ''}`}
                 >
                   <td className="px-4 py-3 text-sm">{staff.id}</td>
                   <td className="px-4 py-3 text-sm font-medium">{staff.name}</td>
@@ -422,12 +422,12 @@ export default function StaffManagement({ }: StaffManagementProps) {
                   <td className="px-4 py-3 text-sm">
                     <span
                       className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${staff.role === 'admin'
-                        ? 'bg-purple-100 text-purple-800'
+                        ? 'bg-cha-50 text-cha-dark'
                         : staff.role === 'manager'
-                          ? 'bg-blue-100 text-blue-800'
+                          ? 'bg-ai-50 text-ai-dark'
                           : staff.role === 'operator'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-gray-100 text-gray-800'
+                            ? 'bg-matsu-50 text-matsu-dark'
+                            : 'bg-kinari text-sumi'
                         }`}
                     >
                       {STAFF_ROLE_LABELS[staff.role]}
@@ -436,14 +436,14 @@ export default function StaffManagement({ }: StaffManagementProps) {
                   <td className="px-4 py-3 text-sm">
                     <span
                       className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${staff.isActive
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
+                        ? 'bg-matsu-50 text-matsu-dark'
+                        : 'bg-beni-50 text-beni'
                         }`}
                     >
                       {staff.isActive ? '有効' : '無効'}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">
+                  <td className="px-4 py-3 text-sm text-hai">
                     {formatDateTime(staff.lastLoginAt)}
                   </td>
                   {isAdminUser && (
@@ -460,7 +460,7 @@ export default function StaffManagement({ }: StaffManagementProps) {
                           variant="outline"
                           size="sm"
                           onClick={() => handleToggleActive(staff)}
-                          className={staff.isActive ? 'text-orange-600' : 'text-green-600'}
+                          className={staff.isActive ? 'text-kohaku' : 'text-matsu'}
                         >
                           {staff.isActive ? '無効化' : '有効化'}
                         </Button>
@@ -468,7 +468,7 @@ export default function StaffManagement({ }: StaffManagementProps) {
                           variant="outline"
                           size="sm"
                           onClick={() => handleOpenDeleteConfirm(staff)}
-                          className="text-red-600 hover:bg-red-50"
+                          className="text-beni hover:bg-beni-50"
                         >
                           削除
                         </Button>
@@ -481,7 +481,7 @@ export default function StaffManagement({ }: StaffManagementProps) {
                 <tr>
                   <td
                     colSpan={isAdminUser ? 7 : 6}
-                    className="px-4 py-8 text-center text-gray-500"
+                    className="px-4 py-8 text-center text-hai"
                   >
                     {searchQuery
                       ? '検索条件に一致するスタッフが見つかりません'
@@ -497,13 +497,13 @@ export default function StaffManagement({ }: StaffManagementProps) {
       {/* 登録/編集ダイアログ */}
       {showDialog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+          <div className="bg-white rounded-elegant-lg shadow-elegant-xl w-full max-w-md p-6">
             <h2 className="text-xl font-bold mb-4">
               {editingStaff ? 'スタッフ編集' : 'スタッフ新規登録'}
             </h2>
 
             {formError && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded">
+              <div className="mb-4 p-3 bg-beni-50 border border-beni-200 text-beni rounded-elegant">
                 {formError}
               </div>
             )}
@@ -511,7 +511,7 @@ export default function StaffManagement({ }: StaffManagementProps) {
             <div className="space-y-4">
               <div>
                 <Label htmlFor="name" className="block mb-1">
-                  氏名 <span className="text-red-500">*</span>
+                  氏名 <span className="text-beni">*</span>
                 </Label>
                 <Input
                   id="name"
@@ -524,7 +524,7 @@ export default function StaffManagement({ }: StaffManagementProps) {
 
               <div>
                 <Label htmlFor="email" className="block mb-1">
-                  メールアドレス <span className="text-red-500">*</span>
+                  メールアドレス <span className="text-beni">*</span>
                 </Label>
                 <Input
                   id="email"
@@ -537,13 +537,13 @@ export default function StaffManagement({ }: StaffManagementProps) {
 
               <div>
                 <Label htmlFor="role" className="block mb-1">
-                  権限 <span className="text-red-500">*</span>
+                  権限 <span className="text-beni">*</span>
                 </Label>
                 <select
                   id="role"
                   value={formData.role}
                   onChange={(e) => setFormData({ ...formData, role: e.target.value as StaffRole })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gin rounded-elegant focus:outline-none focus:ring-2 focus:ring-matsu transition-all duration-250"
                 >
                   {(Object.keys(STAFF_ROLE_LABELS) as StaffRole[]).map((role) => (
                     <option key={role} value={role}>
@@ -551,7 +551,7 @@ export default function StaffManagement({ }: StaffManagementProps) {
                     </option>
                   ))}
                 </select>
-                <p className="mt-1 text-sm text-gray-500">
+                <p className="mt-1 text-sm text-hai">
                   {STAFF_ROLE_DESCRIPTIONS[formData.role]}
                 </p>
               </div>
@@ -562,7 +562,7 @@ export default function StaffManagement({ }: StaffManagementProps) {
                   type="checkbox"
                   checked={formData.isActive}
                   onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  className="w-4 h-4 text-matsu border-gin rounded focus:ring-matsu"
                 />
                 <Label htmlFor="isActive" className="ml-2">
                   有効（ログイン可能）
@@ -585,17 +585,17 @@ export default function StaffManagement({ }: StaffManagementProps) {
       {/* 削除確認ダイアログ */}
       {showDeleteConfirm && staffToDelete && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
-            <h2 className="text-xl font-bold mb-4 text-red-600">スタッフ削除の確認</h2>
+          <div className="bg-white rounded-elegant-lg shadow-elegant-xl w-full max-w-md p-6">
+            <h2 className="text-xl font-bold mb-4 text-beni">スタッフ削除の確認</h2>
             <p className="mb-4">
               以下のスタッフを削除してもよろしいですか？
             </p>
-            <div className="bg-gray-50 p-4 rounded mb-4">
-              <p className="font-medium">{staffToDelete.name}</p>
-              <p className="text-sm text-gray-600">{staffToDelete.email}</p>
-              <p className="text-sm text-gray-600">{STAFF_ROLE_LABELS[staffToDelete.role]}</p>
+            <div className="bg-kinari p-4 rounded-elegant border border-gin mb-4">
+              <p className="font-medium text-sumi">{staffToDelete.name}</p>
+              <p className="text-sm text-hai">{staffToDelete.email}</p>
+              <p className="text-sm text-hai">{STAFF_ROLE_LABELS[staffToDelete.role]}</p>
             </div>
-            <p className="text-sm text-red-600 mb-4">
+            <p className="text-sm text-beni mb-4">
               ※ この操作は取り消せません
             </p>
             <div className="flex justify-end gap-3">
@@ -605,7 +605,7 @@ export default function StaffManagement({ }: StaffManagementProps) {
               <Button
                 onClick={handleDelete}
                 disabled={isDeleting}
-                className="bg-red-600 hover:bg-red-700 text-white"
+                className="bg-beni hover:bg-beni-dark text-white"
               >
                 {isDeleting ? '削除中...' : '削除する'}
               </Button>

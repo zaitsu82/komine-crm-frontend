@@ -51,7 +51,7 @@ const defaultValues: CollectiveBurialFormValues = {
 
 const errorText = (message?: string) => {
   if (!message) return null;
-  return <p className="mt-1 text-xs text-red-600">{message}</p>;
+  return <p className="mt-1 text-xs text-beni">{message}</p>;
 };
 
 export default function CollectiveBurialForm({
@@ -258,9 +258,9 @@ export default function CollectiveBurialForm({
                   </div>
                   <div>
                     <span className="text-hai">請求ステータス:</span>
-                    <span className={`ml-2 px-2 py-0.5 rounded text-xs font-medium ${existingData.billingStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                      existingData.billingStatus === 'billed' ? 'bg-blue-100 text-blue-800' :
-                        'bg-green-100 text-green-800'
+                    <span className={`ml-2 px-2 py-0.5 rounded text-xs font-medium ${existingData.billingStatus === 'pending' ? 'bg-kohaku-50 text-kohaku-dark' :
+                      existingData.billingStatus === 'billed' ? 'bg-ai-50 text-ai-dark' :
+                        'bg-matsu-50 text-matsu-dark'
                       }`}>
                       {BILLING_STATUS_LABELS[existingData.billingStatus as BillingStatus]}
                     </span>
@@ -287,7 +287,7 @@ export default function CollectiveBurialForm({
             <textarea
               id="specialRequests"
               rows={4}
-              className="w-full rounded-md border border-gray-300 p-2 text-sm shadow-sm"
+              className="w-full rounded-md border border-gin p-2 text-sm shadow-sm"
               placeholder="宗派や儀礼上の配慮、特記事項など"
               {...register('specialRequests')}
             />
@@ -296,7 +296,7 @@ export default function CollectiveBurialForm({
             <textarea
               id="freeText"
               rows={3}
-              className="w-full rounded-md border border-gray-300 p-2 text-sm shadow-sm"
+              className="w-full rounded-md border border-gin p-2 text-sm shadow-sm"
               placeholder="その他備考"
               {...register('freeText')}
             />
@@ -382,13 +382,13 @@ export default function CollectiveBurialForm({
           </div>
 
           {ceremonyFields.length === 0 && (
-            <p className="text-sm text-gray-500 bg-kinari p-4 rounded-lg">
+            <p className="text-sm text-hai bg-kinari p-4 rounded-lg">
               法要情報は未登録です。必要に応じて追加してください。
             </p>
           )}
 
           {ceremonyFields.map((field, index) => (
-            <div key={field.id} className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm space-y-4">
+            <div key={field.id} className="rounded-lg border border-gin bg-white p-4 shadow-sm space-y-4">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-semibold">法要 {index + 1}</p>
                 <Button type="button" variant="outline" size="sm" onClick={() => removeCeremony(index)}>
@@ -450,13 +450,13 @@ export default function CollectiveBurialForm({
           </div>
 
           {documentFields.length === 0 && (
-            <p className="text-sm text-gray-500 bg-kinari p-4 rounded-lg">
+            <p className="text-sm text-hai bg-kinari p-4 rounded-lg">
               関連書類は未登録です。必要に応じて追加してください。
             </p>
           )}
 
           {documentFields.map((field, index) => (
-            <div key={field.id} className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm space-y-4">
+            <div key={field.id} className="rounded-lg border border-gin bg-white p-4 shadow-sm space-y-4">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-semibold">書類 {index + 1}</p>
                 <Button type="button" variant="outline" size="sm" onClick={() => removeDocument(index)}>
@@ -510,7 +510,7 @@ export default function CollectiveBurialForm({
 
       {/* エラー表示 */}
       {mutationError && (
-        <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+        <div className="rounded-elegant border border-beni-200 bg-beni-50 p-3 text-sm text-beni">
           {mutationError}
         </div>
       )}

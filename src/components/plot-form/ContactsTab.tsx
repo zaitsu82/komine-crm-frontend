@@ -46,7 +46,7 @@ export function ContactsTab({
           <div key={field.id} className="border rounded-lg overflow-hidden">
             {/* Summary Line */}
             <div
-              className="flex items-center justify-between p-3 bg-gray-50 border rounded-md cursor-pointer"
+              className="flex items-center justify-between p-3 bg-kinari border rounded-md cursor-pointer hover:bg-matsu-50 transition-colors duration-200"
               onClick={() =>
                 setExpandedContactId(expandedContactId === field.id ? null : field.id)
               }
@@ -55,13 +55,13 @@ export function ContactsTab({
                 <span className="font-medium">
                   {watch(`familyContacts.${index}.name`) || '未入力'}
                 </span>
-                <span className="text-gray-500">
+                <span className="text-hai">
                   {watch(`familyContacts.${index}.relationship`) || '-'}
                 </span>
-                <span className="text-gray-500">
+                <span className="text-hai">
                   {watch(`familyContacts.${index}.phoneNumber`) || '-'}
                 </span>
-                <span className="text-gray-500">
+                <span className="text-hai">
                   {watch(`familyContacts.${index}.address`) || '-'}
                 </span>
               </div>
@@ -70,6 +70,8 @@ export function ContactsTab({
                   type="button"
                   variant="ghost"
                   size="sm"
+                  title="削除"
+                  aria-label="連絡先を削除"
                   onClick={(e) => {
                     e.stopPropagation();
                     removeFamilyContact(index);

@@ -61,9 +61,9 @@ export default function PlotDetailSidebar({
     selectedPlotId;
 
   return (
-    <div className="w-64 bg-gray-200 border-r border-gray-300 fixed top-0 left-0 h-screen overflow-y-auto z-10 flex flex-col">
+    <div className="w-64 bg-kinari border-r border-gin fixed top-0 left-0 h-screen overflow-y-auto z-10 flex flex-col">
       <div className="p-4 pb-8 flex-1">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">
+        <h2 className="text-lg font-semibold text-sumi mb-4">
           {getSidebarTitle()}
         </h2>
 
@@ -125,7 +125,7 @@ export default function PlotDetailSidebar({
                   variant="outline"
                   size="lg"
                 >
-                  <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                   </svg>
                   区画情報を削除
@@ -198,9 +198,9 @@ export default function PlotDetailSidebar({
           disabled={isLoading}
           variant="outline"
           size="sm"
-          className="w-full text-gray-600 hover:text-red-600 hover:border-red-300 hover:bg-red-50"
+          className="w-full text-hai hover:text-beni hover:border-beni-200 hover:bg-beni-50"
         >
-          <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
           </svg>
           ログアウト

@@ -43,7 +43,7 @@ export function BurialInfoTab({
       </div>
 
       {/* Header Row */}
-      <div className="grid grid-cols-4 gap-4 p-3 bg-gray-100 border rounded-md text-sm font-semibold">
+      <div className="grid grid-cols-4 gap-4 p-3 bg-kinari border rounded-md text-sm font-semibold">
         <div>氏名</div>
         <div>性別</div>
         <div>命日</div>
@@ -60,7 +60,7 @@ export function BurialInfoTab({
             <div key={field.id} className="border rounded-lg overflow-hidden">
               {/* Summary Row */}
               <div
-                className="flex items-center justify-between p-3 bg-gray-50 border rounded-md cursor-pointer"
+                className="flex items-center justify-between p-3 bg-kinari border rounded-md cursor-pointer hover:bg-matsu-50 transition-colors duration-200"
                 onClick={() =>
                   setExpandedBurialId(expandedBurialId === field.id ? null : field.id)
                 }
@@ -71,7 +71,7 @@ export function BurialInfoTab({
                   </span>
                   <span>{genderLabel}</span>
                   <span>{watch(`buriedPersons.${index}.deathDate`) || '-'}</span>
-                  <span className="text-gray-500 truncate">
+                  <span className="text-hai truncate">
                     {watch(`buriedPersons.${index}.notes`) || '-'}
                   </span>
                 </div>
@@ -80,6 +80,8 @@ export function BurialInfoTab({
                     type="button"
                     variant="ghost"
                     size="sm"
+                    title="削除"
+                    aria-label="埋葬者を削除"
                     onClick={(e) => {
                       e.stopPropagation();
                       removeBuriedPerson(index);
