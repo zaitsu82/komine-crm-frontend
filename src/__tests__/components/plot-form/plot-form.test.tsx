@@ -27,7 +27,7 @@ jest.mock('@/hooks', () => ({
 
 // Radix UI Select をモック（JSDOMで動作しないため）
 jest.mock('@/components/ui/select', () => ({
-  Select: ({ children, value, onValueChange }: { children: React.ReactNode; value?: string; onValueChange?: (v: string) => void }) => (
+  Select: ({ children, value }: { children: React.ReactNode; value?: string; onValueChange?: (v: string) => void }) => (
     <div data-testid="mock-select" data-value={value}>{children}</div>
   ),
   SelectTrigger: ({ children }: { children: React.ReactNode }) => (
