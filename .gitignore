@@ -23,7 +23,7 @@ dist/
 .turbo/
 
 # Environment variables
-.env*
+.env
 !.env.example
 
 # Vercel
