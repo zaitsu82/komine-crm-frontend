@@ -4,6 +4,14 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        destination: `${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000"}/api/:path*`,
+      },
+    ];
+  },
   async headers() {
     return [
       {
