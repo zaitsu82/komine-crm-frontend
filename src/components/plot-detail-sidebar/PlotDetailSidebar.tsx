@@ -40,6 +40,7 @@ export default function PlotDetailSidebar({
   const getSidebarTitle = () => {
     switch (currentView) {
       case 'plot-details':
+      case 'edit':
       case 'document-select':
       case 'document-history':
         return '区画詳細';
@@ -57,7 +58,7 @@ export default function PlotDetailSidebar({
   };
 
   const isPlotContextView =
-    (currentView === 'plot-details' || currentView === 'document-select' || currentView === 'document-history') &&
+    (currentView === 'plot-details' || currentView === 'edit' || currentView === 'document-select' || currentView === 'document-history') &&
     selectedPlotId;
 
   return (

@@ -496,9 +496,6 @@ export default function PlotDetailView({ plotId, onEdit, onBack }: PlotDetailVie
               戻る
             </Button>
           )}
-          <Button onClick={refresh} variant="outline">
-            更新
-          </Button>
           {onEdit && (
             <Button onClick={onEdit} className="bg-matsu hover:bg-matsu-dark text-white">
               編集

@@ -13,10 +13,6 @@ import {
   usePlotInventoryAreas,
 } from '@/hooks/usePlotInventory';
 
-interface PlotAvailabilityManagementProps {
-  onNavigateToMenu?: () => void;
-}
-
 type ViewMode = 'all' | 'available' | 'soldout' | 'usage-rate' | 'remaining';
 type DisplayMode = 'section' | 'area'; // 区画別 or 面積別
 type SelectedPeriod = PlotPeriod | 'all';
@@ -32,7 +28,7 @@ const menuItems = [
   { key: 'remaining', label: '残数順', icon: Hash, description: '残数でソート' },
 ];
 
-export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAvailabilityManagementProps) {
+export default function PlotAvailabilityManagement() {
   const [viewMode, setViewMode] = useState<ViewMode>('all');
   const [displayMode, setDisplayMode] = useState<DisplayMode>('section'); // 区画別 or 面積別
   const [selectedPeriod, setSelectedPeriod] = useState<SelectedPeriod>('all');
@@ -145,100 +141,68 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
   };
 
   return (
-    <div className="flex h-screen bg-shiro">
-      {/* サイドメニュー */}
-      <div className="w-72 bg-white border-r border-gin shadow-elegant flex flex-col">
-        <div className="p-5 bg-gradient-ai text-white relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-          <div className="relative">
-            <div className="flex items-center space-x-3 mb-2">
-              <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center">
-                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-mincho text-lg font-semibold tracking-wide">区画残数管理</h3>
-                <p className="text-xs text-ai-100 mt-0.5">2025年6月末現在</p>
-              </div>
-            </div>
+    <div className="bg-gradient-warm relative">
+      {/* ツールバー */}
+      <div className="bg-white border-b border-gin p-4 flex flex-wrap items-center gap-4">
+        {/* 表示形式切替（区画別/面積別） */}
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-semibold text-hai">表示形式</span>
+          <div className="flex gap-1 p-1 bg-kinari rounded-elegant border border-gin">
+            <button
+              onClick={() => setDisplayMode('section')}
+              className={cn(
+                'px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200',
+                displayMode === 'section'
+                  ? 'bg-ai text-white shadow-elegant'
+                  : 'text-hai hover:text-sumi hover:bg-white'
+              )}
+            >
+              区画別
+            </button>
+            <button
+              onClick={() => setDisplayMode('area')}
+              className={cn(
+                'px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200',
+                displayMode === 'area'
+                  ? 'bg-ai text-white shadow-elegant'
+                  : 'text-hai hover:text-sumi hover:bg-white'
+              )}
+            >
+              面積別
+            </button>
           </div>
         </div>
 
-        <div className="p-4 flex-1 overflow-auto">
-          {/* メインメニューに戻るボタン */}
-          {onNavigateToMenu && (
-            <Button
-              onClick={onNavigateToMenu}
-              className="w-full mb-5"
-              variant="outline"
-              size="lg"
-            >
-              <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-              メインメニューに戻る
-            </Button>
-          )}
-
-          {/* 表示形式切替（区画別/面積別） */}
-          <div className="mb-5">
-            <h4 className="text-xs font-semibold text-hai uppercase mb-2 tracking-wider">表示形式</h4>
-            <div className="flex gap-1 p-1 bg-kinari rounded-elegant border border-gin">
+        {/* フィルター */}
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-semibold text-hai">フィルター</span>
+          <div className="flex gap-1">
+            {menuItems.map((item) => (
               <button
-                onClick={() => setDisplayMode('section')}
+                key={item.key}
+                onClick={() => setViewMode(item.key as ViewMode)}
                 className={cn(
-                  'flex-1 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200',
-                  displayMode === 'section'
-                    ? 'bg-ai text-white shadow-elegant'
-                    : 'text-hai hover:text-sumi hover:bg-white'
+                  'px-3 py-1.5 rounded-elegant transition-all duration-200 text-sm flex items-center',
+                  viewMode === item.key
+                    ? 'bg-ai-50 text-ai border border-ai-200 font-semibold'
+                    : 'hover:bg-kinari text-hai hover:text-sumi border border-transparent'
                 )}
               >
-                区画別
+                <item.icon className="w-4 h-4 mr-1.5 shrink-0" />
+                <span>{item.label}</span>
               </button>
-              <button
-                onClick={() => setDisplayMode('area')}
-                className={cn(
-                  'flex-1 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200',
-                  displayMode === 'area'
-                    ? 'bg-ai text-white shadow-elegant'
-                    : 'text-hai hover:text-sumi hover:bg-white'
-                )}
-              >
-                面積別
-              </button>
-            </div>
+            ))}
           </div>
+        </div>
 
-          {/* 表示モード切替 */}
-          <div className="mb-5">
-            <h4 className="text-xs font-semibold text-hai uppercase mb-2 tracking-wider">フィルター</h4>
-            <div className="space-y-1">
-              {menuItems.map((item) => (
-                <button
-                  key={item.key}
-                  onClick={() => setViewMode(item.key as ViewMode)}
-                  className={cn(
-                    'w-full text-left px-4 py-2.5 rounded-elegant transition-all duration-200 text-sm flex items-center',
-                    viewMode === item.key
-                      ? 'bg-ai-50 text-ai border border-ai-200 font-semibold'
-                      : 'hover:bg-kinari text-hai hover:text-sumi border border-transparent'
-                  )}
-                >
-                  <item.icon className="w-4 h-4 mr-2 shrink-0" />
-                  <span>{item.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* 期別フィルター */}
-          <div className="mb-4">
-            <h4 className="text-xs font-semibold text-hai uppercase mb-2 tracking-wider">期別フィルター</h4>
+        {/* 期別フィルター */}
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-semibold text-hai">期別</span>
+          <div className="flex gap-1">
             <button
               onClick={() => setSelectedPeriod('all')}
               className={cn(
-                'w-full text-left px-4 py-2.5 rounded-elegant mb-1 transition-all duration-200 text-sm',
+                'px-3 py-1.5 rounded-elegant transition-all duration-200 text-sm',
                 selectedPeriod === 'all'
                   ? 'bg-matsu-50 text-matsu border border-matsu-200 font-semibold'
                   : 'hover:bg-kinari text-hai hover:text-sumi border border-transparent'
@@ -261,21 +225,21 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
                   key={period}
                   onClick={() => setSelectedPeriod(period)}
                   className={cn(
-                    'w-full text-left px-4 py-2.5 rounded-elegant mb-1 transition-all duration-200 text-sm',
+                    'px-3 py-1.5 rounded-elegant transition-all duration-200 text-sm',
                     selectedPeriod === period
                       ? `${colors.bg} ${colors.text} border ${colors.border} font-semibold`
                       : 'hover:bg-kinari text-hai hover:text-sumi border border-transparent'
                   )}
                 >
-                  <div className="flex justify-between items-center">
-                    <span>{period}</span>
+                  {period}
+                  {ps && (
                     <span className={cn(
-                      "text-xs px-2 py-0.5 rounded-full",
-                      getUsageRateColor(ps?.usageRate || 0)
+                      "ml-1 text-xs px-1.5 py-0.5 rounded-full",
+                      getUsageRateColor(ps.usageRate || 0)
                     )}>
-                      残{ps?.remainingCount || 0}
+                      残{ps.remainingCount || 0}
                     </span>
-                  </div>
+                  )}
                 </button>
               );
             })}
@@ -284,7 +248,7 @@ export default function PlotAvailabilityManagement({ onNavigateToMenu }: PlotAva
       </div>
 
       {/* メインコンテンツ */}
-      <div className="flex-1 overflow-auto p-6 bg-gradient-warm relative">
+      <div className="p-6 relative">
         {/* ローディングオーバーレイ */}
         {isLoading && (
           <div className="absolute inset-0 bg-white/60 z-10 flex items-center justify-center">
