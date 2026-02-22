@@ -100,12 +100,12 @@ export function BaseDialog({
           <div className="flex items-center justify-between p-4 border-b">
             <div>
               {title && (
-                <h2 id="dialog-title" className="text-lg font-semibold text-gray-900">
+                <h2 id="dialog-title" className="text-lg font-semibold text-sumi">
                   {title}
                 </h2>
               )}
               {description && (
-                <p id="dialog-description" className="mt-1 text-sm text-gray-500">
+                <p id="dialog-description" className="mt-1 text-sm text-hai">
                   {description}
                 </p>
               )}
@@ -114,7 +114,7 @@ export function BaseDialog({
               <button
                 type="button"
                 onClick={onClose}
-                className="p-2 text-gray-400 hover:text-gray-600 rounded-md hover:bg-gray-100 transition-colors"
+                className="p-2 text-hai hover:text-sumi rounded-md hover:bg-kinari transition-colors"
                 aria-label="閉じる"
               >
                 <X className="w-5 h-5" />
@@ -127,7 +127,7 @@ export function BaseDialog({
         <div className="p-4 max-h-[70vh] overflow-y-auto">{children}</div>
 
         {/* フッター */}
-        {footer && <div className="flex justify-end gap-2 p-4 border-t bg-gray-50">{footer}</div>}
+        {footer && <div className="flex justify-end gap-2 p-4 border-t bg-shiro">{footer}</div>}
       </div>
     </div>
   );

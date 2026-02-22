@@ -53,7 +53,7 @@ export function WorkBillingTab({
       {/* Section 1: Work Info */}
       <div className="border rounded-lg p-4">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-semibold text-gray-700">勤務先情報</h3>
+          <h3 className="text-sm font-semibold text-sumi">勤務先情報</h3>
           <Button type="button" variant="outline" size="sm" onClick={toggleWorkInfo}>
             {hasWorkInfo ? '削除' : '追加'}
           </Button>
@@ -98,7 +98,7 @@ export function WorkBillingTab({
 
             {/* DM・宛先設定 */}
             <div className="mt-4 pt-4 border-t">
-              <h4 className="text-sm font-medium text-gray-700 mb-3">DM・宛先設定</h4>
+              <h4 className="text-sm font-medium text-sumi mb-3">DM・宛先設定</h4>
               <div className="grid grid-cols-2 gap-4">
                 <ViewModeSelect
                   label="DM送信設定"
@@ -139,7 +139,7 @@ export function WorkBillingTab({
       {/* Section 2: Billing Info */}
       <div className="border rounded-lg p-4">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-semibold text-gray-700">請求情報</h3>
+          <h3 className="text-sm font-semibold text-sumi">請求情報</h3>
           <Button type="button" variant="outline" size="sm" onClick={toggleBillingInfo}>
             {hasBillingInfo ? '削除' : '追加'}
           </Button>

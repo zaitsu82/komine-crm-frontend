@@ -132,6 +132,70 @@ export function BurialInfoTab({
                     )}
                   </div>
 
+                  {/* Birth Date */}
+                  <div>
+                    <Label htmlFor={`buriedPersons.${index}.birthDate`}>生年月日</Label>
+                    <Input
+                      id={`buriedPersons.${index}.birthDate`}
+                      type="date"
+                      {...register(`buriedPersons.${index}.birthDate`)}
+                      className={errors.buriedPersons?.[index]?.birthDate ? 'border-beni' : ''}
+                    />
+                    {errors.buriedPersons?.[index]?.birthDate && (
+                      <p className="text-sm text-beni mt-1">
+                        {errors.buriedPersons[index]?.birthDate?.message}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Posthumous Name */}
+                  <div>
+                    <Label htmlFor={`buriedPersons.${index}.posthumousName`}>戒名</Label>
+                    <Input
+                      id={`buriedPersons.${index}.posthumousName`}
+                      {...register(`buriedPersons.${index}.posthumousName`)}
+                      className={
+                        errors.buriedPersons?.[index]?.posthumousName ? 'border-beni' : ''
+                      }
+                    />
+                    {errors.buriedPersons?.[index]?.posthumousName && (
+                      <p className="text-sm text-beni mt-1">
+                        {errors.buriedPersons[index]?.posthumousName?.message}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Report Date */}
+                  <div>
+                    <Label htmlFor={`buriedPersons.${index}.reportDate`}>届出日</Label>
+                    <Input
+                      id={`buriedPersons.${index}.reportDate`}
+                      type="date"
+                      {...register(`buriedPersons.${index}.reportDate`)}
+                      className={errors.buriedPersons?.[index]?.reportDate ? 'border-beni' : ''}
+                    />
+                    {errors.buriedPersons?.[index]?.reportDate && (
+                      <p className="text-sm text-beni mt-1">
+                        {errors.buriedPersons[index]?.reportDate?.message}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Religion */}
+                  <div>
+                    <Label htmlFor={`buriedPersons.${index}.religion`}>宗派</Label>
+                    <Input
+                      id={`buriedPersons.${index}.religion`}
+                      {...register(`buriedPersons.${index}.religion`)}
+                      className={errors.buriedPersons?.[index]?.religion ? 'border-beni' : ''}
+                    />
+                    {errors.buriedPersons?.[index]?.religion && (
+                      <p className="text-sm text-beni mt-1">
+                        {errors.buriedPersons[index]?.religion?.message}
+                      </p>
+                    )}
+                  </div>
+
                   {/* Relationship */}
                   <div>
                     <Label htmlFor={`buriedPersons.${index}.relationship`}>続柄</Label>

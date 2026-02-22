@@ -34,6 +34,7 @@ const config: Config = {
           DEFAULT: '#6b6b6b',
           light: '#8a8a8a',
           dark: '#4a4a4a',
+          50: '#f0f0f0',
         },
         'gin': {
           DEFAULT: '#c0c0c0',
@@ -42,7 +43,7 @@ const config: Config = {
         },
         'shiro': '#fafaf8',
         'kinari': '#f5f3ef',
-        
+
         // 松葉色 - プライマリカラー
         'matsu': {
           DEFAULT: '#2d5a3d',
@@ -59,7 +60,7 @@ const config: Config = {
           800: '#172c1f',
           900: '#0f1b14',
         },
-        
+
         // 茶色 - セカンダリカラー
         'cha': {
           DEFAULT: '#8b7355',
@@ -76,7 +77,7 @@ const config: Config = {
           800: '#493e2e',
           900: '#332c21',
         },
-        
+
         // 藍色 - アクセントカラー
         'ai': {
           DEFAULT: '#264348',
@@ -93,7 +94,7 @@ const config: Config = {
           800: '#142224',
           900: '#0e1718',
         },
-        
+
         // 紅色 - エラー・警告
         'beni': {
           DEFAULT: '#b54a4a',
@@ -110,7 +111,7 @@ const config: Config = {
           800: '#5b2626',
           900: '#3d1a1a',
         },
-        
+
         // 琥珀色 - 警告
         'kohaku': {
           DEFAULT: '#c4a35a',
@@ -127,7 +128,7 @@ const config: Config = {
           800: '#644c1a',
           900: '#442f0a',
         },
-        
+
         // ステータス色（アクセシブル）
         'status': {
           'active': '#2d5a3d',
@@ -135,7 +136,7 @@ const config: Config = {
           'attention': '#b54a4a',
           'neutral': '#6b6b6b',
         },
-        
+
         // 背景・ボーダー
         'accessible': {
           'primary': '#2d5a3d',

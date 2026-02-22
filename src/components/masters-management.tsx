@@ -154,7 +154,7 @@ export default function MastersManagement() {
   if (isLoading) {
     return (
       <div className="p-6 flex items-center justify-center h-64">
-        <p className="text-gray-500">読み込み中...</p>
+        <p className="text-hai">読み込み中...</p>
       </div>
     );
   }
@@ -162,8 +162,8 @@ export default function MastersManagement() {
   if (loadError) {
     return (
       <div className="p-6">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <p className="text-red-600">{loadError}</p>
+        <div className="bg-beni-50 border border-beni-200 rounded-lg p-4">
+          <p className="text-beni">{loadError}</p>
           <Button onClick={fetchData} className="mt-2" variant="outline" size="sm">
             再試行
           </Button>
@@ -175,7 +175,7 @@ export default function MastersManagement() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">マスタ管理</h1>
+        <h1 className="text-2xl font-bold text-sumi">マスタ管理</h1>
         {isAdmin && (
           <Button onClick={handleOpenCreate}>
             + 新規追加
@@ -191,8 +191,8 @@ export default function MastersManagement() {
             onClick={() => setSelectedType(type)}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               selectedType.key === type.key
-                ? 'bg-gray-900 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                ? 'bg-sumi text-white'
+                : 'bg-kinari text-sumi hover:bg-gin'
             }`}
           >
             {type.label}
@@ -204,42 +204,42 @@ export default function MastersManagement() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-lg border border-gin overflow-hidden">
         <table className="w-full">
-          <thead className="bg-gray-50">
+          <thead className="bg-shiro">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">コード</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">名称</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">説明</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">並び順</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">状態</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-hai uppercase">ID</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-hai uppercase">コード</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-hai uppercase">名称</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-hai uppercase">説明</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-hai uppercase">並び順</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-hai uppercase">状態</th>
               {isAdmin && (
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">操作</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-hai uppercase">操作</th>
               )}
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200">
+          <tbody className="divide-y divide-gin">
             {currentItems.length === 0 ? (
               <tr>
-                <td colSpan={isAdmin ? 7 : 6} className="px-4 py-8 text-center text-gray-400">
+                <td colSpan={isAdmin ? 7 : 6} className="px-4 py-8 text-center text-hai">
                   データがありません
                 </td>
               </tr>
             ) : (
               currentItems.map((item) => (
-                <tr key={item.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 text-sm text-gray-500">{item.id}</td>
-                  <td className="px-4 py-3 text-sm font-mono text-gray-900">{item.code}</td>
-                  <td className="px-4 py-3 text-sm font-medium text-gray-900">{item.name}</td>
-                  <td className="px-4 py-3 text-sm text-gray-500">{item.description || '-'}</td>
-                  <td className="px-4 py-3 text-sm text-gray-500">{item.sortOrder ?? '-'}</td>
+                <tr key={item.id} className="hover:bg-shiro">
+                  <td className="px-4 py-3 text-sm text-hai">{item.id}</td>
+                  <td className="px-4 py-3 text-sm font-mono text-sumi">{item.code}</td>
+                  <td className="px-4 py-3 text-sm font-medium text-sumi">{item.name}</td>
+                  <td className="px-4 py-3 text-sm text-hai">{item.description || '-'}</td>
+                  <td className="px-4 py-3 text-sm text-hai">{item.sortOrder ?? '-'}</td>
                   <td className="px-4 py-3">
                     <span
                       className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
                         item.isActive
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-gray-100 text-gray-600'
+                          ? 'bg-matsu-100 text-matsu-800'
+                          : 'bg-kinari text-hai'
                       }`}
                     >
                       {item.isActive ? '有効' : '無効'}
@@ -262,7 +262,7 @@ export default function MastersManagement() {
                           }}
                           variant="outline"
                           size="sm"
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          className="text-beni hover:text-beni-dark hover:bg-beni-50"
                         >
                           削除
                         </Button>
@@ -285,8 +285,8 @@ export default function MastersManagement() {
             </h2>
 
             {formError && (
-              <div className="bg-red-50 border border-red-200 rounded p-3 mb-4">
-                <p className="text-red-600 text-sm">{formError}</p>
+              <div className="bg-beni-50 border border-beni-200 rounded p-3 mb-4">
+                <p className="text-beni text-sm">{formError}</p>
               </div>
             )}
 
@@ -354,10 +354,10 @@ export default function MastersManagement() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="bg-white rounded-lg shadow-xl w-full max-w-sm mx-4 p-6">
             <h2 className="text-lg font-semibold mb-2">削除確認</h2>
-            <p className="text-gray-600 mb-4">
+            <p className="text-hai mb-4">
               <span className="font-medium">{itemToDelete.name}</span>（{itemToDelete.code}）を削除しますか？
             </p>
-            <p className="text-sm text-red-600 mb-4">
+            <p className="text-sm text-beni mb-4">
               この操作は取り消せません。
             </p>
             <div className="flex justify-end gap-3">
@@ -374,7 +374,7 @@ export default function MastersManagement() {
               <Button
                 onClick={handleDelete}
                 disabled={isDeleting}
-                className="bg-red-600 hover:bg-red-700 text-white"
+                className="bg-beni hover:bg-beni-dark text-white"
               >
                 {isDeleting ? '削除中...' : '削除'}
               </Button>

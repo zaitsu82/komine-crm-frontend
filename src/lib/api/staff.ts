@@ -405,6 +405,19 @@ export async function deleteStaff(id: number): Promise<ApiResponse<{ message: st
 }
 
 /**
+ * スタッフ情報の一括登録
+ */
+export async function bulkCreateStaff(
+  items: Array<{ name: string; email: string; role: string }>
+): Promise<ApiResponse<{
+  totalRequested: number;
+  created: number;
+  results: Array<{ row: number; id: number; name: string; email: string }>;
+}>> {
+  return apiPost('/staff/bulk', { items });
+}
+
+/**
  * スタッフ有効/無効切り替え
  */
 export async function toggleStaffActive(id: number): Promise<ApiResponse<ToggleActiveResponse>> {

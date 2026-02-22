@@ -27,7 +27,7 @@ export default function NoteDialog({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-lg mx-4">
-        <div className="bg-red-600 text-white px-6 py-4 rounded-t-lg">
+        <div className="bg-beni text-white px-6 py-4 rounded-t-lg">
           <h3 className="text-lg font-semibold">
             {editingNoteId ? '連絡事項を編集' : '重要な連絡事項・注意事項を追加'}
           </h3>
@@ -57,7 +57,7 @@ export default function NoteDialog({
             </div>
           </div>
           <div>
-            <Label className="text-sm font-medium">内容 <span className="text-red-500">*</span></Label>
+            <Label className="text-sm font-medium">内容 <span className="text-beni">*</span></Label>
             <textarea
               value={newNote.content}
               onChange={(e) => onNoteChange({ ...newNote, content: e.target.value })}
@@ -66,11 +66,11 @@ export default function NoteDialog({
             />
           </div>
         </div>
-        <div className="px-6 py-4 bg-gray-50 rounded-b-lg flex justify-end space-x-3">
+        <div className="px-6 py-4 bg-shiro rounded-b-lg flex justify-end space-x-3">
           <Button variant="outline" onClick={onClose}>
             キャンセル
           </Button>
-          <Button className="bg-red-600 hover:bg-red-700 text-white" onClick={onSave}>
+          <Button className="bg-beni hover:bg-beni-dark text-white" onClick={onSave}>
             {editingNoteId ? '更新' : '追加'}
           </Button>
         </div>

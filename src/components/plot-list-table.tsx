@@ -58,7 +58,7 @@ const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
 
 const PAYMENT_STATUS_COLORS: Record<PaymentStatus, string> = {
   [PaymentStatus.Unpaid]: 'text-kohaku-dark bg-kohaku-50',
-  [PaymentStatus.Paid]: 'text-matsu bg-matsu-50',
+  [PaymentStatus.Paid]: 'text-matsu-dark bg-matsu-50',
   [PaymentStatus.PartialPaid]: 'text-kohaku-dark bg-kohaku-50',
   [PaymentStatus.Overdue]: 'text-beni bg-beni-50',
   [PaymentStatus.Refunded]: 'text-ai bg-ai-50',
@@ -81,7 +81,7 @@ function getContractYear(dateStr: string | null | undefined): string {
 export default function PlotListTable({
   onPlotSelect,
   selectedPlotId,
-  title = '区画一覧',
+  title = '台帳問い合わせ',
   showSearch = true,
   showSortControls = true,
   showAiueoTabs = true,
@@ -173,124 +173,142 @@ export default function PlotListTable({
   );
 
   return (
-    <div className="space-y-4">
+    <div className="h-full flex flex-col bg-shiro">
       {/* ヘッダー */}
-      <div className="bg-white border border-gin rounded-elegant-lg shadow-elegant-sm overflow-hidden">
-        <div className="bg-gradient-to-r from-matsu-50 to-kinari border-b border-gin px-6 py-5">
-          <h2 className="font-mincho text-2xl font-semibold text-sumi tracking-wide">{title}</h2>
-        </div>
-
-        <div className="p-5 space-y-4">
-          {/* あいうえおタブ */}
-          {showAiueoTabs && (
-            <div className="flex flex-wrap gap-1 p-2 bg-kinari rounded-elegant border border-gin">
-              {AIUEO_TABS.map((tab) => (
-                <Button
-                  key={tab.key}
-                  onClick={() => setAiueoTab(tab.key)}
-                  variant={aiueoTab === tab.key ? 'default' : 'outline'}
-                  size="sm"
-                  className="min-w-[40px]"
-                >
-                  {tab.label}
-                </Button>
-              ))}
-            </div>
-          )}
-
-          {/* ソートコントロール */}
-          {showSortControls && (
-            <div className="flex flex-wrap items-center gap-4 p-3 bg-kinari rounded-elegant border border-gin">
-              <span className="text-sm font-medium text-sumi">並び替え:</span>
-              <div className="flex items-center gap-2">
-                <Select value={sortKey} onValueChange={(value: SortKey) => setSortKey(value)}>
-                  <SelectTrigger className="w-[160px] bg-white">
-                    <SelectValue placeholder="項目を選択" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="customerName">氏名</SelectItem>
-                    <SelectItem value="areaName">エリア</SelectItem>
-                    <SelectItem value="plotNumber">区画番号</SelectItem>
-                    <SelectItem value="contractDate">契約日</SelectItem>
-                    <SelectItem value="paymentStatus">入金状況</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select value={sortOrder} onValueChange={(value: SortOrder) => setSortOrder(value)}>
-                  <SelectTrigger className="w-[120px] bg-white">
-                    <SelectValue placeholder="順序" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="asc">昇順 ↑</SelectItem>
-                    <SelectItem value="desc">降順 ↓</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex gap-2 flex-wrap">
-                <Button
-                  onClick={() => { setSortKey('areaName'); setSortOrder('asc'); }}
-                  variant={sortKey === 'areaName' ? 'default' : 'outline'}
-                  size="sm"
-                >
-                  エリア順
-                </Button>
-                <Button
-                  onClick={() => { setSortKey('customerName'); setSortOrder('asc'); }}
-                  variant={sortKey === 'customerName' ? 'default' : 'outline'}
-                  size="sm"
-                >
-                  氏名順
-                </Button>
-                <Button
-                  onClick={() => { setSortKey('contractDate'); setSortOrder('desc'); }}
-                  variant={sortKey === 'contractDate' ? 'default' : 'outline'}
-                  size="sm"
-                >
-                  契約日順
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {/* 検索エリア */}
-          {showSearch && (
-            <div className="flex items-center space-x-2">
-              <Input
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="氏名、区画番号、電話番号で検索..."
-                className="flex-1"
-              />
-              <Button onClick={() => { setSearchInput(''); setSearch(''); }} variant="outline" size="sm">
-                クリア
-              </Button>
-              <Button onClick={handleSearch} variant="default" size="sm">
-                検索
-              </Button>
-              <Button onClick={refresh} variant="outline" size="sm">
-                更新
-              </Button>
-            </div>
-          )}
-
-          {/* 件数表示 */}
-          <div className="flex items-center justify-between pt-3 border-t border-gin">
-            <p className="text-sm text-hai">
-              検索結果: <span className="font-bold text-sumi text-lg">{total}</span> 件
-            </p>
+      <div className="bg-gradient-to-r from-matsu-50 to-kinari border-b border-matsu-100 px-6 py-5">
+        <div className="flex items-center space-x-4">
+          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-matsu to-matsu-dark flex items-center justify-center shadow-elegant-sm">
+            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <div>
+            <h2 className="font-mincho text-xl font-semibold text-sumi tracking-wide">{title}</h2>
+            <p className="text-sm text-hai mt-0.5">区画・契約情報の検索と管理</p>
           </div>
         </div>
       </div>
 
+      {/* あいうえおタブ */}
+      {showAiueoTabs && (
+        <div className="bg-white border border-gin rounded-elegant-lg shadow-elegant-sm mx-6 mt-4 p-3">
+          <div className="flex flex-wrap gap-1">
+            {AIUEO_TABS.map((tab) => {
+              const isActive = aiueoTab === tab.key;
+              return (
+                <button
+                  key={tab.key}
+                  onClick={() => setAiueoTab(tab.key)}
+                  className={cn(
+                    'px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 min-w-[40px]',
+                    isActive
+                      ? 'bg-matsu text-white shadow-elegant-sm'
+                      : 'text-hai hover:text-sumi hover:bg-kinari'
+                  )}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ソートコントロール */}
+      {showSortControls && (
+        <div className="mx-6 mt-4 bg-white border border-gin rounded-elegant-lg shadow-elegant-sm p-4">
+          <div className="flex flex-wrap items-center gap-4">
+            <span className="text-sm font-medium text-sumi">並び替え:</span>
+            <div className="flex items-center gap-2">
+              <Select value={sortKey} onValueChange={(value: SortKey) => setSortKey(value)}>
+                <SelectTrigger className="w-[160px] bg-white border-gin">
+                  <SelectValue placeholder="項目を選択" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="customerName">氏名</SelectItem>
+                  <SelectItem value="areaName">エリア</SelectItem>
+                  <SelectItem value="plotNumber">区画番号</SelectItem>
+                  <SelectItem value="contractDate">契約日</SelectItem>
+                  <SelectItem value="paymentStatus">入金状況</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={sortOrder} onValueChange={(value: SortOrder) => setSortOrder(value)}>
+                <SelectTrigger className="w-[120px] bg-white border-gin">
+                  <SelectValue placeholder="順序" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="asc">昇順 ↑</SelectItem>
+                  <SelectItem value="desc">降順 ↓</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex gap-2 flex-wrap">
+              <Button
+                onClick={() => { setSortKey('areaName'); setSortOrder('asc'); }}
+                variant={sortKey === 'areaName' ? 'default' : 'outline'}
+                size="sm"
+              >
+                エリア順
+              </Button>
+              <Button
+                onClick={() => { setSortKey('customerName'); setSortOrder('asc'); }}
+                variant={sortKey === 'customerName' ? 'default' : 'outline'}
+                size="sm"
+              >
+                氏名順
+              </Button>
+              <Button
+                onClick={() => { setSortKey('contractDate'); setSortOrder('desc'); }}
+                variant={sortKey === 'contractDate' ? 'default' : 'outline'}
+                size="sm"
+              >
+                契約日順
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 検索エリア */}
+      {showSearch && (
+        <div className="mx-6 mt-4 bg-white border border-gin rounded-elegant-lg shadow-elegant-sm p-4">
+          <div className="flex items-center space-x-2">
+            <Input
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="氏名、区画番号、電話番号で検索..."
+              className="flex-1 border-gin"
+            />
+            <Button onClick={() => { setSearchInput(''); setSearch(''); }} variant="outline" size="sm">
+              クリア
+            </Button>
+            <Button onClick={handleSearch} variant="default" size="sm">
+              検索
+            </Button>
+            <Button onClick={refresh} variant="outline" size="sm">
+              更新
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* 件数表示 */}
+      <div className="mx-6 mt-4 flex items-center justify-between">
+        <p className="text-sm text-hai">
+          検索結果: <span className="font-bold text-sumi text-lg">{total}</span> 件
+        </p>
+      </div>
+
       {/* テーブル */}
-      <div className="bg-white rounded-elegant-lg shadow-elegant border border-gin overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full">
-            <thead className="bg-kinari border-b border-gin">
-              <tr>
+      <div className="mx-6 mt-4 bg-white border border-gin rounded-elegant-lg shadow-elegant-sm overflow-hidden flex-1">
+        <div className="overflow-x-auto h-full">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-kinari border-b border-gin">
                 <th
                   className={cn(
-                    'px-4 py-3 text-left text-sm font-semibold text-sumi cursor-pointer transition-colors hover:bg-cha-50',
+                    'px-4 py-3 text-left text-sm font-semibold text-sumi cursor-pointer transition-colors duration-200 hover:bg-cha-50',
                     sortKey === 'customerName' && 'bg-cha-50'
                   )}
                   onClick={() => handleSort('customerName')}
@@ -302,7 +320,7 @@ export default function PlotListTable({
                 </th>
                 <th
                   className={cn(
-                    'px-4 py-3 text-left text-sm font-semibold text-sumi cursor-pointer transition-colors hover:bg-cha-50',
+                    'px-4 py-3 text-left text-sm font-semibold text-sumi cursor-pointer transition-colors duration-200 hover:bg-cha-50',
                     sortKey === 'areaName' && 'bg-cha-50'
                   )}
                   onClick={() => handleSort('areaName')}
@@ -314,7 +332,7 @@ export default function PlotListTable({
                 </th>
                 <th
                   className={cn(
-                    'px-4 py-3 text-left text-sm font-semibold text-sumi cursor-pointer transition-colors hover:bg-cha-50',
+                    'px-4 py-3 text-left text-sm font-semibold text-sumi cursor-pointer transition-colors duration-200 hover:bg-cha-50',
                     sortKey === 'plotNumber' && 'bg-cha-50'
                   )}
                   onClick={() => handleSort('plotNumber')}
@@ -326,7 +344,7 @@ export default function PlotListTable({
                 </th>
                 <th
                   className={cn(
-                    'px-4 py-3 text-left text-sm font-semibold text-sumi cursor-pointer transition-colors hover:bg-cha-50',
+                    'px-4 py-3 text-left text-sm font-semibold text-sumi cursor-pointer transition-colors duration-200 hover:bg-cha-50',
                     sortKey === 'contractDate' && 'bg-cha-50'
                   )}
                   onClick={() => handleSort('contractDate')}
@@ -341,7 +359,7 @@ export default function PlotListTable({
                 </th>
                 <th
                   className={cn(
-                    'px-4 py-3 text-left text-sm font-semibold text-sumi cursor-pointer transition-colors hover:bg-cha-50',
+                    'px-4 py-3 text-left text-sm font-semibold text-sumi cursor-pointer transition-colors duration-200 hover:bg-cha-50',
                     sortKey === 'paymentStatus' && 'bg-cha-50'
                   )}
                   onClick={() => handleSort('paymentStatus')}
@@ -380,7 +398,7 @@ export default function PlotListTable({
                       className={cn(
                         'cursor-pointer transition-all duration-200 hover:bg-cha-50',
                         selectedPlotId === plot.id && 'bg-matsu-50',
-                        index % 2 === 1 && 'bg-kinari/50'
+                        index % 2 === 0 ? 'bg-white' : 'bg-shiro'
                       )}
                       onClick={() => onPlotSelect?.(plot)}
                     >
@@ -410,7 +428,7 @@ export default function PlotListTable({
                         {paymentStatus && (
                           <span
                             className={cn(
-                              'px-2 py-1 rounded text-xs font-medium',
+                              'px-3 py-1 rounded-full text-xs font-medium',
                               PAYMENT_STATUS_COLORS[paymentStatus]
                             )}
                           >
@@ -423,16 +441,28 @@ export default function PlotListTable({
                 })
               ) : (
                 <tr>
-                  <td colSpan={6} className="px-6 py-4 text-center text-sm text-hai">
-                    {searchQuery.trim()
-                      ? '検索条件に該当するデータが見つかりませんでした'
-                      : 'データがありません'}
+                  <td colSpan={6} className="px-6 py-8 text-center text-sm text-hai">
+                    <div className="flex flex-col items-center">
+                      <svg className="w-12 h-12 text-gin mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                      </svg>
+                      <p className="text-base font-medium">
+                        {searchQuery.trim()
+                          ? '検索条件に該当するデータが見つかりませんでした'
+                          : 'データがありません'}
+                      </p>
+                    </div>
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
+      </div>
+
+      {/* ページネーション */}
+      <div className="mx-6 mt-4 mb-6 flex items-center justify-between text-sm text-hai">
+        <span>全 {total} 件</span>
       </div>
     </div>
   );

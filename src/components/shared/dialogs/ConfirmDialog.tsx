@@ -29,23 +29,23 @@ interface ConfirmDialogProps {
 const variantStyles = {
   info: {
     icon: Info,
-    iconColor: 'text-blue-500',
-    buttonColor: 'bg-blue-600 hover:bg-blue-700',
+    iconColor: 'text-ai',
+    buttonColor: 'bg-ai hover:bg-ai-dark',
   },
   warning: {
     icon: AlertTriangle,
-    iconColor: 'text-yellow-500',
-    buttonColor: 'bg-yellow-600 hover:bg-yellow-700',
+    iconColor: 'text-kohaku',
+    buttonColor: 'bg-kohaku hover:bg-kohaku-dark',
   },
   danger: {
     icon: XCircle,
-    iconColor: 'text-red-500',
-    buttonColor: 'bg-red-600 hover:bg-red-700',
+    iconColor: 'text-beni',
+    buttonColor: 'bg-beni hover:bg-beni-dark',
   },
   success: {
     icon: CheckCircle,
-    iconColor: 'text-green-500',
-    buttonColor: 'bg-green-600 hover:bg-green-700',
+    iconColor: 'text-matsu',
+    buttonColor: 'bg-matsu hover:bg-matsu-dark',
   },
 };
 
@@ -84,14 +84,14 @@ export function ConfirmDialog({
         <div className={`mb-4 ${iconColor}`}>
           <Icon className="w-12 h-12" />
         </div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
-        <p className="text-gray-600 mb-6">{message}</p>
+        <h3 className="text-lg font-semibold text-sumi mb-2">{title}</h3>
+        <p className="text-sumi mb-6">{message}</p>
         <div className="flex gap-3 w-full">
           <button
             type="button"
             onClick={onClose}
             disabled={isLoading}
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex-1 px-4 py-2 border border-gin rounded-md text-sumi bg-white hover:bg-shiro disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {cancelText}
           </button>

@@ -54,6 +54,8 @@ export default function PlotDetailSidebar({
         return 'スタッフ管理メニュー';
       case 'masters':
         return 'マスタ管理メニュー';
+      case 'bulk-import':
+        return '一括登録メニュー';
       default:
         return '小峰霊園CRM';
     }
@@ -153,6 +155,8 @@ export default function PlotDetailSidebar({
                     return 'staff-management';
                   case 'マスタ管理':
                     return 'masters';
+                  case '一括登録':
+                    return 'bulk-import';
                   default:
                     return 'registry';
                 }
@@ -172,6 +176,8 @@ export default function PlotDetailSidebar({
                     return currentView === 'staff-management';
                   case 'マスタ管理':
                     return currentView === 'masters';
+                  case '一括登録':
+                    return currentView === 'bulk-import';
                   default:
                     return false;
                 }

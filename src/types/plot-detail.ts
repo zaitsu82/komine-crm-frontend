@@ -10,7 +10,8 @@ export type ViewType =
   | 'masters'
   | 'documents'
   | 'document-select'
-  | 'document-history';
+  | 'document-history'
+  | 'bulk-import';
 
 // 対応履歴の型定義
 export interface HistoryEntry {
@@ -38,6 +39,7 @@ export const MENU_ITEMS = [
   '書類管理',
   'スタッフ管理',
   'マスタ管理',
+  '一括登録',
 ] as const;
 
 export type MenuItem = typeof MENU_ITEMS[number];
