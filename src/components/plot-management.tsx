@@ -13,6 +13,7 @@ import PlotDetailView from '@/components/plot-detail-view';
 import CollectiveBurialManagement from '@/components/collective-burial';
 import PlotAvailabilityManagement from '@/components/plot-availability-management';
 import StaffManagement from '@/components/staff-management';
+import MastersManagement from '@/components/masters-management';
 import { DocumentManagement } from '@/components/document-management';
 import { usePlotDetail } from '@/hooks/usePlots';
 
@@ -137,7 +138,7 @@ export default function PlotManagement({ initialView = 'registry' }: PlotManagem
   const handleViewChange = (view: ViewType) => {
     setCurrentView(view);
     // メインメニュー項目の場合は選択をクリア
-    if (['registry', 'collective-burial', 'plot-availability', 'documents', 'staff-management'].includes(view)) {
+    if (['registry', 'collective-burial', 'plot-availability', 'documents', 'staff-management', 'masters'].includes(view)) {
       setSelectedPlotId(null);
       setSelectedPlotName('');
       setSelectedPlotCode('');
@@ -222,6 +223,10 @@ export default function PlotManagement({ initialView = 'registry' }: PlotManagem
         ) : currentView === 'staff-management' ? (
           <div className="flex-1 overflow-auto">
             <StaffManagement />
+          </div>
+        ) : currentView === 'masters' ? (
+          <div className="flex-1 overflow-auto">
+            <MastersManagement />
           </div>
         ) : currentView === 'documents' ? (
           <div className="flex-1 overflow-auto">

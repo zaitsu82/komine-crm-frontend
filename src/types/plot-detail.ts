@@ -7,6 +7,7 @@ export type ViewType =
   | 'collective-burial'
   | 'plot-availability'
   | 'staff-management'
+  | 'masters'
   | 'documents'
   | 'document-select'
   | 'document-history';
@@ -36,6 +37,7 @@ export const MENU_ITEMS = [
   '区画残数管理',
   '書類管理',
   'スタッフ管理',
+  'マスタ管理',
 ] as const;
 
 export type MenuItem = typeof MENU_ITEMS[number];
