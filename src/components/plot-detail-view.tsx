@@ -639,6 +639,12 @@ export default function PlotDetailView({ plotId, onEdit, onBack }: PlotDetailVie
         )}>
           {CONTRACT_STATUS_LABELS[plot.contractStatus as ContractStatus]}
         </span>
+        <span className={cn(
+          'px-3 py-1 rounded-full text-sm font-medium',
+          plot.uncollectedAmount > 0 ? 'bg-beni-50 text-beni' : 'bg-kinari text-hai'
+        )}>
+          未集金額: {plot.uncollectedAmount.toLocaleString()}円
+        </span>
       </div>
 
       {/* タブ */}

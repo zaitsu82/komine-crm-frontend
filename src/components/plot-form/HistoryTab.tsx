@@ -27,10 +27,11 @@ export function HistoryTab({ plotDetail }: HistoryTabProps) {
       <h3 className="text-sm font-semibold text-sumi mb-3">履歴情報</h3>
 
       {/* ヘッダー */}
-      <div className="grid grid-cols-4 gap-4 px-3 py-2 bg-kinari border rounded-t-md text-sm font-medium text-hai">
+      <div className="grid grid-cols-5 gap-4 px-3 py-2 bg-kinari border rounded-t-md text-sm font-medium text-hai">
         <span>日時</span>
         <span>操作</span>
         <span>変更フィールド</span>
+        <span>変更事由</span>
         <span>変更者</span>
       </div>
 
@@ -39,7 +40,7 @@ export function HistoryTab({ plotDetail }: HistoryTabProps) {
         {histories.map((history) => (
           <div
             key={history.id}
-            className={`grid grid-cols-4 gap-4 px-3 py-2 text-sm cursor-pointer hover:bg-matsu-50 transition-colors duration-200 ${selectedId === history.id ? 'bg-matsu-50' : ''
+            className={`grid grid-cols-5 gap-4 px-3 py-2 text-sm cursor-pointer hover:bg-matsu-50 transition-colors duration-200 ${selectedId === history.id ? 'bg-matsu-50' : ''
               }`}
             onClick={() => setSelectedId(selectedId === history.id ? null : history.id)}
           >
@@ -48,6 +49,7 @@ export function HistoryTab({ plotDetail }: HistoryTabProps) {
             <span className="truncate">
               {history.changedFields?.join(', ') || '-'}
             </span>
+            <span className="truncate">{history.changeReason || '-'}</span>
             <span>{history.changedBy || '-'}</span>
           </div>
         ))}
