@@ -217,6 +217,8 @@ async function mockGetPlotById(
     paymentStatus: plot.paymentStatus as PaymentStatus,
     reservationDate: null,
     acceptanceNumber: null,
+    acceptanceDate: null,
+    staffInCharge: null,
     permitDate: null,
     permitNumber: null,
     startDate: null,
@@ -258,6 +260,7 @@ async function mockGetPlotById(
         email: null,
         postalCode: null,
         address: plot.customerAddress || null,
+        addressLine2: null,
         registeredAddress: null,
         notes: null,
         workInfo: null,
@@ -302,6 +305,8 @@ async function mockCreatePlot(
     paymentStatus: request.saleContract.paymentStatus || PaymentStatus.Unpaid,
     reservationDate: request.saleContract.reservationDate || null,
     acceptanceNumber: request.saleContract.acceptanceNumber || null,
+    acceptanceDate: request.saleContract.acceptanceDate || null,
+    staffInCharge: request.saleContract.staffInCharge || null,
     permitDate: request.saleContract.permitDate || null,
     permitNumber: request.saleContract.permitNumber || null,
     startDate: request.saleContract.startDate || null,
@@ -331,6 +336,7 @@ async function mockCreatePlot(
           email: request.customer.email || null,
           postalCode: request.customer.postalCode,
           address: request.customer.address,
+          addressLine2: request.customer.addressLine2 || null,
           registeredAddress: request.customer.registeredAddress || null,
           notes: request.customer.notes || null,
           workInfo: null,
@@ -525,6 +531,19 @@ export function sortPlotsByNumber(plots: PlotListItem[]): PlotListItem[] {
     // 数値部分で比較
     return aNum.number - bNum.number;
   });
+}
+
+/**
+ * 区画情報の一括登録
+ */
+export async function bulkCreatePlots(
+  items: Array<{ plotNumber: string; areaName: string; areaSqm?: number; notes?: string }>
+): Promise<ApiResponse<{
+  totalRequested: number;
+  created: number;
+  results: Array<{ row: number; id: string; plotNumber: string; areaName: string }>;
+}>> {
+  return apiPost('/plots/bulk', { items });
 }
 
 /**

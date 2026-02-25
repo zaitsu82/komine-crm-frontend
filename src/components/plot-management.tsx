@@ -13,7 +13,9 @@ import PlotDetailView from '@/components/plot-detail-view';
 import CollectiveBurialManagement from '@/components/collective-burial';
 import PlotAvailabilityManagement from '@/components/plot-availability-management';
 import StaffManagement from '@/components/staff-management';
+import MastersManagement from '@/components/masters-management';
 import { DocumentManagement } from '@/components/document-management';
+import BulkImportPage from '@/components/bulk-import';
 import { usePlotDetail } from '@/hooks/usePlots';
 
 import {
@@ -137,7 +139,7 @@ export default function PlotManagement({ initialView = 'registry' }: PlotManagem
   const handleViewChange = (view: ViewType) => {
     setCurrentView(view);
     // メインメニュー項目の場合は選択をクリア
-    if (['registry', 'collective-burial', 'plot-availability', 'documents', 'staff-management'].includes(view)) {
+    if (['registry', 'collective-burial', 'plot-availability', 'documents', 'staff-management', 'masters', 'bulk-import'].includes(view)) {
       setSelectedPlotId(null);
       setSelectedPlotName('');
       setSelectedPlotCode('');
@@ -145,7 +147,7 @@ export default function PlotManagement({ initialView = 'registry' }: PlotManagem
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-shiro">
       {/* Left Sidebar Menu */}
       <PlotDetailSidebar
         currentView={currentView}
@@ -183,7 +185,7 @@ export default function PlotManagement({ initialView = 'registry' }: PlotManagem
           </div>
         ) : currentView === 'register' || (currentView === 'edit' && selectedPlotId) ? (
           <>
-            <div className="bg-yellow-100 border-b border-gray-300 px-6 py-3">
+            <div className="bg-kohaku-50 border-b border-gin px-6 py-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
                   <h2 className="text-lg font-semibold">
@@ -223,9 +225,17 @@ export default function PlotManagement({ initialView = 'registry' }: PlotManagem
           <div className="flex-1 overflow-auto">
             <StaffManagement />
           </div>
+        ) : currentView === 'masters' ? (
+          <div className="flex-1 overflow-auto">
+            <MastersManagement />
+          </div>
         ) : currentView === 'documents' ? (
           <div className="flex-1 overflow-auto">
             <DocumentManagement />
+          </div>
+        ) : currentView === 'bulk-import' ? (
+          <div className="flex-1 overflow-auto">
+            <BulkImportPage />
           </div>
         ) : null}
 

@@ -40,6 +40,7 @@ export default function PlotDetailSidebar({
   const getSidebarTitle = () => {
     switch (currentView) {
       case 'plot-details':
+      case 'edit':
       case 'document-select':
       case 'document-history':
         return '区画詳細';
@@ -51,13 +52,17 @@ export default function PlotDetailSidebar({
         return '書類管理メニュー';
       case 'staff-management':
         return 'スタッフ管理メニュー';
+      case 'masters':
+        return 'マスタ管理メニュー';
+      case 'bulk-import':
+        return '一括登録メニュー';
       default:
         return '小峰霊園CRM';
     }
   };
 
   const isPlotContextView =
-    (currentView === 'plot-details' || currentView === 'document-select' || currentView === 'document-history') &&
+    (currentView === 'plot-details' || currentView === 'edit' || currentView === 'document-select' || currentView === 'document-history') &&
     selectedPlotId;
 
   return (
@@ -148,6 +153,10 @@ export default function PlotDetailSidebar({
                     return 'documents';
                   case 'スタッフ管理':
                     return 'staff-management';
+                  case 'マスタ管理':
+                    return 'masters';
+                  case '一括登録':
+                    return 'bulk-import';
                   default:
                     return 'registry';
                 }
@@ -165,6 +174,10 @@ export default function PlotDetailSidebar({
                     return currentView === 'documents';
                   case 'スタッフ管理':
                     return currentView === 'staff-management';
+                  case 'マスタ管理':
+                    return currentView === 'masters';
+                  case '一括登録':
+                    return currentView === 'bulk-import';
                   default:
                     return false;
                 }

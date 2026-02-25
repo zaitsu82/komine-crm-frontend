@@ -91,7 +91,7 @@ export function BasicInfoTab({
     <div className="space-y-6">
       {/* Section 1: 物理区画情報 */}
       <div className="border rounded-lg p-4">
-        <h3 className="text-sm font-semibold text-gray-700 mb-3">物理区画情報</h3>
+        <h3 className="text-sm font-semibold text-sumi mb-3">物理区画情報</h3>
         <div className="grid grid-cols-3 gap-4">
           <ViewModeField
             label="区画番号"
@@ -109,7 +109,7 @@ export function BasicInfoTab({
               <span className="text-beni"> *</span>
             </Label>
             {viewMode ? (
-              <div className="mt-1 px-3 py-2 bg-yellow-50 border rounded-md min-h-[38px] text-sm">
+              <div className="mt-1 px-3 py-2 bg-kohaku-50 border rounded-md min-h-[38px] text-sm">
                 {watch('physicalPlot.areaName') || '-'}
               </div>
             ) : (
@@ -165,7 +165,7 @@ export function BasicInfoTab({
 
       {/* Section 2: 契約区画情報 */}
       <div className="border rounded-lg p-4">
-        <h3 className="text-sm font-semibold text-gray-700 mb-3">契約区画情報</h3>
+        <h3 className="text-sm font-semibold text-sumi mb-3">契約区画情報</h3>
         <div className="grid grid-cols-2 gap-4">
           <ViewModeField
             label="契約面積(㎡)"
@@ -189,7 +189,7 @@ export function BasicInfoTab({
 
       {/* Section 3: 販売契約情報 */}
       <div className="border rounded-lg p-4">
-        <h3 className="text-sm font-semibold text-gray-700 mb-3">販売契約情報</h3>
+        <h3 className="text-sm font-semibold text-sumi mb-3">販売契約情報</h3>
         <div className="grid grid-cols-3 gap-4">
           <ViewModeField
             label="契約日"
@@ -264,12 +264,28 @@ export function BasicInfoTab({
             register={register('saleContract.startDate')}
             error={errors.saleContract?.startDate?.message}
           />
+
+          <ViewModeField
+            label="受付日"
+            viewMode={viewMode}
+            type="date"
+            register={register('saleContract.acceptanceDate')}
+            error={errors.saleContract?.acceptanceDate?.message}
+          />
+
+          <ViewModeField
+            label="担当者"
+            viewMode={viewMode}
+            register={register('saleContract.staffInCharge')}
+            error={errors.saleContract?.staffInCharge?.message}
+            placeholder="担当者名"
+          />
         </div>
       </div>
 
       {/* Section 4: 契約者情報 */}
       <div className="border rounded-lg p-4">
-        <h3 className="text-sm font-semibold text-gray-700 mb-3">契約者情報</h3>
+        <h3 className="text-sm font-semibold text-sumi mb-3">契約者情報</h3>
         <div className="grid grid-cols-3 gap-4">
           <ViewModeField
             label="氏名"
@@ -331,6 +347,16 @@ export function BasicInfoTab({
 
           <div className="col-span-3">
             <ViewModeField
+              label="住所2"
+              viewMode={viewMode}
+              register={register('customer.addressLine2')}
+              error={errors.customer?.addressLine2?.message}
+              placeholder="マンション名・部屋番号等"
+            />
+          </div>
+
+          <div className="col-span-3">
+            <ViewModeField
               label="本籍地"
               viewMode={viewMode}
               register={register('customer.registeredAddress')}
@@ -381,7 +407,7 @@ export function BasicInfoTab({
       {/* Section 5: 使用料 */}
       <div className="border rounded-lg p-4">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-semibold text-gray-700">使用料</h3>
+          <h3 className="text-sm font-semibold text-sumi">使用料</h3>
           {!viewMode && (
             <button
               type="button"
@@ -489,7 +515,7 @@ export function BasicInfoTab({
       {/* Section 6: 管理料 */}
       <div className="border rounded-lg p-4">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-semibold text-gray-700">管理料</h3>
+          <h3 className="text-sm font-semibold text-sumi">管理料</h3>
           {!viewMode && (
             <button
               type="button"
@@ -613,7 +639,7 @@ export function BasicInfoTab({
       {/* Section 7: 墓石情報 */}
       <div className="border rounded-lg p-4">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-semibold text-gray-700">墓石情報</h3>
+          <h3 className="text-sm font-semibold text-sumi">墓石情報</h3>
           {!viewMode && (
             <button
               type="button"
@@ -681,6 +707,15 @@ export function BasicInfoTab({
               type="date"
               register={register('gravestoneInfo.establishmentDate')}
               error={errors.gravestoneInfo?.establishmentDate?.message}
+            />
+
+            <ViewModeField
+              label="墓石代"
+              viewMode={viewMode}
+              type="number"
+              register={register('gravestoneInfo.gravestoneCost')}
+              error={errors.gravestoneInfo?.gravestoneCost?.message}
+              placeholder="0"
             />
           </div>
         )}

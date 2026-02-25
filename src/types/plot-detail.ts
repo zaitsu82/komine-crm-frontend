@@ -7,9 +7,11 @@ export type ViewType =
   | 'collective-burial'
   | 'plot-availability'
   | 'staff-management'
+  | 'masters'
   | 'documents'
   | 'document-select'
-  | 'document-history';
+  | 'document-history'
+  | 'bulk-import';
 
 // 対応履歴の型定義
 export interface HistoryEntry {
@@ -36,6 +38,8 @@ export const MENU_ITEMS = [
   '区画残数管理',
   '書類管理',
   'スタッフ管理',
+  'マスタ管理',
+  '一括登録',
 ] as const;
 
 export type MenuItem = typeof MENU_ITEMS[number];

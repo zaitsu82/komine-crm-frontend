@@ -67,6 +67,8 @@ function makePlotDetail(overrides: Partial<PlotDetailResponse> = {}): PlotDetail
     paymentStatus: PaymentStatus.Paid,
     reservationDate: null,
     acceptanceNumber: null,
+    acceptanceDate: null,
+    staffInCharge: null,
     permitDate: null,
     permitNumber: null,
     startDate: null,
@@ -96,6 +98,7 @@ function makePlotDetail(overrides: Partial<PlotDetailResponse> = {}): PlotDetail
           email: null,
           postalCode: '1234567',
           address: '東京都新宿区',
+          addressLine2: null,
           registeredAddress: null,
           notes: null,
           workInfo: null,
@@ -402,17 +405,17 @@ describe('HistoryTab', () => {
     const row = screen.getByText('作成').closest('div[class*="cursor-pointer"]');
     expect(row).toBeInTheDocument();
 
-    // 初期状態: クラスに " bg-blue-50" が含まれていない（hover:bg-blue-50 は含まれるが先頭にスペースなし）
-    expect(row?.className).not.toMatch(/(?<![:\w-])bg-blue-50(?!\w)/);
+    // 初期状態: クラスに " bg-matsu-50" が含まれていない（hover:bg-matsu-50 は含まれるが先頭にスペースなし）
+    expect(row?.className).not.toMatch(/(?<![:\w-])bg-matsu-50(?!\w)/);
 
     // クリックで選択
     fireEvent.click(row!);
-    // 選択状態: bg-blue-50 がクラスに追加される（hover: ではない直接のクラス）
-    expect(row?.className).toMatch(/ bg-blue-50/);
+    // 選択状態: bg-matsu-50 がクラスに追加される（hover: ではない直接のクラス）
+    expect(row?.className).toMatch(/ bg-matsu-50/);
 
     // 再クリックで選択解除
     fireEvent.click(row!);
-    expect(row?.className).not.toMatch(/ bg-blue-50/);
+    expect(row?.className).not.toMatch(/ bg-matsu-50/);
   });
 });
 

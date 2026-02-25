@@ -96,7 +96,7 @@ export function ContactsTab({
                     type="checkbox"
                     id={`familyContacts.${index}.emergencyContactFlag`}
                     {...register(`familyContacts.${index}.emergencyContactFlag`)}
-                    className="h-4 w-4 rounded border-gray-300"
+                    className="h-4 w-4 rounded border-gin"
                   />
                   <Label htmlFor={`familyContacts.${index}.emergencyContactFlag`}>
                     緊急連絡先
@@ -116,6 +116,21 @@ export function ContactsTab({
                   {errors.familyContacts?.[index]?.name && (
                     <p className="text-sm text-beni mt-1">
                       {errors.familyContacts[index]?.name?.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Name Kana */}
+                <div>
+                  <Label htmlFor={`familyContacts.${index}.nameKana`}>読み（かな）</Label>
+                  <Input
+                    id={`familyContacts.${index}.nameKana`}
+                    {...register(`familyContacts.${index}.nameKana`)}
+                    className={errors.familyContacts?.[index]?.nameKana ? 'border-beni' : ''}
+                  />
+                  {errors.familyContacts?.[index]?.nameKana && (
+                    <p className="text-sm text-beni mt-1">
+                      {errors.familyContacts[index]?.nameKana?.message}
                     </p>
                   )}
                 </div>
@@ -211,6 +226,23 @@ export function ContactsTab({
                   )}
                 </div>
 
+                {/* Phone Number 2 */}
+                <div>
+                  <Label htmlFor={`familyContacts.${index}.phoneNumber2`}>電話番号2</Label>
+                  <Input
+                    id={`familyContacts.${index}.phoneNumber2`}
+                    {...register(`familyContacts.${index}.phoneNumber2`)}
+                    className={
+                      errors.familyContacts?.[index]?.phoneNumber2 ? 'border-beni' : ''
+                    }
+                  />
+                  {errors.familyContacts?.[index]?.phoneNumber2 && (
+                    <p className="text-sm text-beni mt-1">
+                      {errors.familyContacts[index]?.phoneNumber2?.message}
+                    </p>
+                  )}
+                </div>
+
                 {/* Fax Number */}
                 <div>
                   <Label htmlFor={`familyContacts.${index}.faxNumber`}>FAX</Label>
@@ -280,6 +312,103 @@ export function ContactsTab({
                       {errors.familyContacts[index]?.mailingType?.message}
                     </p>
                   )}
+                </div>
+
+                {/* Work Information Section */}
+                <div className="col-span-2 border-t pt-4 mt-2">
+                  <h4 className="text-sm font-semibold text-sumi mb-3">勤務先情報</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* Work Company Name */}
+                    <div>
+                      <Label htmlFor={`familyContacts.${index}.workCompanyName`}>
+                        勤務先名称
+                      </Label>
+                      <Input
+                        id={`familyContacts.${index}.workCompanyName`}
+                        {...register(`familyContacts.${index}.workCompanyName`)}
+                        className={
+                          errors.familyContacts?.[index]?.workCompanyName ? 'border-beni' : ''
+                        }
+                      />
+                      {errors.familyContacts?.[index]?.workCompanyName && (
+                        <p className="text-sm text-beni mt-1">
+                          {errors.familyContacts[index]?.workCompanyName?.message}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Work Company Name Kana */}
+                    <div>
+                      <Label htmlFor={`familyContacts.${index}.workCompanyNameKana`}>
+                        勤務先かな
+                      </Label>
+                      <Input
+                        id={`familyContacts.${index}.workCompanyNameKana`}
+                        {...register(`familyContacts.${index}.workCompanyNameKana`)}
+                        className={
+                          errors.familyContacts?.[index]?.workCompanyNameKana ? 'border-beni' : ''
+                        }
+                      />
+                      {errors.familyContacts?.[index]?.workCompanyNameKana && (
+                        <p className="text-sm text-beni mt-1">
+                          {errors.familyContacts[index]?.workCompanyNameKana?.message}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Work Address */}
+                    <div className="col-span-2">
+                      <Label htmlFor={`familyContacts.${index}.workAddress`}>勤務先住所</Label>
+                      <Input
+                        id={`familyContacts.${index}.workAddress`}
+                        {...register(`familyContacts.${index}.workAddress`)}
+                        className={
+                          errors.familyContacts?.[index]?.workAddress ? 'border-beni' : ''
+                        }
+                      />
+                      {errors.familyContacts?.[index]?.workAddress && (
+                        <p className="text-sm text-beni mt-1">
+                          {errors.familyContacts[index]?.workAddress?.message}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Work Phone Number */}
+                    <div>
+                      <Label htmlFor={`familyContacts.${index}.workPhoneNumber`}>
+                        勤務先電話番号
+                      </Label>
+                      <Input
+                        id={`familyContacts.${index}.workPhoneNumber`}
+                        {...register(`familyContacts.${index}.workPhoneNumber`)}
+                        className={
+                          errors.familyContacts?.[index]?.workPhoneNumber ? 'border-beni' : ''
+                        }
+                      />
+                      {errors.familyContacts?.[index]?.workPhoneNumber && (
+                        <p className="text-sm text-beni mt-1">
+                          {errors.familyContacts[index]?.workPhoneNumber?.message}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Contact Method */}
+                    <div>
+                      <Label htmlFor={`familyContacts.${index}.contactMethod`}>連絡区分</Label>
+                      <Input
+                        id={`familyContacts.${index}.contactMethod`}
+                        {...register(`familyContacts.${index}.contactMethod`)}
+                        className={
+                          errors.familyContacts?.[index]?.contactMethod ? 'border-beni' : ''
+                        }
+                      />
+                      {errors.familyContacts?.[index]?.contactMethod && (
+                        <p className="text-sm text-beni mt-1">
+                          {errors.familyContacts[index]?.contactMethod?.message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
                 {/* Notes */}

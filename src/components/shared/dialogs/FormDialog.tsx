@@ -75,14 +75,14 @@ export function FormDialog({
             type="button"
             onClick={handleClose}
             disabled={isLoading}
-            className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-2 border border-gin rounded-md text-sumi bg-white hover:bg-shiro disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {cancelText}
           </button>
           <button
             type="submit"
             disabled={isLoading || isSubmitDisabled}
-            className="px-4 py-2 rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-2 rounded-md text-white bg-matsu hover:bg-matsu-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {isLoading ? (
               <span className="flex items-center justify-center gap-2">

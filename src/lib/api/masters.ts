@@ -3,7 +3,7 @@
  * バックエンドのマスタデータ取得APIとの連携
  */
 
-import { apiGet, shouldUseMockData } from './client';
+import { apiGet, apiPost, apiPut, apiDelete, shouldUseMockData } from './client';
 import { ApiResponse } from './types';
 
 // マスタデータの基本型
@@ -170,4 +170,55 @@ export async function getConstructionTypes(): Promise<ApiResponse<MasterItem[]>>
     return { success: true, data: mockMasterData.constructionType };
   }
   return apiGet<MasterItem[]>('/masters/construction-type');
+}
+
+// CRUD用の型定義
+export type MasterType =
+  | 'cemetery-type'
+  | 'payment-method'
+  | 'tax-type'
+  | 'calc-type'
+  | 'billing-type'
+  | 'account-type'
+  | 'recipient-type'
+  | 'construction-type';
+
+export interface CreateMasterRequest {
+  code: string;
+  name: string;
+  description?: string | null;
+  sortOrder?: number | null;
+  isActive?: boolean;
+  taxRate?: number | null;
+}
+
+export interface UpdateMasterRequest {
+  code?: string;
+  name?: string;
+  description?: string | null;
+  sortOrder?: number | null;
+  isActive?: boolean;
+  taxRate?: number | null;
+}
+
+export async function createMasterItem(
+  masterType: MasterType,
+  data: CreateMasterRequest,
+): Promise<ApiResponse<MasterItem>> {
+  return apiPost<MasterItem>(`/masters/${masterType}`, data);
+}
+
+export async function updateMasterItem(
+  masterType: MasterType,
+  id: number,
+  data: UpdateMasterRequest,
+): Promise<ApiResponse<MasterItem>> {
+  return apiPut<MasterItem>(`/masters/${masterType}/${id}`, data);
+}
+
+export async function deleteMasterItem(
+  masterType: MasterType,
+  id: number,
+): Promise<ApiResponse<{ message: string }>> {
+  return apiDelete<{ message: string }>(`/masters/${masterType}/${id}`);
 }

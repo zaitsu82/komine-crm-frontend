@@ -25,13 +25,13 @@ export default function HistoryDialog({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4">
-        <div className="bg-blue-600 text-white px-6 py-4 rounded-t-lg">
+        <div className="bg-ai text-white px-6 py-4 rounded-t-lg">
           <h3 className="text-lg font-semibold">対応履歴を追加</h3>
         </div>
         <div className="p-6 space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label className="text-sm font-medium">日時 <span className="text-red-500">*</span></Label>
+              <Label className="text-sm font-medium">日時 <span className="text-beni">*</span></Label>
               <Input
                 value={newHistory.date}
                 onChange={(e) => onHistoryChange({ ...newHistory, date: e.target.value })}
@@ -40,7 +40,7 @@ export default function HistoryDialog({
               />
             </div>
             <div>
-              <Label className="text-sm font-medium">担当者 <span className="text-red-500">*</span></Label>
+              <Label className="text-sm font-medium">担当者 <span className="text-beni">*</span></Label>
               <Input
                 value={newHistory.staff}
                 onChange={(e) => onHistoryChange({ ...newHistory, staff: e.target.value })}
@@ -79,7 +79,7 @@ export default function HistoryDialog({
             </div>
           </div>
           <div>
-            <Label className="text-sm font-medium">対応内容 <span className="text-red-500">*</span></Label>
+            <Label className="text-sm font-medium">対応内容 <span className="text-beni">*</span></Label>
             <textarea
               value={newHistory.content}
               onChange={(e) => onHistoryChange({ ...newHistory, content: e.target.value })}
@@ -88,11 +88,11 @@ export default function HistoryDialog({
             />
           </div>
         </div>
-        <div className="px-6 py-4 bg-gray-50 rounded-b-lg flex justify-end space-x-3">
+        <div className="px-6 py-4 bg-shiro rounded-b-lg flex justify-end space-x-3">
           <Button variant="outline" onClick={onClose}>
             キャンセル
           </Button>
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white" onClick={onAdd}>
+          <Button className="bg-ai hover:bg-ai-dark text-white" onClick={onAdd}>
             追加
           </Button>
         </div>

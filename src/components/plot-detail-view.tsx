@@ -14,6 +14,10 @@ import {
   PhysicalPlotStatus,
   Gender,
   ContractRole,
+  AddressType,
+  DmSetting,
+  BillingType,
+  AccountType,
 } from '@komine/types';
 import { usePlotDetail } from '@/hooks/usePlots';
 import { Button } from '@/components/ui/button';
@@ -65,6 +69,30 @@ const GENDER_LABELS: Record<Gender, string> = {
 const CONTRACT_ROLE_LABELS: Record<ContractRole, string> = {
   [ContractRole.Applicant]: '申込者',
   [ContractRole.Contractor]: '契約者',
+};
+
+const ADDRESS_TYPE_LABELS: Record<AddressType, string> = {
+  [AddressType.Home]: '自宅',
+  [AddressType.Work]: '勤務先',
+  [AddressType.Other]: 'その他',
+};
+
+const DM_SETTING_LABELS: Record<DmSetting, string> = {
+  [DmSetting.Allow]: '送付する',
+  [DmSetting.Deny]: '送付しない',
+  [DmSetting.Limited]: '制限付き',
+};
+
+const BILLING_TYPE_LABELS: Record<BillingType, string> = {
+  [BillingType.Individual]: '個人',
+  [BillingType.Corporate]: '法人',
+  [BillingType.BankTransfer]: '銀行振込',
+};
+
+const ACCOUNT_TYPE_LABELS: Record<AccountType, string> = {
+  [AccountType.Ordinary]: '普通預金',
+  [AccountType.Current]: '当座預金',
+  [AccountType.Savings]: '貯蓄預金',
 };
 
 // ===== ヘルパー関数 =====
@@ -141,6 +169,8 @@ function BasicInfoTab({ plot }: { plot: PlotDetailResponse }) {
         <InfoField label="入金状態" value={PAYMENT_STATUS_LABELS[plot.paymentStatus as PaymentStatus]} />
         <InfoField label="予約日" value={formatDate(plot.reservationDate)} />
         <InfoField label="受付番号" value={plot.acceptanceNumber} />
+        <InfoField label="受付日" value={formatDate(plot.acceptanceDate)} />
+        <InfoField label="担当者" value={plot.staffInCharge} />
         <InfoField label="許可日" value={formatDate(plot.permitDate)} />
         <InfoField label="許可番号" value={plot.permitNumber} />
         <InfoField label="開始日" value={formatDate(plot.startDate)} />
@@ -159,8 +189,36 @@ function BasicInfoTab({ plot }: { plot: PlotDetailResponse }) {
           <InfoField label="メール" value={customer.email} />
           <InfoField label="郵便番号" value={customer.postalCode} />
           <InfoField label="住所" value={customer.address} />
+          <InfoField label="住所2" value={customer.addressLine2} />
           <InfoField label="本籍地" value={customer.registeredAddress} />
           <InfoField label="役割" value={primaryRole?.role ? CONTRACT_ROLE_LABELS[primaryRole.role as ContractRole] : null} />
+          <InfoField label="備考" value={customer.notes} />
+        </Section>
+      )}
+
+      {/* 勤務先情報 */}
+      {customer?.workInfo && (
+        <Section title="勤務先情報">
+          <InfoField label="勤務先名称" value={customer.workInfo.companyName} />
+          <InfoField label="勤務先かな" value={customer.workInfo.companyNameKana} />
+          <InfoField label="勤務先郵便番号" value={customer.workInfo.workPostalCode} />
+          <InfoField label="勤務先住所" value={customer.workInfo.workAddress} />
+          <InfoField label="勤務先電話番号" value={customer.workInfo.workPhoneNumber} />
+          <InfoField label="DM設定" value={customer.workInfo.dmSetting ? DM_SETTING_LABELS[customer.workInfo.dmSetting as DmSetting] : null} />
+          <InfoField label="宛先区分" value={customer.workInfo.addressType ? ADDRESS_TYPE_LABELS[customer.workInfo.addressType as AddressType] : null} />
+          <InfoField label="備考" value={customer.workInfo.notes} />
+        </Section>
+      )}
+
+      {/* 請求情報 */}
+      {customer?.billingInfo && (
+        <Section title="請求情報">
+          <InfoField label="請求種別" value={customer.billingInfo.billingType ? BILLING_TYPE_LABELS[customer.billingInfo.billingType as BillingType] : null} />
+          <InfoField label="機関名称" value={customer.billingInfo.bankName} />
+          <InfoField label="支店名称" value={customer.billingInfo.branchName} />
+          <InfoField label="口座科目" value={customer.billingInfo.accountType ? ACCOUNT_TYPE_LABELS[customer.billingInfo.accountType as AccountType] : null} />
+          <InfoField label="記号番号" value={customer.billingInfo.accountNumber} />
+          <InfoField label="口座名義" value={customer.billingInfo.accountHolder} />
         </Section>
       )}
     </div>
@@ -242,11 +300,36 @@ function ContactsTab({ plot }: { plot: PlotDetailResponse }) {
             <div key={contact.id || idx} className="col-span-full border border-gin rounded-elegant p-4 mb-2 bg-kinari/30">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <InfoField label="氏名" value={contact.name} />
+                <InfoField label="ふりがな" value={contact.nameKana} />
                 <InfoField label="続柄" value={contact.relationship} />
-                <InfoField label="電話番号" value={contact.phoneNumber} />
-                <InfoField label="住所" value={contact.address} />
                 <InfoField label="生年月日" value={formatDate(contact.birthDate)} />
+                <InfoField label="郵便番号" value={contact.postalCode} />
+                <InfoField label="住所" value={contact.address} />
+                <InfoField label="電話番号" value={contact.phoneNumber} />
+                <InfoField label="電話番号2" value={contact.phoneNumber2} />
+                <InfoField label="FAX" value={contact.faxNumber} />
+                <InfoField label="メール" value={contact.email} />
+                <InfoField label="本籍住所" value={contact.registeredAddress} />
+                <InfoField label="送付先区分" value={contact.mailingType ? ADDRESS_TYPE_LABELS[contact.mailingType as AddressType] : null} />
+                <InfoField label="連絡方法" value={contact.contactMethod} />
               </div>
+              {/* 勤務先情報 */}
+              {(contact.workCompanyName || contact.workAddress || contact.workPhoneNumber) && (
+                <div className="mt-3 pt-3 border-t border-gin">
+                  <h4 className="text-sm font-medium text-hai mb-2">勤務先</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <InfoField label="勤務先名称" value={contact.workCompanyName} />
+                    <InfoField label="勤務先かな" value={contact.workCompanyNameKana} />
+                    <InfoField label="勤務先住所" value={contact.workAddress} />
+                    <InfoField label="勤務先電話番号" value={contact.workPhoneNumber} />
+                  </div>
+                </div>
+              )}
+              {contact.notes && (
+                <div className="mt-3 pt-3 border-t border-gin">
+                  <InfoField label="備考" value={contact.notes} />
+                </div>
+              )}
             </div>
           ))
         ) : (
@@ -270,11 +353,15 @@ function BurialInfoTab({ plot }: { plot: PlotDetailResponse }) {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <InfoField label="氏名" value={person.name} />
                 <InfoField label="ふりがな" value={person.nameKana} />
+                <InfoField label="戒名" value={person.posthumousName} />
                 <InfoField label="性別" value={person.gender ? GENDER_LABELS[person.gender as Gender] : null} />
+                <InfoField label="生年月日" value={formatDate(person.birthDate)} />
                 <InfoField label="死亡日" value={formatDate(person.deathDate)} />
                 <InfoField label="享年" value={person.age?.toString()} />
                 <InfoField label="納骨日" value={formatDate(person.burialDate)} />
+                <InfoField label="届出日" value={formatDate(person.reportDate)} />
                 <InfoField label="続柄" value={person.relationship} />
+                <InfoField label="宗派" value={person.religion} />
                 <InfoField label="備考" value={person.notes} />
               </div>
             </div>
@@ -341,9 +428,10 @@ function HistoryInfoTab({ plot }: { plot: PlotDetailResponse }) {
           履歴情報
         </h3>
       </div>
-      <div className="grid grid-cols-4 gap-4 px-4 py-2 bg-kinari/50 border-b border-gin text-sm font-medium text-hai">
+      <div className="grid grid-cols-5 gap-4 px-4 py-2 bg-kinari/50 border-b border-gin text-sm font-medium text-hai">
         <span>日時</span>
         <span>操作</span>
+        <span>更新事由</span>
         <span>変更フィールド</span>
         <span>変更者</span>
       </div>
@@ -351,10 +439,11 @@ function HistoryInfoTab({ plot }: { plot: PlotDetailResponse }) {
         {histories.map((history) => (
           <div
             key={history.id}
-            className="grid grid-cols-4 gap-4 px-4 py-2 text-sm hover:bg-matsu-50 transition-colors duration-200 cursor-default"
+            className="grid grid-cols-5 gap-4 px-4 py-2 text-sm hover:bg-matsu-50 transition-colors duration-200 cursor-default"
           >
             <span>{new Date(history.createdAt).toLocaleString('ja-JP')}</span>
             <span>{ACTION_TYPE_LABELS[history.actionType] || history.actionType}</span>
+            <span>{history.changeReason || '-'}</span>
             <span className="truncate">
               {history.changedFields?.join(', ') || '-'}
             </span>
@@ -377,9 +466,12 @@ function ConstructionInfoTab({ plot }: { plot: PlotDetailResponse }) {
                 <InfoField label="施工業者" value={record.contractor} />
                 <InfoField label="監督者" value={record.supervisor} />
                 <InfoField label="工事種別" value={record.constructionType} />
+                <InfoField label="工事内容" value={record.constructionContent} />
                 <InfoField label="進捗" value={record.progress} />
                 <InfoField label="開始日" value={formatDate(record.startDate)} />
                 <InfoField label="完了日" value={formatDate(record.completionDate)} />
+                <InfoField label="終了予定日" value={formatDate(record.scheduledEndDate)} />
+                <InfoField label="申請日" value={formatDate(record.applicationDate)} />
                 <InfoField label="許可番号" value={record.permitNumber} />
                 <InfoField label="許可日" value={formatDate(record.permitDate)} />
                 <InfoField label="許可状態" value={record.permitStatus} />
@@ -404,6 +496,30 @@ function ConstructionInfoTab({ plot }: { plot: PlotDetailResponse }) {
                         <InfoField label="日付" value={formatDate(record.workDate2)} />
                         <InfoField label="金額" value={formatPrice(record.workAmount2)} />
                         <InfoField label="状態" value={record.workStatus2} />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+              {/* 入金情報 */}
+              {(record.paymentType1 || record.paymentType2) && (
+                <div className="mt-4 border-t pt-4">
+                  <h4 className="text-sm font-medium text-sumi mb-2">入金情報</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {record.paymentType1 && (
+                      <div className="border border-gin rounded-elegant p-2">
+                        <InfoField label="入金種別1" value={record.paymentType1} />
+                        <InfoField label="入金額" value={formatPrice(record.paymentAmount1)} />
+                        <InfoField label="入金日" value={formatDate(record.paymentDate1)} />
+                        <InfoField label="状態" value={record.paymentStatus1} />
+                      </div>
+                    )}
+                    {record.paymentType2 && (
+                      <div className="border border-gin rounded-elegant p-2">
+                        <InfoField label="入金種別2" value={record.paymentType2} />
+                        <InfoField label="入金額" value={formatPrice(record.paymentAmount2)} />
+                        <InfoField label="入金予定日" value={formatDate(record.paymentScheduledDate2)} />
+                        <InfoField label="状態" value={record.paymentStatus2} />
                       </div>
                     )}
                   </div>
@@ -496,9 +612,6 @@ export default function PlotDetailView({ plotId, onEdit, onBack }: PlotDetailVie
               戻る
             </Button>
           )}
-          <Button onClick={refresh} variant="outline">
-            更新
-          </Button>
           {onEdit && (
             <Button onClick={onEdit} className="bg-matsu hover:bg-matsu-dark text-white">
               編集
@@ -525,6 +638,12 @@ export default function PlotDetailView({ plotId, onEdit, onBack }: PlotDetailVie
               'bg-kinari text-hai'
         )}>
           {CONTRACT_STATUS_LABELS[plot.contractStatus as ContractStatus]}
+        </span>
+        <span className={cn(
+          'px-3 py-1 rounded-full text-sm font-medium',
+          plot.uncollectedAmount > 0 ? 'bg-beni-50 text-beni' : 'bg-kinari text-hai'
+        )}>
+          未集金額: {plot.uncollectedAmount.toLocaleString()}円
         </span>
       </div>
 
