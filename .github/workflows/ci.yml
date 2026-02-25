@@ -19,14 +19,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Checkout shared types
-        uses: actions/checkout@v4
-        with:
-          repository: zaitsu82/komine-types
-          path: ../packages/types
-
-      - name: Build shared types
-        run: cd ../packages/types && npm ci && npm run build
+      - name: Checkout and build shared types
+        run: |
+          git clone --depth 1 https://github.com/zaitsu82/komine-types.git ../packages/types
+          cd ../packages/types && npm ci && npm run build
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -56,14 +52,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Checkout shared types
-        uses: actions/checkout@v4
-        with:
-          repository: zaitsu82/komine-types
-          path: ../packages/types
-
-      - name: Build shared types
-        run: cd ../packages/types && npm ci && npm run build
+      - name: Checkout and build shared types
+        run: |
+          git clone --depth 1 https://github.com/zaitsu82/komine-types.git ../packages/types
+          cd ../packages/types && npm ci && npm run build
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -86,14 +78,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Checkout shared types
-        uses: actions/checkout@v4
-        with:
-          repository: zaitsu82/komine-types
-          path: ../packages/types
-
-      - name: Build shared types
-        run: cd ../packages/types && npm ci && npm run build
+      - name: Checkout and build shared types
+        run: |
+          git clone --depth 1 https://github.com/zaitsu82/komine-types.git ../packages/types
+          cd ../packages/types && npm ci && npm run build
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
