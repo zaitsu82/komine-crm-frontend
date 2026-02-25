@@ -19,6 +19,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Checkout shared types
+        uses: actions/checkout@v4
+        with:
+          repository: zaitsu82/komine-types
+          path: ../packages/types
+
+      - name: Build shared types
+        run: cd ../packages/types && npm ci && npm run build
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -47,6 +56,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Checkout shared types
+        uses: actions/checkout@v4
+        with:
+          repository: zaitsu82/komine-types
+          path: ../packages/types
+
+      - name: Build shared types
+        run: cd ../packages/types && npm ci && npm run build
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -67,6 +85,15 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Checkout shared types
+        uses: actions/checkout@v4
+        with:
+          repository: zaitsu82/komine-types
+          path: ../packages/types
+
+      - name: Build shared types
+        run: cd ../packages/types && npm ci && npm run build
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -111,7 +138,7 @@ jobs:
         continue-on-error: true
 
       - name: Run npm audit (production only)
-        run: npm audit --production --audit-level=high
+        run: npm audit --omit=dev --audit-level=high
 
   # すべてのチェックが成功したことを確認
   all-checks-passed:
