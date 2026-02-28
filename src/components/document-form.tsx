@@ -35,6 +35,7 @@ import {
   Download,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { PageHeader } from '@/components/shared';
 
 type DocumentType = 'invoice' | 'postcard' | 'contract' | 'permit' | 'other';
 type DocumentStatus = 'draft' | 'generated' | 'sent' | 'archived';
@@ -230,185 +231,197 @@ export function DocumentForm({ documentId, customerId: initialCustomerId, onBack
   if (isEditMode && isLoadingDetail) {
     return (
       <div className="flex items-center justify-center h-64">
-        <RefreshCw className="h-8 w-8 animate-spin text-matsu-600" />
+        <RefreshCw className="h-8 w-8 animate-spin text-kohaku" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* ヘッダー */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={onBack}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
+    <div className="h-full flex flex-col bg-shiro">
+      <PageHeader
+        color="kohaku"
+        icon={
+          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        }
+        title={isEditMode ? '書類編集' : '新規書類作成'}
+        subtitle="書類情報の入力"
+        actions={
+          <Button variant="outline" size="sm" onClick={onBack}>
+            <ArrowLeft className="mr-1 h-4 w-4" />
             戻る
           </Button>
-          <h2 className="text-2xl font-bold text-sumi-900">
-            {isEditMode ? '書類編集' : '新規書類作成'}
-          </h2>
-        </div>
-      </div>
+        }
+      />
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="flex-1 overflow-auto p-6 space-y-6">
         {/* 基本情報 */}
-        <div className="bg-white rounded-lg border border-sumi-200 p-6">
-          <h3 className="text-lg font-semibold text-sumi-900 mb-4 flex items-center">
-            <FileText className="mr-2 h-5 w-5 text-matsu-600" />
-            基本情報
-          </h3>
+        <div className="bg-white rounded-elegant-lg border border-gin shadow-elegant-sm overflow-hidden">
+          <div className="bg-kinari px-6 py-3 border-b border-gin">
+            <h3 className="text-sm font-semibold text-sumi flex items-center">
+              <FileText className="mr-2 h-4 w-4 text-kohaku" />
+              基本情報
+            </h3>
+          </div>
+          <div className="p-6">
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">書類名 *</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => handleInputChange('name', e.target.value)}
-                placeholder="請求書_2026年1月"
-                required
-              />
-            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">書類名 *</Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => handleInputChange('name', e.target.value)}
+                  placeholder="請求書_2026年1月"
+                  required
+                />
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="type">種類 {!isEditMode && '*'}</Label>
-              <Select
-                value={formData.type}
-                onValueChange={(value) => handleInputChange('type', value)}
-                disabled={isEditMode}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(DOCUMENT_TYPE_LABELS).map(([value, label]) => (
-                    <SelectItem key={value} value={value}>
-                      {label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+              <div className="space-y-2">
+                <Label htmlFor="type">種類 {!isEditMode && '*'}</Label>
+                <Select
+                  value={formData.type}
+                  onValueChange={(value) => handleInputChange('type', value)}
+                  disabled={isEditMode}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(DOCUMENT_TYPE_LABELS).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="status">ステータス</Label>
-              <Select
-                value={formData.status}
-                onValueChange={(value) => handleInputChange('status', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(DOCUMENT_STATUS_LABELS).map(([value, label]) => (
-                    <SelectItem key={value} value={value}>
-                      {label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+              <div className="space-y-2">
+                <Label htmlFor="status">ステータス</Label>
+                <Select
+                  value={formData.status}
+                  onValueChange={(value) => handleInputChange('status', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(DOCUMENT_STATUS_LABELS).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="templateType">テンプレート種類</Label>
-              <Select
-                value={formData.templateType}
-                onValueChange={(value) => handleInputChange('templateType', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="選択してください" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="invoice">請求書</SelectItem>
-                  <SelectItem value="postcard">はがき</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+              <div className="space-y-2">
+                <Label htmlFor="templateType">テンプレート種類</Label>
+                <Select
+                  value={formData.templateType}
+                  onValueChange={(value) => handleInputChange('templateType', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="選択してください" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="invoice">請求書</SelectItem>
+                    <SelectItem value="postcard">はがき</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="description">説明</Label>
-              <Input
-                id="description"
-                value={formData.description}
-                onChange={(e) => handleInputChange('description', e.target.value)}
-                placeholder="書類の説明"
-              />
-            </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="description">説明</Label>
+                <Input
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => handleInputChange('description', e.target.value)}
+                  placeholder="書類の説明"
+                />
+              </div>
 
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="notes">備考</Label>
-              <textarea
-                id="notes"
-                value={formData.notes}
-                onChange={(e) => handleInputChange('notes', e.target.value)}
-                placeholder="備考・メモ"
-                className="w-full min-h-[100px] px-3 py-2 border border-sumi-200 rounded-md focus:outline-none focus:ring-2 focus:ring-matsu-500"
-              />
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="notes">備考</Label>
+                <textarea
+                  id="notes"
+                  value={formData.notes}
+                  onChange={(e) => handleInputChange('notes', e.target.value)}
+                  placeholder="備考・メモ"
+                  className="w-full min-h-[100px] px-3 py-2 border border-gin rounded-md focus:outline-none focus:ring-2 focus:ring-kohaku-200"
+                />
+              </div>
             </div>
           </div>
         </div>
 
         {/* ファイルアップロード */}
-        <div className="bg-white rounded-lg border border-sumi-200 p-6">
-          <h3 className="text-lg font-semibold text-sumi-900 mb-4 flex items-center">
-            <Upload className="mr-2 h-5 w-5 text-matsu-600" />
-            ファイルアップロード
-          </h3>
+        <div className="bg-white rounded-elegant-lg border border-gin shadow-elegant-sm overflow-hidden">
+          <div className="bg-kinari px-6 py-3 border-b border-gin">
+            <h3 className="text-sm font-semibold text-sumi flex items-center">
+              <Upload className="mr-2 h-4 w-4 text-kohaku" />
+              ファイルアップロード
+            </h3>
+          </div>
+          <div className="p-6">
+            <div className="space-y-4">
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif"
+                className="hidden"
+              />
 
-          <div className="space-y-4">
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif"
-              className="hidden"
-            />
+              <div className="flex items-center gap-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Upload className="mr-2 h-4 w-4" />
+                  ファイルを選択
+                </Button>
 
-            <div className="flex items-center gap-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <Upload className="mr-2 h-4 w-4" />
-                ファイルを選択
-              </Button>
+                {selectedFile && (
+                  <div className="flex items-center gap-2 px-3 py-2 bg-kinari rounded-elegant border border-gin">
+                    <FileText className="h-4 w-4 text-kohaku" />
+                    <span className="text-sm text-sumi">{selectedFile.name}</span>
+                    <span className="text-xs text-hai">
+                      ({(selectedFile.size / 1024).toFixed(1)} KB)
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedFile(null)}
+                      className="text-hai hover:text-sumi"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
+              </div>
 
-              {selectedFile && (
-                <div className="flex items-center gap-2 px-3 py-2 bg-kinari-50 rounded-md">
-                  <FileText className="h-4 w-4 text-matsu-600" />
-                  <span className="text-sm">{selectedFile.name}</span>
-                  <span className="text-xs text-sumi-500">
-                    ({(selectedFile.size / 1024).toFixed(1)} KB)
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedFile(null)}
-                    className="text-sumi-400 hover:text-sumi-600"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              )}
+              <p className="text-sm text-hai">
+                対応形式: PDF, Word, Excel, 画像 (最大10MB)
+              </p>
             </div>
-
-            <p className="text-sm text-sumi-500">
-              対応形式: PDF, Word, Excel, 画像 (最大10MB)
-            </p>
           </div>
         </div>
 
         {/* テンプレートデータ */}
         {formData.templateType && (
-          <div className="bg-white rounded-lg border border-sumi-200 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-sumi-900 flex items-center">
-                <FileText className="mr-2 h-5 w-5 text-matsu-600" />
+          <div className="bg-white rounded-elegant-lg border border-gin shadow-elegant-sm overflow-hidden">
+            <div className="bg-kinari px-6 py-3 border-b border-gin flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-sumi flex items-center">
+                <FileText className="mr-2 h-4 w-4 text-kohaku" />
                 テンプレートデータ ({formData.templateType === 'invoice' ? '請求書' : 'はがき'})
               </h3>
               <Button
                 type="button"
                 variant="outline"
+                size="sm"
                 onClick={handleGeneratePdf}
                 disabled={isGeneratingPdf}
               >
@@ -420,26 +433,27 @@ export function DocumentForm({ documentId, customerId: initialCustomerId, onBack
                 PDF生成
               </Button>
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {getTemplateFields(formData.templateType).map((field) => (
-                <div key={field.key} className="space-y-2">
-                  <Label htmlFor={field.key}>{field.label}</Label>
-                  <Input
-                    id={field.key}
-                    value={templateData[field.key] || ''}
-                    onChange={(e) => handleTemplateDataChange(field.key, e.target.value)}
-                    placeholder={field.label}
-                  />
-                </div>
-              ))}
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {getTemplateFields(formData.templateType).map((field) => (
+                  <div key={field.key} className="space-y-2">
+                    <Label htmlFor={field.key}>{field.label}</Label>
+                    <Input
+                      id={field.key}
+                      value={templateData[field.key] || ''}
+                      onChange={(e) => handleTemplateDataChange(field.key, e.target.value)}
+                      placeholder={field.label}
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}
 
         {/* エラー表示 */}
         {mutationError && (
-          <div className="p-4 bg-beni-50 text-beni-700 rounded-lg">
+          <div className="p-4 bg-beni-50 text-beni rounded-elegant-lg border border-beni-200">
             {mutationError}
           </div>
         )}
@@ -451,7 +465,7 @@ export function DocumentForm({ documentId, customerId: initialCustomerId, onBack
           </Button>
           <Button
             type="submit"
-            className="bg-matsu-600 hover:bg-matsu-700"
+            className="bg-kohaku hover:bg-kohaku-dark text-white"
             disabled={isMutating}
           >
             {isMutating ? (

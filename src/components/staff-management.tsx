@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { PageHeader, FilterSection } from '@/components/shared';
 import { useAuth } from '@/contexts/auth-context';
 import {
   StaffRole,
@@ -331,37 +333,26 @@ export default function StaffManagement({ }: StaffManagementProps) {
 
   return (
     <div className="min-h-screen bg-shiro">
-      {/* Gradient Header */}
-      <div className="bg-gradient-to-r from-ai-50 to-kinari border-b border-ai-100 px-6 py-5">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-ai to-ai-dark flex items-center justify-center shadow-elegant-sm">
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </div>
-            <div>
-              <h2 className="font-mincho text-xl font-semibold text-sumi tracking-wide">スタッフ管理</h2>
-              <p className="text-sm text-hai mt-0.5">
-                {isAdminUser
-                  ? 'スタッフの登録・編集・権限管理'
-                  : 'スタッフ情報を閲覧できます（編集は管理者のみ）'}
-              </p>
-            </div>
-          </div>
-          {isAdminUser && (
-            <button
-              onClick={handleOpenCreateDialog}
-              className="inline-flex items-center bg-matsu text-white hover:bg-matsu-dark rounded-elegant px-4 py-2 shadow-elegant-sm transition-all duration-200 text-sm font-medium"
-            >
-              <svg className="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              新規登録
-            </button>
-          )}
-        </div>
-      </div>
+      <PageHeader
+        color="beni"
+        icon={
+          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        }
+        title="スタッフ管理"
+        subtitle={isAdminUser
+          ? 'スタッフの登録・編集・権限管理'
+          : 'スタッフ情報を閲覧できます（編集は管理者のみ）'}
+        actions={isAdminUser ? (
+          <Button onClick={handleOpenCreateDialog} variant="default">
+            <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            新規登録
+          </Button>
+        ) : undefined}
+      />
 
       {/* Summary Stat Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 px-6 py-4">
@@ -403,11 +394,11 @@ export default function StaffManagement({ }: StaffManagementProps) {
         </div>
       </div>
 
-      {/* Search / Filter Area */}
-      <div className="mx-6 mb-4 bg-white border border-gin rounded-elegant-lg shadow-elegant-sm p-4">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-          <div className="flex-1 flex items-center gap-2 w-full sm:w-auto">
-            <div className="relative flex-1 max-w-md">
+      <FilterSection resultCount={sortedStaff.length}>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="col-span-2">
+            <Label className="text-sm font-medium text-sumi mb-2 block">検索</Label>
+            <div className="relative">
               <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-hai" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
@@ -416,24 +407,16 @@ export default function StaffManagement({ }: StaffManagementProps) {
                 placeholder="氏名・メールアドレスで検索..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 border-gin focus:ring-matsu focus:border-matsu"
+                className="pl-10 border-gin"
               />
             </div>
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="border border-gin text-sumi hover:bg-kinari rounded-elegant px-3 py-2 transition-all duration-200 text-sm"
-              >
-                クリア
-              </button>
-            )}
           </div>
-          <div className="flex items-center gap-2">
-            <label className="text-sm text-hai whitespace-nowrap">権限:</label>
+          <div>
+            <Label className="text-sm font-medium text-sumi mb-2 block">権限</Label>
             <select
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value)}
-              className="px-3 py-2 border border-gin rounded-elegant text-sm text-sumi bg-white focus:outline-none focus:ring-2 focus:ring-matsu transition-all duration-200"
+              className="w-full px-3 py-2 border border-gin rounded-elegant text-sm text-sumi bg-white focus:outline-none focus:ring-2 focus:ring-matsu transition-all duration-200"
             >
               <option value="all">すべて</option>
               {(Object.keys(STAFF_ROLE_LABELS) as StaffRole[]).map((role) => (
@@ -441,13 +424,19 @@ export default function StaffManagement({ }: StaffManagementProps) {
               ))}
             </select>
           </div>
-          {(searchQuery || roleFilter !== 'all') && (
-            <p className="text-sm text-hai">
-              {sortedStaff.length}件表示
-            </p>
-          )}
+          <div className="flex items-end">
+            {searchQuery && (
+              <Button
+                onClick={() => setSearchQuery('')}
+                variant="outline"
+                size="default"
+              >
+                クリア
+              </Button>
+            )}
+          </div>
         </div>
-      </div>
+      </FilterSection>
 
       {/* Error display */}
       {loadError && (
@@ -553,8 +542,8 @@ export default function StaffManagement({ }: StaffManagementProps) {
                           <button
                             onClick={() => handleToggleActive(staff)}
                             className={`border rounded-elegant px-3 py-1.5 transition-all duration-200 text-xs font-medium ${staff.isActive
-                                ? 'border-kohaku text-kohaku hover:bg-kohaku-50'
-                                : 'border-matsu text-matsu hover:bg-matsu-50'
+                              ? 'border-kohaku text-kohaku hover:bg-kohaku-50'
+                              : 'border-matsu text-matsu hover:bg-matsu-50'
                               }`}
                           >
                             {staff.isActive ? '無効化' : '有効化'}
@@ -598,7 +587,7 @@ export default function StaffManagement({ }: StaffManagementProps) {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-elegant-lg shadow-elegant-xl w-full max-w-md overflow-hidden">
             {/* Dialog Header */}
-            <div className="bg-gradient-to-r from-ai-50 to-kinari px-6 py-4 border-b border-gin">
+            <div className="bg-gradient-to-r from-beni-50 to-kinari px-6 py-4 border-b border-gin">
               <h3 className="font-mincho text-lg font-semibold text-sumi">
                 {editingStaff ? 'スタッフ編集' : 'スタッフ登録'}
               </h3>

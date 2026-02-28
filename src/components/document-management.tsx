@@ -116,16 +116,16 @@ export function DocumentManagement({
   }, [onBack, handleBackToList]);
 
   return (
-    <div className="p-6">
+    <div className="h-full flex flex-col bg-shiro">
       {/* 顧客コンテキストヘッダー */}
       {customerId && customerName && viewMode === 'list' && (
-        <div className="mb-4 flex items-center gap-4">
+        <div className="px-6 py-3 flex items-center gap-4 bg-white border-b border-gin">
           <Button variant="ghost" onClick={handleBack}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             顧客詳細に戻る
           </Button>
-          <div className="text-sumi-600">
-            <span className="font-medium">{customerName}</span> 様の書類
+          <div className="text-hai">
+            <span className="font-medium text-sumi">{customerName}</span> 様の書類
           </div>
         </div>
       )}
@@ -169,16 +169,16 @@ export function DocumentManagement({
       {/* 削除確認ダイアログ */}
       {deleteDialogOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
-            <div className="bg-beni-600 text-white px-6 py-4 rounded-t-lg">
-              <h3 className="text-lg font-semibold">書類の削除</h3>
+          <div className="bg-white rounded-elegant-lg shadow-elegant-xl w-full max-w-md mx-4 overflow-hidden">
+            <div className="bg-gradient-to-r from-beni-50 to-kinari px-6 py-4 border-b border-gin">
+              <h3 className="text-lg font-semibold text-beni font-mincho">書類の削除</h3>
             </div>
             <div className="p-6">
-              <p className="text-sumi-700">
+              <p className="text-sumi">
                 この書類を削除してもよろしいですか？この操作は取り消せません。
               </p>
             </div>
-            <div className="px-6 py-4 bg-sumi-50 rounded-b-lg flex justify-end space-x-3">
+            <div className="px-6 py-4 bg-kinari border-t border-gin flex justify-end space-x-3">
               <Button
                 variant="outline"
                 onClick={() => setDeleteDialogOpen(false)}
@@ -187,7 +187,7 @@ export function DocumentManagement({
                 キャンセル
               </Button>
               <Button
-                className="bg-beni-600 hover:bg-beni-700 text-white"
+                className="bg-beni hover:bg-beni-dark text-white"
                 onClick={handleDeleteConfirm}
                 disabled={isMutating}
               >

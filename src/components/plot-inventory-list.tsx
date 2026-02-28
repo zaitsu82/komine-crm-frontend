@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { ClipboardList, CheckCircle, XCircle, BarChart3, Hash } from 'lucide-react';
+import { PageHeader, FilterSection } from '@/components/shared';
 import {
   getAllPlotInventory,
   getPlotInventoryByPeriod,
@@ -86,19 +87,22 @@ export default function PlotInventoryList({ onClose }: PlotInventoryListProps) {
   };
 
   return (
-    <div className="bg-white rounded-elegant-lg shadow-elegant p-6 max-h-[90vh] overflow-hidden flex flex-col">
-      {/* ヘッダー */}
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h2 className="text-2xl font-bold text-sumi">区画在庫一覧</h2>
-          <p className="text-sm text-hai">最終更新: {summary.lastUpdated}</p>
-        </div>
-        {onClose && (
-          <Button variant="outline" onClick={onClose}>
-            閉じる
-          </Button>
-        )}
-      </div>
+    <div className="h-full flex flex-col bg-shiro overflow-hidden">
+      <PageHeader
+        color="ai"
+        icon={
+          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+        }
+        title="区画在庫一覧"
+        subtitle={`最終更新: ${summary.lastUpdated}`}
+        actions={
+          onClose ? (
+            <Button variant="outline" onClick={onClose}>閉じる</Button>
+          ) : undefined
+        }
+      />
 
       {/* 全体サマリー */}
       <div className="grid grid-cols-4 gap-4 mb-6">
@@ -176,77 +180,78 @@ export default function PlotInventoryList({ onClose }: PlotInventoryListProps) {
         ))}
       </div>
 
-      {/* 操作ボタン */}
-      <div className="flex flex-wrap gap-2 mb-4 pb-4 border-b">
-        <Button
-          variant={viewMode === 'all' && selectedPeriod === 'all' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => { setViewMode('all'); setSelectedPeriod('all'); }}
-        >
-          <ClipboardList className="w-4 h-4 mr-1" /> 全区画表示
-        </Button>
-        <Button
-          variant={viewMode === 'available' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => setViewMode('available')}
-          className="bg-matsu hover:bg-matsu-dark text-white"
-        >
-          <CheckCircle className="w-4 h-4 mr-1" /> 空き区画のみ
-        </Button>
-        <Button
-          variant={viewMode === 'soldout' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => setViewMode('soldout')}
-          className="bg-beni hover:bg-beni-dark text-white"
-        >
-          <XCircle className="w-4 h-4 mr-1" /> 完売区画
-        </Button>
-        <Button
-          variant={viewMode === 'usage-rate' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => {
-            setViewMode('usage-rate');
-            setSortAscending(!sortAscending);
-          }}
-        >
-          <BarChart3 className="w-4 h-4 mr-1" /> 使用率順 {viewMode === 'usage-rate' && (sortAscending ? '↑' : '↓')}
-        </Button>
-        <Button
-          variant={viewMode === 'remaining' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => {
-            setViewMode('remaining');
-            setSortAscending(!sortAscending);
-          }}
-        >
-          <Hash className="w-4 h-4 mr-1" /> 残数順 {viewMode === 'remaining' && (sortAscending ? '↑' : '↓')}
-        </Button>
-        <div className="flex-1" />
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setSelectedPeriod('all')}
-          className={selectedPeriod === 'all' ? 'bg-kinari' : ''}
-        >
-          全期
-        </Button>
-        {(['1期', '2期', '3期', '4期'] as PlotPeriod[]).map((period) => (
+      <FilterSection resultCount={displayData.length}>
+        <div className="flex flex-wrap gap-2">
           <Button
-            key={period}
+            variant={viewMode === 'all' && selectedPeriod === 'all' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => { setViewMode('all'); setSelectedPeriod('all'); }}
+          >
+            <ClipboardList className="w-4 h-4 mr-1" /> 全区画表示
+          </Button>
+          <Button
+            variant={viewMode === 'available' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setViewMode('available')}
+            className={viewMode === 'available' ? 'bg-matsu hover:bg-matsu-dark text-white' : ''}
+          >
+            <CheckCircle className="w-4 h-4 mr-1" /> 空き区画のみ
+          </Button>
+          <Button
+            variant={viewMode === 'soldout' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setViewMode('soldout')}
+            className={viewMode === 'soldout' ? 'bg-beni hover:bg-beni-dark text-white' : ''}
+          >
+            <XCircle className="w-4 h-4 mr-1" /> 完売区画
+          </Button>
+          <Button
+            variant={viewMode === 'usage-rate' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => {
+              setViewMode('usage-rate');
+              setSortAscending(!sortAscending);
+            }}
+          >
+            <BarChart3 className="w-4 h-4 mr-1" /> 使用率順 {viewMode === 'usage-rate' && (sortAscending ? '↑' : '↓')}
+          </Button>
+          <Button
+            variant={viewMode === 'remaining' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => {
+              setViewMode('remaining');
+              setSortAscending(!sortAscending);
+            }}
+          >
+            <Hash className="w-4 h-4 mr-1" /> 残数順 {viewMode === 'remaining' && (sortAscending ? '↑' : '↓')}
+          </Button>
+          <div className="flex-1" />
+          <Button
             variant="outline"
             size="sm"
-            onClick={() => setSelectedPeriod(period)}
-            className={selectedPeriod === period ? 'bg-ai-50 border-ai' : ''}
+            onClick={() => setSelectedPeriod('all')}
+            className={selectedPeriod === 'all' ? 'bg-kinari' : ''}
           >
-            {period}
+            全期
           </Button>
-        ))}
-      </div>
+          {(['1期', '2期', '3期', '4期'] as PlotPeriod[]).map((period) => (
+            <Button
+              key={period}
+              variant="outline"
+              size="sm"
+              onClick={() => setSelectedPeriod(period)}
+              className={selectedPeriod === period ? 'bg-ai-50 border-ai' : ''}
+            >
+              {period}
+            </Button>
+          ))}
+        </div>
+      </FilterSection>
 
       {/* データテーブル */}
-      <div className="flex-1 overflow-auto">
-        <table className="w-full border-collapse">
-          <thead className="bg-kinari sticky top-0">
+      <div className="mx-6 mt-4 flex-1 overflow-auto bg-white border border-gin rounded-elegant-lg shadow-elegant-sm">
+        <table className="w-full">
+          <thead className="bg-kinari sticky top-0 border-b border-gin">
             <tr>
               <th className="px-4 py-3 text-left text-sm font-bold text-sumi border-b border-gin">期</th>
               <th className="px-4 py-3 text-left text-sm font-bold text-sumi border-b border-gin">区画</th>
@@ -272,7 +277,7 @@ export default function PlotInventoryList({ onClose }: PlotInventoryListProps) {
                 <tr
                   key={`${item.period}-${item.section}`}
                   className={cn(
-                    "hover:bg-kinari transition-colors",
+                    "hover:bg-ai-50 transition-colors",
                     index % 2 === 0 ? 'bg-white' : 'bg-shiro'
                   )}
                 >
@@ -348,23 +353,23 @@ export default function PlotInventoryList({ onClose }: PlotInventoryListProps) {
       </div>
 
       {/* フッター情報 */}
-      <div className="mt-4 pt-4 border-t border-gin flex justify-between items-center text-sm text-hai">
+      <div className="mx-6 mt-4 mb-6 flex justify-between items-center text-sm text-hai bg-white rounded-elegant-lg p-4 border border-gin">
         <div>
-          表示件数: {displayData.length}件
+          ※ 1区画 = 3.6㎡、半区画 = 1.8㎡として計算
           {selectedPeriod !== 'all' && ` (${selectedPeriod})`}
         </div>
         <div className="flex items-center space-x-4">
           <span className="flex items-center">
-            <span className="w-3 h-3 bg-matsu rounded mr-1" /> 60%未満
+            <span className="w-3 h-3 bg-matsu rounded mr-2" /> 60%未満
           </span>
           <span className="flex items-center">
-            <span className="w-3 h-3 bg-cha rounded mr-1" /> 60-80%
+            <span className="w-3 h-3 bg-cha rounded mr-2" /> 60-80%
           </span>
           <span className="flex items-center">
-            <span className="w-3 h-3 bg-kohaku rounded mr-1" /> 80-95%
+            <span className="w-3 h-3 bg-kohaku rounded mr-2" /> 80-95%
           </span>
           <span className="flex items-center">
-            <span className="w-3 h-3 bg-beni rounded mr-1" /> 95%以上
+            <span className="w-3 h-3 bg-beni rounded mr-2" /> 95%以上
           </span>
         </div>
       </div>

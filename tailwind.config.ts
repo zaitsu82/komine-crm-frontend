@@ -160,6 +160,9 @@ const config: Config = {
         'elegant-xl': '0 16px 48px rgba(26, 26, 26, 0.16)',
         'matsu': '0 4px 12px rgba(45, 90, 61, 0.25)',
         'cha': '0 4px 12px rgba(139, 115, 85, 0.25)',
+        'ai': '0 4px 12px rgba(38, 67, 72, 0.25)',
+        'kohaku': '0 4px 12px rgba(196, 163, 90, 0.25)',
+        'beni': '0 4px 12px rgba(181, 74, 74, 0.25)',
       },
       // ボーダー半径
       borderRadius: {
@@ -186,6 +189,8 @@ const config: Config = {
         'gradient-matsu': 'linear-gradient(135deg, #2d5a3d 0%, #1e3d29 100%)',
         'gradient-cha': 'linear-gradient(135deg, #8b7355 0%, #6b5a45 100%)',
         'gradient-ai': 'linear-gradient(135deg, #264348 0%, #1a3033 100%)',
+        'gradient-kohaku': 'linear-gradient(135deg, #c4a35a 0%, #a4863a 100%)',
+        'gradient-beni': 'linear-gradient(135deg, #b54a4a 0%, #8f3a3a 100%)',
       },
     },
   },
