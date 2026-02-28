@@ -13,6 +13,7 @@ import { usePlots } from '@/hooks/usePlots';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { PageHeader, FilterSection } from '@/components/shared';
 import { cn } from '@/lib/utils';
 
 // ===== 型定義 =====
@@ -100,7 +101,6 @@ export default function PlotListTable({
     aiueoTab,
     setSearch,
     setAiueoTab,
-    refresh,
   } = usePlots();
 
   // 検索入力（キャッシュされたsearchQueryから復元）
@@ -182,131 +182,93 @@ export default function PlotListTable({
 
   return (
     <div className="h-full flex flex-col bg-shiro">
-      {/* ヘッダー */}
-      <div className="bg-gradient-to-r from-matsu-50 to-kinari border-b border-matsu-100 px-6 py-5">
-        <div className="flex items-center space-x-4">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-matsu to-matsu-dark flex items-center justify-center shadow-elegant-sm">
-            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-          </div>
-          <div>
-            <h2 className="font-mincho text-xl font-semibold text-sumi tracking-wide">{title}</h2>
-            <p className="text-sm text-hai mt-0.5">区画・契約情報の検索と管理</p>
-          </div>
-        </div>
-      </div>
+      <PageHeader
+        color="matsu"
+        icon={
+          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        }
+        title={title}
+        subtitle="区画・契約情報の検索と管理"
+      />
 
-      {/* あいうえおタブ */}
-      {showAiueoTabs && (
-        <div className="bg-white border border-gin rounded-elegant-lg shadow-elegant-sm mx-6 mt-4 p-3">
-          <div className="flex flex-wrap gap-1">
-            {AIUEO_TABS.map((tab) => {
-              const isActive = aiueoTab === tab.key;
-              return (
-                <button
-                  key={tab.key}
-                  onClick={() => setAiueoTab(tab.key)}
-                  className={cn(
-                    'px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 min-w-[40px]',
-                    isActive
-                      ? 'bg-matsu text-white shadow-elegant-sm'
-                      : 'text-hai hover:text-sumi hover:bg-kinari'
-                  )}
-                >
-                  {tab.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* ソートコントロール */}
-      {showSortControls && (
-        <div className="mx-6 mt-4 bg-white border border-gin rounded-elegant-lg shadow-elegant-sm p-4">
-          <div className="flex flex-wrap items-center gap-4">
-            <span className="text-sm font-medium text-sumi">並び替え:</span>
-            <div className="flex items-center gap-2">
-              <Select value={sortKey} onValueChange={(value: SortKey) => setSortKey(value)}>
-                <SelectTrigger className="w-[160px] bg-white border-gin">
-                  <SelectValue placeholder="項目を選択" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="customerName">氏名</SelectItem>
-                  <SelectItem value="areaName">エリア</SelectItem>
-                  <SelectItem value="plotNumber">区画番号</SelectItem>
-                  <SelectItem value="contractDate">契約日</SelectItem>
-                  <SelectItem value="paymentStatus">入金状況</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={sortOrder} onValueChange={(value: SortOrder) => setSortOrder(value)}>
-                <SelectTrigger className="w-[120px] bg-white border-gin">
-                  <SelectValue placeholder="順序" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="asc">昇順 ↑</SelectItem>
-                  <SelectItem value="desc">降順 ↓</SelectItem>
-                </SelectContent>
-              </Select>
+      <FilterSection resultCount={total}>
+        <div className="space-y-4">
+          {/* あいうえおタブ */}
+          {showAiueoTabs && (
+            <div>
+              <div className="flex flex-wrap gap-1">
+                {AIUEO_TABS.map((tab) => {
+                  const isActive = aiueoTab === tab.key;
+                  return (
+                    <button
+                      key={tab.key}
+                      onClick={() => setAiueoTab(tab.key)}
+                      className={cn(
+                        'px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 min-w-[40px]',
+                        isActive
+                          ? 'bg-matsu text-white shadow-elegant-sm'
+                          : 'text-hai hover:text-sumi hover:bg-kinari'
+                      )}
+                    >
+                      {tab.label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-            <div className="flex gap-2 flex-wrap">
-              <Button
-                onClick={() => { setSortKey('areaName'); setSortOrder('asc'); }}
-                variant={sortKey === 'areaName' ? 'default' : 'outline'}
-                size="sm"
-              >
-                エリア順
-              </Button>
-              <Button
-                onClick={() => { setSortKey('customerName'); setSortOrder('asc'); }}
-                variant={sortKey === 'customerName' ? 'default' : 'outline'}
-                size="sm"
-              >
-                氏名順
-              </Button>
-              <Button
-                onClick={() => { setSortKey('contractDate'); setSortOrder('desc'); }}
-                variant={sortKey === 'contractDate' ? 'default' : 'outline'}
-                size="sm"
-              >
-                契約日順
-              </Button>
-            </div>
+          )}
+
+          {/* 検索 + ソート */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {showSearch && (
+              <div className="col-span-2">
+                <div className="flex items-center space-x-2">
+                  <Input
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder="氏名、区画番号、電話番号で検索..."
+                    className="flex-1 border-gin"
+                  />
+                  <Button onClick={handleSearch} variant="default" size="sm">検索</Button>
+                  <Button onClick={() => { setSearchInput(''); setSearch(''); }} variant="outline" size="sm">クリア</Button>
+                </div>
+              </div>
+            )}
+            {showSortControls && (
+              <>
+                <div>
+                  <Select value={sortKey} onValueChange={(value: SortKey) => setSortKey(value)}>
+                    <SelectTrigger className="bg-white border-gin">
+                      <SelectValue placeholder="並び替え" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="customerName">氏名</SelectItem>
+                      <SelectItem value="areaName">エリア</SelectItem>
+                      <SelectItem value="plotNumber">区画番号</SelectItem>
+                      <SelectItem value="contractDate">契約日</SelectItem>
+                      <SelectItem value="paymentStatus">入金状況</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Select value={sortOrder} onValueChange={(value: SortOrder) => setSortOrder(value)}>
+                    <SelectTrigger className="bg-white border-gin">
+                      <SelectValue placeholder="順序" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="asc">昇順 ↑</SelectItem>
+                      <SelectItem value="desc">降順 ↓</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
+            )}
           </div>
         </div>
-      )}
-
-      {/* 検索エリア */}
-      {showSearch && (
-        <div className="mx-6 mt-4 bg-white border border-gin rounded-elegant-lg shadow-elegant-sm p-4">
-          <div className="flex items-center space-x-2">
-            <Input
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="氏名、区画番号、電話番号で検索..."
-              className="flex-1 border-gin"
-            />
-            <Button onClick={() => { setSearchInput(''); setSearch(''); }} variant="outline" size="sm">
-              クリア
-            </Button>
-            <Button onClick={handleSearch} variant="default" size="sm">
-              検索
-            </Button>
-            <Button onClick={refresh} variant="outline" size="sm">
-              更新
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* 件数表示 */}
-      <div className="mx-6 mt-4 flex items-center justify-between">
-        <p className="text-sm text-hai">
-          検索結果: <span className="font-bold text-sumi text-lg">{total}</span> 件
-        </p>
-      </div>
+      </FilterSection>
 
       {/* テーブル */}
       <div className="mx-6 mt-4 bg-white border border-gin rounded-elegant-lg shadow-elegant-sm overflow-hidden flex-1">
@@ -431,7 +393,7 @@ export default function PlotListTable({
                     <tr
                       key={plot.id}
                       className={cn(
-                        'cursor-pointer transition-all duration-200 hover:bg-cha-50',
+                        'cursor-pointer transition-all duration-200 hover:bg-matsu-50',
                         selectedPlotId === plot.id && 'bg-matsu-50',
                         index % 2 === 0 ? 'bg-white' : 'bg-shiro'
                       )}

@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { ClipboardList, Check, X, BarChart3, Hash } from 'lucide-react';
+import { PageHeader, FilterSection } from '@/components/shared';
 import { PlotPeriod, PLOT_SIZE } from '@/types/plot-constants';
 import {
   usePlotInventorySummary,
@@ -141,114 +142,126 @@ export default function PlotAvailabilityManagement() {
   };
 
   return (
-    <div className="bg-gradient-warm relative">
-      {/* ツールバー */}
-      <div className="bg-white border-b border-gin p-4 flex flex-wrap items-center gap-4">
-        {/* 表示形式切替（区画別/面積別） */}
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-hai">表示形式</span>
-          <div className="flex gap-1 p-1 bg-kinari rounded-elegant border border-gin">
-            <button
-              onClick={() => setDisplayMode('section')}
-              className={cn(
-                'px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200',
-                displayMode === 'section'
-                  ? 'bg-ai text-white shadow-elegant'
-                  : 'text-hai hover:text-sumi hover:bg-white'
-              )}
-            >
-              区画別
-            </button>
-            <button
-              onClick={() => setDisplayMode('area')}
-              className={cn(
-                'px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200',
-                displayMode === 'area'
-                  ? 'bg-ai text-white shadow-elegant'
-                  : 'text-hai hover:text-sumi hover:bg-white'
-              )}
-            >
-              面積別
-            </button>
-          </div>
-        </div>
+    <div className="h-full flex flex-col bg-shiro">
+      <PageHeader
+        color="ai"
+        icon={
+          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+        }
+        title="区画残数管理"
+        subtitle={summary.lastUpdated ? `最終更新: ${summary.lastUpdated}` : undefined}
+      />
 
-        {/* フィルター */}
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-hai">フィルター</span>
-          <div className="flex gap-1">
-            {menuItems.map((item) => (
+      <FilterSection resultCount={displayMode === 'section' ? displayData.length : displayAreaData.length}>
+        <div className="flex flex-wrap items-center gap-4">
+          {/* 表示形式切替（区画別/面積別） */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-hai">表示形式</span>
+            <div className="flex gap-1 p-1 bg-kinari rounded-elegant border border-gin">
               <button
-                key={item.key}
-                onClick={() => setViewMode(item.key as ViewMode)}
+                onClick={() => setDisplayMode('section')}
                 className={cn(
-                  'px-3 py-1.5 rounded-elegant transition-all duration-200 text-sm flex items-center',
-                  viewMode === item.key
-                    ? 'bg-ai-50 text-ai border border-ai-200 font-semibold'
-                    : 'hover:bg-kinari text-hai hover:text-sumi border border-transparent'
+                  'px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200',
+                  displayMode === 'section'
+                    ? 'bg-ai text-white shadow-elegant'
+                    : 'text-hai hover:text-sumi hover:bg-white'
                 )}
               >
-                <item.icon className="w-4 h-4 mr-1.5 shrink-0" />
-                <span>{item.label}</span>
+                区画別
               </button>
-            ))}
+              <button
+                onClick={() => setDisplayMode('area')}
+                className={cn(
+                  'px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200',
+                  displayMode === 'area'
+                    ? 'bg-ai text-white shadow-elegant'
+                    : 'text-hai hover:text-sumi hover:bg-white'
+                )}
+              >
+                面積別
+              </button>
+            </div>
           </div>
-        </div>
 
-        {/* 期別フィルター */}
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-hai">期別</span>
-          <div className="flex gap-1">
-            <button
-              onClick={() => setSelectedPeriod('all')}
-              className={cn(
-                'px-3 py-1.5 rounded-elegant transition-all duration-200 text-sm',
-                selectedPeriod === 'all'
-                  ? 'bg-matsu-50 text-matsu border border-matsu-200 font-semibold'
-                  : 'hover:bg-kinari text-hai hover:text-sumi border border-transparent'
-              )}
-            >
-              全期
-            </button>
-            {(['1期', '2期', '3期', '4期'] as PlotPeriod[]).map((period) => {
-              const ps = periodSummaries.find(p => p.period === period);
-              const periodColors = {
-                '1期': { bg: 'bg-matsu-50', border: 'border-matsu-200', text: 'text-matsu' },
-                '2期': { bg: 'bg-ai-50', border: 'border-ai-200', text: 'text-ai' },
-                '3期': { bg: 'bg-cha-50', border: 'border-cha-200', text: 'text-cha' },
-                '4期': { bg: 'bg-kohaku-50', border: 'border-kohaku-200', text: 'text-kohaku' },
-              };
-              const colors = periodColors[period];
-
-              return (
+          {/* フィルター */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-hai">フィルター</span>
+            <div className="flex gap-1">
+              {menuItems.map((item) => (
                 <button
-                  key={period}
-                  onClick={() => setSelectedPeriod(period)}
+                  key={item.key}
+                  onClick={() => setViewMode(item.key as ViewMode)}
                   className={cn(
-                    'px-3 py-1.5 rounded-elegant transition-all duration-200 text-sm',
-                    selectedPeriod === period
-                      ? `${colors.bg} ${colors.text} border ${colors.border} font-semibold`
+                    'px-3 py-1.5 rounded-elegant transition-all duration-200 text-sm flex items-center',
+                    viewMode === item.key
+                      ? 'bg-ai-50 text-ai border border-ai-200 font-semibold'
                       : 'hover:bg-kinari text-hai hover:text-sumi border border-transparent'
                   )}
                 >
-                  {period}
-                  {ps && (
-                    <span className={cn(
-                      "ml-1 text-xs px-1.5 py-0.5 rounded-full",
-                      getUsageRateColor(ps.usageRate || 0)
-                    )}>
-                      残{ps.remainingCount || 0}
-                    </span>
-                  )}
+                  <item.icon className="w-4 h-4 mr-1.5 shrink-0" />
+                  <span>{item.label}</span>
                 </button>
-              );
-            })}
+              ))}
+            </div>
+          </div>
+
+          {/* 期別フィルター */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-hai">期別</span>
+            <div className="flex gap-1">
+              <button
+                onClick={() => setSelectedPeriod('all')}
+                className={cn(
+                  'px-3 py-1.5 rounded-elegant transition-all duration-200 text-sm',
+                  selectedPeriod === 'all'
+                    ? 'bg-matsu-50 text-matsu border border-matsu-200 font-semibold'
+                    : 'hover:bg-kinari text-hai hover:text-sumi border border-transparent'
+                )}
+              >
+                全期
+              </button>
+              {(['1期', '2期', '3期', '4期'] as PlotPeriod[]).map((period) => {
+                const ps = periodSummaries.find(p => p.period === period);
+                const periodColors = {
+                  '1期': { bg: 'bg-matsu-50', border: 'border-matsu-200', text: 'text-matsu' },
+                  '2期': { bg: 'bg-ai-50', border: 'border-ai-200', text: 'text-ai' },
+                  '3期': { bg: 'bg-cha-50', border: 'border-cha-200', text: 'text-cha' },
+                  '4期': { bg: 'bg-kohaku-50', border: 'border-kohaku-200', text: 'text-kohaku' },
+                };
+                const colors = periodColors[period];
+
+                return (
+                  <button
+                    key={period}
+                    onClick={() => setSelectedPeriod(period)}
+                    className={cn(
+                      'px-3 py-1.5 rounded-elegant transition-all duration-200 text-sm',
+                      selectedPeriod === period
+                        ? `${colors.bg} ${colors.text} border ${colors.border} font-semibold`
+                        : 'hover:bg-kinari text-hai hover:text-sumi border border-transparent'
+                    )}
+                  >
+                    {period}
+                    {ps && (
+                      <span className={cn(
+                        "ml-1 text-xs px-1.5 py-0.5 rounded-full",
+                        getUsageRateColor(ps.usageRate || 0)
+                      )}>
+                        残{ps.remainingCount || 0}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
-      </div>
+      </FilterSection>
 
       {/* メインコンテンツ */}
-      <div className="p-6 relative">
+      <div className="flex-1 overflow-auto p-6 relative">
         {/* ローディングオーバーレイ */}
         {isLoading && (
           <div className="absolute inset-0 bg-white/60 z-10 flex items-center justify-center">
@@ -349,13 +362,13 @@ export default function PlotAvailabilityManagement() {
         </div>
 
         {/* 検索バー */}
-        <div className="bg-white rounded-elegant-lg shadow-elegant p-4 mb-4 border border-gin">
+        <div className="bg-white rounded-elegant-lg shadow-elegant-sm p-4 mb-4 border border-gin">
           <div className="flex items-center gap-4">
             <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={displayMode === 'section' ? "区画名、期で検索..." : "面積、タイプ、期で検索..."}
-              className="flex-1 max-w-md"
+              className="flex-1 max-w-md border-gin"
             />
             <Button
               onClick={() => setSearchQuery('')}
@@ -366,9 +379,8 @@ export default function PlotAvailabilityManagement() {
             </Button>
             <div className="flex-1" />
             <span className="text-sm text-hai">
-              表示件数: <span className="font-semibold text-sumi">{displayMode === 'section' ? displayData.length : displayAreaData.length}</span>件
-              {selectedPeriod !== 'all' && <span className="ml-2 text-ai">({selectedPeriod})</span>}
-              {displayMode === 'area' && <span className="ml-2 text-cha">[面積別]</span>}
+              {selectedPeriod !== 'all' && <span className="mr-2 text-ai">({selectedPeriod})</span>}
+              {displayMode === 'area' && <span className="mr-2 text-cha">[面積別]</span>}
             </span>
           </div>
         </div>
@@ -491,7 +503,7 @@ export default function PlotAvailabilityManagement() {
                       <tr
                         key={`${item.period}-${item.section}`}
                         className={cn(
-                          "hover:bg-kinari transition-colors",
+                          "hover:bg-ai-50 transition-colors",
                           index % 2 === 0 ? 'bg-white' : 'bg-shiro'
                         )}
                       >
@@ -711,7 +723,7 @@ export default function PlotAvailabilityManagement() {
                       <tr
                         key={`${item.period}-${item.areaSqm}-${item.plotType}-${index}`}
                         className={cn(
-                          "hover:bg-kinari transition-colors",
+                          "hover:bg-ai-50 transition-colors",
                           index % 2 === 0 ? 'bg-white' : 'bg-shiro'
                         )}
                       >

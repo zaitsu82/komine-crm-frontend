@@ -161,7 +161,7 @@ export default function PlotManagement({ initialView = 'registry' }: PlotManagem
       <div className="flex-1 flex flex-col ml-64">
         {/* Conditional Content Based on Current View */}
         {currentView === 'registry' ? (
-          <div className="flex-1 p-6">
+          <div className="flex-1 overflow-auto">
             <PlotRegistry
               onPlotSelect={handlePlotSelect}
               selectedPlotId={selectedPlotId || undefined}

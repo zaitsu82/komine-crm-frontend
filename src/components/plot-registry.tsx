@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { PageHeader, FilterSection } from '@/components/shared';
 
 // ===== 型定義 =====
 
@@ -261,55 +262,63 @@ export default function PlotRegistry({
   );
 
   return (
-    <div className="h-full flex flex-col">
-      {/* 検索バー */}
-      <div className="mb-4 flex items-center gap-3">
-        <div className="flex-1 max-w-md">
-          <Input
-            type="text"
-            placeholder="氏名・フリガナ・区画番号・電話番号で検索..."
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            onKeyPress={handleKeyPress}
-            className="h-10 text-sm"
-          />
-        </div>
-        <Button
-          onClick={handleSearch}
-          variant="matsu"
-          size="default"
-          className="h-10"
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <svg className="animate-spin w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-            </svg>
-          ) : (
-            <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          )}
-          {isLoading ? '検索中...' : '検索'}
-        </Button>
-        {onNewPlot && (
+    <div className="h-full flex flex-col bg-shiro">
+      <PageHeader
+        color="matsu"
+        icon={
+          <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          </svg>
+        }
+        title="台帳問い合わせ"
+        subtitle="区画・契約情報の検索と管理"
+        actions={
+          onNewPlot ? (
+            <Button onClick={onNewPlot} variant="outline" size="default" className="h-10">
+              <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              新規登録
+            </Button>
+          ) : undefined
+        }
+      />
+
+      <FilterSection resultCount={totalItems}>
+        {/* 検索バー */}
+        <div className="flex items-center gap-3 mb-3">
+          <div className="flex-1 max-w-md">
+            <Input
+              type="text"
+              placeholder="氏名・フリガナ・区画番号・電話番号で検索..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyPress={handleKeyPress}
+              className="h-10 text-sm border-gin"
+            />
+          </div>
           <Button
-            onClick={onNewPlot}
-            variant="outline"
+            onClick={handleSearch}
+            variant="matsu"
             size="default"
             className="h-10"
+            disabled={isLoading}
           >
-            <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            新規登録
+            {isLoading ? (
+              <svg className="animate-spin w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+            ) : (
+              <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            )}
+            {isLoading ? '検索中...' : '検索'}
           </Button>
-        )}
-      </div>
+        </div>
 
-      {/* あいう順タブ */}
-      <div className="mb-4">
+        {/* あいう順タブ */}
         <div
           className="flex flex-wrap gap-1"
           role="tablist"
@@ -338,13 +347,13 @@ export default function PlotRegistry({
             );
           })}
         </div>
-      </div>
+      </FilterSection>
 
       {/* 区画一覧テーブル */}
-      <div className="bg-white rounded-elegant-lg border border-gin shadow-elegant overflow-hidden flex-1">
+      <div className="mx-6 mt-4 bg-white rounded-elegant-lg border border-gin shadow-elegant overflow-hidden flex-1">
         <div className="overflow-auto h-full">
           <table className="w-full divide-y divide-gin text-sm table-fixed">
-{/* 状態 / 区画No / エリア / 契約者(残り幅) / 電話 / 契約日 / 入金 / 管理料 / 次請求 */}
+            {/* 状態 / 区画No / エリア / 契約者(残り幅) / 電話 / 契約日 / 入金 / 管理料 / 次請求 */}
             <colgroup><col className="w-[44px]" /><col className="w-[72px]" /><col className="w-[60px]" /><col /><col className="w-[110px]" /><col className="w-[68px]" /><col className="w-[68px]" /><col className="w-[80px]" /><col className="w-[68px]" /></colgroup>
             <thead className="bg-gradient-matsu sticky top-0 z-10">
               <tr>
@@ -570,7 +579,7 @@ export default function PlotRegistry({
       </div>
 
       {/* ページネーションコントロール */}
-      <div className="mt-3 flex items-center justify-between text-sm">
+      <div className="mx-6 mt-3 mb-4 flex items-center justify-between text-sm">
         <div className="flex items-center gap-4 text-hai">
           <div>
             <span className="font-semibold text-sumi">{totalItems > 0 ? startIndex + 1 : 0}</span>
