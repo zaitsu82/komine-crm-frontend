@@ -4,9 +4,15 @@ import { useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 
+import type { User } from '@/contexts/auth-context';
+
 interface AuthGuardProps {
   children: ReactNode;
   fallback?: ReactNode;
+}
+
+interface RoleGuardProps extends AuthGuardProps {
+  requiredRoles: User['role'][];
 }
 
 /**
@@ -58,6 +64,33 @@ function AuthLoadingScreen() {
       </div>
     </div>
   );
+}
+
+/**
+ * ロールベースガードコンポーネント
+ * 認証チェック + 指定ロール以外のユーザーをメインページにリダイレクト
+ */
+export function RoleGuard({ children, requiredRoles, fallback }: RoleGuardProps) {
+  const { user, isAuthenticated, isLoading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.replace('/login');
+    } else if (!isLoading && isAuthenticated && user && !requiredRoles.includes(user.role)) {
+      router.replace('/');
+    }
+  }, [isAuthenticated, isLoading, user, requiredRoles, router]);
+
+  if (isLoading) {
+    return fallback || <AuthLoadingScreen />;
+  }
+
+  if (!isAuthenticated || !user || !requiredRoles.includes(user.role)) {
+    return fallback || <AuthLoadingScreen />;
+  }
+
+  return <>{children}</>;
 }
 
 /**

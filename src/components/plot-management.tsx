@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { PlotListItem } from '@komine/types';
-import { ViewType } from '@/types/plot-detail';
+import { ViewType, MENU_ITEMS } from '@/types/plot-detail';
+import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
 import { createPlot, updatePlot, deletePlot } from '@/lib/api/plots';
 import { PlotFormData, plotFormDataToCreateRequest, plotFormDataToUpdateRequest } from '@/lib/validations/plot-form';
@@ -28,6 +29,7 @@ interface PlotManagementProps {
 }
 
 export default function PlotManagement({ initialView = 'registry' }: PlotManagementProps) {
+  const { user } = useAuth();
   const [selectedPlotId, setSelectedPlotId] = useState<string | null>(null);
   const [selectedPlotName, setSelectedPlotName] = useState<string>('');
   const [selectedPlotCode, setSelectedPlotCode] = useState<string>('');
@@ -135,8 +137,14 @@ export default function PlotManagement({ initialView = 'registry' }: PlotManagem
     }
   };
 
-  // サイドバーのビュー切り替えハンドラー
+  // サイドバーのビュー切り替えハンドラー（権限チェック付き）
   const handleViewChange = (view: ViewType) => {
+    // メニュー項目に対応するビューの場合、権限チェック
+    const menuItem = MENU_ITEMS.find(item => item.view === view);
+    if (menuItem && user && !menuItem.requiredRoles.includes(user.role)) {
+      return;
+    }
+
     setCurrentView(view);
     // メインメニュー項目の場合は選択をクリア
     if (['registry', 'collective-burial', 'plot-availability', 'documents', 'staff-management', 'masters', 'bulk-import'].includes(view)) {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { AuthGuard } from '@/components/auth-guard';
+import { RoleGuard } from '@/components/auth-guard';
 import BulkImportPage from '@/components/bulk-import';
 import { Button } from '@/components/ui/button';
 
@@ -13,7 +13,7 @@ export default function BulkImportRoute() {
   };
 
   return (
-    <AuthGuard>
+    <RoleGuard requiredRoles={['manager', 'admin']}>
       <div className="flex h-screen bg-shiro">
         {/* サイドバー */}
         <div className="w-56 bg-white border-r border-gin shadow-elegant flex flex-col">
@@ -37,6 +37,6 @@ export default function BulkImportRoute() {
           <BulkImportPage />
         </div>
       </div>
-    </AuthGuard>
+    </RoleGuard>
   );
 }
