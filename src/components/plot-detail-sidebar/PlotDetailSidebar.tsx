@@ -37,29 +37,7 @@ export default function PlotDetailSidebar({
     };
     return roleLabels[role] || role;
   };
-  const getSidebarTitle = () => {
-    switch (currentView) {
-      case 'plot-details':
-      case 'edit':
-      case 'document-select':
-      case 'document-history':
-        return '区画詳細';
-      case 'collective-burial':
-        return '合祀管理メニュー';
-      case 'plot-availability':
-        return '区画残数管理メニュー';
-      case 'documents':
-        return '書類管理メニュー';
-      case 'staff-management':
-        return 'スタッフ管理メニュー';
-      case 'masters':
-        return 'マスタ管理メニュー';
-      case 'bulk-import':
-        return '一括登録メニュー';
-      default:
-        return '小峰霊園CRM';
-    }
-  };
+  const getSidebarTitle = () => '小峰霊園CRM';
 
   const isPlotContextView =
     (currentView === 'plot-details' || currentView === 'edit' || currentView === 'document-select' || currentView === 'document-history') &&

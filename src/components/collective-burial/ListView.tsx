@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * 合祀一覧コンポーネント（API連携版）
+ * 合祀一覧コンポーネント
  * Prisma CollectiveBurialモデルに準拠
  */
 
@@ -121,9 +121,6 @@ export default function CollectiveBurialListView({
             </div>
             <div>
               <h2 className="font-mincho text-2xl font-semibold text-sumi tracking-wide">合祀管理</h2>
-              <span className="text-sm text-cha bg-cha-100 px-3 py-0.5 rounded-full mt-1 inline-block">
-                API連携版
-              </span>
             </div>
           </div>
           <div className="flex items-center space-x-3">
