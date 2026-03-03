@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ViewType, MENU_ITEMS } from '@/types/plot-detail';
+import { ViewType, MENU_ITEMS, MenuItemConfig } from '@/types/plot-detail';
 import { useAuth } from '@/contexts/auth-context';
 
 interface PlotDetailSidebarProps {
@@ -38,6 +38,11 @@ export default function PlotDetailSidebar({
     return roleLabels[role] || role;
   };
   const getSidebarTitle = () => '小峰霊園CRM';
+
+  // ユーザーロールに基づきメニュー項目をフィルタリング
+  const visibleMenuItems = MENU_ITEMS.filter((item: MenuItemConfig) =>
+    user ? item.requiredRoles.includes(user.role) : false
+  );
 
   const isPlotContextView =
     (currentView === 'plot-details' || currentView === 'edit' || currentView === 'document-select' || currentView === 'document-history') &&
@@ -118,57 +123,17 @@ export default function PlotDetailSidebar({
           </div>
         ) : (
           <div className="space-y-1 mb-4">
-            {MENU_ITEMS.map((item, index) => {
-              const getViewForItem = (menuItem: string): ViewType => {
-                switch (menuItem) {
-                  case '台帳問い合わせ':
-                    return 'registry';
-                  case '合祀管理':
-                    return 'collective-burial';
-                  case '区画残数管理':
-                    return 'plot-availability';
-                  case '書類管理':
-                    return 'documents';
-                  case 'スタッフ管理':
-                    return 'staff-management';
-                  case 'マスタ管理':
-                    return 'masters';
-                  case '一括登録':
-                    return 'bulk-import';
-                  default:
-                    return 'registry';
-                }
-              };
-
-              const isActive = () => {
-                switch (item) {
-                  case '台帳問い合わせ':
-                    return currentView === 'registry';
-                  case '合祀管理':
-                    return currentView === 'collective-burial';
-                  case '区画残数管理':
-                    return currentView === 'plot-availability';
-                  case '書類管理':
-                    return currentView === 'documents';
-                  case 'スタッフ管理':
-                    return currentView === 'staff-management';
-                  case 'マスタ管理':
-                    return currentView === 'masters';
-                  case '一括登録':
-                    return currentView === 'bulk-import';
-                  default:
-                    return false;
-                }
-              };
+            {visibleMenuItems.map((item) => {
+              const isActive = currentView === item.view;
 
               return (
                 <button
-                  key={index}
-                  onClick={() => onViewChange(getViewForItem(item))}
-                  className={`w-full text-left px-3 py-2 text-senior-sm rounded-elegant border border-gin bg-kinari hover:bg-matsu-50 hover:border-matsu-200 transition-colors btn-senior ${isActive() ? 'bg-matsu-50 border-matsu-200' : ''
+                  key={item.view}
+                  onClick={() => onViewChange(item.view)}
+                  className={`w-full text-left px-3 py-2 text-senior-sm rounded-elegant border border-gin bg-kinari hover:bg-matsu-50 hover:border-matsu-200 transition-colors btn-senior ${isActive ? 'bg-matsu-50 border-matsu-200' : ''
                     }`}
                 >
-                  {item}
+                  {item.label}
                 </button>
               );
             })}

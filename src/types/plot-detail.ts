@@ -31,15 +31,24 @@ export interface ImportantNote {
   content: string;
 }
 
-// サイドバーメニュー項目
-export const MENU_ITEMS = [
-  '台帳問い合わせ',
-  '合祀管理',
-  '区画残数管理',
-  '書類管理',
-  'スタッフ管理',
-  'マスタ管理',
-  '一括登録',
-] as const;
+// ユーザーロール型
+export type UserRole = 'admin' | 'manager' | 'operator' | 'viewer';
 
-export type MenuItem = typeof MENU_ITEMS[number];
+// サイドバーメニュー項目（ロール要件付き）
+export interface MenuItemConfig {
+  label: string;
+  view: ViewType;
+  requiredRoles: UserRole[];
+}
+
+export const MENU_ITEMS: MenuItemConfig[] = [
+  { label: '台帳問い合わせ', view: 'registry', requiredRoles: ['viewer', 'operator', 'manager', 'admin'] },
+  { label: '合祀管理', view: 'collective-burial', requiredRoles: ['viewer', 'operator', 'manager', 'admin'] },
+  { label: '区画残数管理', view: 'plot-availability', requiredRoles: ['viewer', 'operator', 'manager', 'admin'] },
+  { label: '書類管理', view: 'documents', requiredRoles: ['viewer', 'operator', 'manager', 'admin'] },
+  { label: 'スタッフ管理', view: 'staff-management', requiredRoles: ['manager', 'admin'] },
+  { label: 'マスタ管理', view: 'masters', requiredRoles: ['admin'] },
+  { label: '一括登録', view: 'bulk-import', requiredRoles: ['manager', 'admin'] },
+];
+
+export type MenuItem = string;
