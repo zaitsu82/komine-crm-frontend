@@ -8,7 +8,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { PlotListItem, PaymentStatus } from '@komine/types';
+import { PlotListItem, PaymentStatus, PhysicalPlotStatus } from '@komine/types';
 import {
   getPlots,
   getPlotDisplayStatus,
@@ -75,6 +75,12 @@ const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
   [PaymentStatus.Cancelled]: 'キャンセル',
 };
 
+const PLOT_STATUS_LABELS: Record<PhysicalPlotStatus, string> = {
+  [PhysicalPlotStatus.Available]: '利用可能',
+  [PhysicalPlotStatus.PartiallySold]: '一部販売済',
+  [PhysicalPlotStatus.SoldOut]: '完売',
+};
+
 // ===== ヘルパー =====
 
 function formatContractDate(dateStr: string | null | undefined): string {
@@ -111,6 +117,11 @@ export default function PlotRegistry({
   const [sortKey, setSortKey] = useState<SortKey>('plotNumber');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
 
+  // フィルタ
+  const [filterStatus, setFilterStatus] = useState<PhysicalPlotStatus | undefined>(undefined);
+  const [filterPaymentStatus, setFilterPaymentStatus] = useState<PaymentStatus | undefined>(undefined);
+  const [filterAreaName, setFilterAreaName] = useState('');
+
   // サーバーサイドページネーション
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(50);
@@ -137,6 +148,17 @@ export default function PlotRegistry({
         params.nameKanaPrefix = tabDef.kataKey;
       }
 
+      // フィルタ
+      if (filterStatus) {
+        params.status = filterStatus;
+      }
+      if (filterPaymentStatus) {
+        params.paymentStatus = filterPaymentStatus;
+      }
+      if (filterAreaName.trim()) {
+        params.areaName = filterAreaName.trim();
+      }
+
       // サーバー対応ソートキーのみ送信
       const serverSortKey = SERVER_SORT_MAP[sortKey];
       if (serverSortKey) {
@@ -157,7 +179,7 @@ export default function PlotRegistry({
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, itemsPerPage, searchQuery, activeTab, sortKey, sortOrder]);
+  }, [currentPage, itemsPerPage, searchQuery, activeTab, sortKey, sortOrder, filterStatus, filterPaymentStatus, filterAreaName]);
 
   useEffect(() => {
     fetchPlots();
@@ -190,6 +212,31 @@ export default function PlotRegistry({
 
   const handleTabChange = (tabKey: string) => {
     setActiveTab(tabKey);
+    setCurrentPage(1);
+  };
+
+  // フィルタ変更ハンドラ
+  const hasActiveFilters = filterStatus !== undefined || filterPaymentStatus !== undefined || filterAreaName.trim() !== '';
+
+  const handleFilterStatusChange = (value: string) => {
+    setFilterStatus(value === 'all' ? undefined : value as PhysicalPlotStatus);
+    setCurrentPage(1);
+  };
+
+  const handleFilterPaymentStatusChange = (value: string) => {
+    setFilterPaymentStatus(value === 'all' ? undefined : value as PaymentStatus);
+    setCurrentPage(1);
+  };
+
+  const handleFilterAreaNameChange = (value: string) => {
+    setFilterAreaName(value);
+    setCurrentPage(1);
+  };
+
+  const handleClearFilters = () => {
+    setFilterStatus(undefined);
+    setFilterPaymentStatus(undefined);
+    setFilterAreaName('');
     setCurrentPage(1);
   };
 
@@ -267,7 +314,7 @@ export default function PlotRegistry({
         <div className="flex-1 max-w-md">
           <Input
             type="text"
-            placeholder="氏名・フリガナ・区画番号・電話番号で検索..."
+            placeholder="氏名・フリガナ・区画番号・電話番号・住所で検索..."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             onKeyPress={handleKeyPress}
@@ -304,6 +351,58 @@ export default function PlotRegistry({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
             新規登録
+          </Button>
+        )}
+      </div>
+
+      {/* フィルタ行 */}
+      <div className="mb-4 flex items-center gap-3 flex-wrap">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-hai whitespace-nowrap">区画ステータス:</span>
+          <Select value={filterStatus || 'all'} onValueChange={handleFilterStatusChange}>
+            <SelectTrigger className="w-32 h-9 text-sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">全て</SelectItem>
+              {Object.entries(PLOT_STATUS_LABELS).map(([value, label]) => (
+                <SelectItem key={value} value={value}>{label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-hai whitespace-nowrap">入金ステータス:</span>
+          <Select value={filterPaymentStatus || 'all'} onValueChange={handleFilterPaymentStatusChange}>
+            <SelectTrigger className="w-32 h-9 text-sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">全て</SelectItem>
+              {Object.entries(PAYMENT_STATUS_LABELS).map(([value, label]) => (
+                <SelectItem key={value} value={value}>{label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-hai whitespace-nowrap">エリア:</span>
+          <Input
+            type="text"
+            placeholder="エリア名"
+            value={filterAreaName}
+            onChange={(e) => handleFilterAreaNameChange(e.target.value)}
+            className="w-28 h-9 text-sm"
+          />
+        </div>
+        {hasActiveFilters && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleClearFilters}
+            className="h-9 text-sm text-beni border-beni hover:bg-beni-50"
+          >
+            フィルタクリア
           </Button>
         )}
       </div>
