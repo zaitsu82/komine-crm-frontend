@@ -3,31 +3,6 @@
  * ロール別の認証済みページを提供
  */
 import { test as base, expect, type Page } from '@playwright/test';
-import { storageStatePath, type TestRole } from '../config/test-accounts';
-
-// ロール別テストフィクスチャ型
-type RoleFixtures = {
-  adminPage: Page;
-  managerPage: Page;
-  operatorPage: Page;
-  viewerPage: Page;
-};
-
-/**
- * 指定ロールで認証済みの新しいページを作成
- */
-async function createAuthenticatedPage(
-  browser: ReturnType<typeof base['extend']> extends infer T ? T : never,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  use: any,
-  role: TestRole
-) {
-  // このヘルパーは各テスト内で直接呼ばれないため、
-  // testロール別のフィクスチャとして定義する
-}
-
-// フィクスチャなし版（storageStateをテスト内で直接指定する場合のヘルパー）
-void createAuthenticatedPage;
 
 /**
  * サイドバーメニューのテキストを取得するヘルパー
