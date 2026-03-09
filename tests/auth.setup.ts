@@ -2,9 +2,15 @@
  * 認証セットアップ
  * 各ロールでログインし、storageState を保存する
  * テスト実行前に1度だけ走る
+ *
+ * モックモード（NEXT_PUBLIC_USE_MOCK_DATA=true）で実行されるため
+ * バックエンドやSupabaseは不要
  */
 import { test as setup, expect } from '@playwright/test';
 import { TEST_ACCOUNTS, storageStatePath, type TestRole } from './config/test-accounts';
+
+// 逐次実行（セッション干渉を防止）
+setup.describe.configure({ mode: 'serial' });
 
 const roles: TestRole[] = ['admin', 'manager', 'operator', 'viewer'];
 

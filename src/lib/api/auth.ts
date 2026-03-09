@@ -53,6 +53,14 @@ const MOCK_USERS: Array<AuthUser & { password: string }> = [
     role: 'operator',
     isActive: true,
   },
+  {
+    id: 4,
+    email: 'viewer@komine-cemetery.jp',
+    password: 'viewer123',
+    name: '閲覧者 三郎',
+    role: 'viewer',
+    isActive: true,
+  },
 ];
 
 let mockCurrentUser: AuthUser | null = null;
@@ -118,12 +126,13 @@ async function mockLogout(): Promise<ApiResponse<void>> {
 
 /**
  * モック現在ユーザー取得
+ * storageState復元後もトークンからユーザーを特定できるようにする
  */
 async function mockGetCurrentUser(): Promise<ApiResponse<AuthUser>> {
   await new Promise((resolve) => setTimeout(resolve, 200));
 
   const token = getAuthToken();
-  if (!token || !mockCurrentUser) {
+  if (!token) {
     return {
       success: false,
       error: {
@@ -133,9 +142,35 @@ async function mockGetCurrentUser(): Promise<ApiResponse<AuthUser>> {
     };
   }
 
+  // インメモリにユーザーがあればそれを返す
+  if (mockCurrentUser) {
+    return {
+      success: true,
+      data: mockCurrentUser,
+    };
+  }
+
+  // storageState復元時: トークン形式 mock_token_{userId}_{timestamp} からユーザーを特定
+  const match = token.match(/^mock_token_(\d+)_/);
+  if (match) {
+    const userId = parseInt(match[1], 10);
+    const user = MOCK_USERS.find((u) => u.id === userId);
+    if (user) {
+      const { password: _, ...userWithoutPassword } = user;
+      mockCurrentUser = userWithoutPassword;
+      return {
+        success: true,
+        data: userWithoutPassword,
+      };
+    }
+  }
+
   return {
-    success: true,
-    data: mockCurrentUser,
+    success: false,
+    error: {
+      code: 'UNAUTHORIZED',
+      message: '認証が必要です',
+    },
   };
 }
 

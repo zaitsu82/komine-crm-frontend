@@ -480,9 +480,9 @@ export default function PlotListTable({
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-right">
                         <span className={cn(
                           'font-medium',
-                          plot.uncollectedAmount > 0 ? 'text-beni' : 'text-sumi'
+                          (plot.uncollectedAmount ?? 0) > 0 ? 'text-beni' : 'text-sumi'
                         )}>
-                          {plot.uncollectedAmount.toLocaleString()}円
+                          {(plot.uncollectedAmount ?? 0).toLocaleString()}円
                         </span>
                       </td>
                     </tr>

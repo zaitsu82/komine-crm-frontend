@@ -1,6 +1,6 @@
 /**
  * E2Eテスト用アカウント設定
- * バックエンドに登録済みのテストアカウント情報
+ * モックモード（NEXT_PUBLIC_USE_MOCK_DATA=true）で使用するテストアカウント
  */
 
 export type TestRole = 'admin' | 'manager' | 'operator' | 'viewer';
@@ -14,27 +14,27 @@ export interface TestAccount {
 
 export const TEST_ACCOUNTS: Record<TestRole, TestAccount> = {
   admin: {
-    email: 'admin@example.com',
-    password: 'password123',
-    name: '管理者',
+    email: 'admin@komine-cemetery.jp',
+    password: 'admin123',
+    name: '管理者 太郎',
     role: 'admin',
   },
   manager: {
-    email: 'manager@example.com',
-    password: 'password123',
-    name: 'マネージャー',
+    email: 'manager@komine-cemetery.jp',
+    password: 'manager123',
+    name: 'マネージャー 花子',
     role: 'manager',
   },
   operator: {
-    email: 'operator@example.com',
-    password: 'password123',
-    name: 'オペレーター',
+    email: 'operator@komine-cemetery.jp',
+    password: 'operator123',
+    name: 'オペレーター 次郎',
     role: 'operator',
   },
   viewer: {
-    email: 'viewer@example.com',
-    password: 'password123',
-    name: '閲覧者',
+    email: 'viewer@komine-cemetery.jp',
+    password: 'viewer123',
+    name: '閲覧者 三郎',
     role: 'viewer',
   },
 };

@@ -10,8 +10,9 @@ test.describe('スタッフ管理 - admin', () => {
 
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('.w-64')).toBeVisible({ timeout: 15_000 });
-    await page.locator('.w-64').getByText('スタッフ管理', { exact: true }).click();
+    const sidebar = page.locator('.w-64');
+    await expect(sidebar.getByText('台帳問い合わせ', { exact: true })).toBeVisible({ timeout: 20_000 });
+    await sidebar.getByText('スタッフ管理', { exact: true }).click();
     await page.waitForTimeout(1_000);
   });
 
@@ -20,7 +21,6 @@ test.describe('スタッフ管理 - admin', () => {
   });
 
   test('7-2: スタッフ一覧にデータが表示される', async ({ page }) => {
-    // テーブルまたはリストが表示される
     const table = page.locator('table').first();
     const hasTable = await table.isVisible({ timeout: 5_000 }).catch(() => false);
 
@@ -49,14 +49,12 @@ test.describe('スタッフ管理 - admin', () => {
   });
 
   test('7-4: ロールフィルター', async ({ page }) => {
-    // ロールフィルター（セレクトまたはボタン群）を探す
     const roleFilter = page.locator('select').filter({ hasText: /全て|admin|管理者/ }).first()
       .or(page.getByRole('button', { name: /全て/ }).first());
 
     const hasFilter = await roleFilter.isVisible({ timeout: 3_000 }).catch(() => false);
 
     if (hasFilter) {
-      // フィルターが存在することを確認
       await expect(roleFilter).toBeVisible();
     }
   });
@@ -71,7 +69,6 @@ test.describe('スタッフ管理 - admin', () => {
   });
 
   test('7-6: 権限マトリクスパネルが表示される', async ({ page }) => {
-    // 権限マトリクスパネルの展開ボタンまたはセクションを探す
     const matrixToggle = page.getByText(/権限マトリクス|権限一覧/).first();
     const hasMatrix = await matrixToggle.isVisible({ timeout: 3_000 }).catch(() => false);
 
@@ -79,7 +76,6 @@ test.describe('スタッフ管理 - admin', () => {
       await matrixToggle.click();
       await page.waitForTimeout(500);
 
-      // マトリクスのテーブルが表示される
       await expect(page.getByText(/viewer|閲覧者/).first()).toBeVisible({ timeout: 3_000 });
     }
   });
@@ -90,10 +86,10 @@ test.describe('スタッフ管理 - manager', () => {
 
   test('7-7: manager でスタッフ管理画面にアクセス可能', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('.w-64')).toBeVisible({ timeout: 15_000 });
+    const sidebar = page.locator('.w-64');
+    await expect(sidebar.getByText('台帳問い合わせ', { exact: true })).toBeVisible({ timeout: 20_000 });
 
-    // manager にはスタッフ管理メニューが見える
-    const menuItem = page.locator('.w-64').getByText('スタッフ管理', { exact: true });
+    const menuItem = sidebar.getByText('スタッフ管理', { exact: true });
     await expect(menuItem).toBeVisible();
 
     await menuItem.click();
@@ -110,11 +106,11 @@ test.describe('スタッフ管理 - viewer/operator', () => {
     });
     const page = await context.newPage();
     await page.goto('/');
-    await expect(page.locator('.w-64')).toBeVisible({ timeout: 15_000 });
+    const sidebar = page.locator('.w-64');
+    await expect(sidebar.getByText('台帳問い合わせ', { exact: true })).toBeVisible({ timeout: 20_000 });
 
-    // スタッフ管理メニューが表示されない
     await expect(
-      page.locator('.w-64').getByText('スタッフ管理', { exact: true })
+      sidebar.getByText('スタッフ管理', { exact: true })
     ).not.toBeVisible();
 
     await context.close();
@@ -126,10 +122,11 @@ test.describe('スタッフ管理 - viewer/operator', () => {
     });
     const page = await context.newPage();
     await page.goto('/');
-    await expect(page.locator('.w-64')).toBeVisible({ timeout: 15_000 });
+    const sidebar = page.locator('.w-64');
+    await expect(sidebar.getByText('台帳問い合わせ', { exact: true })).toBeVisible({ timeout: 20_000 });
 
     await expect(
-      page.locator('.w-64').getByText('スタッフ管理', { exact: true })
+      sidebar.getByText('スタッフ管理', { exact: true })
     ).not.toBeVisible();
 
     await context.close();

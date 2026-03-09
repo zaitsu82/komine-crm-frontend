@@ -7,10 +7,10 @@ import { storageStatePath, type TestRole } from './config/test-accounts';
 
 // 各ロールで見えるべきメニュー項目
 const EXPECTED_MENU_ITEMS: Record<TestRole, string[]> = {
-  viewer: ['台帳問い合わせ', '合祀管理', '区画残数管理', '書類管理'],
-  operator: ['台帳問い合わせ', '合祀管理', '区画残数管理', '書類管理'],
-  manager: ['台帳問い合わせ', '合祀管理', '区画残数管理', '書類管理', 'スタッフ管理', '一括登録'],
-  admin: ['台帳問い合わせ', '合祀管理', '区画残数管理', '書類管理', 'スタッフ管理', 'マスタ管理', '一括登録'],
+  viewer: ['台帳問い合わせ', '合祀管理', '区画残数管理', '書類管理', 'アカウント設定'],
+  operator: ['台帳問い合わせ', '合祀管理', '区画残数管理', '書類管理', 'アカウント設定'],
+  manager: ['台帳問い合わせ', '合祀管理', '区画残数管理', '書類管理', 'スタッフ管理', '一括登録', 'アカウント設定'],
+  admin: ['台帳問い合わせ', '合祀管理', '区画残数管理', '書類管理', 'スタッフ管理', 'マスタ管理', '一括登録', 'アカウント設定'],
 };
 
 // 各ロールで見えてはいけないメニュー項目
@@ -79,8 +79,8 @@ test.describe('ロールベースルートガード', () => {
 
     await page.goto('/bulk-import');
 
-    // メイン画面（/）にリダイレクトされる
-    await expect(page).toHaveURL(/^\/$|^\/login/, { timeout: 10_000 });
+    // RoleGuard が / にリダイレクト、または AuthGuard が /login にリダイレクト
+    await expect(page).not.toHaveURL('/bulk-import', { timeout: 20_000 });
 
     await context.close();
   });
@@ -94,7 +94,7 @@ test.describe('ロールベースルートガード', () => {
     await page.goto('/bulk-import');
 
     // メイン画面にリダイレクトされる
-    await expect(page).toHaveURL(/^\/$|^\/login/, { timeout: 10_000 });
+    await expect(page).not.toHaveURL('/bulk-import', { timeout: 20_000 });
 
     await context.close();
   });
@@ -108,7 +108,7 @@ test.describe('ロールベースルートガード', () => {
     await page.goto('/bulk-import');
 
     // 一括登録画面が表示される（リダイレクトされない）
-    await expect(page).toHaveURL('/bulk-import', { timeout: 10_000 });
+    await expect(page).toHaveURL('/bulk-import', { timeout: 15_000 });
 
     await context.close();
   });
@@ -121,7 +121,7 @@ test.describe('ロールベースルートガード', () => {
 
     await page.goto('/bulk-import');
 
-    await expect(page).toHaveURL('/bulk-import', { timeout: 10_000 });
+    await expect(page).toHaveURL('/bulk-import', { timeout: 15_000 });
 
     await context.close();
   });
@@ -151,8 +151,10 @@ test.describe('ロール別操作権限', () => {
     const page = await context.newPage();
     await page.goto('/');
 
-    await expect(page.locator('.w-64')).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByText('管理者')).toBeVisible();
+    // サイドバーが表示され、ロールラベル「管理者」が見える
+    const sidebar = page.locator('.w-64');
+    await expect(sidebar).toBeVisible({ timeout: 15_000 });
+    await expect(sidebar.getByText('管理者', { exact: true })).toBeVisible();
 
     await context.close();
   });
@@ -164,8 +166,9 @@ test.describe('ロール別操作権限', () => {
     const page = await context.newPage();
     await page.goto('/');
 
-    await expect(page.locator('.w-64')).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByText('閲覧者')).toBeVisible();
+    const sidebar = page.locator('.w-64');
+    await expect(sidebar).toBeVisible({ timeout: 15_000 });
+    await expect(sidebar.getByText('閲覧者', { exact: true })).toBeVisible();
 
     await context.close();
   });

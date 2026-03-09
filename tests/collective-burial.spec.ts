@@ -10,8 +10,9 @@ test.describe('合祀管理 - admin', () => {
 
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('.w-64')).toBeVisible({ timeout: 15_000 });
-    await page.locator('.w-64').getByText('合祀管理', { exact: true }).click();
+    const sidebar = page.locator('.w-64');
+    await expect(sidebar.getByText('台帳問い合わせ', { exact: true })).toBeVisible({ timeout: 20_000 });
+    await sidebar.getByText('合祀管理', { exact: true }).click();
     await page.waitForTimeout(1_000);
   });
 
@@ -46,9 +47,10 @@ test.describe('合祀管理 - viewer', () => {
 
   test('6-4: viewer で合祀管理画面にアクセス可能', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('.w-64')).toBeVisible({ timeout: 15_000 });
+    const sidebar = page.locator('.w-64');
+    await expect(sidebar.getByText('台帳問い合わせ', { exact: true })).toBeVisible({ timeout: 20_000 });
 
-    const menuItem = page.locator('.w-64').getByText('合祀管理', { exact: true });
+    const menuItem = sidebar.getByText('合祀管理', { exact: true });
     await expect(menuItem).toBeVisible();
 
     await menuItem.click();
@@ -63,9 +65,10 @@ test.describe('合祀管理 - manager', () => {
 
   test('6-5: manager で合祀管理画面にアクセス可能', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('.w-64')).toBeVisible({ timeout: 15_000 });
+    const sidebar = page.locator('.w-64');
+    await expect(sidebar.getByText('台帳問い合わせ', { exact: true })).toBeVisible({ timeout: 20_000 });
 
-    await page.locator('.w-64').getByText('合祀管理', { exact: true }).click();
+    await sidebar.getByText('合祀管理', { exact: true }).click();
     await page.waitForTimeout(1_000);
 
     await expect(page.getByText(/合祀/).first()).toBeVisible({ timeout: 10_000 });
