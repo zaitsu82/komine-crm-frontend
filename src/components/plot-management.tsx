@@ -17,6 +17,7 @@ import StaffManagement from '@/components/staff-management';
 import MastersManagement from '@/components/masters-management';
 import { DocumentManagement } from '@/components/document-management';
 import BulkImportPage from '@/components/bulk-import';
+import ProfilePage from '@/components/profile-page';
 import { usePlotDetail } from '@/hooks/usePlots';
 
 import {
@@ -147,7 +148,7 @@ export default function PlotManagement({ initialView = 'registry' }: PlotManagem
 
     setCurrentView(view);
     // メインメニュー項目の場合は選択をクリア
-    if (['registry', 'collective-burial', 'plot-availability', 'documents', 'staff-management', 'masters', 'bulk-import'].includes(view)) {
+    if (['registry', 'collective-burial', 'plot-availability', 'documents', 'staff-management', 'masters', 'bulk-import', 'profile'].includes(view)) {
       setSelectedPlotId(null);
       setSelectedPlotName('');
       setSelectedPlotCode('');
@@ -245,6 +246,8 @@ export default function PlotManagement({ initialView = 'registry' }: PlotManagem
           <div className="flex-1 overflow-auto">
             <BulkImportPage />
           </div>
+        ) : currentView === 'profile' ? (
+          <ProfilePage onBack={() => setCurrentView('registry')} />
         ) : null}
 
         {/* 書類履歴（区画コンテキスト） */}

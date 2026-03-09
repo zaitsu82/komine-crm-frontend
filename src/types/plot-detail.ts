@@ -11,7 +11,8 @@ export type ViewType =
   | 'documents'
   | 'document-select'
   | 'document-history'
-  | 'bulk-import';
+  | 'bulk-import'
+  | 'profile';
 
 // 対応履歴の型定義
 export interface HistoryEntry {
@@ -49,6 +50,7 @@ export const MENU_ITEMS: MenuItemConfig[] = [
   { label: 'スタッフ管理', view: 'staff-management', requiredRoles: ['manager', 'admin'] },
   { label: 'マスタ管理', view: 'masters', requiredRoles: ['admin'] },
   { label: '一括登録', view: 'bulk-import', requiredRoles: ['manager', 'admin'] },
+  { label: 'アカウント設定', view: 'profile', requiredRoles: ['viewer', 'operator', 'manager', 'admin'] },
 ];
 
 export type MenuItem = string;

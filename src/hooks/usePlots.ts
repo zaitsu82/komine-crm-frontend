@@ -219,6 +219,33 @@ export function usePlots(options: UsePlotsOptions = {}): UsePlotsReturn {
   };
 }
 
+// ===== 詳細キャッシュ =====
+
+const DETAIL_CACHE_TTL = 2 * 60 * 1000; // 2分
+const detailCache = new Map<string, { data: PlotDetailResponse; timestamp: number }>();
+
+function getCachedDetail(id: string): PlotDetailResponse | null {
+  const cached = detailCache.get(id);
+  if (!cached) return null;
+  if (Date.now() - cached.timestamp > DETAIL_CACHE_TTL) {
+    detailCache.delete(id);
+    return null;
+  }
+  return cached.data;
+}
+
+function saveCachedDetail(id: string, data: PlotDetailResponse): void {
+  detailCache.set(id, { data, timestamp: Date.now() });
+}
+
+export function clearDetailCache(id?: string): void {
+  if (id) {
+    detailCache.delete(id);
+  } else {
+    detailCache.clear();
+  }
+}
+
 // ===== usePlotDetail: 区画詳細フック =====
 
 interface UsePlotDetailReturn {
@@ -229,9 +256,12 @@ interface UsePlotDetailReturn {
 }
 
 export function usePlotDetail(id: string | null): UsePlotDetailReturn {
-  const [plot, setPlot] = useState<PlotDetailResponse | null>(null);
+  // キャッシュから初期値を取得（stale-while-revalidate）
+  const cachedData = id ? getCachedDetail(id) : null;
+  const [plot, setPlot] = useState<PlotDetailResponse | null>(cachedData);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const restoredFromDetailCache = useRef(cachedData !== null);
 
   const fetchPlot = useCallback(async () => {
     if (!id) {
@@ -239,7 +269,11 @@ export function usePlotDetail(id: string | null): UsePlotDetailReturn {
       return;
     }
 
-    setIsLoading(true);
+    // キャッシュから復元済みならローディング非表示（バックグラウンド更新）
+    if (!restoredFromDetailCache.current) {
+      setIsLoading(true);
+    }
+    restoredFromDetailCache.current = false;
     setError(null);
 
     try {
@@ -247,6 +281,7 @@ export function usePlotDetail(id: string | null): UsePlotDetailReturn {
 
       if (response.success) {
         setPlot(response.data);
+        saveCachedDetail(id, response.data);
       } else {
         setError(response.error.message);
         setPlot(null);
@@ -256,6 +291,21 @@ export function usePlotDetail(id: string | null): UsePlotDetailReturn {
       setPlot(null);
     } finally {
       setIsLoading(false);
+    }
+  }, [id]);
+
+  // IDが変わったらキャッシュから即座に表示
+  useEffect(() => {
+    if (id) {
+      const cached = getCachedDetail(id);
+      if (cached) {
+        setPlot(cached);
+        restoredFromDetailCache.current = true;
+      } else {
+        restoredFromDetailCache.current = false;
+      }
+    } else {
+      setPlot(null);
     }
   }, [id]);
 
@@ -293,6 +343,8 @@ export function usePlotMutations(): UsePlotMutationsReturn {
       const response = await createPlot(request);
 
       if (response.success) {
+        // リストキャッシュをクリア（新規追加で一覧が変わるため）
+        sessionStorage.removeItem(CACHE_KEY);
         return response.data;
       } else {
         setError(response.error.message);
@@ -314,6 +366,9 @@ export function usePlotMutations(): UsePlotMutationsReturn {
       const response = await updatePlot(id, request);
 
       if (response.success) {
+        // 詳細キャッシュとリストキャッシュをクリア
+        clearDetailCache(id);
+        sessionStorage.removeItem(CACHE_KEY);
         return response.data;
       } else {
         setError(response.error.message);
@@ -335,6 +390,9 @@ export function usePlotMutations(): UsePlotMutationsReturn {
       const response = await deletePlot(id);
 
       if (response.success) {
+        // 詳細キャッシュとリストキャッシュをクリア
+        clearDetailCache(id);
+        sessionStorage.removeItem(CACHE_KEY);
         return true;
       } else {
         setError(response.error.message);

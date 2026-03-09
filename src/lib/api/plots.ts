@@ -369,7 +369,7 @@ export async function getPlots(
     page: params.page,
     limit: params.limit,
     search: params.search,
-    areaName: params.areaName,
+    cemeteryType: params.areaName,
     status: params.status,
     paymentStatus: params.paymentStatus,
     contractStatus: params.contractStatus,

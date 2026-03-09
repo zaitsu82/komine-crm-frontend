@@ -212,6 +212,21 @@ async function downloadTemplate(type: ImportTab) {
     fgColor: { argb: 'FFE0E0E0' },
   };
 
+  // Add example data row with light yellow background
+  if (type === 'plots') {
+    sheet.addRow(['A-001', '1期', 3.6, 'サンプルデータ（この行は削除してください）']);
+  } else {
+    sheet.addRow(['山田太郎', 'taro@example.com', 'operator']);
+  }
+
+  const exampleRow = sheet.getRow(2);
+  exampleRow.fill = {
+    type: 'pattern',
+    pattern: 'solid',
+    fgColor: { argb: 'FFFFF9C4' },
+  };
+  exampleRow.font = { color: { argb: 'FF999999' } };
+
   const buffer = await workbook.xlsx.writeBuffer();
   saveAs(
     new Blob([buffer]),
@@ -251,6 +266,7 @@ export default function BulkImportPage() {
 // ===== タブごとのパネル =====
 
 function BulkImportPanel({ type }: { type: ImportTab }) {
+  const [showFormatInfo, setShowFormatInfo] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [plotRows, setPlotRows] = useState<PlotRow[]>([]);
   const [staffRows, setStaffRows] = useState<StaffRow[]>([]);
@@ -430,6 +446,122 @@ function BulkImportPanel({ type }: { type: ImportTab }) {
         </CardContent>
       </Card>
 
+      {/* フォーマット仕様 */}
+      <Card>
+        <CardContent className="pt-6">
+          <button
+            type="button"
+            onClick={() => setShowFormatInfo((prev) => !prev)}
+            className="flex items-center gap-2 text-sm font-medium text-matsu hover:text-matsu/80 transition-colors"
+          >
+            <svg
+              className={`w-4 h-4 transition-transform ${showFormatInfo ? 'rotate-90' : ''}`}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+            {showFormatInfo ? 'フォーマット仕様を非表示' : 'フォーマット仕様を表示'}
+          </button>
+
+          {showFormatInfo && (
+            <div className="mt-4 space-y-4">
+              {type === 'plots' ? (
+                <>
+                  <div className="overflow-x-auto border border-gin rounded-lg">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="bg-kinari border-b border-gin">
+                          <th className="px-4 py-2 text-left font-semibold text-sumi">フィールド</th>
+                          <th className="px-4 py-2 text-center font-semibold text-sumi">必須</th>
+                          <th className="px-4 py-2 text-left font-semibold text-sumi">説明</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr className="border-b border-gin">
+                          <td className="px-4 py-2 font-medium">区画番号</td>
+                          <td className="px-4 py-2 text-center text-beni">○</td>
+                          <td className="px-4 py-2 text-hai">最大50文字。バッチ内・既存データと重複不可</td>
+                        </tr>
+                        <tr className="border-b border-gin">
+                          <td className="px-4 py-2 font-medium">区域名</td>
+                          <td className="px-4 py-2 text-center text-beni">○</td>
+                          <td className="px-4 py-2 text-hai">最大100文字</td>
+                        </tr>
+                        <tr className="border-b border-gin">
+                          <td className="px-4 py-2 font-medium">面積(㎡)</td>
+                          <td className="px-4 py-2 text-center text-hai">-</td>
+                          <td className="px-4 py-2 text-hai">正の数値。未入力時は3.6㎡がデフォルト</td>
+                        </tr>
+                        <tr>
+                          <td className="px-4 py-2 font-medium">備考</td>
+                          <td className="px-4 py-2 text-center text-hai">-</td>
+                          <td className="px-4 py-2 text-hai">最大1000文字</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="text-sm text-hai space-y-1">
+                    <p className="font-medium text-sumi">注意事項:</p>
+                    <ul className="list-disc list-inside space-y-0.5 ml-1">
+                      <li>1回の登録で最大500件まで対応</li>
+                      <li>対応ファイル形式: .xlsx / .csv</li>
+                      <li>1行目はヘッダー行として自動スキップされます</li>
+                      <li>区画番号が既存データと重複する場合、その行はエラーになります</li>
+                      <li>1件でもエラーがあると全件登録されません（全件ロールバック）</li>
+                      <li>空行は自動的にスキップされます</li>
+                    </ul>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="overflow-x-auto border border-gin rounded-lg">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="bg-kinari border-b border-gin">
+                          <th className="px-4 py-2 text-left font-semibold text-sumi">フィールド</th>
+                          <th className="px-4 py-2 text-center font-semibold text-sumi">必須</th>
+                          <th className="px-4 py-2 text-left font-semibold text-sumi">説明</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr className="border-b border-gin">
+                          <td className="px-4 py-2 font-medium">名前</td>
+                          <td className="px-4 py-2 text-center text-beni">○</td>
+                          <td className="px-4 py-2 text-hai">スタッフ名</td>
+                        </tr>
+                        <tr className="border-b border-gin">
+                          <td className="px-4 py-2 font-medium">メールアドレス</td>
+                          <td className="px-4 py-2 text-center text-beni">○</td>
+                          <td className="px-4 py-2 text-hai">有効なメールアドレス形式</td>
+                        </tr>
+                        <tr>
+                          <td className="px-4 py-2 font-medium">ロール</td>
+                          <td className="px-4 py-2 text-center text-beni">○</td>
+                          <td className="px-4 py-2 text-hai">viewer / operator / manager / admin のいずれか</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="text-sm text-hai space-y-1">
+                    <p className="font-medium text-sumi">注意事項:</p>
+                    <ul className="list-disc list-inside space-y-0.5 ml-1">
+                      <li>1回の登録で最大100件まで対応</li>
+                      <li>対応ファイル形式: .xlsx / .csv</li>
+                      <li>1行目はヘッダー行として自動スキップされます</li>
+                      <li>1件でもエラーがあると全件登録されません（全件ロールバック）</li>
+                      <li>空行は自動的にスキップされます</li>
+                    </ul>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* ファイルアップロード */}
       {!submitResult && (
         <Card>
@@ -490,6 +622,9 @@ function BulkImportPanel({ type }: { type: ImportTab }) {
                 </div>
               )}
             </div>
+            <p className="mt-3 text-xs text-hai text-center">
+              最大{type === 'plots' ? '500' : '100'}件まで一括登録可能
+            </p>
           </CardContent>
         </Card>
       )}
