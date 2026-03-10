@@ -10,6 +10,7 @@ test-results/
 test-results 2/
 playwright-report/
 .playwright/
+tests/.auth/
 
 # Next.js
 .next/

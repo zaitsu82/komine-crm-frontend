@@ -242,6 +242,7 @@ async function mockGetPlotById(
     familyContacts: [],
     gravestoneInfo: null,
     constructionInfos: [],
+    uncollectedAmount: 0,
     collectiveBurial: null,
     roles: plot.roles.map((r, idx) => ({
       id: `role-${idx}`,

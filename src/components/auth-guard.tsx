@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, ReactNode } from 'react';
+import { useEffect, useState, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 
@@ -96,10 +96,21 @@ export function RoleGuard({ children, requiredRoles, fallback }: RoleGuardProps)
 /**
  * ゲスト専用ガード（ログインページ用）
  * 認証済みユーザーをメインページにリダイレクト
+ *
+ * 注意: 初回の認証チェック完了後はローディング画面を表示しない。
+ * ログイン処理中（isLoading=true）にLoginFormをアンマウントすると
+ * エラー状態がリセットされてしまうため。
  */
 export function GuestGuard({ children, fallback }: AuthGuardProps) {
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
+  const [initialCheckDone, setInitialCheckDone] = useState(false);
+
+  useEffect(() => {
+    if (!isLoading) {
+      setInitialCheckDone(true);
+    }
+  }, [isLoading]);
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
@@ -107,8 +118,8 @@ export function GuestGuard({ children, fallback }: AuthGuardProps) {
     }
   }, [isAuthenticated, isLoading, router]);
 
-  // ローディング中
-  if (isLoading) {
+  // 初回認証チェック中のみローディング画面を表示
+  if (!initialCheckDone && isLoading) {
     return fallback || <AuthLoadingScreen />;
   }
 

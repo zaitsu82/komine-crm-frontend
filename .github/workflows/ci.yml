@@ -103,6 +103,55 @@ jobs:
           path: coverage/
           retention-days: 30
 
+  # E2Eテスト（Playwright）
+  e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: [build]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Checkout and build shared types
+        run: |
+          git clone --depth 1 https://github.com/zaitsu82/komine-types.git ../packages/types
+          cd ../packages/types && npm ci && npm run build
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "20.x"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E tests (Chromium only on CI)
+        run: npx playwright test --project=auth-setup --project=chromium --project=auth-tests
+        env:
+          CI: true
+          NEXT_PUBLIC_USE_MOCK_DATA: 'true'
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: playwright-results
+          path: test-results/
+          retention-days: 7
+
   # セキュリティスキャン（npm audit）
   security-audit:
     name: Security Audit
@@ -132,7 +181,7 @@ jobs:
   all-checks-passed:
     name: All Checks Passed
     runs-on: ubuntu-latest
-    needs: [build, lint, test, security-audit]
+    needs: [build, lint, test, e2e, security-audit]
     if: always()
 
     steps:
@@ -141,6 +190,7 @@ jobs:
           needs.build.result != 'success' ||
           needs.lint.result != 'success' ||
           needs.test.result != 'success' ||
+          needs.e2e.result != 'success' ||
           needs.security-audit.result != 'success'
         run: |
           echo "One or more checks failed"
