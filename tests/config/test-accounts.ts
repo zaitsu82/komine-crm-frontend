@@ -1,6 +1,15 @@
 /**
  * E2Eテスト用アカウント設定
- * モックモード（NEXT_PUBLIC_USE_MOCK_DATA=true）で使用するテストアカウント
+ * 実APIモード: Supabase Auth + バックエンドで認証
+ *
+ * テストアカウントは環境変数で上書き可能。
+ * デフォルト値はSupabase上に事前登録されたテストユーザー。
+ *
+ * 環境変数:
+ *   E2E_ADMIN_EMAIL, E2E_ADMIN_PASSWORD
+ *   E2E_MANAGER_EMAIL, E2E_MANAGER_PASSWORD
+ *   E2E_OPERATOR_EMAIL, E2E_OPERATOR_PASSWORD
+ *   E2E_VIEWER_EMAIL, E2E_VIEWER_PASSWORD
  */
 
 export type TestRole = 'admin' | 'manager' | 'operator' | 'viewer';
@@ -14,27 +23,27 @@ export interface TestAccount {
 
 export const TEST_ACCOUNTS: Record<TestRole, TestAccount> = {
   admin: {
-    email: 'admin@komine-cemetery.jp',
-    password: 'admin123',
-    name: '管理者 太郎',
+    email: process.env.E2E_ADMIN_EMAIL || 'admin@example.com',
+    password: process.env.E2E_ADMIN_PASSWORD || 'password123',
+    name: '管理者',
     role: 'admin',
   },
   manager: {
-    email: 'manager@komine-cemetery.jp',
-    password: 'manager123',
-    name: 'マネージャー 花子',
+    email: process.env.E2E_MANAGER_EMAIL || 'manager@example.com',
+    password: process.env.E2E_MANAGER_PASSWORD || 'password123',
+    name: 'マネージャー',
     role: 'manager',
   },
   operator: {
-    email: 'operator@komine-cemetery.jp',
-    password: 'operator123',
-    name: 'オペレーター 次郎',
+    email: process.env.E2E_OPERATOR_EMAIL || 'operator@example.com',
+    password: process.env.E2E_OPERATOR_PASSWORD || 'password123',
+    name: 'オペレーター',
     role: 'operator',
   },
   viewer: {
-    email: 'viewer@komine-cemetery.jp',
-    password: 'viewer123',
-    name: '閲覧者 三郎',
+    email: process.env.E2E_VIEWER_EMAIL || 'viewer@example.com',
+    password: process.env.E2E_VIEWER_PASSWORD || 'password123',
+    name: 'ビューワー',
     role: 'viewer',
   },
 };

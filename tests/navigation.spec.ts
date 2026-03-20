@@ -62,8 +62,8 @@ test.describe('サイドバーナビゲーション', () => {
     const userInfo = sidebar.locator('.border-t');
     await expect(userInfo).toBeVisible();
 
-    // ロールラベルが表示される
-    await expect(sidebar.getByText('管理者', { exact: true })).toBeVisible();
+    // ユーザー名またはロールラベルが表示される
+    await expect(sidebar.getByText('管理者', { exact: true }).first()).toBeVisible();
   });
 
   test('3-5: メニュー項目クリック時にアクティブ状態が反映される', async ({ page }) => {

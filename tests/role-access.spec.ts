@@ -154,7 +154,7 @@ test.describe('ロール別操作権限', () => {
     // サイドバーが表示され、ロールラベル「管理者」が見える
     const sidebar = page.locator('.w-64');
     await expect(sidebar).toBeVisible({ timeout: 15_000 });
-    await expect(sidebar.getByText('管理者', { exact: true })).toBeVisible();
+    await expect(sidebar.getByText('管理者', { exact: true }).first()).toBeVisible();
 
     await context.close();
   });
