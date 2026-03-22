@@ -1,8 +1,8 @@
 'use client';
 
 /**
- * 合祀詳細表示コンポーネント（API連携版）
- * Prisma CollectiveBurialモデルに準拠
+ * 合祀詳細表示コンポーネント（参照特化版）
+ * 請求ステータス変更 + 備考表示のみ
  */
 
 import { useState } from 'react';
@@ -14,7 +14,6 @@ import {
   BillingStatus,
   BILLING_STATUS_LABELS,
   BILLING_STATUS_COLORS,
-  parseNotesData,
 } from '@/lib/api';
 import { useCollectiveBurialMutations } from '@/hooks/useCollectiveBurials';
 import { formatDateWithEra } from '@/lib/utils';
@@ -22,41 +21,18 @@ import { formatDateWithEra } from '@/lib/utils';
 interface CollectiveBurialDetailViewProps {
   data: CollectiveBurialDetail;
   onClose?: () => void;
-  onEdit?: () => void;
   onRefresh?: () => void;
-  onDelete?: () => void;
 }
-
-const burialTypeLabels = {
-  family: '家族合祀',
-  relative: '親族合祀',
-  other: 'その他'
-};
-
-const documentTypeLabels = {
-  permit: '改葬許可証',
-  certificate: '証明書',
-  agreement: '同意書',
-  other: 'その他'
-};
 
 export default function CollectiveBurialDetailView({
   data,
   onClose,
-  onEdit,
   onRefresh,
-  onDelete,
 }: CollectiveBurialDetailViewProps) {
   const [activeTab, setActiveTab] = useState('basic');
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
-  const [isSyncing, setIsSyncing] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
 
-  const { updateBillingStatus, syncBurialCount, deleteCollectiveBurial } = useCollectiveBurialMutations();
-
-  // notesからパースしたデータ
-  const notesData = parseNotesData(data.notes);
+  const { updateBillingStatus } = useCollectiveBurialMutations();
 
   // 請求ステータス更新
   const handleStatusChange = async (newStatus: BillingStatus) => {
@@ -70,33 +46,6 @@ export default function CollectiveBurialDetailView({
       }
     } finally {
       setIsUpdatingStatus(false);
-    }
-  };
-
-  // 埋葬人数同期
-  const handleSyncCount = async () => {
-    setIsSyncing(true);
-    try {
-      const result = await syncBurialCount(data.id);
-      if (result) {
-        onRefresh?.();
-      }
-    } finally {
-      setIsSyncing(false);
-    }
-  };
-
-  // 削除処理
-  const handleDelete = async () => {
-    setIsDeleting(true);
-    try {
-      const success = await deleteCollectiveBurial(data.id);
-      if (success) {
-        setShowDeleteConfirm(false);
-        onDelete?.();
-      }
-    } finally {
-      setIsDeleting(false);
     }
   };
 
@@ -126,22 +75,6 @@ export default function CollectiveBurialDetailView({
             </span>
           </div>
           <div className="flex items-center space-x-3">
-            {onEdit && (
-              <Button onClick={onEdit} variant="secondary" size="default">
-                <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-                編集
-              </Button>
-            )}
-            {onDelete && (
-              <Button onClick={() => setShowDeleteConfirm(true)} variant="destructive" size="default">
-                <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-                削除
-              </Button>
-            )}
             {onClose && (
               <Button onClick={onClose} variant="default" size="default">
                 閉じる
@@ -154,11 +87,10 @@ export default function CollectiveBurialDetailView({
       {/* コンテンツ */}
       <div className="flex-1 overflow-auto p-6">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4 mb-8">
+          <TabsList className="grid w-full grid-cols-3 mb-8">
             <TabsTrigger value="basic">基本情報</TabsTrigger>
             <TabsTrigger value="capacity">埋葬状況</TabsTrigger>
             <TabsTrigger value="billing">請求管理</TabsTrigger>
-            <TabsTrigger value="notes">備考・法要</TabsTrigger>
           </TabsList>
 
           {/* 基本情報タブ */}
@@ -184,10 +116,6 @@ export default function CollectiveBurialDetailView({
                   <div>
                     <Label className="text-sm text-hai">契約日</Label>
                     <p className="text-sumi mt-1">{data.contractDate ? formatDateWithEra(new Date(data.contractDate)) : '-'}</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm text-hai">合祀種別</Label>
-                    <p className="text-sumi mt-1">{notesData.burialType ? burialTypeLabels[notesData.burialType] : '-'}</p>
                   </div>
                 </div>
               </div>
@@ -230,25 +158,32 @@ export default function CollectiveBurialDetailView({
                 </div>
               </div>
             )}
+
+            {/* 備考 */}
+            {data.notes && (
+              <div className="bg-white border border-gin rounded-elegant-lg shadow-elegant-sm overflow-hidden">
+                <div className="px-5 py-4 bg-kinari border-b border-gin">
+                  <h3 className="font-semibold text-sumi flex items-center">
+                    <span className="w-1 h-5 bg-matsu rounded-full mr-3" />
+                    備考
+                  </h3>
+                </div>
+                <div className="p-5">
+                  <p className="whitespace-pre-line text-sumi">{data.notes}</p>
+                </div>
+              </div>
+            )}
           </TabsContent>
 
           {/* 埋葬状況タブ */}
           <TabsContent value="capacity" className="space-y-6">
             {/* 埋葬状況サマリー */}
             <div className="bg-white border border-gin rounded-elegant-lg shadow-elegant-sm overflow-hidden">
-              <div className="px-5 py-4 bg-kinari border-b border-gin flex items-center justify-between">
+              <div className="px-5 py-4 bg-kinari border-b border-gin">
                 <h3 className="font-semibold text-sumi flex items-center">
                   <span className="w-1 h-5 bg-ai rounded-full mr-3" />
                   埋葬状況
                 </h3>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleSyncCount}
-                  disabled={isSyncing}
-                >
-                  {isSyncing ? '同期中...' : '埋葬人数を再集計'}
-                </Button>
               </div>
               <div className="p-5">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -436,188 +371,8 @@ export default function CollectiveBurialDetailView({
               </div>
             </div>
           </TabsContent>
-
-          {/* 備考・法要タブ */}
-          <TabsContent value="notes" className="space-y-6">
-            {/* 特別な要望 */}
-            {notesData.specialRequests && (
-              <div className="bg-white border border-gin rounded-elegant-lg shadow-elegant-sm overflow-hidden">
-                <div className="px-5 py-4 bg-kinari border-b border-gin">
-                  <h3 className="font-semibold text-sumi flex items-center">
-                    <span className="w-1 h-5 bg-kohaku rounded-full mr-3" />
-                    特別な要望・配慮事項
-                  </h3>
-                </div>
-                <div className="p-5">
-                  <p className="whitespace-pre-line text-sumi">{notesData.specialRequests}</p>
-                </div>
-              </div>
-            )}
-
-            {/* 法要情報 */}
-            {notesData.ceremonies && notesData.ceremonies.length > 0 && (
-              <div className="bg-white border border-gin rounded-elegant-lg shadow-elegant-sm overflow-hidden">
-                <div className="px-5 py-4 bg-kinari border-b border-gin">
-                  <h3 className="font-semibold text-sumi flex items-center">
-                    <span className="w-1 h-5 bg-ai rounded-full mr-3" />
-                    法要情報（{notesData.ceremonies.length}回）
-                  </h3>
-                </div>
-                <div className="p-5 space-y-4">
-                  {notesData.ceremonies.map((ceremony, index) => (
-                    <div key={index} className="p-4 bg-kinari rounded-lg">
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                        {ceremony.date && (
-                          <div>
-                            <span className="text-hai">実施日:</span>
-                            <span className="ml-2 text-sumi">{ceremony.date}</span>
-                          </div>
-                        )}
-                        {ceremony.officiant && (
-                          <div>
-                            <span className="text-hai">導師:</span>
-                            <span className="ml-2 text-sumi">{ceremony.officiant}</span>
-                          </div>
-                        )}
-                        {ceremony.religion && (
-                          <div>
-                            <span className="text-hai">宗派:</span>
-                            <span className="ml-2 text-sumi">{ceremony.religion}</span>
-                          </div>
-                        )}
-                        {ceremony.participants && (
-                          <div>
-                            <span className="text-hai">参列者:</span>
-                            <span className="ml-2 text-sumi">{ceremony.participants}名</span>
-                          </div>
-                        )}
-                        {ceremony.location && (
-                          <div className="col-span-2">
-                            <span className="text-hai">場所:</span>
-                            <span className="ml-2 text-sumi">{ceremony.location}</span>
-                          </div>
-                        )}
-                        {ceremony.memo && (
-                          <div className="col-span-2">
-                            <span className="text-hai">備考:</span>
-                            <span className="ml-2 text-sumi">{ceremony.memo}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* 書類情報 */}
-            {notesData.documents && notesData.documents.length > 0 && (
-              <div className="bg-white border border-gin rounded-elegant-lg shadow-elegant-sm overflow-hidden">
-                <div className="px-5 py-4 bg-kinari border-b border-gin">
-                  <h3 className="font-semibold text-sumi flex items-center">
-                    <span className="w-1 h-5 bg-cha rounded-full mr-3" />
-                    関連書類（{notesData.documents.length}件）
-                  </h3>
-                </div>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-kinari border-b border-gin">
-                      <tr>
-                        <th className="text-left p-4 text-sm font-semibold text-sumi">書類種別</th>
-                        <th className="text-left p-4 text-sm font-semibold text-sumi">書類名</th>
-                        <th className="text-left p-4 text-sm font-semibold text-sumi">発行日</th>
-                        <th className="text-left p-4 text-sm font-semibold text-sumi">備考</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {notesData.documents.map((doc, index) => (
-                        <tr key={index} className="border-b border-gin last:border-b-0 hover:bg-kinari transition-colors">
-                          <td className="p-4 text-sumi">{documentTypeLabels[doc.type]}</td>
-                          <td className="p-4 font-semibold text-sumi">{doc.name}</td>
-                          <td className="p-4 text-sumi">{doc.issuedDate || '-'}</td>
-                          <td className="p-4 text-sm text-hai">{doc.memo || '-'}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-
-            {/* 自由記述備考 */}
-            {notesData.freeText && (
-              <div className="bg-white border border-gin rounded-elegant-lg shadow-elegant-sm overflow-hidden">
-                <div className="px-5 py-4 bg-kinari border-b border-gin">
-                  <h3 className="font-semibold text-sumi flex items-center">
-                    <span className="w-1 h-5 bg-matsu rounded-full mr-3" />
-                    備考
-                  </h3>
-                </div>
-                <div className="p-5">
-                  <p className="whitespace-pre-line text-sumi">{notesData.freeText}</p>
-                </div>
-              </div>
-            )}
-
-            {/* データがない場合 */}
-            {!notesData.specialRequests && !notesData.ceremonies?.length && !notesData.documents?.length && !notesData.freeText && (
-              <div className="text-center py-16 text-hai bg-kinari rounded-elegant-lg border border-gin">
-                <svg className="w-12 h-12 mx-auto mb-4 text-gin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                備考・法要・書類情報は登録されていません
-              </div>
-            )}
-          </TabsContent>
         </Tabs>
       </div>
-
-      {/* 削除確認ダイアログ */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-elegant-lg shadow-elegant-lg max-w-md w-full mx-4 overflow-hidden">
-            <div className="px-6 py-5 bg-beni-50 border-b border-beni-200">
-              <h3 className="text-lg font-semibold text-beni-dark flex items-center">
-                <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-                削除の確認
-              </h3>
-            </div>
-            <div className="px-6 py-5">
-              <p className="text-sumi mb-2">
-                以下の合祀記録を削除しますか？
-              </p>
-              <div className="bg-kinari p-4 rounded-lg border border-gin mb-4">
-                <p className="font-semibold text-sumi">区画: {data.plotNumber}</p>
-                <p className="text-sm text-hai mt-1">区域: {data.areaName}</p>
-                {data.applicant && (
-                  <p className="text-sm text-hai mt-1">契約者: {data.applicant.name}</p>
-                )}
-              </div>
-              <p className="text-sm text-hai">
-                ※ この操作は論理削除となります。データは完全には削除されません。
-              </p>
-            </div>
-            <div className="px-6 py-4 bg-kinari border-t border-gin flex justify-end space-x-3">
-              <Button
-                variant="outline"
-                onClick={() => setShowDeleteConfirm(false)}
-                disabled={isDeleting}
-              >
-                キャンセル
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={handleDelete}
-                disabled={isDeleting}
-              >
-                {isDeleting ? '削除中...' : '削除する'}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
