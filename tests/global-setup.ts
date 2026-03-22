@@ -47,7 +47,7 @@ async function seedTestData(): Promise<void> {
     } else {
       console.warn(`[E2E Setup] Seed endpoint returned ${response.status}`);
     }
-  } catch (error) {
+  } catch {
     console.log('[E2E Setup] Could not reach seed endpoint — assuming data is pre-seeded');
   }
 }
