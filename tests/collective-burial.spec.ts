@@ -176,9 +176,10 @@ test.describe('合祀管理 - 請求ステータス変更', () => {
   });
 });
 
-test.describe('合祀管理 - ロール別アクセス', () => {
+test.describe('合祀管理 - viewer アクセス', () => {
+  test.use({ storageState: storageStatePath('viewer') });
+
   test('viewer で合祀管理画面にアクセス可能', async ({ page }) => {
-    test.use({ storageState: storageStatePath('viewer') });
     await page.goto('/');
     const sidebar = page.locator('.w-64');
     await expect(sidebar.getByText('台帳問い合わせ', { exact: true })).toBeVisible({ timeout: 20_000 });
@@ -190,9 +191,12 @@ test.describe('合祀管理 - ロール別アクセス', () => {
     await page.waitForTimeout(1_000);
     await expect(page.getByText(/合祀/).first()).toBeVisible({ timeout: 10_000 });
   });
+});
+
+test.describe('合祀管理 - manager アクセス', () => {
+  test.use({ storageState: storageStatePath('manager') });
 
   test('manager で合祀管理画面にアクセス可能', async ({ page }) => {
-    test.use({ storageState: storageStatePath('manager') });
     await page.goto('/');
     const sidebar = page.locator('.w-64');
     await expect(sidebar.getByText('台帳問い合わせ', { exact: true })).toBeVisible({ timeout: 20_000 });
