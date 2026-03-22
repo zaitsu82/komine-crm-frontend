@@ -109,6 +109,7 @@ function makePlotDetail(overrides: Partial<PlotDetailResponse> = {}): PlotDetail
     },
     contractDate: '2024-01-15',
     price: 500000,
+    uncollectedAmount: 0,
     contractStatus: ContractStatus.Active,
     paymentStatus: PaymentStatus.Paid,
     reservationDate: null,
