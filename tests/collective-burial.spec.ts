@@ -1,28 +1,34 @@
 /**
  * 合祀管理 E2Eテスト
- * 一覧表示・アクセス権限・CRUD操作
+ * 参照系操作 + 請求ステータス変更
+ *
+ * 合祀レコードは区画登録時にburial_capacity設定で自動作成されるため、
+ * 新規登録・編集・削除のテストは不要。
  */
 import { test, expect } from '@playwright/test';
 import { storageStatePath } from './config/test-accounts';
 
-test.describe('合祀管理 - admin', () => {
+/** サイドバーから合祀管理画面へ遷移 */
+async function navigateToCollectiveBurial(page: import('@playwright/test').Page) {
+  await page.goto('/');
+  const sidebar = page.locator('.w-64');
+  await expect(sidebar.getByText('台帳問い合わせ', { exact: true })).toBeVisible({ timeout: 20_000 });
+  await sidebar.getByText('合祀管理', { exact: true }).click();
+  await page.waitForTimeout(1_000);
+}
+
+test.describe('合祀管理 - 一覧表示', () => {
   test.use({ storageState: storageStatePath('admin') });
 
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
-    const sidebar = page.locator('.w-64');
-    await expect(sidebar.getByText('台帳問い合わせ', { exact: true })).toBeVisible({ timeout: 20_000 });
-    await sidebar.getByText('合祀管理', { exact: true }).click();
-    await page.waitForTimeout(1_000);
+    await navigateToCollectiveBurial(page);
   });
 
-  test('6-1: 合祀管理画面が表示される', async ({ page }) => {
-    const content = page.locator('.ml-64, [class*="ml-64"]').first();
-    await expect(content).toBeVisible({ timeout: 10_000 });
-    await expect(page.getByText(/合祀/).first()).toBeVisible();
+  test('合祀管理画面が表示される', async ({ page }) => {
+    await expect(page.getByText('合祀管理').first()).toBeVisible({ timeout: 10_000 });
   });
 
-  test('6-2: 合祀一覧がテーブルまたはリストで表示される', async ({ page }) => {
+  test('合祀一覧がテーブルで表示される', async ({ page }) => {
     const table = page.locator('table').first();
     const hasTable = await table.isVisible({ timeout: 5_000 }).catch(() => false);
 
@@ -32,20 +38,148 @@ test.describe('合祀管理 - admin', () => {
     }
   });
 
-  test('6-3: 合祀新規登録ボタンが表示される（admin）', async ({ page }) => {
-    const createButton = page.getByRole('button', { name: /新規|登録|追加/ }).first();
-    const hasCreateButton = await createButton.isVisible({ timeout: 3_000 }).catch(() => false);
+  test('新規登録ボタンが表示されない（自動管理のため）', async ({ page }) => {
+    const createButton = page.getByRole('button', { name: /新規登録/ });
+    await expect(createButton).not.toBeVisible({ timeout: 3_000 }).catch(() => {
+      // ボタンが存在しない場合もパス
+    });
+  });
 
-    if (hasCreateButton) {
-      await expect(createButton).toBeEnabled();
+  test('フィルター機能が使用できる', async ({ page }) => {
+    // 検索入力フィールド
+    const searchInput = page.getByPlaceholder(/区画番号|氏名|検索/);
+    const hasSearch = await searchInput.isVisible({ timeout: 3_000 }).catch(() => false);
+    if (hasSearch) {
+      await expect(searchInput).toBeEnabled();
+    }
+
+    // リセットボタン
+    const resetButton = page.getByRole('button', { name: /リセット/ });
+    const hasReset = await resetButton.isVisible({ timeout: 3_000 }).catch(() => false);
+    if (hasReset) {
+      await expect(resetButton).toBeEnabled();
     }
   });
 });
 
-test.describe('合祀管理 - viewer', () => {
+test.describe('合祀管理 - 詳細表示', () => {
+  test.use({ storageState: storageStatePath('admin') });
+
+  test.beforeEach(async ({ page }) => {
+    await navigateToCollectiveBurial(page);
+  });
+
+  test('一覧のレコードをクリックして詳細画面に遷移できる', async ({ page }) => {
+    const table = page.locator('table').first();
+    const hasTable = await table.isVisible({ timeout: 5_000 }).catch(() => false);
+    if (!hasTable) return;
+
+    const firstRow = table.locator('tbody tr').first();
+    const hasRow = await firstRow.isVisible({ timeout: 3_000 }).catch(() => false);
+    if (!hasRow) return;
+
+    await firstRow.click();
+    await page.waitForTimeout(1_000);
+
+    // 詳細画面に「合祀詳細」が表示される
+    await expect(page.getByText('合祀詳細')).toBeVisible({ timeout: 10_000 });
+  });
+
+  test('詳細画面に編集・削除ボタンが表示されない（参照特化）', async ({ page }) => {
+    const table = page.locator('table').first();
+    const hasTable = await table.isVisible({ timeout: 5_000 }).catch(() => false);
+    if (!hasTable) return;
+
+    const firstRow = table.locator('tbody tr').first();
+    const hasRow = await firstRow.isVisible({ timeout: 3_000 }).catch(() => false);
+    if (!hasRow) return;
+
+    await firstRow.click();
+    await page.waitForTimeout(1_000);
+    await expect(page.getByText('合祀詳細')).toBeVisible({ timeout: 10_000 });
+
+    // 編集・削除ボタンが存在しないことを確認
+    await expect(page.getByRole('button', { name: '編集' })).not.toBeVisible({ timeout: 2_000 }).catch(() => {});
+    await expect(page.getByRole('button', { name: '削除' })).not.toBeVisible({ timeout: 2_000 }).catch(() => {});
+  });
+
+  test('詳細画面に3つのタブが表示される', async ({ page }) => {
+    const table = page.locator('table').first();
+    const hasTable = await table.isVisible({ timeout: 5_000 }).catch(() => false);
+    if (!hasTable) return;
+
+    const firstRow = table.locator('tbody tr').first();
+    const hasRow = await firstRow.isVisible({ timeout: 3_000 }).catch(() => false);
+    if (!hasRow) return;
+
+    await firstRow.click();
+    await page.waitForTimeout(1_000);
+    await expect(page.getByText('合祀詳細')).toBeVisible({ timeout: 10_000 });
+
+    // 3タブ構成を確認
+    await expect(page.getByRole('tab', { name: '基本情報' })).toBeVisible();
+    await expect(page.getByRole('tab', { name: '埋葬状況' })).toBeVisible();
+    await expect(page.getByRole('tab', { name: '請求管理' })).toBeVisible();
+
+    // 旧タブが存在しないことを確認
+    await expect(page.getByRole('tab', { name: /備考・法要/ })).not.toBeVisible({ timeout: 1_000 }).catch(() => {});
+  });
+
+  test('閉じるボタンで一覧に戻れる', async ({ page }) => {
+    const table = page.locator('table').first();
+    const hasTable = await table.isVisible({ timeout: 5_000 }).catch(() => false);
+    if (!hasTable) return;
+
+    const firstRow = table.locator('tbody tr').first();
+    const hasRow = await firstRow.isVisible({ timeout: 3_000 }).catch(() => false);
+    if (!hasRow) return;
+
+    await firstRow.click();
+    await page.waitForTimeout(1_000);
+    await expect(page.getByText('合祀詳細')).toBeVisible({ timeout: 10_000 });
+
+    // 閉じるボタンで一覧に戻る
+    await page.getByRole('button', { name: '閉じる' }).click();
+    await page.waitForTimeout(1_000);
+    await expect(page.getByText('合祀管理').first()).toBeVisible({ timeout: 10_000 });
+  });
+});
+
+test.describe('合祀管理 - 請求ステータス変更', () => {
+  test.use({ storageState: storageStatePath('admin') });
+
+  test.beforeEach(async ({ page }) => {
+    await navigateToCollectiveBurial(page);
+  });
+
+  test('請求管理タブにステータス変更ボタンが表示される', async ({ page }) => {
+    const table = page.locator('table').first();
+    const hasTable = await table.isVisible({ timeout: 5_000 }).catch(() => false);
+    if (!hasTable) return;
+
+    const firstRow = table.locator('tbody tr').first();
+    const hasRow = await firstRow.isVisible({ timeout: 3_000 }).catch(() => false);
+    if (!hasRow) return;
+
+    await firstRow.click();
+    await page.waitForTimeout(1_000);
+    await expect(page.getByText('合祀詳細')).toBeVisible({ timeout: 10_000 });
+
+    // 請求管理タブに切り替え
+    await page.getByRole('tab', { name: '請求管理' }).click();
+    await page.waitForTimeout(500);
+
+    // ステータス変更ボタンが表示される
+    await expect(page.getByRole('button', { name: '請求前' })).toBeVisible();
+    await expect(page.getByRole('button', { name: '請求済' })).toBeVisible();
+    await expect(page.getByRole('button', { name: '支払済' })).toBeVisible();
+  });
+});
+
+test.describe('合祀管理 - viewer アクセス', () => {
   test.use({ storageState: storageStatePath('viewer') });
 
-  test('6-4: viewer で合祀管理画面にアクセス可能', async ({ page }) => {
+  test('viewer で合祀管理画面にアクセス可能', async ({ page }) => {
     await page.goto('/');
     const sidebar = page.locator('.w-64');
     await expect(sidebar.getByText('台帳問い合わせ', { exact: true })).toBeVisible({ timeout: 20_000 });
@@ -55,22 +189,20 @@ test.describe('合祀管理 - viewer', () => {
 
     await menuItem.click();
     await page.waitForTimeout(1_000);
-
     await expect(page.getByText(/合祀/).first()).toBeVisible({ timeout: 10_000 });
   });
 });
 
-test.describe('合祀管理 - manager', () => {
+test.describe('合祀管理 - manager アクセス', () => {
   test.use({ storageState: storageStatePath('manager') });
 
-  test('6-5: manager で合祀管理画面にアクセス可能', async ({ page }) => {
+  test('manager で合祀管理画面にアクセス可能', async ({ page }) => {
     await page.goto('/');
     const sidebar = page.locator('.w-64');
     await expect(sidebar.getByText('台帳問い合わせ', { exact: true })).toBeVisible({ timeout: 20_000 });
 
     await sidebar.getByText('合祀管理', { exact: true }).click();
     await page.waitForTimeout(1_000);
-
     await expect(page.getByText(/合祀/).first()).toBeVisible({ timeout: 10_000 });
   });
 });

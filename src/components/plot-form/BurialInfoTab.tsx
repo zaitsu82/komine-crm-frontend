@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { BurialInfoTabProps, getDefaultBuriedPerson } from './types';
 import { ViewModeSelect } from './ViewModeField';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { SelectItem } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { Gender } from '@komine/types';
 import { ChevronDown, ChevronUp, Trash2, Plus } from 'lucide-react';
 
@@ -20,6 +21,27 @@ export function BurialInfoTab({
   removeBuriedPerson,
 }: BurialInfoTabProps) {
   const [expandedBurialId, setExpandedBurialId] = useState<string | null>(null);
+
+  const collectiveBurial = watch('collectiveBurial');
+  const [collectiveBurialEnabled, setCollectiveBurialEnabled] = useState(!!collectiveBurial);
+
+  useEffect(() => {
+    setCollectiveBurialEnabled(!!collectiveBurial);
+  }, [collectiveBurial]);
+
+  const handleToggleCollectiveBurial = (enabled: boolean) => {
+    setCollectiveBurialEnabled(enabled);
+    if (enabled) {
+      setValue('collectiveBurial', {
+        burialCapacity: 10,
+        validityPeriodYears: 33,
+        billingAmount: null,
+        notes: null,
+      });
+    } else {
+      setValue('collectiveBurial', null);
+    }
+  };
 
   const genderLabels: Record<Gender, string> = {
     [Gender.Male]: '男性',
@@ -307,6 +329,101 @@ export function BurialInfoTab({
             </div>
           );
         })}
+      </div>
+
+      {/* Collective Burial Settings */}
+      <div className="border-t pt-6 mt-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold">合祀設定</h3>
+          <div className="flex items-center gap-2">
+            <Label htmlFor="collectiveBurialToggle" className="text-sm text-hai">
+              合祀対象区画
+            </Label>
+            <Switch
+              id="collectiveBurialToggle"
+              checked={collectiveBurialEnabled}
+              onCheckedChange={handleToggleCollectiveBurial}
+            />
+          </div>
+        </div>
+
+        {collectiveBurialEnabled && (
+          <div className="grid grid-cols-2 gap-4 p-4 bg-kinari rounded-lg">
+            <div>
+              <Label htmlFor="collectiveBurial.burialCapacity">
+                埋葬上限数 <span className="text-beni">*</span>
+              </Label>
+              <Input
+                id="collectiveBurial.burialCapacity"
+                type="number"
+                min={1}
+                max={100}
+                placeholder="例: 10"
+                {...register('collectiveBurial.burialCapacity')}
+                className={errors.collectiveBurial?.burialCapacity ? 'border-beni' : ''}
+              />
+              <p className="text-xs text-hai mt-1">この区画に埋葬できる最大人数</p>
+              {errors.collectiveBurial?.burialCapacity && (
+                <p className="text-sm text-beni mt-1">
+                  {errors.collectiveBurial.burialCapacity.message}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <Label htmlFor="collectiveBurial.validityPeriodYears">
+                有効期間（年） <span className="text-beni">*</span>
+              </Label>
+              <Input
+                id="collectiveBurial.validityPeriodYears"
+                type="number"
+                min={1}
+                max={100}
+                placeholder="例: 33"
+                {...register('collectiveBurial.validityPeriodYears')}
+                className={errors.collectiveBurial?.validityPeriodYears ? 'border-beni' : ''}
+              />
+              <p className="text-xs text-hai mt-1">埋葬上限到達後の合祀管理期間</p>
+              {errors.collectiveBurial?.validityPeriodYears && (
+                <p className="text-sm text-beni mt-1">
+                  {errors.collectiveBurial.validityPeriodYears.message}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <Label htmlFor="collectiveBurial.billingAmount">請求金額</Label>
+              <Input
+                id="collectiveBurial.billingAmount"
+                type="number"
+                min={0}
+                placeholder="例: 50000"
+                {...register('collectiveBurial.billingAmount')}
+                className={errors.collectiveBurial?.billingAmount ? 'border-beni' : ''}
+              />
+              {errors.collectiveBurial?.billingAmount && (
+                <p className="text-sm text-beni mt-1">
+                  {errors.collectiveBurial.billingAmount.message}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <Label htmlFor="collectiveBurial.notes">備考</Label>
+              <Input
+                id="collectiveBurial.notes"
+                placeholder="合祀に関する特記事項"
+                {...register('collectiveBurial.notes')}
+                className={errors.collectiveBurial?.notes ? 'border-beni' : ''}
+              />
+              {errors.collectiveBurial?.notes && (
+                <p className="text-sm text-beni mt-1">
+                  {errors.collectiveBurial.notes.message}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
