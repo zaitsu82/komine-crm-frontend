@@ -25,7 +25,7 @@ test.describe('合祀管理 - 一覧表示', () => {
   });
 
   test('合祀管理画面が表示される', async ({ page }) => {
-    await expect(page.getByText('合祀管理')).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText('合祀管理').first()).toBeVisible({ timeout: 10_000 });
   });
 
   test('合祀一覧がテーブルで表示される', async ({ page }) => {
@@ -141,7 +141,7 @@ test.describe('合祀管理 - 詳細表示', () => {
     // 閉じるボタンで一覧に戻る
     await page.getByRole('button', { name: '閉じる' }).click();
     await page.waitForTimeout(1_000);
-    await expect(page.getByText('合祀管理')).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText('合祀管理').first()).toBeVisible({ timeout: 10_000 });
   });
 });
 
