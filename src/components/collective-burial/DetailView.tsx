@@ -223,24 +223,16 @@ export default function CollectiveBurialDetailView({
                 </div>
 
                 {/* 日付情報 */}
-                <div className="mt-6 grid grid-cols-2 gap-4 text-sm">
-                  {data.capacityReachedDate && (
-                    <div className="p-3 bg-kinari rounded-lg">
+                {data.capacityReachedDate && (
+                  <div className="mt-6 text-sm">
+                    <div className="p-3 bg-kinari rounded-lg inline-block">
                       <span className="text-hai">上限到達日:</span>
                       <span className="ml-2 font-semibold text-sumi">
                         {formatDateWithEra(new Date(data.capacityReachedDate))}
                       </span>
                     </div>
-                  )}
-                  {data.billingScheduledDate && (
-                    <div className="p-3 bg-kinari rounded-lg">
-                      <span className="text-hai">請求予定日:</span>
-                      <span className="ml-2 font-semibold text-sumi">
-                        {formatDateWithEra(new Date(data.billingScheduledDate))}
-                      </span>
-                    </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             </div>
 
