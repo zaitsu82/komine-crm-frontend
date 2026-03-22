@@ -3,8 +3,8 @@
  * 各ロールでログインし、storageState を保存する
  * テスト実行前に1度だけ走る
  *
- * モックモード（NEXT_PUBLIC_USE_MOCK_DATA=true）で実行されるため
- * バックエンドやSupabaseは不要
+ * 実APIモード: バックエンド(port 4000)経由でSupabase認証を行う
+ * テストアカウントはSupabase Auth + staffテーブルに事前登録が必要
  */
 import { test as setup, expect } from '@playwright/test';
 import { TEST_ACCOUNTS, storageStatePath, type TestRole } from './config/test-accounts';
