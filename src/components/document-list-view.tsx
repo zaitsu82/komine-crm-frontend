@@ -30,6 +30,7 @@ import {
   ChevronRight,
   Download,
   Eye,
+  ArrowLeft,
 } from 'lucide-react';
 
 interface DocumentListViewProps {
@@ -40,6 +41,8 @@ interface DocumentListViewProps {
   onCreateNew: () => void;
   onViewDetail: (id: string) => void;
   onDownload: (id: string) => void;
+  /** テンプレートギャラリーに戻る */
+  onBack?: () => void;
 }
 
 export function DocumentListView({
@@ -48,6 +51,7 @@ export function DocumentListView({
   onCreateNew,
   onViewDetail,
   onDownload,
+  onBack,
 }: DocumentListViewProps) {
   // 顧客IDが指定されている場合は初期フィルターとして設定
   const { data, isLoading, error, params, setPage, setFilters, refresh } = useDocumentList(
@@ -93,9 +97,17 @@ export function DocumentListView({
     <div className="space-y-4">
       {/* ヘッダー */}
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-sumi-900">
-          {customerName ? `${customerName} 様の書類` : '書類管理'}
-        </h2>
+        <div className="flex items-center gap-3">
+          {onBack && (
+            <Button variant="ghost" onClick={onBack}>
+              <ArrowLeft className="mr-1 h-4 w-4" />
+              テンプレート
+            </Button>
+          )}
+          <h2 className="text-2xl font-bold text-sumi-900">
+            {customerName ? `${customerName} 様の書類` : '作成済み書類一覧'}
+          </h2>
+        </div>
         <Button onClick={onCreateNew} className="bg-matsu-600 hover:bg-matsu-700">
           <Plus className="mr-2 h-4 w-4" />
           新規作成

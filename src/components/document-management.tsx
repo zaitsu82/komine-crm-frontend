@@ -1,10 +1,10 @@
 'use client';
 
-/**
- * 書類管理メインコンテナコンポーネント
- */
-
 import { useState, useCallback, useEffect } from 'react';
+import {
+  DocumentTemplateGallery,
+  TemplateId,
+} from './document-template-gallery';
 import { DocumentListView } from './document-list-view';
 import { DocumentDetailView } from './document-detail-view';
 import { DocumentForm } from './document-form';
@@ -12,78 +12,95 @@ import { useDocumentMutations, DocumentDetail } from '@/hooks/useDocuments';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
+import { PlotDetailResponse } from '@komine/types';
 
-type ViewMode = 'list' | 'detail' | 'create' | 'edit';
+type ViewMode = 'templates' | 'list' | 'detail' | 'create' | 'edit';
 
 interface DocumentManagementProps {
-  /** 顧客IDでフィルター（顧客詳細から遷移時） */
   customerId?: string;
-  /** 顧客名（表示用） */
   customerName?: string;
-  /** 初期表示モード */
-  initialMode?: 'list' | 'create';
-  /** 戻るボタン押下時のコールバック */
+  /** 区画詳細データ（区画コンテキストから書類作成時、フォームに自動挿入するため） */
+  plotDetail?: PlotDetailResponse;
+  initialMode?: 'list' | 'create' | 'templates';
   onBack?: () => void;
 }
 
 export function DocumentManagement({
   customerId,
   customerName,
-  initialMode = 'list',
+  plotDetail,
+  initialMode = 'templates',
   onBack,
 }: DocumentManagementProps) {
-  const [viewMode, setViewMode] = useState<ViewMode>(initialMode);
-  const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>(
+    initialMode === 'create' ? 'create' : initialMode === 'list' ? 'list' : 'templates'
+  );
+  const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(
+    null
+  );
+  const [selectedTemplateId, setSelectedTemplateId] =
+    useState<TemplateId | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [documentToDelete, setDocumentToDelete] = useState<string | null>(null);
 
   const { remove, download, isLoading: isMutating } = useDocumentMutations();
 
-  // 初期モードが変更された場合に反映
   useEffect(() => {
-    setViewMode(initialMode);
+    if (initialMode === 'create') setViewMode('create');
+    else if (initialMode === 'list') setViewMode('list');
+    else setViewMode('templates');
   }, [initialMode]);
 
-  // 一覧に戻る
+  const handleBackToTemplates = useCallback(() => {
+    setViewMode('templates');
+    setSelectedDocumentId(null);
+    setSelectedTemplateId(null);
+  }, []);
+
   const handleBackToList = useCallback(() => {
     setViewMode('list');
     setSelectedDocumentId(null);
   }, []);
 
-  // 新規作成画面へ
-  const handleCreateNew = useCallback(() => {
-    setViewMode('create');
-    setSelectedDocumentId(null);
+  const handleViewHistory = useCallback(() => {
+    setViewMode('list');
   }, []);
 
-  // 詳細画面へ
+  const handleSelectTemplate = useCallback((templateId: TemplateId) => {
+    setSelectedTemplateId(templateId);
+    setViewMode('create');
+  }, []);
+
+  const handleCreateNew = useCallback(() => {
+    setSelectedTemplateId(null);
+    setViewMode('create');
+  }, []);
+
   const handleViewDetail = useCallback((id: string) => {
     setSelectedDocumentId(id);
     setViewMode('detail');
   }, []);
 
-  // 編集画面へ
   const handleEdit = useCallback((id: string) => {
     setSelectedDocumentId(id);
     setViewMode('edit');
   }, []);
 
-  // 保存完了後
-  const handleSaved = useCallback((doc: DocumentDetail) => {
-    setSelectedDocumentId(doc.id);
-    setViewMode('detail');
-  }, []);
+  const handleSaved = useCallback(
+    (doc: DocumentDetail) => {
+      setSelectedDocumentId(doc.id);
+      setViewMode('detail');
+    },
+    []
+  );
 
-  // 削除確認ダイアログを開く
   const handleDeleteRequest = useCallback((id: string) => {
     setDocumentToDelete(id);
     setDeleteDialogOpen(true);
   }, []);
 
-  // 削除実行
   const handleDeleteConfirm = useCallback(async () => {
     if (!documentToDelete) return;
-
     const success = await remove(documentToDelete);
     if (success) {
       toast.success('書類を削除しました');
@@ -95,25 +112,32 @@ export function DocumentManagement({
     }
   }, [documentToDelete, remove, handleBackToList]);
 
-  // ダウンロード
-  const handleDownload = useCallback(async (id: string) => {
-    const url = await download(id);
-    if (url) {
-      // URLを新しいタブで開く
-      window.open(url, '_blank');
-    } else {
-      toast.error('ダウンロードに失敗しました');
-    }
-  }, [download]);
+  const handleDownload = useCallback(
+    async (id: string) => {
+      const url = await download(id);
+      if (url) {
+        window.open(url, '_blank');
+      } else {
+        toast.error('ダウンロードに失敗しました');
+      }
+    },
+    [download]
+  );
 
-  // 戻るボタンのハンドラ（顧客コンテキストの場合は親に戻る）
   const handleBack = useCallback(() => {
     if (onBack) {
       onBack();
     } else {
-      handleBackToList();
+      handleBackToTemplates();
     }
-  }, [onBack, handleBackToList]);
+  }, [onBack, handleBackToTemplates]);
+
+  const formOnBack =
+    customerId
+      ? handleBackToTemplates
+      : viewMode === 'create'
+        ? handleBackToTemplates
+        : handleBackToList;
 
   return (
     <div className="p-6">
@@ -130,13 +154,34 @@ export function DocumentManagement({
         </div>
       )}
 
+      {/* 顧客コンテキストヘッダー（テンプレートギャラリー） */}
+      {customerId && customerName && viewMode === 'templates' && (
+        <div className="mb-4 flex items-center gap-4">
+          <Button variant="ghost" onClick={handleBack}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            区画詳細に戻る
+          </Button>
+          <div className="text-sumi-600">
+            <span className="font-medium">{customerName}</span> 様の書類を作成
+          </div>
+        </div>
+      )}
+
+      {viewMode === 'templates' && (
+        <DocumentTemplateGallery
+          onSelectTemplate={handleSelectTemplate}
+          onViewHistory={handleViewHistory}
+        />
+      )}
+
       {viewMode === 'list' && (
         <DocumentListView
           customerId={customerId}
           customerName={customerName}
-          onCreateNew={handleCreateNew}
+          onCreateNew={customerId ? handleCreateNew : handleBackToTemplates}
           onViewDetail={handleViewDetail}
           onDownload={handleDownload}
+          onBack={customerId ? undefined : handleBackToTemplates}
         />
       )}
 
@@ -153,7 +198,9 @@ export function DocumentManagement({
       {viewMode === 'create' && (
         <DocumentForm
           customerId={customerId}
-          onBack={handleBackToList}
+          templateId={selectedTemplateId || undefined}
+          plotDetail={plotDetail}
+          onBack={formOnBack}
           onSaved={handleSaved}
         />
       )}

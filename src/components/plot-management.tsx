@@ -268,13 +268,14 @@ export default function PlotManagement({ initialView = 'registry' }: PlotManagem
           </div>
         )}
 
-        {/* 書類作成（区画コンテキスト） */}
+        {/* 書類作成（区画コンテキスト：テンプレート選択→自動挿入） */}
         {currentView === 'document-select' && selectedPlotId && (
           <div className="flex-1 overflow-auto">
             <DocumentManagement
               customerId={selectedPlotId}
               customerName={selectedPlotName || selectedPlotCode}
-              initialMode="create"
+              plotDetail={selectedPlotDetail || undefined}
+              initialMode="templates"
               onBack={() => setCurrentView('plot-details')}
             />
           </div>

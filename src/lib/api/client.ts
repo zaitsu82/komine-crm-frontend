@@ -6,9 +6,13 @@
 import { ApiResponse, ApiErrorResponse } from './types';
 
 // 環境設定
+// デフォルトは相対URL（Next.jsのrewriteでプロキシ → CORS回避）
+// NEXT_PUBLIC_API_URL未設定時: /api/v1 を使用（localhost:3000/api/v1 → バックエンドへプロキシ）
 export const API_CONFIG = {
   useMockData: process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true',
-  baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1',
+  baseUrl:
+    process.env.NEXT_PUBLIC_API_URL ||
+    (typeof window !== 'undefined' ? '/api/v1' : 'http://localhost:4000/api/v1'),
   timeout: parseInt(process.env.NEXT_PUBLIC_API_TIMEOUT || '30000', 10),
   debug: process.env.NEXT_PUBLIC_DEBUG === 'true',
 };
