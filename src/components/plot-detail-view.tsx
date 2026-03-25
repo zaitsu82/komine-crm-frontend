@@ -171,6 +171,7 @@ function BasicInfoTab({ plot }: { plot: PlotDetailResponse }) {
         <InfoField label="受付番号" value={plot.acceptanceNumber} />
         <InfoField label="受付日" value={formatDate(plot.acceptanceDate)} />
         <InfoField label="担当者" value={plot.staffInCharge} />
+        <InfoField label="取扱" value={plot.agentName} />
         <InfoField label="許可日" value={formatDate(plot.permitDate)} />
         <InfoField label="許可番号" value={plot.permitNumber} />
         <InfoField label="開始日" value={formatDate(plot.startDate)} />
