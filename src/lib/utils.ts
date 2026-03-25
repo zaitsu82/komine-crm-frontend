@@ -47,6 +47,17 @@ export function formatDateWithEra(date: Date | string | null) {
   return `${era}${eraYear}年 ${dateObj.getMonth() + 1}月${dateObj.getDate()}日`
 }
 
+/**
+ * 住所から市区町村まで抽出（一覧表示用）
+ * 例: "埼玉県飯能市大字坂元123-4" → "埼玉県飯能市"
+ */
+export function truncateAddressToCity(address: string | null): string {
+  if (!address) return '-';
+  const match = address.match(/^(.+?[都道府県])(.+?[市区町村])/);
+  if (match) return match[1] + match[2];
+  return address.length > 12 ? address.substring(0, 12) + '\u2026' : address;
+}
+
 // ===== 区画管理ユーティリティ =====
 
 import type {

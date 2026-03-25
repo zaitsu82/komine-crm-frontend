@@ -51,7 +51,7 @@ export default function NotFound() {
           {/* フッター */}
           <div className="px-6 py-4 bg-gray-50 border-t">
             <p className="text-xs text-gray-400">
-              小峰霊園CRM - Komine Cemetery CRM
+              小嶺霊園CRM - Komine Cemetery CRM
             </p>
           </div>
         </div>

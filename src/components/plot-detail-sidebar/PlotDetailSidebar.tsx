@@ -37,7 +37,7 @@ export default function PlotDetailSidebar({
     };
     return roleLabels[role] || role;
   };
-  const getSidebarTitle = () => '小峰霊園CRM';
+  const getSidebarTitle = () => '小嶺霊園CRM';
 
   // ユーザーロールに基づきメニュー項目をフィルタリング
   const visibleMenuItems = MENU_ITEMS.filter((item: MenuItemConfig) =>

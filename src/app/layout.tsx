@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "小峰霊園CRM - 顧客管理システム",
+  title: "小嶺霊園CRM - 顧客管理システム",
   description: "霊園区画・顧客管理システム",
 };
 

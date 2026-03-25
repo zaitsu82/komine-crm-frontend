@@ -22,7 +22,7 @@ test.describe('認証フロー', () => {
     await page.getByRole('button', { name: 'ログイン' }).click();
 
     // メイン画面のサイドバータイトルが表示される
-    await expect(page.locator('h2').filter({ hasText: '小峰霊園CRM' })).toBeVisible({
+    await expect(page.locator('h2').filter({ hasText: '小嶺霊園CRM' })).toBeVisible({
       timeout: 15_000,
     });
   });
@@ -66,14 +66,14 @@ test.describe('認証フロー', () => {
     await page.getByLabel('メールアドレス').fill(account.email);
     await page.getByLabel('パスワード').fill(account.password);
     await page.getByRole('button', { name: 'ログイン' }).click();
-    await expect(page.locator('h2').filter({ hasText: '小峰霊園CRM' })).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator('h2').filter({ hasText: '小嶺霊園CRM' })).toBeVisible({ timeout: 15_000 });
 
     // ログアウトボタンをクリック
     await page.getByRole('button', { name: 'ログアウト' }).click();
 
     // ログインページにリダイレクト
     await expect(page.getByLabel('メールアドレス')).toBeVisible({ timeout: 10_000 });
-    await expect(page.locator('h1').filter({ hasText: '小峰霊園CRM' })).toBeVisible();
+    await expect(page.locator('h1').filter({ hasText: '小嶺霊園CRM' })).toBeVisible();
   });
 
   test('1-5: 未認証状態で保護ページにアクセス → /login にリダイレクト', async ({ page }) => {
@@ -93,13 +93,13 @@ test.describe('認証フロー', () => {
     await page.getByLabel('メールアドレス').fill(account.email);
     await page.getByLabel('パスワード').fill(account.password);
     await page.getByRole('button', { name: 'ログイン' }).click();
-    await expect(page.locator('h2').filter({ hasText: '小峰霊園CRM' })).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator('h2').filter({ hasText: '小嶺霊園CRM' })).toBeVisible({ timeout: 15_000 });
 
     // ログイン済みで再度 /login にアクセス
     await page.goto('/login');
 
     // メイン画面にリダイレクトされる（GuestGuard）
-    await expect(page.locator('h2').filter({ hasText: '小峰霊園CRM' })).toBeVisible({
+    await expect(page.locator('h2').filter({ hasText: '小嶺霊園CRM' })).toBeVisible({
       timeout: 15_000,
     });
 
@@ -124,7 +124,7 @@ test.describe('認証フロー', () => {
     }
 
     // 最終的にログイン成功
-    await expect(page.locator('h2').filter({ hasText: '小峰霊園CRM' })).toBeVisible({
+    await expect(page.locator('h2').filter({ hasText: '小嶺霊園CRM' })).toBeVisible({
       timeout: 15_000,
     });
   });

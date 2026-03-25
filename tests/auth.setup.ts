@@ -20,7 +20,7 @@ for (const role of roles) {
 
     // ログインページへ
     await page.goto('/login');
-    await expect(page.locator('h1')).toContainText('小峰霊園CRM');
+    await expect(page.locator('h1')).toContainText('小嶺霊園CRM');
 
     // メールアドレス・パスワードを入力
     await page.getByLabel('メールアドレス').fill(account.email);
@@ -30,7 +30,7 @@ for (const role of roles) {
     await page.getByRole('button', { name: 'ログイン' }).click();
 
     // メイン画面に遷移するまで待機（サイドバーのタイトルで判定）
-    await expect(page.locator('h2').filter({ hasText: '小峰霊園CRM' })).toBeVisible({
+    await expect(page.locator('h2').filter({ hasText: '小嶺霊園CRM' })).toBeVisible({
       timeout: 15_000,
     });
 
