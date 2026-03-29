@@ -284,7 +284,7 @@ export default function CollectiveBurialPrintTemplate({ application }: Collectiv
       {/* フッター */}
       <div className="mt-6 pt-4 border-t text-xs text-gray-600">
         <div className="text-center">
-          <p className="font-semibold text-gray-800 mb-0.5">小峰霊園</p>
+          <p className="font-semibold text-gray-800 mb-0.5">小嶺霊園</p>
           <p>〒000-0000 東京都○○区○○ 1-2-3</p>
           <p>TEL: 03-0000-0000 / FAX: 03-0000-0001</p>
         </div>

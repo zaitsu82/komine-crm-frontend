@@ -280,6 +280,14 @@ export function BasicInfoTab({
             error={errors.saleContract?.staffInCharge?.message}
             placeholder="担当者名"
           />
+
+          <ViewModeField
+            label="取扱"
+            viewMode={viewMode}
+            register={register('saleContract.agentName')}
+            error={errors.saleContract?.agentName?.message}
+            placeholder="販売代理店名"
+          />
         </div>
       </div>
 

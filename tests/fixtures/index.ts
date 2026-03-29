@@ -39,7 +39,7 @@ export async function loginAs(page: Page, email: string, password: string): Prom
   await page.getByLabel('メールアドレス').fill(email);
   await page.getByLabel('パスワード').fill(password);
   await page.getByRole('button', { name: 'ログイン' }).click();
-  await expect(page.locator('h2').filter({ hasText: '小峰霊園CRM' })).toBeVisible({
+  await expect(page.locator('h2').filter({ hasText: '小嶺霊園CRM' })).toBeVisible({
     timeout: 15_000,
   });
 }

@@ -46,9 +46,9 @@ test.describe('サイドバーナビゲーション', () => {
     await expect(page.getByText(/マスタ/).first()).toBeVisible();
   });
 
-  test('3-2: サイドバーのタイトルが「小峰霊園CRM」と表示される', async ({ page }) => {
+  test('3-2: サイドバーのタイトルが「小嶺霊園CRM」と表示される', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('.w-64 h2').filter({ hasText: '小峰霊園CRM' })).toBeVisible({
+    await expect(page.locator('.w-64 h2').filter({ hasText: '小嶺霊園CRM' })).toBeVisible({
       timeout: 20_000,
     });
   });

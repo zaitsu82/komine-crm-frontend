@@ -16,7 +16,7 @@ import {
 import type { PlotSearchParams } from '@/lib/api/plots';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { cn, truncateAddressToCity } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -121,6 +121,7 @@ export default function PlotRegistry({
   const [filterStatus, setFilterStatus] = useState<PhysicalPlotStatus | undefined>(undefined);
   const [filterPaymentStatus, setFilterPaymentStatus] = useState<PaymentStatus | undefined>(undefined);
   const [filterAreaName, setFilterAreaName] = useState('');
+  const [showBuriedPersons, setShowBuriedPersons] = useState(false);
 
   // サーバーサイドページネーション
   const [currentPage, setCurrentPage] = useState(1);
@@ -314,7 +315,7 @@ export default function PlotRegistry({
         <div className="flex-1 max-w-md">
           <Input
             type="text"
-            placeholder="氏名・フリガナ・区画番号・電話番号・住所で検索..."
+            placeholder="氏名・フリガナ・区画番号・電話番号・住所・埋葬者名で検索..."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             onKeyPress={handleKeyPress}
@@ -405,6 +406,15 @@ export default function PlotRegistry({
             フィルタクリア
           </Button>
         )}
+        <label className="flex items-center gap-1.5 text-sm text-hai cursor-pointer ml-auto select-none">
+          <input
+            type="checkbox"
+            checked={showBuriedPersons}
+            onChange={(e) => setShowBuriedPersons(e.target.checked)}
+            className="rounded border-gin accent-matsu"
+          />
+          埋葬者を表示
+        </label>
       </div>
 
       {/* あいう順タブ */}
@@ -443,8 +453,22 @@ export default function PlotRegistry({
       <div className="bg-white rounded-elegant-lg border border-gin shadow-elegant overflow-hidden flex-1">
         <div className="overflow-auto h-full">
           <table className="w-full divide-y divide-gin text-sm table-fixed">
-{/* 状態 / 区画No / エリア / 契約者(残り幅) / 電話 / 契約日 / 入金 / 管理料 / 次請求 */}
-            <colgroup><col className="w-[44px]" /><col className="w-[72px]" /><col className="w-[60px]" /><col /><col className="w-[110px]" /><col className="w-[68px]" /><col className="w-[68px]" /><col className="w-[80px]" /><col className="w-[68px]" /></colgroup>
+{/* 状態 / 区画No / エリア / 契約者 / 住所 / 電話 / 取扱 / 備考(flex) / [埋葬者] / 契約日 / 入金 / 管理料 / 次請求 */}
+            <colgroup>
+              <col className="w-[40px]" />
+              <col className="w-[68px]" />
+              <col className="w-[52px]" />
+              <col className="w-[110px]" />
+              <col className="w-[90px]" />
+              <col className="w-[100px]" />
+              <col className="w-[72px]" />
+              <col />
+              {showBuriedPersons && <col className="w-[90px]" />}
+              <col className="w-[60px]" />
+              <col className="w-[60px]" />
+              <col className="w-[72px]" />
+              <col className="w-[60px]" />
+            </colgroup>
             <thead className="bg-gradient-matsu sticky top-0 z-10">
               <tr>
                 <th
@@ -499,6 +523,9 @@ export default function PlotRegistry({
                     <SortIndicator columnKey="customerName" />
                   </div>
                 </th>
+                <th className="px-2 py-2 text-left text-xs font-bold text-white">
+                  <span>住所</span>
+                </th>
                 <th
                   className={cn(
                     "px-2 py-2 text-left text-xs font-bold text-white cursor-pointer transition-all duration-200",
@@ -512,6 +539,17 @@ export default function PlotRegistry({
                     <SortIndicator columnKey="phoneNumber" />
                   </div>
                 </th>
+                <th className="px-2 py-2 text-left text-xs font-bold text-white">
+                  <span>取扱</span>
+                </th>
+                <th className="px-2 py-2 text-left text-xs font-bold text-white">
+                  <span>備考</span>
+                </th>
+                {showBuriedPersons && (
+                  <th className="px-2 py-2 text-left text-xs font-bold text-white">
+                    <span>埋葬者</span>
+                  </th>
+                )}
                 <th
                   className={cn(
                     "px-2 py-2 text-center text-xs font-bold text-white cursor-pointer transition-all duration-200",
@@ -562,18 +600,22 @@ export default function PlotRegistry({
                       <td className="px-2 py-2.5 text-center"><Skeleton className="h-6 w-6 rounded-full mx-auto" /></td>
                       <td className="px-2 py-2.5"><Skeleton className="h-4 w-14" /></td>
                       <td className="px-2 py-2.5"><Skeleton className="h-4 w-10" /></td>
+                      <td className="px-2 py-2.5"><Skeleton className="h-4 w-20" /></td>
+                      <td className="px-2 py-2.5"><Skeleton className="h-4 w-16" /></td>
+                      <td className="px-2 py-2.5"><Skeleton className="h-4 w-20" /></td>
+                      <td className="px-2 py-2.5"><Skeleton className="h-4 w-14" /></td>
                       <td className="px-2 py-2.5"><Skeleton className="h-4 w-full" /></td>
-                      <td className="px-2 py-2.5"><Skeleton className="h-4 w-24" /></td>
-                      <td className="px-2 py-2.5"><Skeleton className="h-4 w-16" /></td>
+                      {showBuriedPersons && <td className="px-2 py-2.5"><Skeleton className="h-4 w-16" /></td>}
                       <td className="px-2 py-2.5"><Skeleton className="h-4 w-12" /></td>
-                      <td className="px-2 py-2.5"><Skeleton className="h-4 w-16" /></td>
-                      <td className="px-2 py-2.5"><Skeleton className="h-4 w-16" /></td>
+                      <td className="px-2 py-2.5"><Skeleton className="h-4 w-12" /></td>
+                      <td className="px-2 py-2.5"><Skeleton className="h-4 w-14" /></td>
+                      <td className="px-2 py-2.5"><Skeleton className="h-4 w-12" /></td>
                     </tr>
                   ))}
                 </>
               ) : error ? (
                 <tr>
-                  <td colSpan={9} className="px-4 py-12 text-center text-beni">
+                  <td colSpan={showBuriedPersons ? 13 : 12} className="px-4 py-12 text-center text-beni">
                     <div className="flex flex-col items-center">
                       <svg className="w-12 h-12 text-beni mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -622,9 +664,28 @@ export default function PlotRegistry({
                           </div>
                         </div>
                       </td>
+                      <td className="px-2 py-2 text-xs text-hai truncate" title={plot.customerAddress || undefined}>
+                        {truncateAddressToCity(plot.customerAddress)}
+                      </td>
                       <td className="px-2 py-2 text-xs text-hai truncate" title={plot.customerPhoneNumber || undefined}>
                         {plot.customerPhoneNumber || '-'}
                       </td>
+                      <td className="px-2 py-2 text-xs text-hai truncate" title={plot.agentName || undefined}>
+                        {plot.agentName || '-'}
+                      </td>
+                      <td className="px-2 py-2 text-xs text-hai">
+                        <div
+                          className="line-clamp-2 break-all"
+                          title={[plot.contractNotes, plot.customerNotes].filter(Boolean).join(' / ')}
+                        >
+                          {[plot.contractNotes, plot.customerNotes].filter(Boolean).join(' / ') || '-'}
+                        </div>
+                      </td>
+                      {showBuriedPersons && (
+                        <td className="px-2 py-2 text-xs text-hai truncate" title={plot.buriedPersonNames?.join(', ') || undefined}>
+                          {plot.buriedPersonNames && plot.buriedPersonNames.length > 0 ? plot.buriedPersonNames.join(', ') : '-'}
+                        </td>
+                      )}
                       <td className="px-2 py-2 text-xs text-hai text-center">
                         {formatContractDate(plot.contractDate)}
                       </td>
@@ -652,7 +713,7 @@ export default function PlotRegistry({
                 })
               ) : (
                 <tr>
-                  <td colSpan={9} className="px-4 py-12 text-center text-hai">
+                  <td colSpan={showBuriedPersons ? 13 : 12} className="px-4 py-12 text-center text-hai">
                     <div className="flex flex-col items-center">
                       <svg className="w-12 h-12 text-gin mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />

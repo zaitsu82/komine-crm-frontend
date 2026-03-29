@@ -51,7 +51,7 @@ export function LoginForm() {
               </svg>
             </div>
             <h1 className="font-mincho text-3xl font-semibold text-sumi mb-2 tracking-wide">
-              小峰霊園CRM
+              小嶺霊園CRM
             </h1>
             <p className="text-hai text-sm tracking-wider">
               管理者ログイン
