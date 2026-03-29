@@ -359,7 +359,7 @@ export function BurialInfoTab({
                 min={1}
                 max={100}
                 placeholder="例: 10"
-                {...register('collectiveBurial.burialCapacity')}
+                {...register('collectiveBurial.burialCapacity', { valueAsNumber: true })}
                 className={errors.collectiveBurial?.burialCapacity ? 'border-beni' : ''}
               />
               <p className="text-xs text-hai mt-1">この区画に埋葬できる最大人数</p>
@@ -380,7 +380,7 @@ export function BurialInfoTab({
                 min={1}
                 max={100}
                 placeholder="例: 33"
-                {...register('collectiveBurial.validityPeriodYears')}
+                {...register('collectiveBurial.validityPeriodYears', { valueAsNumber: true })}
                 className={errors.collectiveBurial?.validityPeriodYears ? 'border-beni' : ''}
               />
               <p className="text-xs text-hai mt-1">埋葬上限到達後の合祀管理期間</p>
@@ -398,7 +398,7 @@ export function BurialInfoTab({
                 type="number"
                 min={0}
                 placeholder="例: 50000"
-                {...register('collectiveBurial.billingAmount')}
+                {...register('collectiveBurial.billingAmount', { valueAsNumber: true })}
                 className={errors.collectiveBurial?.billingAmount ? 'border-beni' : ''}
               />
               {errors.collectiveBurial?.billingAmount && (
