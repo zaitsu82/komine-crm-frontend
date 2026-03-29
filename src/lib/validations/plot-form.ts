@@ -18,6 +18,18 @@ import {
 
 // ===== 共通バリデーション =====
 
+// オプショナル非負数値（空欄/NaN → null、数値 → number）
+const optionalNonnegativeNumber = z.preprocess(
+  (val) => (val === '' || val === null || val === undefined || Number.isNaN(val) ? null : val),
+  z.coerce.number({ message: '数値を入力してください' }).nonnegative('0以上の数値を入力してください').nullable(),
+);
+
+// オプショナル非負整数
+const optionalNonnegativeInt = z.preprocess(
+  (val) => (val === '' || val === null || val === undefined || Number.isNaN(val) ? null : val),
+  z.coerce.number({ message: '数値を入力してください' }).int('整数を入力してください').nonnegative('0以上の数値を入力してください').nullable(),
+);
+
 // 日付文字列（YYYY-MM-DD形式）
 const dateString = z
   .string()
@@ -47,7 +59,7 @@ const optionalEmail = z
 export const physicalPlotSchema = z.object({
   plotNumber: z.string().min(1, '区画番号は必須です'),
   areaName: z.string().min(1, '区画（期）は必須です'),
-  areaSqm: z.coerce.number().positive('面積は正の数値で入力してください').default(3.6),
+  areaSqm: z.coerce.number().positive('面積は正の数値で入力してください').min(1.8, '面積は1.8㎡以上で入力してください').default(3.6),
   notes: z.string().optional().nullable(),
 });
 
@@ -61,7 +73,7 @@ export const contractPlotSchema = z.object({
 // ===== 販売契約スキーマ =====
 
 export const saleContractSchema = z.object({
-  contractDate: z.string().min(1, '契約日は必須です'),
+  contractDate: z.string().min(1, '契約日は必須です').regex(/^\d{4}-\d{2}-\d{2}$/, '契約日はYYYY-MM-DD形式で入力してください'),
   price: z.coerce.number().nonnegative('価格は0以上で入力してください'),
   paymentStatus: z.nativeEnum(PaymentStatus).optional().default(PaymentStatus.Unpaid),
   reservationDate: dateString,
@@ -79,7 +91,7 @@ export const saleContractSchema = z.object({
 
 export const customerSchema = z.object({
   name: z.string().min(1, '氏名は必須です'),
-  nameKana: z.string().min(1, '氏名カナは必須です'),
+  nameKana: z.string().min(1, '氏名カナは必須です').regex(/^[ァ-ヶー\s]+$/, '氏名カナはカタカナで入力してください'),
   birthDate: dateString.nullable(),
   gender: z.nativeEnum(Gender).optional().nullable(),
   postalCode: postalCode,
@@ -153,7 +165,7 @@ export const gravestoneInfoSchema = z.object({
   gravestoneDealer: z.string().optional().nullable(),
   gravestoneType: z.string().optional().nullable(),
   surroundingArea: z.string().optional().nullable(),
-  gravestoneCost: z.coerce.number().nonnegative().optional().nullable(),
+  gravestoneCost: optionalNonnegativeNumber.optional(),
   establishmentDeadline: dateString.nullable(),
   establishmentDate: dateString.nullable(),
 });
@@ -192,7 +204,7 @@ export const buriedPersonSchema = z.object({
   relationship: z.string().optional().nullable(),
   birthDate: dateString.nullable(),
   deathDate: dateString.nullable(),
-  age: z.coerce.number().int().nonnegative().optional().nullable(),
+  age: optionalNonnegativeInt.optional(),
   gender: z.nativeEnum(Gender).optional().nullable(),
   burialDate: dateString.nullable(),
   posthumousName: z.string().optional().nullable(),
@@ -206,7 +218,7 @@ export const buriedPersonSchema = z.object({
 export const collectiveBurialSchema = z.object({
   burialCapacity: z.coerce.number().int().positive('埋葬上限は1以上で入力してください'),
   validityPeriodYears: z.coerce.number().int().positive('有効期間は1年以上で入力してください'),
-  billingAmount: z.coerce.number().nonnegative().optional().nullable(),
+  billingAmount: optionalNonnegativeNumber.optional(),
   notes: z.string().optional().nullable(),
 });
 
@@ -617,6 +629,15 @@ export function plotFormDataToUpdateRequest(formData: PlotUpdateFormData): Updat
 // ===== PlotDetailResponse → PlotFormData 変換（編集時のデフォルト値生成） =====
 
 /**
+ * ISO日付文字列をYYYY-MM-DD形式に正規化
+ * "2024-01-15T00:00:00.000Z" → "2024-01-15"
+ */
+function toDateOnly(date: string | null | undefined): string {
+  if (!date) return '';
+  return date.split('T')[0];
+}
+
+/**
  * PlotDetailResponse を PlotFormData に変換
  * 編集フォームの defaultValues として使用
  */
@@ -637,23 +658,23 @@ export function plotDetailToFormData(detail: PlotDetailResponse): PlotFormData {
       locationDescription: detail.locationDescription,
     },
     saleContract: {
-      contractDate: detail.contractDate,
+      contractDate: toDateOnly(detail.contractDate),
       price: detail.price,
       paymentStatus: detail.paymentStatus,
-      reservationDate: detail.reservationDate || '',
+      reservationDate: toDateOnly(detail.reservationDate),
       acceptanceNumber: detail.acceptanceNumber || '',
-      acceptanceDate: detail.acceptanceDate || '',
+      acceptanceDate: toDateOnly(detail.acceptanceDate),
       staffInCharge: detail.staffInCharge || null,
       agentName: detail.agentName || null,
-      permitDate: detail.permitDate || '',
+      permitDate: toDateOnly(detail.permitDate),
       permitNumber: detail.permitNumber || '',
-      startDate: detail.startDate || '',
+      startDate: toDateOnly(detail.startDate),
       notes: detail.contractNotes,
     },
     customer: {
       name: customer?.name || '',
       nameKana: customer?.nameKana || '',
-      birthDate: customer?.birthDate || null,
+      birthDate: toDateOnly(customer?.birthDate) || null,
       gender: customer?.gender || null,
       postalCode: customer?.postalCode || '',
       address: customer?.address || '',
@@ -721,8 +742,8 @@ export function plotDetailToFormData(detail: PlotDetailResponse): PlotFormData {
         gravestoneType: detail.gravestoneInfo.gravestoneType,
         surroundingArea: detail.gravestoneInfo.surroundingArea,
         gravestoneCost: detail.gravestoneInfo.gravestoneCost,
-        establishmentDeadline: detail.gravestoneInfo.establishmentDeadline,
-        establishmentDate: detail.gravestoneInfo.establishmentDate,
+        establishmentDeadline: toDateOnly(detail.gravestoneInfo.establishmentDeadline),
+        establishmentDate: toDateOnly(detail.gravestoneInfo.establishmentDate),
       }
       : null,
     familyContacts: detail.familyContacts.map((fc) => ({
@@ -730,7 +751,7 @@ export function plotDetailToFormData(detail: PlotDetailResponse): PlotFormData {
       emergencyContactFlag: false,
       name: fc.name,
       nameKana: fc.nameKana || null,
-      birthDate: fc.birthDate || null,
+      birthDate: toDateOnly(fc.birthDate) || null,
       relationship: fc.relationship,
       postalCode: fc.postalCode,
       address: fc.address,
@@ -752,13 +773,13 @@ export function plotDetailToFormData(detail: PlotDetailResponse): PlotFormData {
       name: bp.name,
       nameKana: bp.nameKana,
       relationship: bp.relationship,
-      birthDate: bp.birthDate || null,
-      deathDate: bp.deathDate || null,
+      birthDate: toDateOnly(bp.birthDate) || null,
+      deathDate: toDateOnly(bp.deathDate) || null,
       age: bp.age,
       gender: bp.gender,
-      burialDate: bp.burialDate || null,
+      burialDate: toDateOnly(bp.burialDate) || null,
       posthumousName: bp.posthumousName || null,
-      reportDate: bp.reportDate || null,
+      reportDate: toDateOnly(bp.reportDate) || null,
       religion: bp.religion || null,
       notes: bp.notes,
     })),

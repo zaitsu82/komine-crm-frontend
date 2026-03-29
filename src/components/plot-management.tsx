@@ -38,7 +38,7 @@ export default function PlotManagement({ initialView = 'registry' }: PlotManagem
   const [isLoading, setIsLoading] = useState(false);
 
   // 選択中の区画詳細を取得（編集モードで使用）
-  const { plot: selectedPlotDetail } = usePlotDetail(selectedPlotId || '');
+  const { plot: selectedPlotDetail, isLoading: isPlotDetailLoading } = usePlotDetail(selectedPlotId || '');
 
   // 削除ダイアログ用のstate
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -214,12 +214,18 @@ export default function PlotManagement({ initialView = 'registry' }: PlotManagem
             </div>
 
             <div className="flex-1 p-6">
-              <PlotForm
-                plotDetail={currentView === 'edit' ? selectedPlotDetail || undefined : undefined}
-                onSave={handleSavePlot}
-                onCancel={handleCancelForm}
-                isLoading={isLoading}
-              />
+              {currentView === 'edit' && isPlotDetailLoading && !selectedPlotDetail ? (
+                <div className="flex items-center justify-center h-64 text-hai">
+                  区画情報を読み込み中...
+                </div>
+              ) : (
+                <PlotForm
+                  plotDetail={currentView === 'edit' ? selectedPlotDetail || undefined : undefined}
+                  onSave={handleSavePlot}
+                  onCancel={handleCancelForm}
+                  isLoading={isLoading}
+                />
+              )}
             </div>
           </>
         ) : currentView === 'collective-burial' ? (
