@@ -104,6 +104,7 @@ function makePlotListItem(overrides: Partial<PlotListItem> = {}): PlotListItem {
         customer: { id: 'cust-1', name: '田中太郎' },
       },
     ],
+    permitNumber: null,
     nextBillingDate: '2025-04-01',
     managementFee: '5000',
     createdAt: '2024-01-01T00:00:00Z',

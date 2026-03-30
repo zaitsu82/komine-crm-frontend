@@ -375,10 +375,16 @@ export default function PlotListTable({
                   </div>
                 </th>
                 <th className="px-4 py-3 text-left text-sm font-semibold text-sumi">
+                  許可番号
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-sumi">
                   電話番号
                 </th>
                 <th className="px-4 py-3 text-left text-sm font-semibold text-sumi">
                   住所
+                </th>
+                <th className="px-4 py-3 text-right text-sm font-semibold text-sumi">
+                  管理料
                 </th>
                 <th
                   className={cn(
@@ -409,7 +415,7 @@ export default function PlotListTable({
             <tbody className="divide-y divide-gin">
               {isLoading ? (
                 <tr>
-                  <td colSpan={9} className="px-6 py-8 text-center text-sm text-hai">
+                  <td colSpan={11} className="px-6 py-8 text-center text-sm text-hai">
                     <div className="flex items-center justify-center">
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-matsu mr-2"></div>
                       データを読み込み中...
@@ -418,7 +424,7 @@ export default function PlotListTable({
                 </tr>
               ) : error ? (
                 <tr>
-                  <td colSpan={9} className="px-6 py-8 text-center text-sm text-beni">
+                  <td colSpan={11} className="px-6 py-8 text-center text-sm text-beni">
                     エラーが発生しました: {error}
                   </td>
                 </tr>
@@ -460,10 +466,16 @@ export default function PlotListTable({
                         {plot.physicalPlotAreaSqm}㎡
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-sumi">
+                        {plot.permitNumber || '-'}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-sumi">
                         {plot.customerPhoneNumber || '-'}
                       </td>
                       <td className="px-4 py-3 text-sm text-sumi max-w-[200px] truncate">
                         {plot.customerAddress || '-'}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-sumi text-right">
+                        {plot.managementFee ? `${Number(plot.managementFee).toLocaleString()}円` : '-'}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm">
                         {paymentStatus && (
@@ -490,7 +502,7 @@ export default function PlotListTable({
                 })
               ) : (
                 <tr>
-                  <td colSpan={9} className="px-6 py-8 text-center text-sm text-hai">
+                  <td colSpan={11} className="px-6 py-8 text-center text-sm text-hai">
                     <div className="flex flex-col items-center">
                       <svg className="w-12 h-12 text-gin mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
