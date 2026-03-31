@@ -47,7 +47,7 @@ export default function MastersManagement() {
   // Dialog state
   const [showDialog, setShowDialog] = useState(false);
   const [editingItem, setEditingItem] = useState<MasterItem | null>(null);
-  const [formData, setFormData] = useState({ code: '', name: '', description: '', sortOrder: '', period: '' });
+  const [formData, setFormData] = useState({ name: '', description: '', sortOrder: '', period: '' });
   const [formError, setFormError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
@@ -78,7 +78,7 @@ export default function MastersManagement() {
 
   const handleOpenCreate = () => {
     setEditingItem(null);
-    setFormData({ code: '', name: '', description: '', sortOrder: '', period: '' });
+    setFormData({ name: '', description: '', sortOrder: '', period: '' });
     setFormError('');
     setShowDialog(true);
   };
@@ -86,7 +86,6 @@ export default function MastersManagement() {
   const handleOpenEdit = (item: MasterItem) => {
     setEditingItem(item);
     setFormData({
-      code: item.code,
       name: item.name,
       description: item.description || '',
       sortOrder: item.sortOrder?.toString() || '',
@@ -97,10 +96,6 @@ export default function MastersManagement() {
   };
 
   const handleSubmit = async () => {
-    if (!formData.code.trim()) {
-      setFormError('コードを入力してください');
-      return;
-    }
     if (!formData.name.trim()) {
       setFormError('名称を入力してください');
       return;
@@ -110,7 +105,6 @@ export default function MastersManagement() {
     setFormError('');
 
     const payload = {
-      code: formData.code.trim(),
       name: formData.name.trim(),
       description: formData.description.trim() || null,
       sortOrder: formData.sortOrder ? parseInt(formData.sortOrder, 10) : null,
@@ -213,8 +207,6 @@ export default function MastersManagement() {
         <table className="w-full">
           <thead className="bg-shiro">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-hai uppercase">ID</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-hai uppercase">コード</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-hai uppercase">名称</th>
               {isSectionName && (
                 <th className="px-4 py-3 text-left text-xs font-medium text-hai uppercase">期</th>
@@ -230,15 +222,13 @@ export default function MastersManagement() {
           <tbody className="divide-y divide-gin">
             {currentItems.length === 0 ? (
               <tr>
-                <td colSpan={(isAdmin ? 7 : 6) + (isSectionName ? 1 : 0)} className="px-4 py-8 text-center text-hai">
+                <td colSpan={(isAdmin ? 5 : 4) + (isSectionName ? 1 : 0)} className="px-4 py-8 text-center text-hai">
                   データがありません
                 </td>
               </tr>
             ) : (
               currentItems.map((item) => (
                 <tr key={item.id} className="hover:bg-shiro">
-                  <td className="px-4 py-3 text-sm text-hai">{item.id}</td>
-                  <td className="px-4 py-3 text-sm font-mono text-sumi">{item.code}</td>
                   <td className="px-4 py-3 text-sm font-medium text-sumi">{item.name}</td>
                   {isSectionName && (
                     <td className="px-4 py-3 text-sm text-hai">
@@ -303,16 +293,6 @@ export default function MastersManagement() {
             )}
 
             <div className="space-y-4">
-              <div>
-                <Label htmlFor="code">コード *</Label>
-                <Input
-                  id="code"
-                  value={formData.code}
-                  onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                  placeholder="例: GENERAL"
-                  maxLength={20}
-                />
-              </div>
               <div>
                 <Label htmlFor="name">名称 *</Label>
                 <Input

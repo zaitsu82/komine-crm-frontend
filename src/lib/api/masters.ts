@@ -213,7 +213,7 @@ export type MasterType =
   | 'section-name';
 
 export interface CreateMasterRequest {
-  code: string;
+  code?: string;
   name: string;
   description?: string | null;
   sortOrder?: number | null;
