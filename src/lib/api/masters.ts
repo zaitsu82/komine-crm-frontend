@@ -21,6 +21,11 @@ export interface TaxTypeMasterItem extends MasterItem {
   taxRate: string | null;
 }
 
+// 区画名マスタ（追加フィールドあり）
+export interface SectionNameMasterItem extends MasterItem {
+  period: string;
+}
+
 // 全マスタデータの型
 export interface AllMastersData {
   cemeteryType: MasterItem[];
@@ -31,6 +36,7 @@ export interface AllMastersData {
   accountType: MasterItem[];
   recipientType: MasterItem[];
   constructionType: MasterItem[];
+  sectionName: SectionNameMasterItem[];
 }
 
 // モックデータ
@@ -73,6 +79,18 @@ const mockMasterData: AllMastersData = {
     { id: 2, code: 'TOMBSTONE', name: '墓石設置', description: '墓石の設置工事', sortOrder: 2, isActive: true },
     { id: 3, code: 'REMOVAL', name: '墓石撤去', description: '墓石の撤去工事', sortOrder: 3, isActive: true },
     { id: 4, code: 'REPAIR', name: '修繕工事', description: '墓石の修繕', sortOrder: 4, isActive: true },
+  ],
+  sectionName: [
+    { id: 1, code: '1-A', name: 'A', period: '第1期', description: null, sortOrder: 1, isActive: true },
+    { id: 2, code: '1-B', name: 'B', period: '第1期', description: null, sortOrder: 2, isActive: true },
+    { id: 3, code: '1-C', name: 'C', period: '第1期', description: null, sortOrder: 3, isActive: true },
+    { id: 4, code: '1-KISSOU', name: '吉相', period: '第1期', description: null, sortOrder: 4, isActive: true },
+    { id: 5, code: '2-1', name: '1', period: '第2期', description: null, sortOrder: 18, isActive: true },
+    { id: 6, code: '2-2', name: '2', period: '第2期', description: null, sortOrder: 19, isActive: true },
+    { id: 7, code: '3-10', name: '10', period: '第3期', description: null, sortOrder: 26, isActive: true },
+    { id: 8, code: '3T-JURIN', name: '樹林', period: '第3期樹林部', description: null, sortOrder: 28, isActive: true },
+    { id: 9, code: '4-RURIAN_TERRACE', name: 'るり庵テラス', period: '第4期', description: null, sortOrder: 30, isActive: true },
+    { id: 10, code: '4-IKOI', name: '憩', period: '第4期', description: null, sortOrder: 37, isActive: true },
   ],
 };
 
@@ -172,6 +190,16 @@ export async function getConstructionTypes(): Promise<ApiResponse<MasterItem[]>>
   return apiGet<MasterItem[]>('/masters/construction-type');
 }
 
+/**
+ * 区画名マスタ取得
+ */
+export async function getSectionNames(): Promise<ApiResponse<SectionNameMasterItem[]>> {
+  if (shouldUseMockData()) {
+    return { success: true, data: mockMasterData.sectionName };
+  }
+  return apiGet<SectionNameMasterItem[]>('/masters/section-name');
+}
+
 // CRUD用の型定義
 export type MasterType =
   | 'cemetery-type'
@@ -181,7 +209,8 @@ export type MasterType =
   | 'billing-type'
   | 'account-type'
   | 'recipient-type'
-  | 'construction-type';
+  | 'construction-type'
+  | 'section-name';
 
 export interface CreateMasterRequest {
   code: string;
@@ -190,6 +219,7 @@ export interface CreateMasterRequest {
   sortOrder?: number | null;
   isActive?: boolean;
   taxRate?: number | null;
+  period?: string;
 }
 
 export interface UpdateMasterRequest {
@@ -199,6 +229,7 @@ export interface UpdateMasterRequest {
   sortOrder?: number | null;
   isActive?: boolean;
   taxRate?: number | null;
+  period?: string;
 }
 
 export async function createMasterItem(

@@ -11,8 +11,10 @@ import {
   getAccountTypes,
   getRecipientTypes,
   getConstructionTypes,
+  getSectionNames,
   MasterItem,
   TaxTypeMasterItem,
+  SectionNameMasterItem,
   AllMastersData,
 } from '@/lib/api';
 
@@ -140,6 +142,7 @@ export function useMasters(options?: { skipCache?: boolean }) {
   const accountTypes = state.data?.accountType || [];
   const recipientTypes = state.data?.recipientType || [];
   const constructionTypes = state.data?.constructionType || [];
+  const sectionNames = state.data?.sectionName || [];
 
   return {
     // 状態
@@ -157,6 +160,7 @@ export function useMasters(options?: { skipCache?: boolean }) {
     accountTypes,
     recipientTypes,
     constructionTypes,
+    sectionNames,
 
     // アクション
     refresh,
@@ -211,6 +215,7 @@ export const useBillingTypes = () => useMasterData<MasterItem>(getBillingTypes);
 export const useAccountTypes = () => useMasterData<MasterItem>(getAccountTypes);
 export const useRecipientTypes = () => useMasterData<MasterItem>(getRecipientTypes);
 export const useConstructionTypes = () => useMasterData<MasterItem>(getConstructionTypes);
+export const useSectionNames = () => useMasterData<SectionNameMasterItem>(getSectionNames);
 
 /**
  * マスタデータからコードで値を検索するユーティリティ

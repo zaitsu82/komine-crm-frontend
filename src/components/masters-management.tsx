@@ -11,6 +11,7 @@ import {
   updateMasterItem,
   deleteMasterItem,
   MasterItem,
+  SectionNameMasterItem,
   AllMastersData,
   MasterType,
 } from '@/lib/api';
@@ -31,6 +32,7 @@ const MASTER_TYPES: MasterTypeConfig[] = [
   { key: 'account-type', label: '口座タイプ', dataKey: 'accountType' },
   { key: 'recipient-type', label: '受取人タイプ', dataKey: 'recipientType' },
   { key: 'construction-type', label: '工事タイプ', dataKey: 'constructionType' },
+  { key: 'section-name', label: '区画名', dataKey: 'sectionName' },
 ];
 
 export default function MastersManagement() {
@@ -45,7 +47,7 @@ export default function MastersManagement() {
   // Dialog state
   const [showDialog, setShowDialog] = useState(false);
   const [editingItem, setEditingItem] = useState<MasterItem | null>(null);
-  const [formData, setFormData] = useState({ code: '', name: '', description: '', sortOrder: '' });
+  const [formData, setFormData] = useState({ code: '', name: '', description: '', sortOrder: '', period: '' });
   const [formError, setFormError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
@@ -72,9 +74,11 @@ export default function MastersManagement() {
 
   const currentItems = mastersData ? (mastersData[selectedType.dataKey] as MasterItem[]) : [];
 
+  const isSectionName = selectedType.key === 'section-name';
+
   const handleOpenCreate = () => {
     setEditingItem(null);
-    setFormData({ code: '', name: '', description: '', sortOrder: '' });
+    setFormData({ code: '', name: '', description: '', sortOrder: '', period: '' });
     setFormError('');
     setShowDialog(true);
   };
@@ -86,6 +90,7 @@ export default function MastersManagement() {
       name: item.name,
       description: item.description || '',
       sortOrder: item.sortOrder?.toString() || '',
+      period: isSectionName ? (item as SectionNameMasterItem).period || '' : '',
     });
     setFormError('');
     setShowDialog(true);
@@ -109,6 +114,7 @@ export default function MastersManagement() {
       name: formData.name.trim(),
       description: formData.description.trim() || null,
       sortOrder: formData.sortOrder ? parseInt(formData.sortOrder, 10) : null,
+      ...(isSectionName && formData.period.trim() ? { period: formData.period.trim() } : {}),
     };
 
     if (editingItem) {
@@ -189,11 +195,10 @@ export default function MastersManagement() {
           <button
             key={type.key}
             onClick={() => setSelectedType(type)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              selectedType.key === type.key
-                ? 'bg-sumi text-white'
-                : 'bg-kinari text-sumi hover:bg-gin'
-            }`}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${selectedType.key === type.key
+              ? 'bg-sumi text-white'
+              : 'bg-kinari text-sumi hover:bg-gin'
+              }`}
           >
             {type.label}
             <span className="ml-1 text-xs opacity-70">
@@ -211,6 +216,9 @@ export default function MastersManagement() {
               <th className="px-4 py-3 text-left text-xs font-medium text-hai uppercase">ID</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-hai uppercase">コード</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-hai uppercase">名称</th>
+              {isSectionName && (
+                <th className="px-4 py-3 text-left text-xs font-medium text-hai uppercase">期</th>
+              )}
               <th className="px-4 py-3 text-left text-xs font-medium text-hai uppercase">説明</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-hai uppercase">並び順</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-hai uppercase">状態</th>
@@ -222,7 +230,7 @@ export default function MastersManagement() {
           <tbody className="divide-y divide-gin">
             {currentItems.length === 0 ? (
               <tr>
-                <td colSpan={isAdmin ? 7 : 6} className="px-4 py-8 text-center text-hai">
+                <td colSpan={(isAdmin ? 7 : 6) + (isSectionName ? 1 : 0)} className="px-4 py-8 text-center text-hai">
                   データがありません
                 </td>
               </tr>
@@ -232,15 +240,19 @@ export default function MastersManagement() {
                   <td className="px-4 py-3 text-sm text-hai">{item.id}</td>
                   <td className="px-4 py-3 text-sm font-mono text-sumi">{item.code}</td>
                   <td className="px-4 py-3 text-sm font-medium text-sumi">{item.name}</td>
+                  {isSectionName && (
+                    <td className="px-4 py-3 text-sm text-hai">
+                      {(item as SectionNameMasterItem).period || '-'}
+                    </td>
+                  )}
                   <td className="px-4 py-3 text-sm text-hai">{item.description || '-'}</td>
                   <td className="px-4 py-3 text-sm text-hai">{item.sortOrder ?? '-'}</td>
                   <td className="px-4 py-3">
                     <span
-                      className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                        item.isActive
-                          ? 'bg-matsu-100 text-matsu-800'
-                          : 'bg-kinari text-hai'
-                      }`}
+                      className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${item.isActive
+                        ? 'bg-matsu-100 text-matsu-800'
+                        : 'bg-kinari text-hai'
+                        }`}
                     >
                       {item.isActive ? '有効' : '無効'}
                     </span>
@@ -298,7 +310,7 @@ export default function MastersManagement() {
                   value={formData.code}
                   onChange={(e) => setFormData({ ...formData, code: e.target.value })}
                   placeholder="例: GENERAL"
-                  maxLength={10}
+                  maxLength={20}
                 />
               </div>
               <div>
@@ -311,6 +323,18 @@ export default function MastersManagement() {
                   maxLength={50}
                 />
               </div>
+              {isSectionName && (
+                <div>
+                  <Label htmlFor="period">期 *</Label>
+                  <Input
+                    id="period"
+                    value={formData.period}
+                    onChange={(e) => setFormData({ ...formData, period: e.target.value })}
+                    placeholder="例: 第1期"
+                    maxLength={20}
+                  />
+                </div>
+              )}
               <div>
                 <Label htmlFor="description">説明</Label>
                 <Input
