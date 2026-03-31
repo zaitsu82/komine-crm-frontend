@@ -1,7 +1,7 @@
 import { UseFormRegister, UseFormWatch, UseFormSetValue, Control, FieldErrors, UseFieldArrayReturn } from 'react-hook-form';
 import type { PlotDetailResponse } from '@komine/types';
 import type { PlotFormData, FamilyContactFormData, BuriedPersonFormData } from '@/lib/validations/plot-form';
-import { MasterItem, TaxTypeMasterItem } from '@/lib/api';
+import { MasterItem, TaxTypeMasterItem, SectionNameMasterItem } from '@/lib/api';
 
 export interface MasterData {
   calcTypes: MasterItem[];
@@ -9,6 +9,7 @@ export interface MasterData {
   billingTypes: MasterItem[];
   paymentMethods: MasterItem[];
   accountTypes: MasterItem[];
+  sectionNames: SectionNameMasterItem[];
   isLoading: boolean;
 }
 

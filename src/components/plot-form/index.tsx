@@ -28,6 +28,7 @@ export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProp
     billingTypes,
     paymentMethods,
     accountTypes,
+    sectionNames,
     isLoading: isMasterLoading,
   } = useMasters();
 
@@ -37,6 +38,7 @@ export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProp
     billingTypes,
     paymentMethods,
     accountTypes,
+    sectionNames,
     isLoading: isMasterLoading,
   };
 
@@ -312,9 +314,8 @@ export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProp
               <TabsTrigger
                 key={tabKey}
                 value={tabKey}
-                className={`relative py-2 data-[state=active]:bg-matsu data-[state=active]:text-white ${
-                  hasError ? 'text-beni border-b-2 border-beni data-[state=active]:bg-beni' : ''
-                }`}
+                className={`relative py-2 data-[state=active]:bg-matsu data-[state=active]:text-white ${hasError ? 'text-beni border-b-2 border-beni data-[state=active]:bg-beni' : ''
+                  }`}
               >
                 {hasError && (
                   <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-beni text-white text-[10px] font-bold leading-none">

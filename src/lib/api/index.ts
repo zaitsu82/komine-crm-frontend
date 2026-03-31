@@ -62,11 +62,12 @@ export {
   getAccountTypes,
   getRecipientTypes,
   getConstructionTypes,
+  getSectionNames,
   createMasterItem,
   updateMasterItem,
   deleteMasterItem,
 } from './masters';
-export type { MasterItem, TaxTypeMasterItem, AllMastersData, MasterType, CreateMasterRequest, UpdateMasterRequest } from './masters';
+export type { MasterItem, TaxTypeMasterItem, SectionNameMasterItem, AllMastersData, MasterType, CreateMasterRequest, UpdateMasterRequest } from './masters';
 
 // スタッフAPIのエクスポート
 export {

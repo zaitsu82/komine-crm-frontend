@@ -5,7 +5,7 @@ import { PlotTabBaseProps } from './types';
 import { ViewModeField, ViewModeSelect } from './ViewModeField';
 import { SelectItem } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { PLOT_SECTIONS_BY_PERIOD, PlotPeriod } from '@/types/plot-constants';
+import { useMemo } from 'react';
 import { Gender, ContractRole, PaymentStatus } from '@komine/types';
 
 export function BasicInfoTab({
@@ -16,11 +16,24 @@ export function BasicInfoTab({
   viewMode = false,
   masterData,
 }: PlotTabBaseProps) {
+  // マスタデータから期→区画名のマッピングを構築
+  const { periods, sectionsByPeriod } = useMemo(() => {
+    const items = masterData?.sectionNames || [];
+    const periodSet = new Set<string>();
+    const map: Record<string, string[]> = {};
+    for (const item of items) {
+      periodSet.add(item.period);
+      if (!map[item.period]) map[item.period] = [];
+      map[item.period].push(item.name);
+    }
+    return { periods: Array.from(periodSet), sectionsByPeriod: map };
+  }, [masterData?.sectionNames]);
+
   // 現在のareaNameから所属する期を特定
-  const [selectedPeriod, setSelectedPeriod] = useState<PlotPeriod | ''>(() => {
+  const [selectedPeriod, setSelectedPeriod] = useState<string>(() => {
     const currentAreaName = watch('physicalPlot.areaName');
-    for (const [period, sections] of Object.entries(PLOT_SECTIONS_BY_PERIOD)) {
-      if (sections.includes(currentAreaName)) return period as PlotPeriod;
+    for (const [period, sections] of Object.entries(sectionsByPeriod)) {
+      if (sections.includes(currentAreaName)) return period;
     }
     return '';
   });
@@ -119,15 +132,16 @@ export function BasicInfoTab({
                   label=""
                   value={selectedPeriod}
                   onValueChange={(v) => {
-                    setSelectedPeriod(v as PlotPeriod);
+                    setSelectedPeriod(v);
                     setValue('physicalPlot.areaName', '');
                   }}
                   placeholder="期を選択..."
                 >
-                  <SelectItem value="1期">1期</SelectItem>
-                  <SelectItem value="2期">2期</SelectItem>
-                  <SelectItem value="3期">3期</SelectItem>
-                  <SelectItem value="4期">4期</SelectItem>
+                  {periods.map((period) => (
+                    <SelectItem key={period} value={period}>
+                      {period}
+                    </SelectItem>
+                  ))}
                 </ViewModeSelect>
 
                 {/* 区画の選択 */}
@@ -138,7 +152,7 @@ export function BasicInfoTab({
                     onValueChange={(v) => setValue('physicalPlot.areaName', v)}
                     placeholder="区画を選択..."
                   >
-                    {PLOT_SECTIONS_BY_PERIOD[selectedPeriod]?.map((section) => (
+                    {sectionsByPeriod[selectedPeriod]?.map((section) => (
                       <SelectItem key={section} value={section}>
                         {section}
                       </SelectItem>
