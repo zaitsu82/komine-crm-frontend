@@ -20,6 +20,7 @@ import {
   UpdateStaffRequest,
 } from '@/lib/api';
 import { showSuccess, showError, showApiError } from '@/lib/toast';
+import PageHeader from '@/components/page-header';
 
 interface StaffManagementProps {
   // 将来的な拡張用
@@ -375,27 +376,22 @@ export default function StaffManagement({ }: StaffManagementProps) {
   return (
     <div className="min-h-screen bg-shiro">
       {/* Gradient Header */}
-      <div className="bg-gradient-to-r from-ai-50 to-kinari border-b border-ai-100 px-6 py-5">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-ai to-ai-dark flex items-center justify-center shadow-elegant-sm">
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </div>
-            <div>
-              <h2 className="font-mincho text-xl font-semibold text-sumi tracking-wide">スタッフ管理</h2>
-              <p className="text-sm text-hai mt-0.5">
-                {isAdminUser
-                  ? 'スタッフの登録・編集・権限管理'
-                  : 'スタッフ情報を閲覧できます（編集は管理者のみ）'}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
+      <PageHeader
+        title="スタッフ管理"
+        subtitle={isAdminUser
+          ? 'スタッフの登録・編集・権限管理'
+          : 'スタッフ情報を閲覧できます（編集は管理者のみ）'}
+        theme="ai"
+        icon={
+          <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        }
+        actions={
+          <>
             <button
               onClick={() => setShowPermissionMatrix(!showPermissionMatrix)}
-              className={`inline-flex items-center border rounded-elegant px-4 py-2 transition-all duration-200 text-sm font-medium ${
+              className={`inline-flex items-center border rounded-elegant px-4 py-2 cursor-pointer transition-all duration-200 text-sm font-medium ${
                 showPermissionMatrix
                   ? 'bg-ai-50 border-ai-200 text-ai-dark'
                   : 'border-gin text-sumi hover:bg-kinari'
@@ -409,7 +405,7 @@ export default function StaffManagement({ }: StaffManagementProps) {
             {isAdminUser && (
               <button
                 onClick={handleOpenCreateDialog}
-                className="inline-flex items-center bg-matsu text-white hover:bg-matsu-dark rounded-elegant px-4 py-2 shadow-elegant-sm transition-all duration-200 text-sm font-medium"
+                className="inline-flex items-center bg-matsu text-white hover:bg-matsu-dark rounded-elegant px-4 py-2 shadow-elegant-sm cursor-pointer transition-all duration-200 text-sm font-medium"
               >
                 <svg className="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -417,9 +413,9 @@ export default function StaffManagement({ }: StaffManagementProps) {
                 新規登録
               </button>
             )}
-          </div>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       {/* Summary Stat Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 px-6 py-4">

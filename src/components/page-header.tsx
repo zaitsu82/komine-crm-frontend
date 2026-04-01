@@ -38,9 +38,10 @@ interface PageHeaderProps {
   icon: ReactNode;
   theme: ColorTheme;
   actions?: ReactNode;
+  children?: ReactNode;
 }
 
-export default function PageHeader({ title, subtitle, icon, theme, actions }: PageHeaderProps) {
+export default function PageHeader({ title, subtitle, icon, theme, actions, children }: PageHeaderProps) {
   const styles = themeStyles[theme];
 
   return (
@@ -63,6 +64,7 @@ export default function PageHeader({ title, subtitle, icon, theme, actions }: Pa
           </div>
         )}
       </div>
+      {children}
     </div>
   );
 }
