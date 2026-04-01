@@ -49,6 +49,7 @@ export interface CollectiveBurialListItem {
   contractPlotId: string;
   plotNumber: string;
   areaName: string;
+  contractDate: string;
   applicantName: string | null;
   applicantNameKana: string | null;
   burialCapacity: number;
@@ -143,6 +144,7 @@ const mockCollectiveBurials: CollectiveBurialListItem[] = [
     contractPlotId: 'cp-001',
     plotNumber: 'A-001',
     areaName: '1期',
+    contractDate: '2020-01-15',
     applicantName: '山田 太郎',
     applicantNameKana: 'ヤマダ タロウ',
     burialCapacity: 10,
@@ -165,6 +167,7 @@ const mockCollectiveBurials: CollectiveBurialListItem[] = [
     contractPlotId: 'cp-002',
     plotNumber: 'B-015',
     areaName: '2期',
+    contractDate: '2021-04-01',
     applicantName: '佐藤 健一',
     applicantNameKana: 'サトウ ケンイチ',
     burialCapacity: 8,
@@ -187,6 +190,7 @@ const mockCollectiveBurials: CollectiveBurialListItem[] = [
     contractPlotId: 'cp-003',
     plotNumber: 'C-102',
     areaName: '3期',
+    contractDate: '2014-12-01',
     applicantName: '鈴木 一郎',
     applicantNameKana: 'スズキ イチロウ',
     burialCapacity: 6,
@@ -374,6 +378,7 @@ export async function createCollectiveBurial(
       contractPlotId: data.contractPlotId,
       plotNumber: 'NEW-001',
       areaName: '新規',
+      contractDate: new Date().toISOString().split('T')[0],
       applicantName: null,
       applicantNameKana: null,
       burialCapacity: data.burialCapacity,
