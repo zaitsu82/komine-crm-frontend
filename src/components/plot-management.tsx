@@ -18,6 +18,7 @@ import MastersManagement from '@/components/masters-management';
 import { DocumentManagement } from '@/components/document-management';
 import BulkImportPage from '@/components/bulk-import';
 import ProfilePage from '@/components/profile-page';
+import UserMenu from '@/components/user-menu';
 import { usePlotDetail } from '@/hooks/usePlots';
 
 import {
@@ -36,6 +37,7 @@ export default function PlotManagement({ initialView = 'registry' }: PlotManagem
   const [selectedPlotCode, setSelectedPlotCode] = useState<string>('');
   const [currentView, setCurrentView] = useState<ViewType>(initialView);
   const [isLoading, setIsLoading] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // 選択中の区画詳細を取得（編集モードで使用）
   const { plot: selectedPlotDetail, isLoading: isPlotDetailLoading } = usePlotDetail(selectedPlotId || '');
@@ -155,6 +157,8 @@ export default function PlotManagement({ initialView = 'registry' }: PlotManagem
     }
   };
 
+  const sidebarWidth = sidebarCollapsed ? 'ml-16' : 'ml-64';
+
   return (
     <div className="flex h-screen bg-shiro">
       {/* Left Sidebar Menu */}
@@ -164,13 +168,20 @@ export default function PlotManagement({ initialView = 'registry' }: PlotManagem
         onBackToRegistry={handleBackToRegistry}
         onViewChange={handleViewChange}
         onDelete={handleOpenDeleteDialog}
+        collapsed={sidebarCollapsed}
+        onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
       />
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col ml-64">
+      <div className={`flex-1 flex flex-col ${sidebarWidth} transition-all duration-300`}>
+        {/* ヘッダーバー */}
+        <header className="h-14 border-b border-gin bg-white flex items-center justify-end px-4 flex-shrink-0">
+          <UserMenu onViewChange={handleViewChange} />
+        </header>
+
         {/* Conditional Content Based on Current View */}
         {currentView === 'registry' ? (
-          <div className="flex-1 p-6">
+          <div className="flex-1 p-6 overflow-auto">
             <PlotRegistry
               onPlotSelect={handlePlotSelect}
               selectedPlotId={selectedPlotId || undefined}

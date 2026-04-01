@@ -31,6 +31,7 @@ import {
   Download,
   Eye,
 } from 'lucide-react';
+import PageHeader from '@/components/page-header';
 
 interface DocumentListViewProps {
   /** 顧客IDでフィルター */
@@ -92,15 +93,22 @@ export function DocumentListView({
   return (
     <div className="space-y-4">
       {/* ヘッダー */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-sumi-900">
-          {customerName ? `${customerName} 様の書類` : '書類管理'}
-        </h2>
-        <Button onClick={onCreateNew} className="bg-matsu-600 hover:bg-matsu-700">
-          <Plus className="mr-2 h-4 w-4" />
-          新規作成
-        </Button>
-      </div>
+      <PageHeader
+        title={customerName ? `${customerName} 様の書類` : '書類管理'}
+        subtitle="書類の作成・管理"
+        theme="matsu"
+        icon={
+          <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        }
+        actions={
+          <Button onClick={onCreateNew} className="bg-matsu-600 hover:bg-matsu-700 cursor-pointer">
+            <Plus className="mr-2 h-4 w-4" />
+            新規作成
+          </Button>
+        }
+      />
 
       {/* フィルター */}
       <div className="flex flex-wrap gap-4 p-4 bg-kinari-50 rounded-lg">

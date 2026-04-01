@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { ClipboardList, Check, X, BarChart3, Hash } from 'lucide-react';
 import { PlotPeriod, PLOT_SIZE } from '@/types/plot-constants';
+import PageHeader from '@/components/page-header';
 import {
   usePlotInventorySummary,
   usePlotInventoryPeriods,
@@ -142,6 +143,17 @@ export default function PlotAvailabilityManagement() {
 
   return (
     <div className="bg-gradient-warm relative">
+      <PageHeader
+        title="区画残数管理"
+        subtitle="区画の在庫状況・使用率"
+        theme="kohaku"
+        icon={
+          <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+          </svg>
+        }
+      />
+
       {/* ツールバー */}
       <div className="bg-white border-b border-gin p-4 flex flex-wrap items-center gap-4">
         {/* 表示形式切替（区画別/面積別） */}

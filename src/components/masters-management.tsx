@@ -16,6 +16,7 @@ import {
   MasterType,
 } from '@/lib/api';
 import { showSuccess, showError } from '@/lib/toast';
+import PageHeader from '@/components/page-header';
 
 interface MasterTypeConfig {
   key: MasterType;
@@ -173,15 +174,26 @@ export default function MastersManagement() {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-sumi">マスタ管理</h1>
-        {isAdmin && (
-          <Button onClick={handleOpenCreate}>
-            + 新規追加
-          </Button>
-        )}
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        title="マスタ管理"
+        subtitle="各種マスタデータの管理"
+        theme="sumi"
+        icon={
+          <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37a1.724 1.724 0 002.573-1.066z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        }
+        actions={
+          isAdmin ? (
+            <Button onClick={handleOpenCreate} className="cursor-pointer">
+              + 新規追加
+            </Button>
+          ) : undefined
+        }
+      />
+
+      <div className="px-6">
 
       {/* Master type tabs */}
       <div className="flex flex-wrap gap-2">
@@ -276,6 +288,8 @@ export default function MastersManagement() {
             )}
           </tbody>
         </table>
+      </div>
+
       </div>
 
       {/* Create/Edit Dialog */}

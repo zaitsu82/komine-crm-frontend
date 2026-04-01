@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import { cn, truncateAddressToCity } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import PageHeader from '@/components/page-header';
 
 // ===== 型定義 =====
 
@@ -310,8 +311,34 @@ export default function PlotRegistry({
 
   return (
     <div className="h-full flex flex-col">
+      <PageHeader
+        title="台帳問い合わせ"
+        subtitle="区画情報の検索・閲覧"
+        theme="matsu"
+        icon={
+          <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        }
+        actions={
+          onNewPlot ? (
+            <Button
+              onClick={onNewPlot}
+              variant="outline"
+              size="default"
+              className="h-10 cursor-pointer"
+            >
+              <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              新規登録
+            </Button>
+          ) : undefined
+        }
+      />
+
       {/* 検索バー */}
-      <div className="mb-4 flex items-center gap-3">
+      <div className="mt-4 mb-4 flex items-center gap-3">
         <div className="flex-1 max-w-md">
           <Input
             type="text"
@@ -341,19 +368,6 @@ export default function PlotRegistry({
           )}
           {isLoading ? '検索中...' : '検索'}
         </Button>
-        {onNewPlot && (
-          <Button
-            onClick={onNewPlot}
-            variant="outline"
-            size="default"
-            className="h-10"
-          >
-            <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            新規登録
-          </Button>
-        )}
       </div>
 
       {/* フィルタ行 */}

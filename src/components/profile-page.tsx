@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import PageHeader from '@/components/page-header';
 
 const ROLE_LABELS: Record<string, string> = {
   viewer: '閲覧者',
@@ -60,22 +61,31 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
   };
 
   return (
-    <div className="flex-1 p-6 overflow-auto">
-      <div className="max-w-2xl mx-auto space-y-6">
-        {/* 戻るボタン */}
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onBack}
-          className="mb-2"
-        >
-          <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+    <div className="flex-1 overflow-auto">
+      <PageHeader
+        title="アカウント設定"
+        subtitle="プロフィール情報・パスワード変更"
+        theme="cha"
+        icon={
+          <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
           </svg>
-          戻る
-        </Button>
-
-        <h1 className="text-2xl font-semibold text-sumi">アカウント設定</h1>
+        }
+        actions={
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onBack}
+            className="cursor-pointer"
+          >
+            <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            戻る
+          </Button>
+        }
+      />
+      <div className="max-w-2xl mx-auto space-y-6 p-6">
 
         {/* プロフィール情報 */}
         <Card>

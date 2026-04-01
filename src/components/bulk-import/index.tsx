@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { bulkCreatePlots } from '@/lib/api/plots';
 import { bulkCreateStaff } from '@/lib/api/staff';
 import { showSuccess, showError } from '@/lib/toast';
+import PageHeader from '@/components/page-header';
 
 // ===== 型定義 =====
 
@@ -240,11 +241,19 @@ export default function BulkImportPage() {
   const [activeTab, setActiveTab] = useState<ImportTab>('plots');
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <h1 className="font-mincho text-2xl font-semibold text-sumi mb-6 tracking-wide">
-        一括登録
-      </h1>
+    <div className="max-w-6xl mx-auto">
+      <PageHeader
+        title="一括登録"
+        subtitle="Excelファイルによるデータ一括インポート"
+        theme="ai"
+        icon={
+          <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+          </svg>
+        }
+      />
 
+      <div className="p-6">
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ImportTab)}>
         <TabsList>
           <TabsTrigger value="plots">区画情報</TabsTrigger>
@@ -259,6 +268,7 @@ export default function BulkImportPage() {
           <BulkImportPanel type="staff" />
         </TabsContent>
       </Tabs>
+      </div>
     </div>
   );
 }
