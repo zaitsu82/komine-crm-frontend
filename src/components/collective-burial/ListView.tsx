@@ -279,57 +279,79 @@ export default function CollectiveBurialListView({
                   <table className="w-full table-fixed">
                     <thead className="bg-kinari border-b border-gin">
                       <tr>
+                        <th className="text-left px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '140px' }}>契約者名</th>
+                        <th className="text-left px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '80px' }}>区画</th>
                         <th className="text-left px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '100px' }}>区画番号</th>
-                        <th className="text-left px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '80px' }}>区域</th>
-                        <th className="text-left px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '140px' }}>契約者</th>
-                        <th className="text-center px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '100px' }}>埋葬状況</th>
-                        <th className="text-center px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '100px' }}>請求予定日</th>
-                        <th className="text-center px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '90px' }}>ステータス</th>
+                        <th className="text-center px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '80px' }}>契約年</th>
+                        <th className="text-center px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '100px' }}>納骨日</th>
+                        <th className="text-center px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '80px' }}>合祀年</th>
+                        <th className="text-center px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '80px' }}>埋葬上限人数</th>
                         <th className="text-right px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '100px' }}>請求金額</th>
+                        <th className="text-left px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '120px' }}>備考</th>
+                        <th className="text-center px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '90px' }}>請求ステータス</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gin">
                       {group.items.map((record) => {
-                        const isCapacityReached = record.currentBurialCount >= record.burialCapacity;
+                        // 最新の納骨日を取得
+                        const latestBurialDate = record.buriedPersons
+                          .map(bp => bp.burialDate)
+                          .filter((d): d is string => d !== null)
+                          .sort()
+                          .at(-1) || null;
+
+                        // 合祀年（請求予定日の年）
+                        const collectiveBurialYear = record.billingScheduledDate
+                          ? new Date(record.billingScheduledDate).getFullYear()
+                          : null;
+
+                        // 契約年
+                        const contractYear = record.contractDate
+                          ? new Date(record.contractDate).getFullYear()
+                          : null;
+
                         return (
                           <tr
                             key={record.id}
-                            className={`cursor-pointer transition-all duration-200 hover:bg-cha-50 ${isCapacityReached ? 'bg-beni-50/30' : ''
-                              }`}
+                            className="cursor-pointer transition-all duration-200 hover:bg-cha-50"
                             onClick={() => onSelectRecord?.(record)}
                           >
-                            <td className="px-4 py-3">
-                              <span className="font-semibold text-sumi">{record.plotNumber}</span>
-                            </td>
-                            <td className="px-4 py-3 text-sm text-hai">
-                              {record.areaName}
-                            </td>
                             <td className="px-4 py-3">
                               <div className="font-medium text-sumi truncate">{record.applicantName || '-'}</div>
                               {record.applicantNameKana && (
                                 <div className="text-xs text-hai truncate">{record.applicantNameKana}</div>
                               )}
                             </td>
-                            <td className="px-4 py-3 text-center">
-                              <span className={`text-sm font-medium ${isCapacityReached ? 'text-beni' : 'text-sumi'}`}>
-                                {record.currentBurialCount}/{record.burialCapacity}
-                              </span>
-                              {isCapacityReached && (
-                                <span className="ml-1 text-xs text-beni">上限</span>
-                              )}
+                            <td className="px-4 py-3 text-sm text-hai">
+                              {record.areaName}
+                            </td>
+                            <td className="px-4 py-3">
+                              <span className="font-semibold text-sumi">{record.plotNumber}</span>
+                            </td>
+                            <td className="px-4 py-3 text-center text-sm text-sumi">
+                              {contractYear ? `${contractYear}年` : '-'}
                             </td>
                             <td className="px-4 py-3 text-center text-sm text-hai">
-                              {formatDate(record.billingScheduledDate)}
+                              {formatDate(latestBurialDate)}
                             </td>
-                            <td className="px-4 py-3 text-center">
-                              <span className={`px-2 py-1 rounded text-xs font-medium ${BILLING_STATUS_COLORS[record.billingStatus as BillingStatus]}`}>
-                                {BILLING_STATUS_LABELS[record.billingStatus as BillingStatus]}
-                              </span>
+                            <td className="px-4 py-3 text-center text-sm text-sumi">
+                              {collectiveBurialYear ? `${collectiveBurialYear}年` : '-'}
+                            </td>
+                            <td className="px-4 py-3 text-center text-sm text-sumi">
+                              {record.burialCapacity}
                             </td>
                             <td className="px-4 py-3 text-right text-sm text-sumi">
                               {record.billingAmount != null
                                 ? `¥${record.billingAmount.toLocaleString()}`
                                 : '-'}
+                            </td>
+                            <td className="px-4 py-3 text-sm text-hai truncate">
+                              {record.notes || '-'}
+                            </td>
+                            <td className="px-4 py-3 text-center">
+                              <span className={`px-2 py-1 rounded text-xs font-medium ${BILLING_STATUS_COLORS[record.billingStatus as BillingStatus]}`}>
+                                {BILLING_STATUS_LABELS[record.billingStatus as BillingStatus]}
+                              </span>
                             </td>
                           </tr>
                         );
