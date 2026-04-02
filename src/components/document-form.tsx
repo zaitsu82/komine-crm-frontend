@@ -34,6 +34,14 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { TemplateId } from './document-template-gallery';
+import {
+  InvoiceLivePreview,
+  PostcardLivePreview,
+} from './document-template-preview';
+import {
+  normalizeTextStylePreset,
+  type DocumentTextStylePresetId,
+} from './document-text-style-presets';
 import { PlotDetailResponse, ContractRole } from '@komine/types';
 
 type DocumentType = 'invoice' | 'postcard' | 'contract' | 'permit' | 'other';
@@ -321,6 +329,14 @@ export function DocumentForm({
     setTemplateData((prev) => ({ ...prev, [key]: value }));
   };
 
+  const handleTextStyleChange = (id: DocumentTextStylePresetId) => {
+    handleTemplateDataChange('textStylePreset', id);
+  };
+
+  const textStylePreset = normalizeTextStylePreset(
+    templateData.textStylePreset
+  );
+
   // --- Invoice items ---
   const handleItemChange = (
     index: number,
@@ -471,6 +487,7 @@ export function DocumentForm({
     templateType === 'postcard' || formData.type === 'postcard';
   const showContractFields = formData.type === 'contract';
   const showPermitFields = formData.type === 'permit';
+  const showPdfTemplatePreview = showInvoiceFields || showPostcardFields;
 
   if (isEditMode && isLoadingDetail) {
     return (
@@ -515,7 +532,56 @@ export function DocumentForm({
         )}
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form
+        onSubmit={handleSubmit}
+        className={showPdfTemplatePreview ? '' : 'space-y-6'}
+      >
+        <div
+          className={
+            showPdfTemplatePreview
+              ? 'flex flex-col gap-6 xl:grid xl:grid-cols-[minmax(360px,1.35fr)_minmax(260px,380px)] xl:gap-8 xl:items-start'
+              : 'space-y-6'
+          }
+        >
+          {showPdfTemplatePreview && (
+            <aside className="order-first xl:order-none space-y-3 xl:sticky xl:top-4 xl:self-start min-w-0">
+              <div>
+                <h3 className="text-base font-semibold text-sumi-900">
+                  プレビューで編集
+                </h3>
+                <p className="text-xs text-sumi-500 mt-1 leading-relaxed">
+                  下の「テキストの種」で書体バランスを変えられます。本文はプレビュー内を直接編集してください。右のフォームとも同期します。
+                </p>
+              </div>
+              <div className="rounded-xl border border-sumi-200 bg-kinari-50/90 p-3 max-h-[min(90vh,58rem)] overflow-auto shadow-inner">
+                {showInvoiceFields && (
+                  <InvoiceLivePreview
+                    templateData={templateData}
+                    onTemplateDataChange={handleTemplateDataChange}
+                    textStylePreset={textStylePreset}
+                    onTextStyleChange={handleTextStyleChange}
+                    invoiceItems={invoiceItems}
+                    onItemChange={handleItemChange}
+                    onAddItem={addItem}
+                    onRemoveItem={removeItem}
+                    subtotal={subtotal}
+                    tax={tax}
+                    total={total}
+                  />
+                )}
+                {showPostcardFields && (
+                  <PostcardLivePreview
+                    templateData={templateData}
+                    onTemplateDataChange={handleTemplateDataChange}
+                    textStylePreset={textStylePreset}
+                    onTextStyleChange={handleTextStyleChange}
+                  />
+                )}
+              </div>
+            </aside>
+          )}
+
+          <div className="min-w-0 space-y-6 order-last xl:order-none">
         {/* 基本情報 */}
         <div className="bg-white rounded-lg border border-sumi-200 p-6">
           <h3 className="text-lg font-semibold text-sumi-900 mb-4 flex items-center">
@@ -1081,6 +1147,8 @@ export function DocumentForm({
             )}
             {isEditMode ? '更新' : '作成'}
           </Button>
+        </div>
+          </div>
         </div>
       </form>
     </div>
