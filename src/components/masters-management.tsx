@@ -16,6 +16,8 @@ import {
   MasterType,
 } from '@/lib/api';
 import { showSuccess, showError } from '@/lib/toast';
+import PageHeader from '@/components/page-header';
+import { ViewType } from '@/types/plot-detail';
 
 interface MasterTypeConfig {
   key: MasterType;
@@ -35,7 +37,11 @@ const MASTER_TYPES: MasterTypeConfig[] = [
   { key: 'section-name', label: '区画名', dataKey: 'sectionName' },
 ];
 
-export default function MastersManagement() {
+interface MastersManagementProps {
+  onViewChange?: (view: ViewType) => void;
+}
+
+export default function MastersManagement({ onViewChange }: MastersManagementProps) {
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
 
@@ -151,132 +157,142 @@ export default function MastersManagement() {
     setIsDeleting(false);
   };
 
-  if (isLoading) {
-    return (
-      <div className="p-6 flex items-center justify-center h-64">
-        <p className="text-hai">読み込み中...</p>
-      </div>
-    );
-  }
-
-  if (loadError) {
-    return (
-      <div className="p-6">
-        <div className="bg-beni-50 border border-beni-200 rounded-lg p-4">
-          <p className="text-beni">{loadError}</p>
-          <Button onClick={fetchData} className="mt-2" variant="outline" size="sm">
-            再試行
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-sumi">マスタ管理</h1>
-        {isAdmin && (
-          <Button onClick={handleOpenCreate}>
-            + 新規追加
-          </Button>
-        )}
-      </div>
+    <div className="flex-1 flex flex-col overflow-hidden">
+      <PageHeader
+        title="マスタ管理"
+        subtitle="各種マスタデータの管理"
+        theme="sumi"
+        icon={
+          <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37a1.724 1.724 0 002.573-1.066z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        }
+        onViewChange={onViewChange}
+      />
 
-      {/* Master type tabs */}
-      <div className="flex flex-wrap gap-2">
-        {MASTER_TYPES.map((type) => (
-          <button
-            key={type.key}
-            onClick={() => setSelectedType(type)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${selectedType.key === type.key
-              ? 'bg-sumi text-white'
-              : 'bg-kinari text-sumi hover:bg-gin'
-              }`}
-          >
-            {type.label}
-            <span className="ml-1 text-xs opacity-70">
-              ({mastersData ? (mastersData[type.dataKey] as MasterItem[]).length : 0})
-            </span>
-          </button>
-        ))}
-      </div>
-
-      {/* Table */}
-      <div className="bg-white rounded-lg border border-gin overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-shiro">
-            <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-hai uppercase">名称</th>
-              {isSectionName && (
-                <th className="px-4 py-3 text-left text-xs font-medium text-hai uppercase">期</th>
-              )}
-              <th className="px-4 py-3 text-left text-xs font-medium text-hai uppercase">説明</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-hai uppercase">並び順</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-hai uppercase">状態</th>
-              {isAdmin && (
-                <th className="px-4 py-3 text-left text-xs font-medium text-hai uppercase">操作</th>
-              )}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gin">
-            {currentItems.length === 0 ? (
-              <tr>
-                <td colSpan={(isAdmin ? 5 : 4) + (isSectionName ? 1 : 0)} className="px-4 py-8 text-center text-hai">
-                  データがありません
-                </td>
-              </tr>
-            ) : (
-              currentItems.map((item) => (
-                <tr key={item.id} className="hover:bg-shiro">
-                  <td className="px-4 py-3 text-sm font-medium text-sumi">{item.name}</td>
-                  {isSectionName && (
-                    <td className="px-4 py-3 text-sm text-hai">
-                      {(item as SectionNameMasterItem).period || '-'}
-                    </td>
-                  )}
-                  <td className="px-4 py-3 text-sm text-hai">{item.description || '-'}</td>
-                  <td className="px-4 py-3 text-sm text-hai">{item.sortOrder ?? '-'}</td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${item.isActive
-                        ? 'bg-matsu-100 text-matsu-800'
-                        : 'bg-kinari text-hai'
-                        }`}
-                    >
-                      {item.isActive ? '有効' : '無効'}
-                    </span>
-                  </td>
-                  {isAdmin && (
-                    <td className="px-4 py-3">
-                      <div className="flex gap-2">
-                        <Button
-                          onClick={() => handleOpenEdit(item)}
-                          variant="outline"
-                          size="sm"
-                        >
-                          編集
-                        </Button>
-                        <Button
-                          onClick={() => {
-                            setItemToDelete(item);
-                            setShowDeleteConfirm(true);
-                          }}
-                          variant="outline"
-                          size="sm"
-                          className="text-beni hover:text-beni-dark hover:bg-beni-50"
-                        >
-                          削除
-                        </Button>
-                      </div>
-                    </td>
-                  )}
-                </tr>
-              ))
+      {isLoading ? (
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-hai">読み込み中...</p>
+        </div>
+      ) : loadError ? (
+        <div className="flex-1 p-6">
+          <div className="bg-beni-50 border border-beni-200 rounded-lg p-4">
+            <p className="text-beni">{loadError}</p>
+            <Button onClick={fetchData} className="mt-2" variant="outline" size="sm">
+              再試行
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div className="flex-1 overflow-auto">
+          <div className="px-6 py-4">
+            {isAdmin && (
+              <div className="mb-4 flex justify-end">
+                <Button onClick={handleOpenCreate} size="sm" className="cursor-pointer">
+                  + 新規追加
+                </Button>
+              </div>
             )}
-          </tbody>
-        </table>
-      </div>
+
+            {/* Master type tabs */}
+            <div className="flex flex-wrap gap-2">
+              {MASTER_TYPES.map((type) => (
+                <button
+                  key={type.key}
+                  onClick={() => setSelectedType(type)}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${selectedType.key === type.key
+                    ? 'bg-sumi text-white'
+                    : 'bg-kinari text-sumi hover:bg-gin'
+                    }`}
+                >
+                  {type.label}
+                  <span className="ml-1 text-xs opacity-70">
+                    ({mastersData ? (mastersData[type.dataKey] as MasterItem[]).length : 0})
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {/* Table */}
+            <div className="bg-white rounded-lg border border-gin overflow-hidden">
+              <table className="w-full">
+                <thead className="bg-shiro">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-hai uppercase">名称</th>
+                    {isSectionName && (
+                      <th className="px-4 py-3 text-left text-xs font-medium text-hai uppercase">期</th>
+                    )}
+                    <th className="px-4 py-3 text-left text-xs font-medium text-hai uppercase">説明</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-hai uppercase">並び順</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-hai uppercase">状態</th>
+                    {isAdmin && (
+                      <th className="px-4 py-3 text-left text-xs font-medium text-hai uppercase">操作</th>
+                    )}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gin">
+                  {currentItems.length === 0 ? (
+                    <tr>
+                      <td colSpan={(isAdmin ? 5 : 4) + (isSectionName ? 1 : 0)} className="px-4 py-8 text-center text-hai">
+                        データがありません
+                      </td>
+                    </tr>
+                  ) : (
+                    currentItems.map((item) => (
+                      <tr key={item.id} className="hover:bg-shiro">
+                        <td className="px-4 py-3 text-sm font-medium text-sumi">{item.name}</td>
+                        {isSectionName && (
+                          <td className="px-4 py-3 text-sm text-hai">
+                            {(item as SectionNameMasterItem).period || '-'}
+                          </td>
+                        )}
+                        <td className="px-4 py-3 text-sm text-hai">{item.description || '-'}</td>
+                        <td className="px-4 py-3 text-sm text-hai">{item.sortOrder ?? '-'}</td>
+                        <td className="px-4 py-3">
+                          <span
+                            className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${item.isActive
+                              ? 'bg-matsu-100 text-matsu-800'
+                              : 'bg-kinari text-hai'
+                              }`}
+                          >
+                            {item.isActive ? '有効' : '無効'}
+                          </span>
+                        </td>
+                        {isAdmin && (
+                          <td className="px-4 py-3">
+                            <div className="flex gap-2">
+                              <Button
+                                onClick={() => handleOpenEdit(item)}
+                                variant="outline"
+                                size="sm"
+                              >
+                                編集
+                              </Button>
+                              <Button
+                                onClick={() => {
+                                  setItemToDelete(item);
+                                  setShowDeleteConfirm(true);
+                                }}
+                                variant="outline"
+                                size="sm"
+                                className="text-beni hover:text-beni-dark hover:bg-beni-50"
+                              >
+                                削除
+                              </Button>
+                            </div>
+                          </td>
+                        )}
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+        </div>
+      )}
 
       {/* Create/Edit Dialog */}
       {showDialog && (

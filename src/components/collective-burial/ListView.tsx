@@ -20,15 +20,19 @@ import {
   BILLING_STATUS_LABELS,
   BILLING_STATUS_COLORS,
 } from '@/lib/api';
+import PageHeader from '@/components/page-header';
+import { ViewType } from '@/types/plot-detail';
 
 interface CollectiveBurialListViewProps {
   onBack?: () => void;
   onSelectRecord?: (record: CollectiveBurialListItem) => void;
+  onViewChange?: (view: ViewType) => void;
 }
 
 export default function CollectiveBurialListView({
   onBack,
   onSelectRecord,
+  onViewChange,
 }: CollectiveBurialListViewProps) {
   // フィルター状態
   const [searchQuery, setSearchQuery] = useState('');
@@ -105,42 +109,22 @@ export default function CollectiveBurialListView({
   };
 
   return (
-    <div className="h-full flex flex-col bg-shiro">
-      {/* ヘッダー */}
-      <div className="bg-gradient-to-r from-cha-50 to-kinari border-b border-cha-200 px-6 py-5 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-cha-100/30 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+    <div className="flex-1 flex flex-col overflow-hidden">
+      <PageHeader
+        title="合祀管理"
+        subtitle="合祀区画の請求・埋葬管理"
+        theme="cha"
+        icon={
+          <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          </svg>
+        }
+        onViewChange={onViewChange}
+      />
 
-        <div className="relative flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 rounded-xl bg-gradient-cha flex items-center justify-center shadow-cha">
-              <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-              </svg>
-            </div>
-            <div>
-              <h2 className="font-mincho text-2xl font-semibold text-sumi tracking-wide">合祀管理</h2>
-            </div>
-          </div>
-          <div className="flex items-center space-x-3">
-            <Button onClick={resetFilters} variant="outline" size="default">
-              <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-              リセット
-            </Button>
-            {onBack && (
-              <Button onClick={onBack} variant="outline" size="default">
-                <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-                戻る
-              </Button>
-            )}
-          </div>
-        </div>
-
-        {/* 凡例 */}
-        <div className="relative mt-4 flex flex-wrap gap-4 text-sm">
+      {/* 凡例 + アクションボタン */}
+      <div className="flex items-center px-6 py-3 border-b border-gin bg-kinari">
+        <div className="flex-1 flex flex-wrap gap-4 text-sm">
           <div className="flex items-center space-x-2">
             <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">請求前</span>
             <span className="text-sumi">上限未到達 / 到達後請求待ち</span>
@@ -153,6 +137,16 @@ export default function CollectiveBurialListView({
             <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">支払済</span>
             <span className="text-sumi">支払い完了</span>
           </div>
+        </div>
+        <div className="flex-shrink-0 flex items-center space-x-3">
+          <Button onClick={resetFilters} variant="outline" size="sm">
+            リセット
+          </Button>
+          {onBack && (
+            <Button onClick={onBack} variant="outline" size="sm">
+              戻る
+            </Button>
+          )}
         </div>
       </div>
 
@@ -279,57 +273,79 @@ export default function CollectiveBurialListView({
                   <table className="w-full table-fixed">
                     <thead className="bg-kinari border-b border-gin">
                       <tr>
+                        <th className="text-left px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '140px' }}>契約者名</th>
+                        <th className="text-left px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '80px' }}>区画</th>
                         <th className="text-left px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '100px' }}>区画番号</th>
-                        <th className="text-left px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '80px' }}>区域</th>
-                        <th className="text-left px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '140px' }}>契約者</th>
-                        <th className="text-center px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '100px' }}>埋葬状況</th>
-                        <th className="text-center px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '100px' }}>請求予定日</th>
-                        <th className="text-center px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '90px' }}>ステータス</th>
+                        <th className="text-center px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '80px' }}>契約年</th>
+                        <th className="text-center px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '100px' }}>納骨日</th>
+                        <th className="text-center px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '80px' }}>合祀年</th>
+                        <th className="text-center px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '80px' }}>埋葬上限人数</th>
                         <th className="text-right px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '100px' }}>請求金額</th>
+                        <th className="text-left px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '120px' }}>備考</th>
+                        <th className="text-center px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '90px' }}>請求ステータス</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gin">
                       {group.items.map((record) => {
-                        const isCapacityReached = record.currentBurialCount >= record.burialCapacity;
+                        // 最新の納骨日を取得
+                        const latestBurialDate = record.buriedPersons
+                          .map(bp => bp.burialDate)
+                          .filter((d): d is string => d !== null)
+                          .sort()
+                          .at(-1) || null;
+
+                        // 合祀年（請求予定日の年）
+                        const collectiveBurialYear = record.billingScheduledDate
+                          ? new Date(record.billingScheduledDate).getFullYear()
+                          : null;
+
+                        // 契約年
+                        const contractYear = record.contractDate
+                          ? new Date(record.contractDate).getFullYear()
+                          : null;
+
                         return (
                           <tr
                             key={record.id}
-                            className={`cursor-pointer transition-all duration-200 hover:bg-cha-50 ${isCapacityReached ? 'bg-beni-50/30' : ''
-                              }`}
+                            className="cursor-pointer transition-all duration-200 hover:bg-cha-50"
                             onClick={() => onSelectRecord?.(record)}
                           >
-                            <td className="px-4 py-3">
-                              <span className="font-semibold text-sumi">{record.plotNumber}</span>
-                            </td>
-                            <td className="px-4 py-3 text-sm text-hai">
-                              {record.areaName}
-                            </td>
                             <td className="px-4 py-3">
                               <div className="font-medium text-sumi truncate">{record.applicantName || '-'}</div>
                               {record.applicantNameKana && (
                                 <div className="text-xs text-hai truncate">{record.applicantNameKana}</div>
                               )}
                             </td>
-                            <td className="px-4 py-3 text-center">
-                              <span className={`text-sm font-medium ${isCapacityReached ? 'text-beni' : 'text-sumi'}`}>
-                                {record.currentBurialCount}/{record.burialCapacity}
-                              </span>
-                              {isCapacityReached && (
-                                <span className="ml-1 text-xs text-beni">上限</span>
-                              )}
+                            <td className="px-4 py-3 text-sm text-hai">
+                              {record.areaName}
+                            </td>
+                            <td className="px-4 py-3">
+                              <span className="font-semibold text-sumi">{record.plotNumber}</span>
+                            </td>
+                            <td className="px-4 py-3 text-center text-sm text-sumi">
+                              {contractYear ? `${contractYear}年` : '-'}
                             </td>
                             <td className="px-4 py-3 text-center text-sm text-hai">
-                              {formatDate(record.billingScheduledDate)}
+                              {formatDate(latestBurialDate)}
                             </td>
-                            <td className="px-4 py-3 text-center">
-                              <span className={`px-2 py-1 rounded text-xs font-medium ${BILLING_STATUS_COLORS[record.billingStatus as BillingStatus]}`}>
-                                {BILLING_STATUS_LABELS[record.billingStatus as BillingStatus]}
-                              </span>
+                            <td className="px-4 py-3 text-center text-sm text-sumi">
+                              {collectiveBurialYear ? `${collectiveBurialYear}年` : '-'}
+                            </td>
+                            <td className="px-4 py-3 text-center text-sm text-sumi">
+                              {record.burialCapacity}
                             </td>
                             <td className="px-4 py-3 text-right text-sm text-sumi">
                               {record.billingAmount != null
                                 ? `¥${record.billingAmount.toLocaleString()}`
                                 : '-'}
+                            </td>
+                            <td className="px-4 py-3 text-sm text-hai truncate">
+                              {record.notes || '-'}
+                            </td>
+                            <td className="px-4 py-3 text-center">
+                              <span className={`px-2 py-1 rounded text-xs font-medium ${BILLING_STATUS_COLORS[record.billingStatus as BillingStatus]}`}>
+                                {BILLING_STATUS_LABELS[record.billingStatus as BillingStatus]}
+                              </span>
                             </td>
                           </tr>
                         );

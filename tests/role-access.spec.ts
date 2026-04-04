@@ -6,11 +6,12 @@ import { test, expect, type Page } from '@playwright/test';
 import { storageStatePath, type TestRole } from './config/test-accounts';
 
 // 各ロールで見えるべきメニュー項目
+// アカウント設定はサイドバーからUserMenuドロップダウンに移動済み
 const EXPECTED_MENU_ITEMS: Record<TestRole, string[]> = {
-  viewer: ['台帳問い合わせ', '合祀管理', '区画残数管理', '書類管理', 'アカウント設定'],
-  operator: ['台帳問い合わせ', '合祀管理', '区画残数管理', '書類管理', 'アカウント設定'],
-  manager: ['台帳問い合わせ', '合祀管理', '区画残数管理', '書類管理', 'スタッフ管理', '一括登録', 'アカウント設定'],
-  admin: ['台帳問い合わせ', '合祀管理', '区画残数管理', '書類管理', 'スタッフ管理', 'マスタ管理', '一括登録', 'アカウント設定'],
+  viewer: ['台帳問い合わせ', '合祀管理', '区画残数管理', '書類管理'],
+  operator: ['台帳問い合わせ', '合祀管理', '区画残数管理', '書類管理'],
+  manager: ['台帳問い合わせ', '合祀管理', '区画残数管理', '書類管理', 'スタッフ管理', '一括登録'],
+  admin: ['台帳問い合わせ', '合祀管理', '区画残数管理', '書類管理', 'スタッフ管理', 'マスタ管理', '一括登録'],
 };
 
 // 各ロールで見えてはいけないメニュー項目
@@ -144,31 +145,40 @@ test.describe('ロール別操作権限', () => {
     await context.close();
   });
 
-  test('2-10: admin のサイドバーにロールラベル「管理者」が表示', async ({ browser }) => {
+  test('2-10: admin のUserMenuにロールラベル「管理者」が表示', async ({ browser }) => {
     const context = await browser.newContext({
       storageState: storageStatePath('admin'),
     });
     const page = await context.newPage();
     await page.goto('/');
 
-    // サイドバーが表示され、ロールラベル「管理者」が見える
-    const sidebar = page.locator('.w-64');
-    await expect(sidebar).toBeVisible({ timeout: 15_000 });
-    await expect(sidebar.getByText('管理者', { exact: true }).first()).toBeVisible();
+    // サイドバーが表示されるまで待機
+    await expect(page.locator('.w-64')).toBeVisible({ timeout: 15_000 });
+
+    // UserMenuを開いてロールラベルを確認
+    const userMenuButton = page.getByRole('button', { name: 'ユーザーメニュー' });
+    await expect(userMenuButton).toBeVisible();
+    await userMenuButton.click();
+    await expect(page.getByText('管理者', { exact: true })).toBeVisible();
 
     await context.close();
   });
 
-  test('2-11: viewer のサイドバーにロールラベル「閲覧者」が表示', async ({ browser }) => {
+  test('2-11: viewer のUserMenuにロールラベル「閲覧者」が表示', async ({ browser }) => {
     const context = await browser.newContext({
       storageState: storageStatePath('viewer'),
     });
     const page = await context.newPage();
     await page.goto('/');
 
-    const sidebar = page.locator('.w-64');
-    await expect(sidebar).toBeVisible({ timeout: 15_000 });
-    await expect(sidebar.getByText('閲覧者', { exact: true })).toBeVisible();
+    // サイドバーが表示されるまで待機
+    await expect(page.locator('.w-64')).toBeVisible({ timeout: 15_000 });
+
+    // UserMenuを開いてロールラベルを確認
+    const userMenuButton = page.getByRole('button', { name: 'ユーザーメニュー' });
+    await expect(userMenuButton).toBeVisible();
+    await userMenuButton.click();
+    await expect(page.getByText('閲覧者', { exact: true })).toBeVisible();
 
     await context.close();
   });

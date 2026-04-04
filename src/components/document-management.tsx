@@ -6,6 +6,7 @@ import {
   TemplateId,
 } from './document-template-gallery';
 import { DocumentListView } from './document-list-view';
+import { ViewType } from '@/types/plot-detail';
 import { DocumentDetailView } from './document-detail-view';
 import { DocumentForm } from './document-form';
 import { useDocumentMutations, DocumentDetail } from '@/hooks/useDocuments';
@@ -23,6 +24,7 @@ interface DocumentManagementProps {
   plotDetail?: PlotDetailResponse;
   initialMode?: 'list' | 'create' | 'templates';
   onBack?: () => void;
+  onViewChange?: (view: ViewType) => void;
 }
 
 export function DocumentManagement({
@@ -31,6 +33,7 @@ export function DocumentManagement({
   plotDetail,
   initialMode = 'templates',
   onBack,
+  onViewChange,
 }: DocumentManagementProps) {
   const [viewMode, setViewMode] = useState<ViewMode>(
     initialMode === 'create' ? 'create' : initialMode === 'list' ? 'list' : 'templates'
@@ -140,15 +143,15 @@ export function DocumentManagement({
         : handleBackToList;
 
   return (
-    <div className="p-6">
+    <div className="flex-1 flex flex-col overflow-hidden">
       {/* 顧客コンテキストヘッダー */}
       {customerId && customerName && viewMode === 'list' && (
-        <div className="mb-4 flex items-center gap-4">
-          <Button variant="ghost" onClick={handleBack}>
+        <div className="px-6 py-2 flex items-center gap-4 border-b border-gin">
+          <Button variant="ghost" size="sm" onClick={handleBack}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             顧客詳細に戻る
           </Button>
-          <div className="text-sumi-600">
+          <div className="text-sumi-600 text-sm">
             <span className="font-medium">{customerName}</span> 様の書類
           </div>
         </div>
@@ -179,6 +182,7 @@ export function DocumentManagement({
           customerId={customerId}
           customerName={customerName}
           onCreateNew={customerId ? handleCreateNew : handleBackToTemplates}
+          onViewChange={onViewChange}
           onViewDetail={handleViewDetail}
           onDownload={handleDownload}
           onBack={customerId ? undefined : handleBackToTemplates}
