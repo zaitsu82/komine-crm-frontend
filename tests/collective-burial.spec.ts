@@ -139,7 +139,7 @@ test.describe('合祀管理 - 詳細表示', () => {
     await expect(page.getByText('合祀詳細')).toBeVisible({ timeout: 10_000 });
 
     // 閉じるボタンで一覧に戻る
-    await page.getByRole('button', { name: '閉じる' }).click();
+    await page.getByRole('button', { name: '閉じる', exact: true }).click();
     await page.waitForTimeout(1_000);
     await expect(page.getByText('合祀管理').first()).toBeVisible({ timeout: 10_000 });
   });
