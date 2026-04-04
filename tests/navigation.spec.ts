@@ -53,17 +53,17 @@ test.describe('サイドバーナビゲーション', () => {
     });
   });
 
-  test('3-3: ユーザー情報がサイドバー下部に表示される', async ({ page }) => {
+  test('3-3: ユーザー情報がUserMenuドロップダウンに表示される', async ({ page }) => {
     await page.goto('/');
-    const sidebar = page.locator('.w-64');
-    await expect(sidebar.getByText('台帳問い合わせ', { exact: true })).toBeVisible({ timeout: 20_000 });
+    await expect(page.locator('.w-64').getByText('台帳問い合わせ', { exact: true })).toBeVisible({ timeout: 20_000 });
 
-    // ユーザー情報セクション
-    const userInfo = sidebar.locator('.border-t');
-    await expect(userInfo).toBeVisible();
+    // UserMenuボタンをクリック
+    const userMenuButton = page.getByRole('button', { name: 'ユーザーメニュー' });
+    await expect(userMenuButton).toBeVisible();
+    await userMenuButton.click();
 
-    // ユーザー名またはロールラベルが表示される
-    await expect(sidebar.getByText('管理者', { exact: true }).first()).toBeVisible();
+    // ドロップダウン内にロールラベルが表示される
+    await expect(page.getByText('管理者', { exact: true })).toBeVisible();
   });
 
   test('3-5: メニュー項目クリック時にアクティブ状態が反映される', async ({ page }) => {
@@ -71,8 +71,8 @@ test.describe('サイドバーナビゲーション', () => {
     const sidebar = page.locator('.w-64');
     await expect(sidebar.getByText('台帳問い合わせ', { exact: true })).toBeVisible({ timeout: 20_000 });
 
-    // 合祀管理をクリック
-    const menuButton = sidebar.getByText('合祀管理', { exact: true });
+    // 合祀管理をクリック（テキストはspan内にあるため、親のbutton要素を取得）
+    const menuButton = sidebar.getByRole('button', { name: '合祀管理' });
     await menuButton.click();
     await page.waitForTimeout(500);
 
