@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
 import { useAuth } from '@/contexts/auth-context'
+import { forgotPassword } from '@/lib/api/auth'
 
 export function LoginForm() {
   const router = useRouter()
@@ -14,6 +15,11 @@ export function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [showForgotPassword, setShowForgotPassword] = useState(false)
+  const [forgotEmail, setForgotEmail] = useState('')
+  const [forgotSending, setForgotSending] = useState(false)
+  const [forgotSent, setForgotSent] = useState(false)
+  const [forgotError, setForgotError] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -27,6 +33,32 @@ export function LoginForm() {
     } else {
       setError(result.error || 'ログインに失敗しました')
     }
+  }
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setForgotError(null)
+    setForgotSending(true)
+
+    try {
+      const result = await forgotPassword(forgotEmail)
+      if (result.success) {
+        setForgotSent(true)
+      } else {
+        setForgotError(result.error?.message || 'メール送信に失敗しました')
+      }
+    } catch {
+      setForgotError('予期しないエラーが発生しました')
+    } finally {
+      setForgotSending(false)
+    }
+  }
+
+  const handleBackToLogin = () => {
+    setShowForgotPassword(false)
+    setForgotEmail('')
+    setForgotSent(false)
+    setForgotError(null)
   }
 
   return (
@@ -54,80 +86,164 @@ export function LoginForm() {
               小嶺霊園CRM
             </h1>
             <p className="text-hai text-sm tracking-wider">
-              管理者ログイン
+              {showForgotPassword ? 'パスワードリセット' : '管理者ログイン'}
             </p>
             <div className="w-12 h-px bg-gin mx-auto mt-4" />
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-base font-medium">
-                メールアドレス
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="example@komine-cemetery.jp"
-                required
-                className="h-12 text-base"
-                disabled={isLoading}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-base font-medium">
-                パスワード
-              </Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="パスワードを入力"
-                required
-                className="h-12 text-base"
-                disabled={isLoading}
-              />
-            </div>
-
-            {/* エラーメッセージ */}
-            {error && (
-              <div className="bg-beni-50 border border-beni-200 rounded-elegant px-4 py-3">
-                <p className="text-beni text-sm">{error}</p>
+          {showForgotPassword ? (
+            // パスワードリセットメール送信フォーム
+            forgotSent ? (
+              <div className="text-center space-y-6">
+                <div className="bg-matsu-50 border border-matsu-200 rounded-elegant px-4 py-4">
+                  <p className="text-matsu text-sm">
+                    パスワードリセット用のメールを送信しました。メールをご確認ください。
+                  </p>
+                </div>
+                <p className="text-hai text-xs">
+                  メールが届かない場合は、迷惑メールフォルダをご確認ください。
+                </p>
+                <button
+                  type="button"
+                  onClick={handleBackToLogin}
+                  className="text-sm text-matsu hover:text-matsu-light hover:underline transition-colors duration-normal"
+                >
+                  ログイン画面へ戻る
+                </button>
               </div>
-            )}
+            ) : (
+              <form onSubmit={handleForgotPassword} className="space-y-6">
+                <p className="text-hai text-sm">
+                  登録済みのメールアドレスを入力してください。パスワードリセット用のリンクをお送りします。
+                </p>
+                <div className="space-y-2">
+                  <Label htmlFor="forgotEmail" className="text-base font-medium">
+                    メールアドレス
+                  </Label>
+                  <Input
+                    id="forgotEmail"
+                    type="email"
+                    value={forgotEmail}
+                    onChange={(e) => setForgotEmail(e.target.value)}
+                    placeholder="example@komine-cemetery.jp"
+                    required
+                    className="h-12 text-base"
+                    disabled={forgotSending}
+                  />
+                </div>
 
-            <Button
-              type="submit"
-              variant="matsu"
-              size="xl"
-              className="w-full"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <span className="flex items-center">
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  ログイン中...
-                </span>
-              ) : (
-                'ログイン'
-              )}
-            </Button>
-          </form>
+                {forgotError && (
+                  <div className="bg-beni-50 border border-beni-200 rounded-elegant px-4 py-3">
+                    <p className="text-beni text-sm">{forgotError}</p>
+                  </div>
+                )}
 
-          <div className="mt-8 text-center">
-            <a
-              href="#"
-              className="text-sm text-matsu hover:text-matsu-light hover:underline transition-colors duration-normal cursor-pointer"
-            >
-              パスワードをお忘れの方
-            </a>
-          </div>
+                <Button
+                  type="submit"
+                  variant="matsu"
+                  size="xl"
+                  className="w-full"
+                  disabled={forgotSending}
+                >
+                  {forgotSending ? (
+                    <span className="flex items-center">
+                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      送信中...
+                    </span>
+                  ) : (
+                    'リセットメールを送信'
+                  )}
+                </Button>
+
+                <div className="text-center">
+                  <button
+                    type="button"
+                    onClick={handleBackToLogin}
+                    className="text-sm text-matsu hover:text-matsu-light hover:underline transition-colors duration-normal"
+                  >
+                    ログイン画面へ戻る
+                  </button>
+                </div>
+              </form>
+            )
+          ) : (
+            // ログインフォーム
+            <>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-base font-medium">
+                    メールアドレス
+                  </Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="example@komine-cemetery.jp"
+                    required
+                    className="h-12 text-base"
+                    disabled={isLoading}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="text-base font-medium">
+                    パスワード
+                  </Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="パスワードを入力"
+                    required
+                    className="h-12 text-base"
+                    disabled={isLoading}
+                  />
+                </div>
+
+                {/* エラーメッセージ */}
+                {error && (
+                  <div className="bg-beni-50 border border-beni-200 rounded-elegant px-4 py-3">
+                    <p className="text-beni text-sm">{error}</p>
+                  </div>
+                )}
+
+                <Button
+                  type="submit"
+                  variant="matsu"
+                  size="xl"
+                  className="w-full"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <span className="flex items-center">
+                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      ログイン中...
+                    </span>
+                  ) : (
+                    'ログイン'
+                  )}
+                </Button>
+              </form>
+
+              <div className="mt-8 text-center">
+                <button
+                  type="button"
+                  onClick={() => setShowForgotPassword(true)}
+                  className="text-sm text-matsu hover:text-matsu-light hover:underline transition-colors duration-normal cursor-pointer"
+                >
+                  パスワードをお忘れの方
+                </button>
+              </div>
+            </>
+          )}
 
           {/* セキュリティノート */}
           <div className="mt-8 pt-6 border-t border-gin">

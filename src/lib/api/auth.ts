@@ -330,6 +330,51 @@ export async function changePassword(
 }
 
 /**
+ * パスワードリセットメール送信
+ */
+export async function forgotPassword(
+  email: string
+): Promise<ApiResponse<{ message: string }>> {
+  if (shouldUseMockData()) {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    return {
+      success: true,
+      data: {
+        message: 'パスワードリセット用のメールを送信しました。メールをご確認ください。',
+      },
+    };
+  }
+
+  return apiPost<{ message: string }>('/auth/forgot-password', { email });
+}
+
+/**
+ * パスワードリセット（新パスワード設定）
+ * 招待メールからの初回設定・パスワードリセット両方で使用
+ */
+export async function resetPassword(
+  code: string,
+  newPassword: string,
+  confirmPassword: string
+): Promise<ApiResponse<{ message: string }>> {
+  if (shouldUseMockData()) {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    return {
+      success: true,
+      data: {
+        message: 'パスワードを設定しました。ログインしてください。',
+      },
+    };
+  }
+
+  return apiPost<{ message: string }>('/auth/reset-password', {
+    code,
+    newPassword,
+    confirmPassword,
+  });
+}
+
+/**
  * 認証状態をチェック
  */
 export function isAuthenticated(): boolean {
