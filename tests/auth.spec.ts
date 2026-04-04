@@ -68,8 +68,9 @@ test.describe('認証フロー', () => {
     await page.getByRole('button', { name: 'ログイン' }).click();
     await expect(page.locator('h2').filter({ hasText: '小嶺霊園CRM' })).toBeVisible({ timeout: 15_000 });
 
-    // ログアウトボタンをクリック
-    await page.getByRole('button', { name: 'ログアウト' }).click();
+    // UserMenuを開いてログアウトをクリック
+    await page.getByRole('button', { name: 'ユーザーメニュー' }).click();
+    await page.getByRole('menuitem', { name: 'ログアウト' }).click();
 
     // ログインページにリダイレクト
     await expect(page.getByLabel('メールアドレス')).toBeVisible({ timeout: 10_000 });
