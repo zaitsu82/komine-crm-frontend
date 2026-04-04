@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { ClipboardList, Check, X, BarChart3, Hash } from 'lucide-react';
 import { PlotPeriod, PLOT_SIZE } from '@/types/plot-constants';
 import PageHeader from '@/components/page-header';
+import { ViewType } from '@/types/plot-detail';
 import {
   usePlotInventorySummary,
   usePlotInventoryPeriods,
@@ -29,7 +30,11 @@ const menuItems = [
   { key: 'remaining', label: '残数順', icon: Hash, description: '残数でソート' },
 ];
 
-export default function PlotAvailabilityManagement() {
+interface PlotAvailabilityManagementProps {
+  onViewChange?: (view: ViewType) => void;
+}
+
+export default function PlotAvailabilityManagement({ onViewChange }: PlotAvailabilityManagementProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('all');
   const [displayMode, setDisplayMode] = useState<DisplayMode>('section'); // 区画別 or 面積別
   const [selectedPeriod, setSelectedPeriod] = useState<SelectedPeriod>('all');
@@ -142,7 +147,7 @@ export default function PlotAvailabilityManagement() {
   };
 
   return (
-    <div className="bg-gradient-warm relative">
+    <div className="flex-1 flex flex-col overflow-hidden">
       <PageHeader
         title="区画残数管理"
         subtitle="区画の在庫状況・使用率"
@@ -152,683 +157,687 @@ export default function PlotAvailabilityManagement() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
           </svg>
         }
+        onViewChange={onViewChange}
       />
 
-      {/* ツールバー */}
-      <div className="bg-white border-b border-gin p-4 flex flex-wrap items-center gap-4">
-        {/* 表示形式切替（区画別/面積別） */}
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-hai">表示形式</span>
-          <div className="flex gap-1 p-1 bg-kinari rounded-elegant border border-gin">
-            <button
-              onClick={() => setDisplayMode('section')}
-              className={cn(
-                'px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200',
-                displayMode === 'section'
-                  ? 'bg-ai text-white shadow-elegant'
-                  : 'text-hai hover:text-sumi hover:bg-white'
-              )}
-            >
-              区画別
-            </button>
-            <button
-              onClick={() => setDisplayMode('area')}
-              className={cn(
-                'px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200',
-                displayMode === 'area'
-                  ? 'bg-ai text-white shadow-elegant'
-                  : 'text-hai hover:text-sumi hover:bg-white'
-              )}
-            >
-              面積別
-            </button>
-          </div>
-        </div>
+      <div className="flex-1 overflow-auto bg-gradient-warm">
 
-        {/* フィルター */}
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-hai">フィルター</span>
-          <div className="flex gap-1">
-            {menuItems.map((item) => (
+        {/* ツールバー */}
+        <div className="bg-white border-b border-gin p-4 flex flex-wrap items-center gap-4">
+          {/* 表示形式切替（区画別/面積別） */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-hai">表示形式</span>
+            <div className="flex gap-1 p-1 bg-kinari rounded-elegant border border-gin">
               <button
-                key={item.key}
-                onClick={() => setViewMode(item.key as ViewMode)}
+                onClick={() => setDisplayMode('section')}
                 className={cn(
-                  'px-3 py-1.5 rounded-elegant transition-all duration-200 text-sm flex items-center',
-                  viewMode === item.key
-                    ? 'bg-ai-50 text-ai border border-ai-200 font-semibold'
-                    : 'hover:bg-kinari text-hai hover:text-sumi border border-transparent'
+                  'px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200',
+                  displayMode === 'section'
+                    ? 'bg-ai text-white shadow-elegant'
+                    : 'text-hai hover:text-sumi hover:bg-white'
                 )}
               >
-                <item.icon className="w-4 h-4 mr-1.5 shrink-0" />
-                <span>{item.label}</span>
+                区画別
               </button>
-            ))}
+              <button
+                onClick={() => setDisplayMode('area')}
+                className={cn(
+                  'px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200',
+                  displayMode === 'area'
+                    ? 'bg-ai text-white shadow-elegant'
+                    : 'text-hai hover:text-sumi hover:bg-white'
+                )}
+              >
+                面積別
+              </button>
+            </div>
           </div>
-        </div>
 
-        {/* 期別フィルター */}
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-hai">期別</span>
-          <div className="flex gap-1">
-            <button
-              onClick={() => setSelectedPeriod('all')}
-              className={cn(
-                'px-3 py-1.5 rounded-elegant transition-all duration-200 text-sm',
-                selectedPeriod === 'all'
-                  ? 'bg-matsu-50 text-matsu border border-matsu-200 font-semibold'
-                  : 'hover:bg-kinari text-hai hover:text-sumi border border-transparent'
-              )}
-            >
-              全期
-            </button>
-            {(['1期', '2期', '3期', '4期'] as PlotPeriod[]).map((period) => {
-              const ps = periodSummaries.find(p => p.period === period);
-              const periodColors = {
-                '1期': { bg: 'bg-matsu-50', border: 'border-matsu-200', text: 'text-matsu' },
-                '2期': { bg: 'bg-ai-50', border: 'border-ai-200', text: 'text-ai' },
-                '3期': { bg: 'bg-cha-50', border: 'border-cha-200', text: 'text-cha' },
-                '4期': { bg: 'bg-kohaku-50', border: 'border-kohaku-200', text: 'text-kohaku' },
-              };
-              const colors = periodColors[period];
-
-              return (
+          {/* フィルター */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-hai">フィルター</span>
+            <div className="flex gap-1">
+              {menuItems.map((item) => (
                 <button
-                  key={period}
-                  onClick={() => setSelectedPeriod(period)}
+                  key={item.key}
+                  onClick={() => setViewMode(item.key as ViewMode)}
                   className={cn(
-                    'px-3 py-1.5 rounded-elegant transition-all duration-200 text-sm',
-                    selectedPeriod === period
-                      ? `${colors.bg} ${colors.text} border ${colors.border} font-semibold`
+                    'px-3 py-1.5 rounded-elegant transition-all duration-200 text-sm flex items-center',
+                    viewMode === item.key
+                      ? 'bg-ai-50 text-ai border border-ai-200 font-semibold'
                       : 'hover:bg-kinari text-hai hover:text-sumi border border-transparent'
                   )}
                 >
-                  {period}
-                  {ps && (
-                    <span className={cn(
-                      "ml-1 text-xs px-1.5 py-0.5 rounded-full",
-                      getUsageRateColor(ps.usageRate || 0)
-                    )}>
-                      残{ps.remainingCount || 0}
-                    </span>
+                  <item.icon className="w-4 h-4 mr-1.5 shrink-0" />
+                  <span>{item.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 期別フィルター */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-hai">期別</span>
+            <div className="flex gap-1">
+              <button
+                onClick={() => setSelectedPeriod('all')}
+                className={cn(
+                  'px-3 py-1.5 rounded-elegant transition-all duration-200 text-sm',
+                  selectedPeriod === 'all'
+                    ? 'bg-matsu-50 text-matsu border border-matsu-200 font-semibold'
+                    : 'hover:bg-kinari text-hai hover:text-sumi border border-transparent'
+                )}
+              >
+                全期
+              </button>
+              {(['1期', '2期', '3期', '4期'] as PlotPeriod[]).map((period) => {
+                const ps = periodSummaries.find(p => p.period === period);
+                const periodColors = {
+                  '1期': { bg: 'bg-matsu-50', border: 'border-matsu-200', text: 'text-matsu' },
+                  '2期': { bg: 'bg-ai-50', border: 'border-ai-200', text: 'text-ai' },
+                  '3期': { bg: 'bg-cha-50', border: 'border-cha-200', text: 'text-cha' },
+                  '4期': { bg: 'bg-kohaku-50', border: 'border-kohaku-200', text: 'text-kohaku' },
+                };
+                const colors = periodColors[period];
+
+                return (
+                  <button
+                    key={period}
+                    onClick={() => setSelectedPeriod(period)}
+                    className={cn(
+                      'px-3 py-1.5 rounded-elegant transition-all duration-200 text-sm',
+                      selectedPeriod === period
+                        ? `${colors.bg} ${colors.text} border ${colors.border} font-semibold`
+                        : 'hover:bg-kinari text-hai hover:text-sumi border border-transparent'
+                    )}
+                  >
+                    {period}
+                    {ps && (
+                      <span className={cn(
+                        "ml-1 text-xs px-1.5 py-0.5 rounded-full",
+                        getUsageRateColor(ps.usageRate || 0)
+                      )}>
+                        残{ps.remainingCount || 0}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* メインコンテンツ */}
+        <div className="p-6 relative">
+          {/* ローディングオーバーレイ */}
+          {isLoading && (
+            <div className="absolute inset-0 bg-white/60 z-10 flex items-center justify-center">
+              <div className="flex flex-col items-center">
+                <div className="w-8 h-8 border-4 border-ai border-t-transparent rounded-full animate-spin"></div>
+                <span className="mt-2 text-sm text-hai">読み込み中...</span>
+              </div>
+            </div>
+          )}
+
+          {/* 全体サマリー */}
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+            <div className="bg-white border border-matsu-200 rounded-elegant-lg p-5 text-center shadow-elegant">
+              <div className="text-3xl font-bold text-matsu">{summary.totalCount.toLocaleString()}</div>
+              <div className="text-sm text-matsu font-medium mt-1">総区画数</div>
+              <div className="text-xs text-hai mt-2">{areaStats.totalArea.toLocaleString()}㎡</div>
+            </div>
+            <div className="bg-white border border-ai-200 rounded-elegant-lg p-5 text-center shadow-elegant">
+              <div className="text-3xl font-bold text-ai">{summary.usedCount.toLocaleString()}</div>
+              <div className="text-sm text-ai font-medium mt-1">使用済区画数</div>
+              <div className="text-xs text-hai mt-2">{areaStats.usedArea.toLocaleString()}㎡</div>
+            </div>
+            <div className="bg-white border border-kohaku-200 rounded-elegant-lg p-5 text-center shadow-elegant">
+              <div className="text-3xl font-bold text-kohaku">{summary.remainingCount.toLocaleString()}</div>
+              <div className="text-sm text-kohaku font-medium mt-1">残区画数</div>
+              <div className="text-xs text-hai mt-2">{areaStats.remainingArea.toLocaleString()}㎡</div>
+            </div>
+            <div className="bg-white border border-cha-200 rounded-elegant-lg p-5 text-center shadow-elegant">
+              <div className="text-3xl font-bold text-cha">{summary.usageRate}%</div>
+              <div className="text-sm text-cha font-medium mt-1">使用率</div>
+              <div className="w-full bg-cha-100 rounded-full h-2 mt-3">
+                <div
+                  className="bg-cha h-2 rounded-full transition-all duration-500"
+                  style={{ width: `${summary.usageRate}%` }}
+                />
+              </div>
+            </div>
+            <div className="bg-white border border-gin rounded-elegant-lg p-5 text-center shadow-elegant">
+              <div className="text-3xl font-bold text-sumi">{(summary.remainingCount * 2).toLocaleString()}</div>
+              <div className="text-sm text-hai font-medium mt-1">半区画換算</div>
+              <div className="text-xs text-hai mt-2">1.8㎡×{(summary.remainingCount * 2).toLocaleString()}</div>
+            </div>
+          </div>
+
+          {/* 期別サマリーカード */}
+          <div className="grid grid-cols-4 gap-4 mb-6">
+            {periodSummaries.map((ps) => {
+              const periodColors = {
+                '1期': { gradient: 'from-matsu to-matsu-dark', light: 'matsu' },
+                '2期': { gradient: 'from-ai to-ai-dark', light: 'ai' },
+                '3期': { gradient: 'from-cha to-cha-dark', light: 'cha' },
+                '4期': { gradient: 'from-kohaku to-kohaku-dark', light: 'kohaku' },
+              };
+              const colors = periodColors[ps.period as keyof typeof periodColors];
+
+              return (
+                <button
+                  key={ps.period}
+                  onClick={() => setSelectedPeriod(ps.period)}
+                  className={cn(
+                    "bg-white border rounded-elegant-lg p-5 text-left transition-all duration-300 hover:shadow-elegant-lg",
+                    selectedPeriod === ps.period
+                      ? `border-${colors.light} ring-2 ring-${colors.light}-100 shadow-elegant`
+                      : "border-gin hover:border-hai"
                   )}
+                >
+                  <div className="flex justify-between items-center mb-4">
+                    <span className={cn(
+                      "text-lg font-bold font-mincho",
+                      `text-${colors.light}`
+                    )}>{ps.period}</span>
+                    <span className={cn(
+                      "text-xs px-3 py-1 rounded-full font-medium",
+                      getUsageRateColor(ps.usageRate)
+                    )}>
+                      {ps.usageRate}%
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-3 text-sm">
+                    <div>
+                      <div className="text-hai text-xs mb-1">総数</div>
+                      <div className="font-bold text-sumi">{ps.totalCount}</div>
+                    </div>
+                    <div>
+                      <div className="text-hai text-xs mb-1">使用</div>
+                      <div className="font-bold text-matsu">{ps.usedCount}</div>
+                    </div>
+                    <div>
+                      <div className="text-hai text-xs mb-1">残り</div>
+                      <div className={cn("font-bold", getRemainingColor(ps.remainingCount, ps.totalCount))}>
+                        {ps.remainingCount}
+                      </div>
+                    </div>
+                  </div>
                 </button>
               );
             })}
           </div>
-        </div>
-      </div>
 
-      {/* メインコンテンツ */}
-      <div className="p-6 relative">
-        {/* ローディングオーバーレイ */}
-        {isLoading && (
-          <div className="absolute inset-0 bg-white/60 z-10 flex items-center justify-center">
-            <div className="flex flex-col items-center">
-              <div className="w-8 h-8 border-4 border-ai border-t-transparent rounded-full animate-spin"></div>
-              <span className="mt-2 text-sm text-hai">読み込み中...</span>
-            </div>
-          </div>
-        )}
-
-        {/* 全体サマリー */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-          <div className="bg-white border border-matsu-200 rounded-elegant-lg p-5 text-center shadow-elegant">
-            <div className="text-3xl font-bold text-matsu">{summary.totalCount.toLocaleString()}</div>
-            <div className="text-sm text-matsu font-medium mt-1">総区画数</div>
-            <div className="text-xs text-hai mt-2">{areaStats.totalArea.toLocaleString()}㎡</div>
-          </div>
-          <div className="bg-white border border-ai-200 rounded-elegant-lg p-5 text-center shadow-elegant">
-            <div className="text-3xl font-bold text-ai">{summary.usedCount.toLocaleString()}</div>
-            <div className="text-sm text-ai font-medium mt-1">使用済区画数</div>
-            <div className="text-xs text-hai mt-2">{areaStats.usedArea.toLocaleString()}㎡</div>
-          </div>
-          <div className="bg-white border border-kohaku-200 rounded-elegant-lg p-5 text-center shadow-elegant">
-            <div className="text-3xl font-bold text-kohaku">{summary.remainingCount.toLocaleString()}</div>
-            <div className="text-sm text-kohaku font-medium mt-1">残区画数</div>
-            <div className="text-xs text-hai mt-2">{areaStats.remainingArea.toLocaleString()}㎡</div>
-          </div>
-          <div className="bg-white border border-cha-200 rounded-elegant-lg p-5 text-center shadow-elegant">
-            <div className="text-3xl font-bold text-cha">{summary.usageRate}%</div>
-            <div className="text-sm text-cha font-medium mt-1">使用率</div>
-            <div className="w-full bg-cha-100 rounded-full h-2 mt-3">
-              <div
-                className="bg-cha h-2 rounded-full transition-all duration-500"
-                style={{ width: `${summary.usageRate}%` }}
+          {/* 検索バー */}
+          <div className="bg-white rounded-elegant-lg shadow-elegant p-4 mb-4 border border-gin">
+            <div className="flex items-center gap-4">
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={displayMode === 'section' ? "区画名、期で検索..." : "面積、タイプ、期で検索..."}
+                className="flex-1 max-w-md"
               />
+              <Button
+                onClick={() => setSearchQuery('')}
+                variant="outline"
+                size="default"
+              >
+                クリア
+              </Button>
+              <div className="flex-1" />
+              <span className="text-sm text-hai">
+                表示件数: <span className="font-semibold text-sumi">{displayMode === 'section' ? displayData.length : displayAreaData.length}</span>件
+                {selectedPeriod !== 'all' && <span className="ml-2 text-ai">({selectedPeriod})</span>}
+                {displayMode === 'area' && <span className="ml-2 text-cha">[面積別]</span>}
+              </span>
             </div>
           </div>
-          <div className="bg-white border border-gin rounded-elegant-lg p-5 text-center shadow-elegant">
-            <div className="text-3xl font-bold text-sumi">{(summary.remainingCount * 2).toLocaleString()}</div>
-            <div className="text-sm text-hai font-medium mt-1">半区画換算</div>
-            <div className="text-xs text-hai mt-2">1.8㎡×{(summary.remainingCount * 2).toLocaleString()}</div>
-          </div>
-        </div>
 
-        {/* 期別サマリーカード */}
-        <div className="grid grid-cols-4 gap-4 mb-6">
-          {periodSummaries.map((ps) => {
-            const periodColors = {
-              '1期': { gradient: 'from-matsu to-matsu-dark', light: 'matsu' },
-              '2期': { gradient: 'from-ai to-ai-dark', light: 'ai' },
-              '3期': { gradient: 'from-cha to-cha-dark', light: 'cha' },
-              '4期': { gradient: 'from-kohaku to-kohaku-dark', light: 'kohaku' },
-            };
-            const colors = periodColors[ps.period as keyof typeof periodColors];
-
-            return (
-              <button
-                key={ps.period}
-                onClick={() => setSelectedPeriod(ps.period)}
-                className={cn(
-                  "bg-white border rounded-elegant-lg p-5 text-left transition-all duration-300 hover:shadow-elegant-lg",
-                  selectedPeriod === ps.period
-                    ? `border-${colors.light} ring-2 ring-${colors.light}-100 shadow-elegant`
-                    : "border-gin hover:border-hai"
-                )}
-              >
-                <div className="flex justify-between items-center mb-4">
-                  <span className={cn(
-                    "text-lg font-bold font-mincho",
-                    `text-${colors.light}`
-                  )}>{ps.period}</span>
-                  <span className={cn(
-                    "text-xs px-3 py-1 rounded-full font-medium",
-                    getUsageRateColor(ps.usageRate)
-                  )}>
-                    {ps.usageRate}%
-                  </span>
-                </div>
-                <div className="grid grid-cols-3 gap-3 text-sm">
-                  <div>
-                    <div className="text-hai text-xs mb-1">総数</div>
-                    <div className="font-bold text-sumi">{ps.totalCount}</div>
-                  </div>
-                  <div>
-                    <div className="text-hai text-xs mb-1">使用</div>
-                    <div className="font-bold text-matsu">{ps.usedCount}</div>
-                  </div>
-                  <div>
-                    <div className="text-hai text-xs mb-1">残り</div>
-                    <div className={cn("font-bold", getRemainingColor(ps.remainingCount, ps.totalCount))}>
-                      {ps.remainingCount}
-                    </div>
-                  </div>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* 検索バー */}
-        <div className="bg-white rounded-elegant-lg shadow-elegant p-4 mb-4 border border-gin">
-          <div className="flex items-center gap-4">
-            <Input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={displayMode === 'section' ? "区画名、期で検索..." : "面積、タイプ、期で検索..."}
-              className="flex-1 max-w-md"
-            />
-            <Button
-              onClick={() => setSearchQuery('')}
-              variant="outline"
-              size="default"
-            >
-              クリア
-            </Button>
-            <div className="flex-1" />
-            <span className="text-sm text-hai">
-              表示件数: <span className="font-semibold text-sumi">{displayMode === 'section' ? displayData.length : displayAreaData.length}</span>件
-              {selectedPeriod !== 'all' && <span className="ml-2 text-ai">({selectedPeriod})</span>}
-              {displayMode === 'area' && <span className="ml-2 text-cha">[面積別]</span>}
-            </span>
-          </div>
-        </div>
-
-        {/* データテーブル */}
-        <div className="bg-white rounded-elegant-lg shadow-elegant overflow-hidden border border-gin">
-          <div className="overflow-x-auto">
-            {displayMode === 'section' ? (
-              /* 区画別テーブル */
-              <table className="w-full">
-                <thead className="bg-kinari border-b border-gin">
-                  <tr>
-                    <th
-                      className={cn(
-                        "px-4 py-4 text-left text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
-                        sortKey === 'period' && "bg-cha-50"
-                      )}
-                      onClick={() => handleSort('period')}
-                    >
-                      <div className="flex items-center">
-                        期
-                        {sortKey === 'period' && (
-                          <span className="ml-1 text-cha">{sortOrder === 'asc' ? '▲' : '▼'}</span>
-                        )}
-                      </div>
-                    </th>
-                    <th
-                      className={cn(
-                        "px-4 py-4 text-left text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
-                        sortKey === 'section' && "bg-cha-50"
-                      )}
-                      onClick={() => handleSort('section')}
-                    >
-                      <div className="flex items-center">
-                        区画
-                        {sortKey === 'section' && (
-                          <span className="ml-1 text-cha">{sortOrder === 'asc' ? '▲' : '▼'}</span>
-                        )}
-                      </div>
-                    </th>
-                    <th
-                      className={cn(
-                        "px-4 py-4 text-right text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
-                        sortKey === 'totalCount' && "bg-cha-50"
-                      )}
-                      onClick={() => handleSort('totalCount')}
-                    >
-                      <div className="flex items-center justify-end">
-                        総数
-                        {sortKey === 'totalCount' && (
-                          <span className="ml-1 text-cha">{sortOrder === 'asc' ? '▲' : '▼'}</span>
-                        )}
-                      </div>
-                    </th>
-                    <th
-                      className={cn(
-                        "px-4 py-4 text-right text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
-                        sortKey === 'usedCount' && "bg-cha-50"
-                      )}
-                      onClick={() => handleSort('usedCount')}
-                    >
-                      <div className="flex items-center justify-end">
-                        使用数
-                        {sortKey === 'usedCount' && (
-                          <span className="ml-1 text-cha">{sortOrder === 'asc' ? '▲' : '▼'}</span>
-                        )}
-                      </div>
-                    </th>
-                    <th
-                      className={cn(
-                        "px-4 py-4 text-right text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
-                        sortKey === 'remainingCount' && "bg-cha-50"
-                      )}
-                      onClick={() => handleSort('remainingCount')}
-                    >
-                      <div className="flex items-center justify-end">
-                        残数
-                        {sortKey === 'remainingCount' && (
-                          <span className="ml-1 text-cha">{sortOrder === 'asc' ? '▲' : '▼'}</span>
-                        )}
-                      </div>
-                    </th>
-                    <th
-                      className={cn(
-                        "px-4 py-4 text-center text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
-                        sortKey === 'usageRate' && "bg-cha-50"
-                      )}
-                      onClick={() => handleSort('usageRate')}
-                    >
-                      <div className="flex items-center justify-center">
-                        使用率
-                        {sortKey === 'usageRate' && (
-                          <span className="ml-1 text-cha">{sortOrder === 'asc' ? '▲' : '▼'}</span>
-                        )}
-                      </div>
-                    </th>
-                    <th className="px-4 py-4 text-center text-sm font-bold text-sumi">
-                      状況
-                    </th>
-                    <th className="px-4 py-4 text-right text-sm font-bold text-sumi">
-                      面積（㎡）
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gin">
-                  {displayData.map((item, index) => {
-                    // APIから直接usageRateを取得（フォールバック計算も維持）
-                    const usageRate = item.usageRate ?? (item.totalCount > 0
-                      ? Math.round((item.usedCount / item.totalCount) * 100 * 10) / 10
-                      : 0);
-                    const remainingArea = item.remainingCount * PLOT_SIZE.FULL;
-                    const periodColors = {
-                      '1期': 'bg-matsu-50 text-matsu',
-                      '2期': 'bg-ai-50 text-ai',
-                      '3期': 'bg-cha-50 text-cha',
-                      '4期': 'bg-kohaku-50 text-kohaku',
-                    };
-
-                    return (
-                      <tr
-                        key={`${item.period}-${item.section}`}
+          {/* データテーブル */}
+          <div className="bg-white rounded-elegant-lg shadow-elegant overflow-hidden border border-gin">
+            <div className="overflow-x-auto">
+              {displayMode === 'section' ? (
+                /* 区画別テーブル */
+                <table className="w-full">
+                  <thead className="bg-kinari border-b border-gin">
+                    <tr>
+                      <th
                         className={cn(
-                          "hover:bg-kinari transition-colors",
-                          index % 2 === 0 ? 'bg-white' : 'bg-shiro'
+                          "px-4 py-4 text-left text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
+                          sortKey === 'period' && "bg-cha-50"
                         )}
+                        onClick={() => handleSort('period')}
                       >
-                        <td className="px-4 py-3 text-sm">
-                          <span className={cn(
-                            "px-3 py-1 rounded-full text-xs font-medium",
-                            periodColors[item.period as keyof typeof periodColors]
-                          )}>
-                            {item.period}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-sm font-semibold text-sumi">
-                          {item.section}
-                          {item.category && (
-                            <span className="ml-2 text-xs text-hai font-normal">({item.category})</span>
+                        <div className="flex items-center">
+                          期
+                          {sortKey === 'period' && (
+                            <span className="ml-1 text-cha">{sortOrder === 'asc' ? '▲' : '▼'}</span>
                           )}
-                        </td>
-                        <td className="px-4 py-3 text-sm text-right text-hai">
-                          {item.totalCount}
-                        </td>
-                        <td className="px-4 py-3 text-sm text-right text-matsu font-medium">
-                          {item.usedCount}
-                        </td>
-                        <td className={cn(
-                          "px-4 py-3 text-sm text-right",
-                          getRemainingColor(item.remainingCount, item.totalCount)
-                        )}>
-                          {item.remainingCount}
-                        </td>
-                        <td className="px-4 py-3 text-sm text-center">
-                          <div className="flex items-center justify-center space-x-2">
-                            <div className="w-16 bg-kinari rounded-full h-2 border border-gin">
-                              <div
-                                className={cn(
-                                  "h-2 rounded-full transition-all duration-300",
-                                  usageRate >= 95 ? 'bg-beni' :
-                                    usageRate >= 80 ? 'bg-kohaku' :
-                                      usageRate >= 60 ? 'bg-cha' :
-                                        'bg-matsu'
-                                )}
-                                style={{ width: `${usageRate}%` }}
-                              />
-                            </div>
-                            <span className="text-xs text-hai w-12">{usageRate}%</span>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 text-sm text-center">
-                          {item.remainingCount === 0 ? (
-                            <span className="px-3 py-1 bg-beni-50 text-beni rounded-full text-xs font-medium">
-                              完売
-                            </span>
-                          ) : item.remainingCount <= 5 ? (
-                            <span className="px-3 py-1 bg-kohaku-50 text-kohaku rounded-full text-xs font-medium">
-                              残少
-                            </span>
-                          ) : (
-                            <span className="px-3 py-1 bg-matsu-50 text-matsu rounded-full text-xs font-medium">
-                              空有
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-4 py-3 text-sm text-right text-hai">
-                          {remainingArea.toFixed(1)}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-                {/* 合計行 */}
-                <tfoot className="bg-kinari font-bold border-t-2 border-gin">
-                  <tr>
-                    <td className="px-4 py-4 text-sm text-sumi" colSpan={2}>
-                      合計 {selectedPeriod !== 'all' ? `(${selectedPeriod})` : ''}
-                    </td>
-                    <td className="px-4 py-4 text-sm text-right text-sumi">
-                      {displayData.reduce((sum, item) => sum + item.totalCount, 0)}
-                    </td>
-                    <td className="px-4 py-4 text-sm text-right text-matsu">
-                      {displayData.reduce((sum, item) => sum + item.usedCount, 0)}
-                    </td>
-                    <td className="px-4 py-4 text-sm text-right text-kohaku">
-                      {displayData.reduce((sum, item) => sum + item.remainingCount, 0)}
-                    </td>
-                    <td className="px-4 py-4 text-sm text-center text-sumi">
-                      {displayData.length > 0 ? (
-                        Math.round(
-                          (displayData.reduce((sum, item) => sum + item.usedCount, 0) /
-                            displayData.reduce((sum, item) => sum + item.totalCount, 0)) * 100 * 10
-                        ) / 10
-                      ) : 0}%
-                    </td>
-                    <td className="px-4 py-4 text-sm text-center">-</td>
-                    <td className="px-4 py-4 text-sm text-right text-hai">
-                      {(displayData.reduce((sum, item) => sum + item.remainingCount, 0) * PLOT_SIZE.FULL).toFixed(1)}
-                    </td>
-                  </tr>
-                </tfoot>
-              </table>
-            ) : (
-              /* 面積別テーブル */
-              <table className="w-full">
-                <thead className="bg-kinari border-b border-gin">
-                  <tr>
-                    <th
-                      className={cn(
-                        "px-4 py-4 text-left text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
-                        areaSortKey === 'period' && "bg-cha-50"
-                      )}
-                      onClick={() => handleAreaSort('period')}
-                    >
-                      <div className="flex items-center">
-                        期
-                        {areaSortKey === 'period' && (
-                          <span className="ml-1 text-cha">{sortOrder === 'asc' ? '▲' : '▼'}</span>
+                        </div>
+                      </th>
+                      <th
+                        className={cn(
+                          "px-4 py-4 text-left text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
+                          sortKey === 'section' && "bg-cha-50"
                         )}
-                      </div>
-                    </th>
-                    <th
-                      className={cn(
-                        "px-4 py-4 text-right text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
-                        areaSortKey === 'areaSqm' && "bg-cha-50"
-                      )}
-                      onClick={() => handleAreaSort('areaSqm')}
-                    >
-                      <div className="flex items-center justify-end">
+                        onClick={() => handleSort('section')}
+                      >
+                        <div className="flex items-center">
+                          区画
+                          {sortKey === 'section' && (
+                            <span className="ml-1 text-cha">{sortOrder === 'asc' ? '▲' : '▼'}</span>
+                          )}
+                        </div>
+                      </th>
+                      <th
+                        className={cn(
+                          "px-4 py-4 text-right text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
+                          sortKey === 'totalCount' && "bg-cha-50"
+                        )}
+                        onClick={() => handleSort('totalCount')}
+                      >
+                        <div className="flex items-center justify-end">
+                          総数
+                          {sortKey === 'totalCount' && (
+                            <span className="ml-1 text-cha">{sortOrder === 'asc' ? '▲' : '▼'}</span>
+                          )}
+                        </div>
+                      </th>
+                      <th
+                        className={cn(
+                          "px-4 py-4 text-right text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
+                          sortKey === 'usedCount' && "bg-cha-50"
+                        )}
+                        onClick={() => handleSort('usedCount')}
+                      >
+                        <div className="flex items-center justify-end">
+                          使用数
+                          {sortKey === 'usedCount' && (
+                            <span className="ml-1 text-cha">{sortOrder === 'asc' ? '▲' : '▼'}</span>
+                          )}
+                        </div>
+                      </th>
+                      <th
+                        className={cn(
+                          "px-4 py-4 text-right text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
+                          sortKey === 'remainingCount' && "bg-cha-50"
+                        )}
+                        onClick={() => handleSort('remainingCount')}
+                      >
+                        <div className="flex items-center justify-end">
+                          残数
+                          {sortKey === 'remainingCount' && (
+                            <span className="ml-1 text-cha">{sortOrder === 'asc' ? '▲' : '▼'}</span>
+                          )}
+                        </div>
+                      </th>
+                      <th
+                        className={cn(
+                          "px-4 py-4 text-center text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
+                          sortKey === 'usageRate' && "bg-cha-50"
+                        )}
+                        onClick={() => handleSort('usageRate')}
+                      >
+                        <div className="flex items-center justify-center">
+                          使用率
+                          {sortKey === 'usageRate' && (
+                            <span className="ml-1 text-cha">{sortOrder === 'asc' ? '▲' : '▼'}</span>
+                          )}
+                        </div>
+                      </th>
+                      <th className="px-4 py-4 text-center text-sm font-bold text-sumi">
+                        状況
+                      </th>
+                      <th className="px-4 py-4 text-right text-sm font-bold text-sumi">
                         面積（㎡）
-                        {areaSortKey === 'areaSqm' && (
-                          <span className="ml-1 text-cha">{sortOrder === 'asc' ? '▲' : '▼'}</span>
-                        )}
-                      </div>
-                    </th>
-                    <th
-                      className={cn(
-                        "px-4 py-4 text-right text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
-                        areaSortKey === 'totalCount' && "bg-cha-50"
-                      )}
-                      onClick={() => handleAreaSort('totalCount')}
-                    >
-                      <div className="flex items-center justify-end">
-                        区画数
-                        {areaSortKey === 'totalCount' && (
-                          <span className="ml-1 text-cha">{sortOrder === 'asc' ? '▲' : '▼'}</span>
-                        )}
-                      </div>
-                    </th>
-                    <th
-                      className={cn(
-                        "px-4 py-4 text-right text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
-                        areaSortKey === 'usedCount' && "bg-cha-50"
-                      )}
-                      onClick={() => handleAreaSort('usedCount')}
-                    >
-                      <div className="flex items-center justify-end">
-                        使用数
-                        {areaSortKey === 'usedCount' && (
-                          <span className="ml-1 text-cha">{sortOrder === 'asc' ? '▲' : '▼'}</span>
-                        )}
-                      </div>
-                    </th>
-                    <th
-                      className={cn(
-                        "px-4 py-4 text-right text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
-                        areaSortKey === 'remainingCount' && "bg-cha-50"
-                      )}
-                      onClick={() => handleAreaSort('remainingCount')}
-                    >
-                      <div className="flex items-center justify-end">
-                        残数
-                        {areaSortKey === 'remainingCount' && (
-                          <span className="ml-1 text-cha">{sortOrder === 'asc' ? '▲' : '▼'}</span>
-                        )}
-                      </div>
-                    </th>
-                    <th
-                      className={cn(
-                        "px-4 py-4 text-right text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
-                        areaSortKey === 'remainingAreaSqm' && "bg-cha-50"
-                      )}
-                      onClick={() => handleAreaSort('remainingAreaSqm')}
-                    >
-                      <div className="flex items-center justify-end">
-                        残㎡
-                        {areaSortKey === 'remainingAreaSqm' && (
-                          <span className="ml-1 text-cha">{sortOrder === 'asc' ? '▲' : '▼'}</span>
-                        )}
-                      </div>
-                    </th>
-                    <th
-                      className={cn(
-                        "px-4 py-4 text-left text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
-                        areaSortKey === 'plotType' && "bg-cha-50"
-                      )}
-                      onClick={() => handleAreaSort('plotType')}
-                    >
-                      <div className="flex items-center">
-                        タイプ
-                        {areaSortKey === 'plotType' && (
-                          <span className="ml-1 text-cha">{sortOrder === 'asc' ? '▲' : '▼'}</span>
-                        )}
-                      </div>
-                    </th>
-                    <th className="px-4 py-4 text-center text-sm font-bold text-sumi">
-                      状況
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gin">
-                  {displayAreaData.map((item, index) => {
-                    const periodColors = {
-                      '1期': 'bg-matsu-50 text-matsu',
-                      '2期': 'bg-ai-50 text-ai',
-                      '3期': 'bg-cha-50 text-cha',
-                      '4期': 'bg-kohaku-50 text-kohaku',
-                    };
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gin">
+                    {displayData.map((item, index) => {
+                      // APIから直接usageRateを取得（フォールバック計算も維持）
+                      const usageRate = item.usageRate ?? (item.totalCount > 0
+                        ? Math.round((item.usedCount / item.totalCount) * 100 * 10) / 10
+                        : 0);
+                      const remainingArea = item.remainingCount * PLOT_SIZE.FULL;
+                      const periodColors = {
+                        '1期': 'bg-matsu-50 text-matsu',
+                        '2期': 'bg-ai-50 text-ai',
+                        '3期': 'bg-cha-50 text-cha',
+                        '4期': 'bg-kohaku-50 text-kohaku',
+                      };
 
-                    return (
-                      <tr
-                        key={`${item.period}-${item.areaSqm}-${item.plotType}-${index}`}
-                        className={cn(
-                          "hover:bg-kinari transition-colors",
-                          index % 2 === 0 ? 'bg-white' : 'bg-shiro'
-                        )}
-                      >
-                        <td className="px-4 py-3 text-sm">
-                          <span className={cn(
-                            "px-3 py-1 rounded-full text-xs font-medium",
-                            periodColors[item.period as keyof typeof periodColors]
-                          )}>
-                            {item.period}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-sm text-right font-semibold text-sumi">
-                          {item.areaSqm}
-                        </td>
-                        <td className="px-4 py-3 text-sm text-right text-hai">
-                          {item.totalCount}
-                        </td>
-                        <td className="px-4 py-3 text-sm text-right text-matsu font-medium">
-                          {item.usedCount}
-                        </td>
-                        <td className={cn(
-                          "px-4 py-3 text-sm text-right",
-                          getRemainingColor(item.remainingCount, item.totalCount)
-                        )}>
-                          {item.remainingCount}
-                        </td>
-                        <td className="px-4 py-3 text-sm text-right text-ai font-medium">
-                          {item.remainingAreaSqm}
-                        </td>
-                        <td className="px-4 py-3 text-sm text-hai">
-                          {item.plotType}
-                        </td>
-                        <td className="px-4 py-3 text-sm text-center">
-                          {item.remainingCount === 0 ? (
-                            <span className="px-3 py-1 bg-beni-50 text-beni rounded-full text-xs font-medium">
-                              完売
-                            </span>
-                          ) : item.remainingCount <= 5 ? (
-                            <span className="px-3 py-1 bg-kohaku-50 text-kohaku rounded-full text-xs font-medium">
-                              残少
-                            </span>
-                          ) : (
-                            <span className="px-3 py-1 bg-matsu-50 text-matsu rounded-full text-xs font-medium">
-                              空有
-                            </span>
+                      return (
+                        <tr
+                          key={`${item.period}-${item.section}`}
+                          className={cn(
+                            "hover:bg-kinari transition-colors",
+                            index % 2 === 0 ? 'bg-white' : 'bg-shiro'
                           )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-                {/* 合計行 */}
-                <tfoot className="bg-kinari font-bold border-t-2 border-gin">
-                  <tr>
-                    <td className="px-4 py-4 text-sm text-sumi" colSpan={2}>
-                      合計 {selectedPeriod !== 'all' ? `(${selectedPeriod})` : ''}
-                    </td>
-                    <td className="px-4 py-4 text-sm text-right text-sumi">
-                      {displayAreaData.reduce((sum, item) => sum + item.totalCount, 0)}
-                    </td>
-                    <td className="px-4 py-4 text-sm text-right text-matsu">
-                      {displayAreaData.reduce((sum, item) => sum + item.usedCount, 0)}
-                    </td>
-                    <td className="px-4 py-4 text-sm text-right text-kohaku">
-                      {displayAreaData.reduce((sum, item) => sum + item.remainingCount, 0)}
-                    </td>
-                    <td className="px-4 py-4 text-sm text-right text-ai">
-                      {displayAreaData.reduce((sum, item) => sum + item.remainingAreaSqm, 0).toFixed(1)}
-                    </td>
-                    <td className="px-4 py-4 text-sm">-</td>
-                    <td className="px-4 py-4 text-sm text-center">-</td>
-                  </tr>
-                </tfoot>
-              </table>
+                        >
+                          <td className="px-4 py-3 text-sm">
+                            <span className={cn(
+                              "px-3 py-1 rounded-full text-xs font-medium",
+                              periodColors[item.period as keyof typeof periodColors]
+                            )}>
+                              {item.period}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-sm font-semibold text-sumi">
+                            {item.section}
+                            {item.category && (
+                              <span className="ml-2 text-xs text-hai font-normal">({item.category})</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-right text-hai">
+                            {item.totalCount}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-right text-matsu font-medium">
+                            {item.usedCount}
+                          </td>
+                          <td className={cn(
+                            "px-4 py-3 text-sm text-right",
+                            getRemainingColor(item.remainingCount, item.totalCount)
+                          )}>
+                            {item.remainingCount}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-center">
+                            <div className="flex items-center justify-center space-x-2">
+                              <div className="w-16 bg-kinari rounded-full h-2 border border-gin">
+                                <div
+                                  className={cn(
+                                    "h-2 rounded-full transition-all duration-300",
+                                    usageRate >= 95 ? 'bg-beni' :
+                                      usageRate >= 80 ? 'bg-kohaku' :
+                                        usageRate >= 60 ? 'bg-cha' :
+                                          'bg-matsu'
+                                  )}
+                                  style={{ width: `${usageRate}%` }}
+                                />
+                              </div>
+                              <span className="text-xs text-hai w-12">{usageRate}%</span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-sm text-center">
+                            {item.remainingCount === 0 ? (
+                              <span className="px-3 py-1 bg-beni-50 text-beni rounded-full text-xs font-medium">
+                                完売
+                              </span>
+                            ) : item.remainingCount <= 5 ? (
+                              <span className="px-3 py-1 bg-kohaku-50 text-kohaku rounded-full text-xs font-medium">
+                                残少
+                              </span>
+                            ) : (
+                              <span className="px-3 py-1 bg-matsu-50 text-matsu rounded-full text-xs font-medium">
+                                空有
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-right text-hai">
+                            {remainingArea.toFixed(1)}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                  {/* 合計行 */}
+                  <tfoot className="bg-kinari font-bold border-t-2 border-gin">
+                    <tr>
+                      <td className="px-4 py-4 text-sm text-sumi" colSpan={2}>
+                        合計 {selectedPeriod !== 'all' ? `(${selectedPeriod})` : ''}
+                      </td>
+                      <td className="px-4 py-4 text-sm text-right text-sumi">
+                        {displayData.reduce((sum, item) => sum + item.totalCount, 0)}
+                      </td>
+                      <td className="px-4 py-4 text-sm text-right text-matsu">
+                        {displayData.reduce((sum, item) => sum + item.usedCount, 0)}
+                      </td>
+                      <td className="px-4 py-4 text-sm text-right text-kohaku">
+                        {displayData.reduce((sum, item) => sum + item.remainingCount, 0)}
+                      </td>
+                      <td className="px-4 py-4 text-sm text-center text-sumi">
+                        {displayData.length > 0 ? (
+                          Math.round(
+                            (displayData.reduce((sum, item) => sum + item.usedCount, 0) /
+                              displayData.reduce((sum, item) => sum + item.totalCount, 0)) * 100 * 10
+                          ) / 10
+                        ) : 0}%
+                      </td>
+                      <td className="px-4 py-4 text-sm text-center">-</td>
+                      <td className="px-4 py-4 text-sm text-right text-hai">
+                        {(displayData.reduce((sum, item) => sum + item.remainingCount, 0) * PLOT_SIZE.FULL).toFixed(1)}
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              ) : (
+                /* 面積別テーブル */
+                <table className="w-full">
+                  <thead className="bg-kinari border-b border-gin">
+                    <tr>
+                      <th
+                        className={cn(
+                          "px-4 py-4 text-left text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
+                          areaSortKey === 'period' && "bg-cha-50"
+                        )}
+                        onClick={() => handleAreaSort('period')}
+                      >
+                        <div className="flex items-center">
+                          期
+                          {areaSortKey === 'period' && (
+                            <span className="ml-1 text-cha">{sortOrder === 'asc' ? '▲' : '▼'}</span>
+                          )}
+                        </div>
+                      </th>
+                      <th
+                        className={cn(
+                          "px-4 py-4 text-right text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
+                          areaSortKey === 'areaSqm' && "bg-cha-50"
+                        )}
+                        onClick={() => handleAreaSort('areaSqm')}
+                      >
+                        <div className="flex items-center justify-end">
+                          面積（㎡）
+                          {areaSortKey === 'areaSqm' && (
+                            <span className="ml-1 text-cha">{sortOrder === 'asc' ? '▲' : '▼'}</span>
+                          )}
+                        </div>
+                      </th>
+                      <th
+                        className={cn(
+                          "px-4 py-4 text-right text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
+                          areaSortKey === 'totalCount' && "bg-cha-50"
+                        )}
+                        onClick={() => handleAreaSort('totalCount')}
+                      >
+                        <div className="flex items-center justify-end">
+                          区画数
+                          {areaSortKey === 'totalCount' && (
+                            <span className="ml-1 text-cha">{sortOrder === 'asc' ? '▲' : '▼'}</span>
+                          )}
+                        </div>
+                      </th>
+                      <th
+                        className={cn(
+                          "px-4 py-4 text-right text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
+                          areaSortKey === 'usedCount' && "bg-cha-50"
+                        )}
+                        onClick={() => handleAreaSort('usedCount')}
+                      >
+                        <div className="flex items-center justify-end">
+                          使用数
+                          {areaSortKey === 'usedCount' && (
+                            <span className="ml-1 text-cha">{sortOrder === 'asc' ? '▲' : '▼'}</span>
+                          )}
+                        </div>
+                      </th>
+                      <th
+                        className={cn(
+                          "px-4 py-4 text-right text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
+                          areaSortKey === 'remainingCount' && "bg-cha-50"
+                        )}
+                        onClick={() => handleAreaSort('remainingCount')}
+                      >
+                        <div className="flex items-center justify-end">
+                          残数
+                          {areaSortKey === 'remainingCount' && (
+                            <span className="ml-1 text-cha">{sortOrder === 'asc' ? '▲' : '▼'}</span>
+                          )}
+                        </div>
+                      </th>
+                      <th
+                        className={cn(
+                          "px-4 py-4 text-right text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
+                          areaSortKey === 'remainingAreaSqm' && "bg-cha-50"
+                        )}
+                        onClick={() => handleAreaSort('remainingAreaSqm')}
+                      >
+                        <div className="flex items-center justify-end">
+                          残㎡
+                          {areaSortKey === 'remainingAreaSqm' && (
+                            <span className="ml-1 text-cha">{sortOrder === 'asc' ? '▲' : '▼'}</span>
+                          )}
+                        </div>
+                      </th>
+                      <th
+                        className={cn(
+                          "px-4 py-4 text-left text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
+                          areaSortKey === 'plotType' && "bg-cha-50"
+                        )}
+                        onClick={() => handleAreaSort('plotType')}
+                      >
+                        <div className="flex items-center">
+                          タイプ
+                          {areaSortKey === 'plotType' && (
+                            <span className="ml-1 text-cha">{sortOrder === 'asc' ? '▲' : '▼'}</span>
+                          )}
+                        </div>
+                      </th>
+                      <th className="px-4 py-4 text-center text-sm font-bold text-sumi">
+                        状況
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gin">
+                    {displayAreaData.map((item, index) => {
+                      const periodColors = {
+                        '1期': 'bg-matsu-50 text-matsu',
+                        '2期': 'bg-ai-50 text-ai',
+                        '3期': 'bg-cha-50 text-cha',
+                        '4期': 'bg-kohaku-50 text-kohaku',
+                      };
+
+                      return (
+                        <tr
+                          key={`${item.period}-${item.areaSqm}-${item.plotType}-${index}`}
+                          className={cn(
+                            "hover:bg-kinari transition-colors",
+                            index % 2 === 0 ? 'bg-white' : 'bg-shiro'
+                          )}
+                        >
+                          <td className="px-4 py-3 text-sm">
+                            <span className={cn(
+                              "px-3 py-1 rounded-full text-xs font-medium",
+                              periodColors[item.period as keyof typeof periodColors]
+                            )}>
+                              {item.period}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-sm text-right font-semibold text-sumi">
+                            {item.areaSqm}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-right text-hai">
+                            {item.totalCount}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-right text-matsu font-medium">
+                            {item.usedCount}
+                          </td>
+                          <td className={cn(
+                            "px-4 py-3 text-sm text-right",
+                            getRemainingColor(item.remainingCount, item.totalCount)
+                          )}>
+                            {item.remainingCount}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-right text-ai font-medium">
+                            {item.remainingAreaSqm}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-hai">
+                            {item.plotType}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-center">
+                            {item.remainingCount === 0 ? (
+                              <span className="px-3 py-1 bg-beni-50 text-beni rounded-full text-xs font-medium">
+                                完売
+                              </span>
+                            ) : item.remainingCount <= 5 ? (
+                              <span className="px-3 py-1 bg-kohaku-50 text-kohaku rounded-full text-xs font-medium">
+                                残少
+                              </span>
+                            ) : (
+                              <span className="px-3 py-1 bg-matsu-50 text-matsu rounded-full text-xs font-medium">
+                                空有
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                  {/* 合計行 */}
+                  <tfoot className="bg-kinari font-bold border-t-2 border-gin">
+                    <tr>
+                      <td className="px-4 py-4 text-sm text-sumi" colSpan={2}>
+                        合計 {selectedPeriod !== 'all' ? `(${selectedPeriod})` : ''}
+                      </td>
+                      <td className="px-4 py-4 text-sm text-right text-sumi">
+                        {displayAreaData.reduce((sum, item) => sum + item.totalCount, 0)}
+                      </td>
+                      <td className="px-4 py-4 text-sm text-right text-matsu">
+                        {displayAreaData.reduce((sum, item) => sum + item.usedCount, 0)}
+                      </td>
+                      <td className="px-4 py-4 text-sm text-right text-kohaku">
+                        {displayAreaData.reduce((sum, item) => sum + item.remainingCount, 0)}
+                      </td>
+                      <td className="px-4 py-4 text-sm text-right text-ai">
+                        {displayAreaData.reduce((sum, item) => sum + item.remainingAreaSqm, 0).toFixed(1)}
+                      </td>
+                      <td className="px-4 py-4 text-sm">-</td>
+                      <td className="px-4 py-4 text-sm text-center">-</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              )}
+            </div>
+
+            {(displayMode === 'section' ? displayData.length : displayAreaData.length) === 0 && (
+              <div className="text-center py-16 text-hai">
+                <svg className="w-16 h-16 mx-auto mb-4 text-gin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                該当する区画がありません
+              </div>
             )}
           </div>
 
-          {(displayMode === 'section' ? displayData.length : displayAreaData.length) === 0 && (
-            <div className="text-center py-16 text-hai">
-              <svg className="w-16 h-16 mx-auto mb-4 text-gin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              該当する区画がありません
+          {/* フッター情報 */}
+          <div className="mt-5 flex justify-between items-center text-sm text-hai bg-white rounded-elegant-lg p-4 border border-gin">
+            <div>
+              ※ 1区画 = 3.6㎡、半区画 = 1.8㎡として計算
             </div>
-          )}
-        </div>
-
-        {/* フッター情報 */}
-        <div className="mt-5 flex justify-between items-center text-sm text-hai bg-white rounded-elegant-lg p-4 border border-gin">
-          <div>
-            ※ 1区画 = 3.6㎡、半区画 = 1.8㎡として計算
-          </div>
-          <div className="flex items-center space-x-4">
-            <span className="flex items-center">
-              <span className="w-3 h-3 bg-matsu rounded mr-2" /> 60%未満
-            </span>
-            <span className="flex items-center">
-              <span className="w-3 h-3 bg-cha rounded mr-2" /> 60-80%
-            </span>
-            <span className="flex items-center">
-              <span className="w-3 h-3 bg-kohaku rounded mr-2" /> 80-95%
-            </span>
-            <span className="flex items-center">
-              <span className="w-3 h-3 bg-beni rounded mr-2" /> 95%以上
-            </span>
+            <div className="flex items-center space-x-4">
+              <span className="flex items-center">
+                <span className="w-3 h-3 bg-matsu rounded mr-2" /> 60%未満
+              </span>
+              <span className="flex items-center">
+                <span className="w-3 h-3 bg-cha rounded mr-2" /> 60-80%
+              </span>
+              <span className="flex items-center">
+                <span className="w-3 h-3 bg-kohaku rounded mr-2" /> 80-95%
+              </span>
+              <span className="flex items-center">
+                <span className="w-3 h-3 bg-beni rounded mr-2" /> 95%以上
+              </span>
+            </div>
           </div>
         </div>
       </div>

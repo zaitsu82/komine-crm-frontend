@@ -10,14 +10,16 @@ import CollectiveBurialListView from './ListView';
 import CollectiveBurialDetailView from './DetailView';
 import { useCollectiveBurialDetail } from '@/hooks/useCollectiveBurials';
 import { CollectiveBurialListItem } from '@/lib/api';
+import { ViewType } from '@/types/plot-detail';
 
 type ViewMode = 'list' | 'detail';
 
 interface CollectiveBurialManagementProps {
   onBack?: () => void;
+  onViewChange?: (view: ViewType) => void;
 }
 
-export default function CollectiveBurialManagement({ onBack }: CollectiveBurialManagementProps) {
+export default function CollectiveBurialManagement({ onBack, onViewChange }: CollectiveBurialManagementProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [listRefreshKey, setListRefreshKey] = useState(0);
@@ -49,6 +51,7 @@ export default function CollectiveBurialManagement({ onBack }: CollectiveBurialM
         key={listRefreshKey}
         onBack={onBack}
         onSelectRecord={handleSelectRecord}
+        onViewChange={onViewChange}
       />
     );
   }

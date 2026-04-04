@@ -18,7 +18,7 @@ import MastersManagement from '@/components/masters-management';
 import { DocumentManagement } from '@/components/document-management';
 import BulkImportPage from '@/components/bulk-import';
 import ProfilePage from '@/components/profile-page';
-import UserMenu from '@/components/user-menu';
+import PageHeader from '@/components/page-header';
 import { usePlotDetail } from '@/hooks/usePlots';
 
 import {
@@ -174,20 +174,14 @@ export default function PlotManagement({ initialView = 'registry' }: PlotManagem
 
       {/* Main Content Area */}
       <div className={`flex-1 flex flex-col ${sidebarWidth} transition-all duration-300`}>
-        {/* ヘッダーバー */}
-        <header className="h-14 border-b border-gin bg-white flex items-center justify-end px-4 flex-shrink-0">
-          <UserMenu onViewChange={handleViewChange} />
-        </header>
-
         {/* Conditional Content Based on Current View */}
         {currentView === 'registry' ? (
-          <div className="flex-1 p-6 overflow-auto">
-            <PlotRegistry
-              onPlotSelect={handlePlotSelect}
-              selectedPlotId={selectedPlotId || undefined}
-              onNewPlot={handleNewCustomer}
-            />
-          </div>
+          <PlotRegistry
+            onPlotSelect={handlePlotSelect}
+            selectedPlotId={selectedPlotId || undefined}
+            onNewPlot={handleNewCustomer}
+            onViewChange={handleViewChange}
+          />
         ) : currentView === 'plot-details' && selectedPlotId ? (
           <div className="flex-1 p-6 overflow-auto">
             <PlotDetailView
@@ -205,26 +199,28 @@ export default function PlotManagement({ initialView = 'registry' }: PlotManagem
           </div>
         ) : currentView === 'register' || (currentView === 'edit' && selectedPlotId) ? (
           <>
-            <div className="bg-kohaku-50 border-b border-gin px-6 py-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <h2 className="text-lg font-semibold">
-                    {currentView === 'register' ? '新規区画登録' : '区画情報編集'}
-                  </h2>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={handleCancelForm}
-                  >
-                    キャンセル
-                  </Button>
-                </div>
-              </div>
-            </div>
+            <PageHeader
+              title={currentView === 'register' ? '新規区画登録' : '区画情報編集'}
+              theme="kohaku"
+              icon={
+                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+              }
+              onViewChange={handleViewChange}
+            />
 
-            <div className="flex-1 p-6">
+            <div className="flex-1 p-6 overflow-auto">
+              <div className="mb-4 flex justify-end">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleCancelForm}
+                  className="cursor-pointer"
+                >
+                  キャンセル
+                </Button>
+              </div>
               {currentView === 'edit' && isPlotDetailLoading && !selectedPlotDetail ? (
                 <div className="flex items-center justify-center h-64 text-hai">
                   区画情報を読み込み中...
@@ -242,53 +238,42 @@ export default function PlotManagement({ initialView = 'registry' }: PlotManagem
         ) : currentView === 'collective-burial' ? (
           <CollectiveBurialManagement
             onBack={() => handleViewChange('registry')}
+            onViewChange={handleViewChange}
           />
         ) : currentView === 'plot-availability' ? (
-          <div className="flex-1 overflow-auto">
-            <PlotAvailabilityManagement />
-          </div>
+          <PlotAvailabilityManagement onViewChange={handleViewChange} />
         ) : currentView === 'staff-management' ? (
-          <div className="flex-1 overflow-auto">
-            <StaffManagement />
-          </div>
+          <StaffManagement onViewChange={handleViewChange} />
         ) : currentView === 'masters' ? (
-          <div className="flex-1 overflow-auto">
-            <MastersManagement />
-          </div>
+          <MastersManagement onViewChange={handleViewChange} />
         ) : currentView === 'documents' ? (
-          <div className="flex-1 overflow-auto">
-            <DocumentManagement />
-          </div>
+          <DocumentManagement onViewChange={handleViewChange} />
         ) : currentView === 'bulk-import' ? (
-          <div className="flex-1 overflow-auto">
-            <BulkImportPage />
-          </div>
+          <BulkImportPage onViewChange={handleViewChange} />
         ) : currentView === 'profile' ? (
-          <ProfilePage onBack={() => setCurrentView('registry')} />
+          <ProfilePage onBack={() => setCurrentView('registry')} onViewChange={handleViewChange} />
         ) : null}
 
         {/* 書類履歴（区画コンテキスト） */}
         {currentView === 'document-history' && selectedPlotId && (
-          <div className="flex-1 overflow-auto">
-            <DocumentManagement
-              customerId={selectedPlotId}
-              customerName={selectedPlotName || selectedPlotCode}
-              initialMode="list"
-              onBack={() => setCurrentView('plot-details')}
-            />
-          </div>
+          <DocumentManagement
+            customerId={selectedPlotId}
+            customerName={selectedPlotName || selectedPlotCode}
+            initialMode="list"
+            onBack={() => setCurrentView('plot-details')}
+            onViewChange={handleViewChange}
+          />
         )}
 
         {/* 書類作成（区画コンテキスト） */}
         {currentView === 'document-select' && selectedPlotId && (
-          <div className="flex-1 overflow-auto">
-            <DocumentManagement
-              customerId={selectedPlotId}
-              customerName={selectedPlotName || selectedPlotCode}
-              initialMode="create"
-              onBack={() => setCurrentView('plot-details')}
-            />
-          </div>
+          <DocumentManagement
+            customerId={selectedPlotId}
+            customerName={selectedPlotName || selectedPlotCode}
+            initialMode="create"
+            onBack={() => setCurrentView('plot-details')}
+            onViewChange={handleViewChange}
+          />
         )}
       </div>
 

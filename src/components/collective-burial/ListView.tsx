@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import PageHeader from '@/components/page-header';
 import {
   useCollectiveBurialList,
   useCollectiveBurialStats,
@@ -21,15 +20,19 @@ import {
   BILLING_STATUS_LABELS,
   BILLING_STATUS_COLORS,
 } from '@/lib/api';
+import PageHeader from '@/components/page-header';
+import { ViewType } from '@/types/plot-detail';
 
 interface CollectiveBurialListViewProps {
   onBack?: () => void;
   onSelectRecord?: (record: CollectiveBurialListItem) => void;
+  onViewChange?: (view: ViewType) => void;
 }
 
 export default function CollectiveBurialListView({
   onBack,
   onSelectRecord,
+  onViewChange,
 }: CollectiveBurialListViewProps) {
   // フィルター状態
   const [searchQuery, setSearchQuery] = useState('');
@@ -106,37 +109,22 @@ export default function CollectiveBurialListView({
   };
 
   return (
-    <div className="h-full flex flex-col bg-shiro">
-      {/* ヘッダー */}
+    <div className="flex-1 flex flex-col overflow-hidden">
       <PageHeader
         title="合祀管理"
+        subtitle="合祀区画の請求・埋葬管理"
         theme="cha"
         icon={
           <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
           </svg>
         }
-        actions={
-          <>
-            <Button onClick={resetFilters} variant="outline" size="default" className="cursor-pointer">
-              <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-              リセット
-            </Button>
-            {onBack && (
-              <Button onClick={onBack} variant="outline" size="default" className="cursor-pointer">
-                <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-                戻る
-              </Button>
-            )}
-          </>
-        }
-      >
-        {/* 凡例 */}
-        <div className="mt-4 flex flex-wrap gap-4 text-sm">
+        onViewChange={onViewChange}
+      />
+
+      {/* 凡例 + アクションボタン */}
+      <div className="flex items-center px-6 py-3 border-b border-gin bg-kinari">
+        <div className="flex-1 flex flex-wrap gap-4 text-sm">
           <div className="flex items-center space-x-2">
             <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">請求前</span>
             <span className="text-sumi">上限未到達 / 到達後請求待ち</span>
@@ -150,7 +138,17 @@ export default function CollectiveBurialListView({
             <span className="text-sumi">支払い完了</span>
           </div>
         </div>
-      </PageHeader>
+        <div className="flex-shrink-0 flex items-center space-x-3">
+          <Button onClick={resetFilters} variant="outline" size="sm">
+            リセット
+          </Button>
+          {onBack && (
+            <Button onClick={onBack} variant="outline" size="sm">
+              戻る
+            </Button>
+          )}
+        </div>
+      </div>
 
       {/* フィルターエリア */}
       <div className="bg-white border-b border-gin px-6 py-5">
