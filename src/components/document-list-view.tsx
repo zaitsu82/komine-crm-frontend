@@ -30,6 +30,7 @@ import {
   ChevronRight,
   Download,
   Eye,
+  ArrowLeft,
 } from 'lucide-react';
 import PageHeader from '@/components/page-header';
 import { ViewType } from '@/types/plot-detail';
@@ -42,6 +43,8 @@ interface DocumentListViewProps {
   onCreateNew: () => void;
   onViewDetail: (id: string) => void;
   onDownload: (id: string) => void;
+  /** テンプレートギャラリーに戻る */
+  onBack?: () => void;
   onViewChange?: (view: ViewType) => void;
 }
 
@@ -51,6 +54,7 @@ export function DocumentListView({
   onCreateNew,
   onViewDetail,
   onDownload,
+  onBack,
   onViewChange,
 }: DocumentListViewProps) {
   // 顧客IDが指定されている場合は初期フィルターとして設定
@@ -108,7 +112,15 @@ export function DocumentListView({
       />
 
       <div className="flex-1 overflow-auto p-4 space-y-4">
-        <div className="flex justify-end">
+        <div className="flex justify-between items-center">
+          <div>
+            {onBack && (
+              <Button variant="ghost" size="sm" onClick={onBack}>
+                <ArrowLeft className="mr-1 h-4 w-4" />
+                テンプレート
+              </Button>
+            )}
+          </div>
           <Button onClick={onCreateNew} size="sm" className="bg-matsu-600 hover:bg-matsu-700 cursor-pointer">
             <Plus className="mr-1 h-4 w-4" />
             新規作成

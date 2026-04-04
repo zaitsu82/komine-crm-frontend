@@ -412,8 +412,8 @@ export default function StaffManagement({ onViewChange }: StaffManagementProps) 
           <button
             onClick={() => setShowPermissionMatrix(!showPermissionMatrix)}
             className={`inline-flex items-center border rounded-elegant px-3 py-1.5 cursor-pointer transition-all duration-200 text-sm font-medium ${showPermissionMatrix
-                ? 'bg-ai-50 border-ai-200 text-ai-dark'
-                : 'border-gin text-sumi hover:bg-kinari bg-white'
+              ? 'bg-ai-50 border-ai-200 text-ai-dark'
+              : 'border-gin text-sumi hover:bg-kinari bg-white'
               }`}
           >
             <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">

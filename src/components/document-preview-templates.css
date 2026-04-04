@@ -1,0 +1,475 @@
+/* PDFテンプレート（invoice.html / postcard.html）に近い見た目。スコープ: .komine-invoice-preview / .komine-postcard-preview */
+
+.komine-invoice-preview {
+  font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic Pro', 'Meiryo', sans-serif;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #333;
+  background: white;
+}
+
+.komine-invoice-preview * {
+  box-sizing: border-box;
+}
+
+.komine-invoice-preview .invoice-container {
+  max-width: 210mm;
+  margin: 0 auto;
+  padding: 20mm;
+}
+
+.komine-invoice-preview .header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.komine-invoice-preview .header h1 {
+  font-size: 28px;
+  font-weight: bold;
+  letter-spacing: 8px;
+  border-bottom: 3px double #333;
+  display: inline-block;
+  padding-bottom: 5px;
+}
+
+.komine-invoice-preview .invoice-info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 30px;
+  gap: 12px;
+}
+
+.komine-invoice-preview .customer-info {
+  width: 55%;
+  min-width: 0;
+}
+
+.komine-invoice-preview .customer-name-row {
+  font-size: 18px;
+  font-weight: bold;
+  border-bottom: 1px solid #333;
+  padding-bottom: 5px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-width: 0;
+}
+
+.komine-invoice-preview .customer-name-row .suffix {
+  font-weight: normal;
+}
+
+.komine-invoice-preview .customer-address {
+  font-size: 11px;
+  color: #555;
+}
+
+.komine-invoice-preview .invoice-meta {
+  width: 40%;
+  min-width: 0;
+  text-align: right;
+}
+
+.komine-invoice-preview .invoice-meta table {
+  margin-left: auto;
+  border-collapse: collapse;
+}
+
+.komine-invoice-preview .invoice-meta td {
+  padding: 3px 8px;
+  font-size: 11px;
+}
+
+.komine-invoice-preview .invoice-meta .label {
+  text-align: right;
+  color: #666;
+}
+
+.komine-invoice-preview .total-box {
+  background: #f8f8f8;
+  border: 2px solid #333;
+  padding: 15px 20px;
+  margin-bottom: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.komine-invoice-preview .total-label {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.komine-invoice-preview .total-amount {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.komine-invoice-preview .total-amount::before {
+  content: '\00A5 ';
+  font-size: 18px;
+}
+
+.komine-invoice-preview .items-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  table-layout: fixed;
+}
+
+.komine-invoice-preview .items-table th,
+.komine-invoice-preview .items-table td {
+  border: 1px solid #ddd;
+  padding: 10px 8px;
+  text-align: left;
+  vertical-align: top;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+}
+
+.komine-invoice-preview .items-table th {
+  background: #f5f5f5;
+  font-weight: bold;
+  font-size: 11px;
+}
+
+.komine-invoice-preview .items-table td {
+  font-size: 11px;
+}
+
+.komine-invoice-preview .text-right {
+  text-align: right !important;
+}
+
+.komine-invoice-preview .text-center {
+  text-align: center !important;
+}
+
+.komine-invoice-preview .summary-table {
+  width: 250px;
+  max-width: 100%;
+  margin-left: auto;
+  border-collapse: collapse;
+}
+
+.komine-invoice-preview .summary-table td {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+}
+
+.komine-invoice-preview .summary-table .label {
+  background: #f5f5f5;
+  font-weight: bold;
+  width: 100px;
+}
+
+.komine-invoice-preview .summary-table .total-row td {
+  border: 2px solid #333;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.komine-invoice-preview .notes {
+  margin-top: 30px;
+  padding: 15px;
+  background: #fafafa;
+  border: 1px solid #eee;
+  font-size: 11px;
+}
+
+.komine-invoice-preview .notes-title {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.komine-invoice-preview .company-info {
+  margin-top: 40px;
+  text-align: right;
+  font-size: 11px;
+}
+
+.komine-invoice-preview .company-name {
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.komine-invoice-preview .stamp-area {
+  display: inline-block;
+  width: 60px;
+  height: 60px;
+  border: 1px dashed #ccc;
+  margin-top: 10px;
+}
+
+/* はがき */
+.komine-postcard-preview {
+  font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic Pro', 'Meiryo', sans-serif;
+  font-size: 12px;
+  line-height: 1.8;
+  color: #333;
+  background: white;
+}
+
+.komine-postcard-preview * {
+  box-sizing: border-box;
+}
+
+.komine-postcard-preview .postcard-container {
+  width: 100mm;
+  height: 148mm;
+  padding: 8mm;
+  display: flex;
+  flex-direction: column;
+}
+
+.komine-postcard-preview .address-side {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.komine-postcard-preview .postal-code-area {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 5mm;
+}
+
+.komine-postcard-preview .postal-code {
+  font-size: 16px;
+  font-weight: bold;
+  letter-spacing: 4px;
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.komine-postcard-preview .postal-code .prefix {
+  margin-right: 2px;
+}
+
+.komine-postcard-preview .recipient-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding-right: 15mm;
+  min-height: 0;
+}
+
+.komine-postcard-preview .recipient-address {
+  font-size: 11px;
+  margin-bottom: 5mm;
+  line-height: 1.6;
+}
+
+.komine-postcard-preview .recipient-name-row {
+  font-size: 18px;
+  font-weight: bold;
+  margin-top: auto;
+  text-align: center;
+  padding-right: 10mm;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.komine-postcard-preview .recipient-name-row .suffix {
+  font-weight: normal;
+  font-size: 14px;
+}
+
+.komine-postcard-preview .sender-area {
+  border-top: 1px dashed #ccc;
+  padding-top: 5mm;
+  margin-top: 5mm;
+}
+
+.komine-postcard-preview .sender-postal-code {
+  font-size: 10px;
+  margin-bottom: 2mm;
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.komine-postcard-preview .sender-address {
+  font-size: 9px;
+  margin-bottom: 2mm;
+}
+
+.komine-postcard-preview .sender-name {
+  font-size: 11px;
+  font-weight: bold;
+}
+
+/* プレビュー内フォームコントロール */
+.komine-invoice-preview .preview-input,
+.komine-invoice-preview .preview-textarea,
+.komine-postcard-preview .preview-input,
+.komine-postcard-preview .preview-textarea {
+  font: inherit;
+  color: inherit;
+  width: 100%;
+  max-width: 100%;
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px dashed rgba(51, 51, 51, 0.25);
+  border-radius: 2px;
+  padding: 2px 4px;
+  margin: 0;
+}
+
+.komine-invoice-preview .preview-input:focus,
+.komine-invoice-preview .preview-textarea:focus,
+.komine-postcard-preview .preview-input:focus,
+.komine-postcard-preview .preview-textarea:focus {
+  border-color: #0f766e;
+  outline: none;
+  background: rgba(240, 253, 250, 0.95);
+  box-shadow: 0 0 0 1px rgba(15, 118, 110, 0.2);
+}
+
+.komine-invoice-preview .preview-textarea,
+.komine-postcard-preview .preview-textarea {
+  resize: vertical;
+  min-height: 3em;
+  line-height: inherit;
+}
+
+.komine-invoice-preview .preview-input-table {
+  border: 1px dashed rgba(51, 51, 51, 0.2);
+  background: rgba(255, 255, 255, 0.7);
+  width: 100%;
+  padding: 4px 6px;
+  font: inherit;
+}
+
+.komine-invoice-preview .preview-input-table:focus {
+  border-color: #0f766e;
+  outline: none;
+  background: rgba(240, 253, 250, 0.95);
+}
+
+.komine-invoice-preview .preview-meta-input {
+  width: 100%;
+  max-width: 140px;
+  text-align: left;
+  font-size: 11px;
+}
+
+/* ─── テキストの種（プレビュー）請求書 ─── */
+.komine-invoice-preview.doc-preset-mincho .invoice-container {
+  font-family: 'Noto Serif JP', 'Hiragino Mincho ProN', 'Yu Mincho', 'MS Mincho',
+    serif;
+}
+
+.komine-invoice-preview.doc-preset-mincho .header h1 {
+  font-size: 26px;
+  letter-spacing: 12px;
+}
+
+.komine-invoice-preview.doc-preset-mincho .customer-name-row {
+  font-size: 17px;
+}
+
+.komine-invoice-preview.doc-preset-gothic_large .invoice-container {
+  font-size: 13px;
+}
+
+.komine-invoice-preview.doc-preset-gothic_large .header h1 {
+  font-size: 32px;
+  letter-spacing: 10px;
+}
+
+.komine-invoice-preview.doc-preset-gothic_large .customer-name-row {
+  font-size: 20px;
+}
+
+.komine-invoice-preview.doc-preset-gothic_large .total-amount {
+  font-size: 28px;
+}
+
+.komine-invoice-preview.doc-preset-gothic_large .invoice-meta td,
+.komine-invoice-preview.doc-preset-gothic_large .items-table td,
+.komine-invoice-preview.doc-preset-gothic_large .items-table th {
+  font-size: 12px;
+}
+
+.komine-invoice-preview.doc-preset-compact .invoice-container {
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.komine-invoice-preview.doc-preset-compact .header h1 {
+  font-size: 22px;
+  letter-spacing: 4px;
+}
+
+.komine-invoice-preview.doc-preset-compact .customer-name-row {
+  font-size: 16px;
+}
+
+.komine-invoice-preview.doc-preset-compact .total-amount {
+  font-size: 20px;
+}
+
+.komine-invoice-preview.doc-preset-compact .invoice-meta td,
+.komine-invoice-preview.doc-preset-compact .items-table td,
+.komine-invoice-preview.doc-preset-compact .items-table th {
+  font-size: 10px;
+  padding: 6px 5px;
+}
+
+/* ─── テキストの種（プレビュー）はがき ─── */
+.komine-postcard-preview.doc-preset-mincho .postcard-container {
+  font-family: 'Noto Serif JP', 'Hiragino Mincho ProN', 'Yu Mincho', 'MS Mincho',
+    serif;
+}
+
+.komine-postcard-preview.doc-preset-mincho .postal-code {
+  font-size: 15px;
+}
+
+.komine-postcard-preview.doc-preset-mincho .recipient-name-row {
+  font-size: 17px;
+}
+
+.komine-postcard-preview.doc-preset-gothic_large .postcard-container {
+  font-size: 13px;
+}
+
+.komine-postcard-preview.doc-preset-gothic_large .postal-code {
+  font-size: 18px;
+}
+
+.komine-postcard-preview.doc-preset-gothic_large .recipient-address {
+  font-size: 12px;
+}
+
+.komine-postcard-preview.doc-preset-gothic_large .recipient-name-row {
+  font-size: 20px;
+}
+
+.komine-postcard-preview.doc-preset-gothic_large .sender-name {
+  font-size: 12px;
+}
+
+.komine-postcard-preview.doc-preset-compact .postcard-container {
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.komine-postcard-preview.doc-preset-compact .postal-code {
+  font-size: 14px;
+}
+
+.komine-postcard-preview.doc-preset-compact .recipient-address {
+  font-size: 10px;
+}
+
+.komine-postcard-preview.doc-preset-compact .recipient-name-row {
+  font-size: 16px;
+}

@@ -99,8 +99,8 @@ test.describe('合祀管理 - 詳細表示', () => {
     await expect(page.getByText('合祀詳細')).toBeVisible({ timeout: 10_000 });
 
     // 編集・削除ボタンが存在しないことを確認
-    await expect(page.getByRole('button', { name: '編集' })).not.toBeVisible({ timeout: 2_000 }).catch(() => {});
-    await expect(page.getByRole('button', { name: '削除' })).not.toBeVisible({ timeout: 2_000 }).catch(() => {});
+    await expect(page.getByRole('button', { name: '編集' })).not.toBeVisible({ timeout: 2_000 }).catch(() => { });
+    await expect(page.getByRole('button', { name: '削除' })).not.toBeVisible({ timeout: 2_000 }).catch(() => { });
   });
 
   test('詳細画面に3つのタブが表示される', async ({ page }) => {
@@ -122,7 +122,7 @@ test.describe('合祀管理 - 詳細表示', () => {
     await expect(page.getByRole('tab', { name: '請求管理' })).toBeVisible();
 
     // 旧タブが存在しないことを確認
-    await expect(page.getByRole('tab', { name: /備考・法要/ })).not.toBeVisible({ timeout: 1_000 }).catch(() => {});
+    await expect(page.getByRole('tab', { name: /備考・法要/ })).not.toBeVisible({ timeout: 1_000 }).catch(() => { });
   });
 
   test('閉じるボタンで一覧に戻れる', async ({ page }) => {
