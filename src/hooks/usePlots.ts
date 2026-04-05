@@ -122,11 +122,12 @@ export function usePlots(options: UsePlotsOptions = {}): UsePlotsReturn {
 
   // サーバーサイドデータ取得
   const fetchPlots = useCallback(async () => {
-    // キャッシュから復元済みならバックグラウンドで取得（ローディング非表示）
-    if (!restoredFromCache.current) {
-      setIsLoading(true);
+    // TTL内の有効なキャッシュがあればフェッチをスキップ
+    if (restoredFromCache.current) {
+      restoredFromCache.current = false;
+      return;
     }
-    restoredFromCache.current = false;
+    setIsLoading(true);
     setError(null);
 
     try {
@@ -269,11 +270,12 @@ export function usePlotDetail(id: string | null): UsePlotDetailReturn {
       return;
     }
 
-    // キャッシュから復元済みならローディング非表示（バックグラウンド更新）
-    if (!restoredFromDetailCache.current) {
-      setIsLoading(true);
+    // TTL内の有効なキャッシュがあればフェッチをスキップ
+    if (restoredFromDetailCache.current) {
+      restoredFromDetailCache.current = false;
+      return;
     }
-    restoredFromDetailCache.current = false;
+    setIsLoading(true);
     setError(null);
 
     try {
