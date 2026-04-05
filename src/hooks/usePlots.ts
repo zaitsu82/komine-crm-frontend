@@ -366,8 +366,9 @@ export function usePlotMutations(): UsePlotMutationsReturn {
       const response = await updatePlot(id, request);
 
       if (response.success) {
-        // 詳細キャッシュとリストキャッシュをクリア
-        clearDetailCache(id);
+        // 詳細キャッシュを更新レスポンスで上書き（リフェッチ不要に）
+        saveCachedDetail(id, response.data);
+        // リストキャッシュはクリア（一覧の表示名等が変わる可能性あり）
         sessionStorage.removeItem(CACHE_KEY);
         return response.data;
       } else {
