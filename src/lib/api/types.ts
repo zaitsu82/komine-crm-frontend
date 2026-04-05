@@ -120,6 +120,11 @@ export interface ChangePasswordRequest {
   newPassword: string;
 }
 
+export interface UpdateProfileRequest {
+  name?: string;
+  email?: string;
+}
+
 // ===== 顧客/区画検索 =====
 
 export interface CustomerSearchParams extends PaginationParams {
