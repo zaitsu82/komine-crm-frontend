@@ -29,6 +29,7 @@ export {
   logout,
   getCurrentUser,
   changePassword,
+  updateProfile,
   isAuthenticated,
   refreshAccessToken,
   initializeTokenRefresh,

@@ -7,9 +7,11 @@ import {
   logout as apiLogout,
   getCurrentUser,
   changePassword as apiChangePassword,
+  updateProfile as apiUpdateProfile,
   isAuthenticated as checkIsAuthenticated,
   AuthUser,
   ChangePasswordRequest,
+  UpdateProfileRequest,
 } from '@/lib/api';
 import { clearAllTokens, isTokenExpired, isTokenExpiringSoon } from '@/lib/api/client';
 
@@ -39,6 +41,8 @@ interface AuthContextType {
   handleAuthError: (errorCode: string) => boolean;
   /** パスワード変更 */
   changePassword: (request: ChangePasswordRequest) => Promise<{ success: boolean; error?: string }>;
+  /** プロフィール更新（名前・メールアドレス） */
+  updateProfile: (request: UpdateProfileRequest) => Promise<{ success: boolean; error?: string }>;
   /** ユーザー情報の再取得 */
   refreshUser: () => Promise<void>;
 }
@@ -275,6 +279,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { success: false, error: response.error.message };
   }, []);
 
+  // プロフィール更新
+  const updateProfile = useCallback(async (request: UpdateProfileRequest): Promise<{ success: boolean; error?: string }> => {
+    setIsLoading(true);
+    setError(null);
+
+    const response = await apiUpdateProfile(request);
+
+    if (response.success) {
+      setUser(authUserToUser(response.data));
+      setIsLoading(false);
+      toast.success('プロフィールを更新しました', {
+        duration: 3000,
+      });
+      return { success: true };
+    }
+
+    setError(response.error.message);
+    setIsLoading(false);
+    toast.error('プロフィール更新に失敗しました', {
+      description: response.error.message,
+      duration: 5000,
+    });
+    return { success: false, error: response.error.message };
+  }, []);
+
   // ユーザー情報の再取得
   const refreshUser = useCallback(async () => {
     if (!checkIsAuthenticated()) {
@@ -304,6 +333,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         forceLogout,
         handleAuthError,
         changePassword,
+        updateProfile,
         refreshUser,
       }}
     >

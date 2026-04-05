@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import PageHeader from '@/components/page-header';
 import { ViewType } from '@/types/plot-detail';
 
@@ -22,34 +23,98 @@ interface ProfilePageProps {
 }
 
 export default function ProfilePage({ onBack, onViewChange }: ProfilePageProps) {
-  const { user, changePassword, isLoading } = useAuth();
+  const { user, changePassword, updateProfile, isLoading } = useAuth();
 
+  // プロフィール編集
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editEmail, setEditEmail] = useState('');
+  const [profileError, setProfileError] = useState<string | null>(null);
+  const [showProfileConfirm, setShowProfileConfirm] = useState(false);
+
+  // パスワード変更
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [validationError, setValidationError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: FormEvent) => {
+  const startEditing = () => {
+    setEditName(user?.name || '');
+    setEditEmail(user?.email || '');
+    setProfileError(null);
+    setIsEditingProfile(true);
+  };
+
+  const cancelEditing = () => {
+    setIsEditingProfile(false);
+    setProfileError(null);
+  };
+
+  const handleProfileSubmit = (e: FormEvent) => {
     e.preventDefault();
-    setValidationError(null);
+    setProfileError(null);
+
+    if (!editName.trim()) {
+      setProfileError('名前を入力してください');
+      return;
+    }
+
+    if (!editEmail.trim()) {
+      setProfileError('メールアドレスを入力してください');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(editEmail)) {
+      setProfileError('正しいメールアドレス形式で入力してください');
+      return;
+    }
+
+    // 変更がない場合は何もしない
+    if (editName === user?.name && editEmail === user?.email) {
+      setIsEditingProfile(false);
+      return;
+    }
+
+    // バリデーション通過後、確認ダイアログを表示
+    setShowProfileConfirm(true);
+  };
+
+  const executeProfileUpdate = async () => {
+    const request: { name?: string; email?: string } = {};
+    if (editName.trim() !== user?.name) request.name = editName.trim();
+    if (editEmail.trim() !== user?.email) request.email = editEmail.trim();
+
+    const result = await updateProfile(request);
+
+    if (result.success) {
+      setIsEditingProfile(false);
+    } else if (result.error) {
+      setProfileError(result.error);
+    }
+  };
+
+  const handlePasswordSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setPasswordError(null);
 
     if (!currentPassword) {
-      setValidationError('現在のパスワードを入力してください');
+      setPasswordError('現在のパスワードを入力してください');
       return;
     }
 
     if (!newPassword) {
-      setValidationError('新しいパスワードを入力してください');
+      setPasswordError('新しいパスワードを入力してください');
       return;
     }
 
     if (newPassword.length < 8) {
-      setValidationError('新しいパスワードは8文字以上で入力してください');
+      setPasswordError('新しいパスワードは8文字以上で入力してください');
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setValidationError('新しいパスワードが一致しません');
+      setPasswordError('新しいパスワードが一致しません');
       return;
     }
 
@@ -93,47 +158,150 @@ export default function ProfilePage({ onBack, onViewChange }: ProfilePageProps) 
 
           {/* プロフィール情報 */}
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-lg">プロフィール情報</CardTitle>
+              {!isEditingProfile && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={startEditing}
+                  className="cursor-pointer"
+                >
+                  <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                  </svg>
+                  編集
+                </Button>
+              )}
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-hai text-sm">名前</Label>
-                  <p className="mt-1 text-sumi font-medium">{user?.name || '-'}</p>
-                </div>
-                <div>
-                  <Label className="text-hai text-sm">メールアドレス</Label>
-                  <p className="mt-1 text-sumi font-medium">{user?.email || '-'}</p>
-                </div>
-                <div>
-                  <Label className="text-hai text-sm">権限</Label>
-                  <p className="mt-1">
-                    <span className="inline-block px-2 py-0.5 text-sm rounded bg-matsu-50 text-matsu-dark border border-matsu-100">
-                      {user?.role ? ROLE_LABELS[user.role] || user.role : '-'}
-                    </span>
-                  </p>
-                </div>
-                <div>
-                  <Label className="text-hai text-sm">アカウント状態</Label>
-                  <p className="mt-1">
-                    {user?.isActive !== undefined ? (
-                      <span
-                        className={`inline-block px-2 py-0.5 text-sm rounded border ${user.isActive
-                          ? 'bg-green-50 text-green-700 border-green-200'
-                          : 'bg-red-50 text-red-700 border-red-200'
-                          }`}
-                      >
-                        {user.isActive ? '有効' : '無効'}
+            <CardContent>
+              {isEditingProfile ? (
+                <form onSubmit={handleProfileSubmit} className="space-y-4">
+                  <div>
+                    <Label htmlFor="edit-name">名前</Label>
+                    <Input
+                      id="edit-name"
+                      type="text"
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      className="mt-1"
+                      autoComplete="name"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-email">メールアドレス</Label>
+                    <Input
+                      id="edit-email"
+                      type="email"
+                      value={editEmail}
+                      onChange={(e) => setEditEmail(e.target.value)}
+                      className="mt-1"
+                      autoComplete="email"
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-hai text-sm">権限</Label>
+                      <p className="mt-1">
+                        <span className="inline-block px-2 py-0.5 text-sm rounded bg-matsu-50 text-matsu-dark border border-matsu-100">
+                          {user?.role ? ROLE_LABELS[user.role] || user.role : '-'}
+                        </span>
+                      </p>
+                    </div>
+                    <div>
+                      <Label className="text-hai text-sm">アカウント状態</Label>
+                      <p className="mt-1">
+                        {user?.isActive !== undefined ? (
+                          <span
+                            className={`inline-block px-2 py-0.5 text-sm rounded border ${user.isActive
+                              ? 'bg-green-50 text-green-700 border-green-200'
+                              : 'bg-red-50 text-red-700 border-red-200'
+                              }`}
+                          >
+                            {user.isActive ? '有効' : '無効'}
+                          </span>
+                        ) : (
+                          '-'
+                        )}
+                      </p>
+                    </div>
+                  </div>
+
+                  {profileError && (
+                    <p className="text-sm text-red-600">{profileError}</p>
+                  )}
+
+                  <div className="flex gap-2">
+                    <Button type="submit" disabled={isLoading}>
+                      {isLoading ? '更新中...' : '保存'}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={cancelEditing}
+                      disabled={isLoading}
+                      className="cursor-pointer"
+                    >
+                      キャンセル
+                    </Button>
+                  </div>
+                </form>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-hai text-sm">名前</Label>
+                    <p className="mt-1 text-sumi font-medium">{user?.name || '-'}</p>
+                  </div>
+                  <div>
+                    <Label className="text-hai text-sm">メールアドレス</Label>
+                    <p className="mt-1 text-sumi font-medium">{user?.email || '-'}</p>
+                  </div>
+                  <div>
+                    <Label className="text-hai text-sm">権限</Label>
+                    <p className="mt-1">
+                      <span className="inline-block px-2 py-0.5 text-sm rounded bg-matsu-50 text-matsu-dark border border-matsu-100">
+                        {user?.role ? ROLE_LABELS[user.role] || user.role : '-'}
                       </span>
-                    ) : (
-                      '-'
-                    )}
-                  </p>
+                    </p>
+                  </div>
+                  <div>
+                    <Label className="text-hai text-sm">アカウント状態</Label>
+                    <p className="mt-1">
+                      {user?.isActive !== undefined ? (
+                        <span
+                          className={`inline-block px-2 py-0.5 text-sm rounded border ${user.isActive
+                            ? 'bg-green-50 text-green-700 border-green-200'
+                            : 'bg-red-50 text-red-700 border-red-200'
+                            }`}
+                        >
+                          {user.isActive ? '有効' : '無効'}
+                        </span>
+                      ) : (
+                        '-'
+                      )}
+                    </p>
+                  </div>
                 </div>
-              </div>
+              )}
             </CardContent>
           </Card>
+
+          {/* プロフィール更新確認ダイアログ */}
+          <ConfirmDialog
+            open={showProfileConfirm}
+            onOpenChange={setShowProfileConfirm}
+            title="プロフィールを更新しますか？"
+            description={
+              [
+                editName.trim() !== user?.name && `名前: ${user?.name} → ${editName.trim()}`,
+                editEmail.trim() !== user?.email && `メールアドレス: ${user?.email} → ${editEmail.trim()}`,
+              ]
+                .filter(Boolean)
+                .join('\n')
+            }
+            confirmLabel="更新する"
+            onConfirm={executeProfileUpdate}
+          />
 
           {/* パスワード変更 */}
           <Card>
@@ -141,7 +309,7 @@ export default function ProfilePage({ onBack, onViewChange }: ProfilePageProps) 
               <CardTitle className="text-lg">パスワード変更</CardTitle>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handlePasswordSubmit} className="space-y-4">
                 <div>
                   <Label htmlFor="current-password">現在のパスワード</Label>
                   <Input
@@ -177,8 +345,8 @@ export default function ProfilePage({ onBack, onViewChange }: ProfilePageProps) 
                   />
                 </div>
 
-                {validationError && (
-                  <p className="text-sm text-red-600">{validationError}</p>
+                {passwordError && (
+                  <p className="text-sm text-red-600">{passwordError}</p>
                 )}
 
                 <Button type="submit" disabled={isLoading} className="mt-2">

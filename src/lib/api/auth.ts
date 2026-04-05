@@ -25,6 +25,7 @@ import {
   BackendCurrentUserResponse,
   AuthUser,
   ChangePasswordRequest,
+  UpdateProfileRequest,
 } from './types';
 
 // モック認証データ
@@ -209,6 +210,30 @@ async function mockChangePassword(
   return { success: true, data: undefined };
 }
 
+/**
+ * モックプロフィール更新
+ */
+async function mockUpdateProfile(
+  request: UpdateProfileRequest
+): Promise<ApiResponse<AuthUser>> {
+  await new Promise((resolve) => setTimeout(resolve, 300));
+
+  if (!mockCurrentUser) {
+    return {
+      success: false,
+      error: {
+        code: 'UNAUTHORIZED',
+        message: '認証が必要です',
+      },
+    };
+  }
+
+  if (request.name !== undefined) mockCurrentUser.name = request.name;
+  if (request.email !== undefined) mockCurrentUser.email = request.email;
+
+  return { success: true, data: { ...mockCurrentUser } };
+}
+
 // ===== 公開API =====
 
 /**
@@ -327,6 +352,34 @@ export async function changePassword(
   }
 
   return apiPut<void>('/auth/password', request);
+}
+
+/**
+ * プロフィール更新（名前・メールアドレス）
+ */
+export async function updateProfile(
+  request: UpdateProfileRequest
+): Promise<ApiResponse<AuthUser>> {
+  if (shouldUseMockData()) {
+    return mockUpdateProfile(request);
+  }
+
+  const response = await apiPut<{ user: BackendCurrentUserResponse['user'] }>('/auth/profile', request);
+
+  if (response.success) {
+    return {
+      success: true,
+      data: {
+        id: response.data.user.id,
+        email: response.data.user.email,
+        name: response.data.user.name,
+        role: response.data.user.role,
+        isActive: response.data.user.is_active,
+      },
+    };
+  }
+
+  return response;
 }
 
 /**
