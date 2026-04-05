@@ -1,6 +1,6 @@
 import { UseFormRegister, UseFormWatch, UseFormSetValue, Control, FieldErrors, UseFieldArrayReturn } from 'react-hook-form';
 import type { PlotDetailResponse } from '@komine/types';
-import type { PlotFormData, FamilyContactFormData, BuriedPersonFormData } from '@/lib/validations/plot-form';
+import type { PlotFormData, FamilyContactFormData, BuriedPersonFormData, ConstructionInfoFormData } from '@/lib/validations/plot-form';
 import { MasterItem, TaxTypeMasterItem, SectionNameMasterItem } from '@/lib/api';
 
 export interface MasterData {
@@ -44,6 +44,12 @@ export interface BurialInfoTabProps extends PlotTabBaseProps {
   removeBuriedPerson: UseFieldArrayReturn<PlotFormData, 'buriedPersons'>['remove'];
 }
 
+export interface ConstructionInfoTabProps extends PlotTabBaseProps {
+  constructionInfoFields: UseFieldArrayReturn<PlotFormData, 'constructionInfos'>['fields'];
+  addConstructionInfo: UseFieldArrayReturn<PlotFormData, 'constructionInfos'>['append'];
+  removeConstructionInfo: UseFieldArrayReturn<PlotFormData, 'constructionInfos'>['remove'];
+}
+
 export interface HistoryTabProps {
   plotDetail?: PlotDetailResponse;
 }
@@ -72,5 +78,37 @@ export const getDefaultBuriedPerson = (): BuriedPersonFormData => ({
   age: null,
   gender: null,
   burialDate: null,
+  notes: null,
+});
+
+export const getDefaultConstructionInfo = (): ConstructionInfoFormData => ({
+  constructionType: null,
+  startDate: null,
+  completionDate: null,
+  contractor: null,
+  supervisor: null,
+  progress: null,
+  workItem1: null,
+  workDate1: null,
+  workAmount1: null,
+  workStatus1: null,
+  workItem2: null,
+  workDate2: null,
+  workAmount2: null,
+  workStatus2: null,
+  permitNumber: null,
+  applicationDate: null,
+  permitDate: null,
+  permitStatus: null,
+  paymentType1: null,
+  paymentAmount1: null,
+  paymentDate1: null,
+  paymentStatus1: null,
+  paymentType2: null,
+  paymentAmount2: null,
+  paymentScheduledDate2: null,
+  paymentStatus2: null,
+  scheduledEndDate: null,
+  constructionContent: null,
   notes: null,
 });

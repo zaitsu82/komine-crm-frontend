@@ -19,6 +19,7 @@ import { BasicInfoTab } from './BasicInfoTab';
 import { WorkBillingTab } from './WorkBillingTab';
 import { ContactsTab } from './ContactsTab';
 import { BurialInfoTab } from './BurialInfoTab';
+import { ConstructionInfoTab } from './ConstructionInfoTab';
 export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProps) {
   const isEditing = !!plotDetail;
 
@@ -76,6 +77,12 @@ export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProp
     remove: removeBuriedPerson,
   } = useFieldArray({ control, name: 'buriedPersons' });
 
+  const {
+    fields: constructionInfoFields,
+    append: addConstructionInfo,
+    remove: removeConstructionInfo,
+  } = useFieldArray({ control, name: 'constructionInfos' });
+
   const [expandedContactId, setExpandedContactId] = useState<string | null>(null);
 
   const onSubmit = (data: PlotFormData) => {
@@ -112,6 +119,10 @@ export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProp
     'burial-info': {
       label: '埋葬情報',
       sections: ['buriedPersons', 'collectiveBurial'],
+    },
+    'construction-info': {
+      label: '工事情報',
+      sections: ['constructionInfos'],
     },
   } satisfies Record<string, { label: string; sections: string[] }>;
 
@@ -224,6 +235,34 @@ export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProp
     'posthumousName': '戒名',
     'reportDate': '届出日',
     'religion': '宗派',
+    // 工事情報（配列内フィールド）
+    'constructionType': '工事種別',
+    'contractor': '施工業者',
+    'supervisor': '監督者',
+    'constructionContent': '工事内容',
+    'startDate': '開始日',
+    'completionDate': '完了日',
+    'scheduledEndDate': '終了予定日',
+    'permitNumber': '許可番号',
+    'applicationDate': '申請日',
+    'permitDate': '許可日',
+    'permitStatus': '許可状態',
+    'workItem1': '工事項目1',
+    'workDate1': '工事日付1',
+    'workAmount1': '工事金額1',
+    'workStatus1': '工事状態1',
+    'workItem2': '工事項目2',
+    'workDate2': '工事日付2',
+    'workAmount2': '工事金額2',
+    'workStatus2': '工事状態2',
+    'paymentType1': '入金種別1',
+    'paymentAmount1': '入金額1',
+    'paymentDate1': '入金日1',
+    'paymentStatus1': '入金状態1',
+    'paymentType2': '入金種別2',
+    'paymentAmount2': '入金額2',
+    'paymentScheduledDate2': '入金予定日2',
+    'paymentStatus2': '入金状態2',
     // 合祀設定
     'collectiveBurial.burialCapacity': '埋葬上限数',
     'collectiveBurial.validityPeriodYears': '有効期間（年）',
@@ -235,6 +274,7 @@ export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProp
   const arraySectionLabels: Record<string, string> = {
     familyContacts: '家族連絡先',
     buriedPersons: '埋葬者',
+    constructionInfos: '工事情報',
   };
 
   // フィールドパスからタブ名を取得
@@ -307,7 +347,7 @@ export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProp
       )}
 
       <Tabs defaultValue="basic-info" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 h-auto">
+        <TabsList className="grid w-full grid-cols-5 h-auto">
           {Object.entries(tabConfig).map(([tabKey, tab]) => {
             const hasError = tabsWithErrors.has(tabKey);
             return (
@@ -353,6 +393,15 @@ export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProp
             buriedPersonFields={buriedPersonFields}
             addBuriedPerson={addBuriedPerson}
             removeBuriedPerson={removeBuriedPerson}
+          />
+        </TabsContent>
+
+        <TabsContent value="construction-info" className="space-y-6 mt-6">
+          <ConstructionInfoTab
+            {...tabBaseProps}
+            constructionInfoFields={constructionInfoFields}
+            addConstructionInfo={addConstructionInfo}
+            removeConstructionInfo={removeConstructionInfo}
           />
         </TabsContent>
 
