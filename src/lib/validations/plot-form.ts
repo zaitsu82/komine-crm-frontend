@@ -213,6 +213,41 @@ export const buriedPersonSchema = z.object({
   notes: z.string().optional().nullable(),
 });
 
+// ===== 工事情報スキーマ =====
+
+export const constructionInfoSchema = z.object({
+  id: z.string().optional(),
+  constructionType: z.string().optional().nullable(),
+  startDate: dateString.nullable(),
+  completionDate: dateString.nullable(),
+  contractor: z.string().optional().nullable(),
+  supervisor: z.string().optional().nullable(),
+  progress: z.string().optional().nullable(),
+  workItem1: z.string().optional().nullable(),
+  workDate1: dateString.nullable(),
+  workAmount1: optionalNonnegativeInt.optional(),
+  workStatus1: z.string().optional().nullable(),
+  workItem2: z.string().optional().nullable(),
+  workDate2: dateString.nullable(),
+  workAmount2: optionalNonnegativeInt.optional(),
+  workStatus2: z.string().optional().nullable(),
+  permitNumber: z.string().optional().nullable(),
+  applicationDate: dateString.nullable(),
+  permitDate: dateString.nullable(),
+  permitStatus: z.string().optional().nullable(),
+  paymentType1: z.string().optional().nullable(),
+  paymentAmount1: optionalNonnegativeInt.optional(),
+  paymentDate1: dateString.nullable(),
+  paymentStatus1: z.string().optional().nullable(),
+  paymentType2: z.string().optional().nullable(),
+  paymentAmount2: optionalNonnegativeInt.optional(),
+  paymentScheduledDate2: dateString.nullable(),
+  paymentStatus2: z.string().optional().nullable(),
+  scheduledEndDate: dateString.nullable(),
+  constructionContent: z.string().optional().nullable(),
+  notes: z.string().optional().nullable(),
+});
+
 // ===== 合祀情報スキーマ =====
 
 export const collectiveBurialSchema = z.object({
@@ -247,6 +282,7 @@ export const plotFormSchema = z.object({
   // 配列セクション
   familyContacts: z.array(familyContactSchema).optional(),
   buriedPersons: z.array(buriedPersonSchema).optional(),
+  constructionInfos: z.array(constructionInfoSchema).optional(),
 
   // 合祀情報
   collectiveBurial: collectiveBurialSchema.optional().nullable(),
@@ -279,6 +315,7 @@ export const plotUpdateFormSchema = z.object({
   // 配列セクション（全置換）
   familyContacts: z.array(familyContactSchema).optional(),
   buriedPersons: z.array(buriedPersonSchema).optional(),
+  constructionInfos: z.array(constructionInfoSchema).optional(),
 
   // 合祀情報
   collectiveBurial: collectiveBurialSchema.optional().nullable(),
@@ -297,6 +334,7 @@ export type ManagementFeeFormData = z.infer<typeof managementFeeSchema>;
 export type GravestoneInfoFormData = z.infer<typeof gravestoneInfoSchema>;
 export type FamilyContactFormData = z.infer<typeof familyContactSchema>;
 export type BuriedPersonFormData = z.infer<typeof buriedPersonSchema>;
+export type ConstructionInfoFormData = z.infer<typeof constructionInfoSchema>;
 export type CollectiveBurialFormData = z.infer<typeof collectiveBurialSchema>;
 
 export type PlotFormData = z.infer<typeof plotFormSchema>;
@@ -359,6 +397,7 @@ export const defaultPlotFormData: PlotFormData = {
   gravestoneInfo: null,
   familyContacts: [],
   buriedPersons: [],
+  constructionInfos: [],
   collectiveBurial: null,
 };
 
@@ -506,6 +545,37 @@ export function plotFormDataToCreateRequest(formData: PlotFormData): CreatePlotR
       religion: bp.religion || undefined,
       notes: bp.notes || undefined,
     })),
+    constructionInfos: formData.constructionInfos?.map((ci) => ({
+      constructionType: ci.constructionType || undefined,
+      startDate: ci.startDate || undefined,
+      completionDate: ci.completionDate || undefined,
+      contractor: ci.contractor || undefined,
+      supervisor: ci.supervisor || undefined,
+      progress: ci.progress || undefined,
+      workItem1: ci.workItem1 || undefined,
+      workDate1: ci.workDate1 || undefined,
+      workAmount1: ci.workAmount1 ?? undefined,
+      workStatus1: ci.workStatus1 || undefined,
+      workItem2: ci.workItem2 || undefined,
+      workDate2: ci.workDate2 || undefined,
+      workAmount2: ci.workAmount2 ?? undefined,
+      workStatus2: ci.workStatus2 || undefined,
+      permitNumber: ci.permitNumber || undefined,
+      applicationDate: ci.applicationDate || undefined,
+      permitDate: ci.permitDate || undefined,
+      permitStatus: ci.permitStatus || undefined,
+      paymentType1: ci.paymentType1 || undefined,
+      paymentAmount1: ci.paymentAmount1 ?? undefined,
+      paymentDate1: ci.paymentDate1 || undefined,
+      paymentStatus1: ci.paymentStatus1 || undefined,
+      paymentType2: ci.paymentType2 || undefined,
+      paymentAmount2: ci.paymentAmount2 ?? undefined,
+      paymentScheduledDate2: ci.paymentScheduledDate2 || undefined,
+      paymentStatus2: ci.paymentStatus2 || undefined,
+      scheduledEndDate: ci.scheduledEndDate || undefined,
+      constructionContent: ci.constructionContent || undefined,
+      notes: ci.notes || undefined,
+    })),
     collectiveBurial: formData.collectiveBurial
       ? {
         burialCapacity: formData.collectiveBurial.burialCapacity,
@@ -618,6 +688,41 @@ export function plotFormDataToUpdateRequest(formData: PlotUpdateFormData): Updat
       reportDate: bp.reportDate || undefined,
       religion: bp.religion || undefined,
       notes: bp.notes || undefined,
+    }));
+  }
+
+  if (formData.constructionInfos) {
+    request.constructionInfos = formData.constructionInfos.map((ci) => ({
+      id: ci.id,
+      constructionType: ci.constructionType || undefined,
+      startDate: ci.startDate || undefined,
+      completionDate: ci.completionDate || undefined,
+      contractor: ci.contractor || undefined,
+      supervisor: ci.supervisor || undefined,
+      progress: ci.progress || undefined,
+      workItem1: ci.workItem1 || undefined,
+      workDate1: ci.workDate1 || undefined,
+      workAmount1: ci.workAmount1 ?? undefined,
+      workStatus1: ci.workStatus1 || undefined,
+      workItem2: ci.workItem2 || undefined,
+      workDate2: ci.workDate2 || undefined,
+      workAmount2: ci.workAmount2 ?? undefined,
+      workStatus2: ci.workStatus2 || undefined,
+      permitNumber: ci.permitNumber || undefined,
+      applicationDate: ci.applicationDate || undefined,
+      permitDate: ci.permitDate || undefined,
+      permitStatus: ci.permitStatus || undefined,
+      paymentType1: ci.paymentType1 || undefined,
+      paymentAmount1: ci.paymentAmount1 ?? undefined,
+      paymentDate1: ci.paymentDate1 || undefined,
+      paymentStatus1: ci.paymentStatus1 || undefined,
+      paymentType2: ci.paymentType2 || undefined,
+      paymentAmount2: ci.paymentAmount2 ?? undefined,
+      paymentScheduledDate2: ci.paymentScheduledDate2 || undefined,
+      paymentStatus2: ci.paymentStatus2 || undefined,
+      scheduledEndDate: ci.scheduledEndDate || undefined,
+      constructionContent: ci.constructionContent || undefined,
+      notes: ci.notes || undefined,
     }));
   }
 
@@ -782,6 +887,38 @@ export function plotDetailToFormData(detail: PlotDetailResponse): PlotFormData {
       reportDate: toDateOnly(bp.reportDate) || null,
       religion: bp.religion || null,
       notes: bp.notes,
+    })),
+    constructionInfos: detail.constructionInfos.map((ci) => ({
+      id: ci.id,
+      constructionType: ci.constructionType,
+      startDate: toDateOnly(ci.startDate),
+      completionDate: toDateOnly(ci.completionDate),
+      contractor: ci.contractor,
+      supervisor: ci.supervisor,
+      progress: ci.progress,
+      workItem1: ci.workItem1,
+      workDate1: toDateOnly(ci.workDate1),
+      workAmount1: ci.workAmount1,
+      workStatus1: ci.workStatus1,
+      workItem2: ci.workItem2,
+      workDate2: toDateOnly(ci.workDate2),
+      workAmount2: ci.workAmount2,
+      workStatus2: ci.workStatus2,
+      permitNumber: ci.permitNumber,
+      applicationDate: toDateOnly(ci.applicationDate),
+      permitDate: toDateOnly(ci.permitDate),
+      permitStatus: ci.permitStatus,
+      paymentType1: ci.paymentType1,
+      paymentAmount1: ci.paymentAmount1,
+      paymentDate1: toDateOnly(ci.paymentDate1),
+      paymentStatus1: ci.paymentStatus1,
+      paymentType2: ci.paymentType2,
+      paymentAmount2: ci.paymentAmount2,
+      paymentScheduledDate2: toDateOnly(ci.paymentScheduledDate2),
+      paymentStatus2: ci.paymentStatus2,
+      scheduledEndDate: toDateOnly(ci.scheduledEndDate),
+      constructionContent: ci.constructionContent,
+      notes: ci.notes,
     })),
     collectiveBurial: detail.collectiveBurial
       ? {
