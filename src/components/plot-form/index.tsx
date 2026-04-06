@@ -19,6 +19,7 @@ import { BasicInfoTab } from './BasicInfoTab';
 import { WorkBillingTab } from './WorkBillingTab';
 import { ContactsTab } from './ContactsTab';
 import { BurialInfoTab } from './BurialInfoTab';
+import { FeeInfoTab } from './FeeInfoTab';
 import { ConstructionInfoTab } from './ConstructionInfoTab';
 export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProps) {
   const isEditing = !!plotDetail;
@@ -106,7 +107,11 @@ export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProp
   const tabConfig = {
     'basic-info': {
       label: '区画・契約情報',
-      sections: ['physicalPlot', 'contractPlot', 'saleContract', 'customer', 'usageFee', 'managementFee', 'gravestoneInfo'],
+      sections: ['physicalPlot', 'contractPlot', 'saleContract', 'customer'],
+    },
+    'fee-info': {
+      label: '料金情報',
+      sections: ['usageFee', 'managementFee'],
     },
     'work-billing': {
       label: '勤務先・請求',
@@ -118,7 +123,7 @@ export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProp
     },
     'burial-info': {
       label: '埋葬情報',
-      sections: ['buriedPersons', 'collectiveBurial'],
+      sections: ['buriedPersons', 'collectiveBurial', 'gravestoneInfo'],
     },
     'construction-info': {
       label: '工事情報',
@@ -347,7 +352,7 @@ export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProp
       )}
 
       <Tabs defaultValue="basic-info" className="w-full">
-        <TabsList className="grid w-full grid-cols-5 h-auto">
+        <TabsList className="grid w-full grid-cols-6 h-auto">
           {Object.entries(tabConfig).map(([tabKey, tab]) => {
             const hasError = tabsWithErrors.has(tabKey);
             return (
@@ -370,6 +375,10 @@ export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProp
 
         <TabsContent value="basic-info" className="space-y-6 mt-6">
           <BasicInfoTab {...tabBaseProps} />
+        </TabsContent>
+
+        <TabsContent value="fee-info" className="space-y-6 mt-6">
+          <FeeInfoTab {...tabBaseProps} />
         </TabsContent>
 
         <TabsContent value="work-billing" className="space-y-6 mt-6">

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { BurialInfoTabProps, getDefaultBuriedPerson } from './types';
-import { ViewModeSelect } from './ViewModeField';
+import { ViewModeField, ViewModeSelect } from './ViewModeField';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -424,6 +424,100 @@ export function BurialInfoTab({
             </div>
           </div>
         )}
+      </div>
+
+      {/* Gravestone Info */}
+      <div className="border-t pt-6 mt-6">
+        <div className="border rounded-lg p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold text-sumi">墓石情報</h3>
+            <button
+              type="button"
+              onClick={() => {
+                const current = watch('gravestoneInfo');
+                if (current !== null && current !== undefined) {
+                  setValue('gravestoneInfo', null);
+                } else {
+                  setValue('gravestoneInfo', {
+                    gravestoneBase: null,
+                    enclosurePosition: null,
+                    gravestoneDealer: null,
+                    gravestoneType: null,
+                    surroundingArea: null,
+                    establishmentDeadline: null,
+                    establishmentDate: null,
+                  });
+                }
+              }}
+              className="px-3 py-1 text-sm bg-matsu text-white rounded hover:bg-matsu-dark"
+            >
+              {watch('gravestoneInfo') !== null && watch('gravestoneInfo') !== undefined
+                ? '墓石情報を削除'
+                : '墓石情報を追加'}
+            </button>
+          </div>
+
+          {watch('gravestoneInfo') !== null && watch('gravestoneInfo') !== undefined && (
+            <div className="grid grid-cols-3 gap-4">
+              <ViewModeField
+                label="墓石台"
+                register={register('gravestoneInfo.gravestoneBase')}
+                error={errors.gravestoneInfo?.gravestoneBase?.message}
+                placeholder="御影石"
+              />
+
+              <ViewModeField
+                label="外柵位置"
+                register={register('gravestoneInfo.enclosurePosition')}
+                error={errors.gravestoneInfo?.enclosurePosition?.message}
+                placeholder="東側"
+              />
+
+              <ViewModeField
+                label="石材店"
+                register={register('gravestoneInfo.gravestoneDealer')}
+                error={errors.gravestoneInfo?.gravestoneDealer?.message}
+                placeholder="○○石材店"
+              />
+
+              <ViewModeField
+                label="墓石種類"
+                register={register('gravestoneInfo.gravestoneType')}
+                error={errors.gravestoneInfo?.gravestoneType?.message}
+                placeholder="和型"
+              />
+
+              <ViewModeField
+                label="周辺面積"
+                register={register('gravestoneInfo.surroundingArea')}
+                error={errors.gravestoneInfo?.surroundingArea?.message}
+                placeholder="1.5"
+              />
+
+              <ViewModeField
+                label="建立期限"
+                type="date"
+                register={register('gravestoneInfo.establishmentDeadline')}
+                error={errors.gravestoneInfo?.establishmentDeadline?.message}
+              />
+
+              <ViewModeField
+                label="建立日"
+                type="date"
+                register={register('gravestoneInfo.establishmentDate')}
+                error={errors.gravestoneInfo?.establishmentDate?.message}
+              />
+
+              <ViewModeField
+                label="墓石代"
+                type="number"
+                register={register('gravestoneInfo.gravestoneCost')}
+                error={errors.gravestoneInfo?.gravestoneCost?.message}
+                placeholder="0"
+              />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
