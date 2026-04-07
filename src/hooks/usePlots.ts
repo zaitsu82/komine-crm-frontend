@@ -264,14 +264,16 @@ export function usePlotDetail(id: string | null): UsePlotDetailReturn {
   const [error, setError] = useState<string | null>(null);
   const restoredFromDetailCache = useRef(cachedData !== null);
 
-  const fetchPlot = useCallback(async () => {
+  // 内部用フェッチャー: force=true でキャッシュ短絡を無視して必ずネットワーク取得
+  const fetchPlotInternal = useCallback(async (force: boolean) => {
     if (!id) {
       setPlot(null);
       return;
     }
 
-    // TTL内の有効なキャッシュがあればフェッチをスキップ
-    if (restoredFromDetailCache.current) {
+    // 初回マウント時は TTL 内キャッシュがあればフェッチをスキップ。
+    // refresh() からの呼び出し（force=true）は常に再取得する。
+    if (!force && restoredFromDetailCache.current) {
       restoredFromDetailCache.current = false;
       return;
     }
@@ -284,6 +286,7 @@ export function usePlotDetail(id: string | null): UsePlotDetailReturn {
       if (response.success) {
         setPlot(response.data);
         saveCachedDetail(id, response.data);
+        restoredFromDetailCache.current = false;
       } else {
         setError(response.error.message);
         setPlot(null);
@@ -295,6 +298,16 @@ export function usePlotDetail(id: string | null): UsePlotDetailReturn {
       setIsLoading(false);
     }
   }, [id]);
+
+  // 初回マウント / id 変更時の取得
+  const fetchPlot = useCallback(async () => {
+    await fetchPlotInternal(false);
+  }, [fetchPlotInternal]);
+
+  // 明示的な再取得（refresh）: キャッシュを無視して必ず最新を取得
+  const refresh = useCallback(async () => {
+    await fetchPlotInternal(true);
+  }, [fetchPlotInternal]);
 
   // IDが変わったらキャッシュから即座に表示
   useEffect(() => {
@@ -319,7 +332,7 @@ export function usePlotDetail(id: string | null): UsePlotDetailReturn {
     plot,
     isLoading,
     error,
-    refresh: fetchPlot,
+    refresh,
   };
 }
 
@@ -368,8 +381,20 @@ export function usePlotMutations(): UsePlotMutationsReturn {
       const response = await updatePlot(id, request);
 
       if (response.success) {
-        // 詳細キャッシュを更新レスポンスで上書き（リフェッチ不要に）
-        saveCachedDetail(id, response.data);
+        // 更新APIのレスポンスは histories を含まないため、ここで上書きすると
+        // 履歴タブが空になってしまう（issue #51）。
+        // 履歴込みで再取得してキャッシュを更新する。
+        try {
+          const refetched = await getPlotById(id, { includeHistory: true });
+          if (refetched.success) {
+            saveCachedDetail(id, refetched.data);
+          } else {
+            // 再取得に失敗したらキャッシュをクリア（次回マウント時に再フェッチ）
+            clearDetailCache(id);
+          }
+        } catch {
+          clearDetailCache(id);
+        }
         // リストキャッシュはクリア（一覧の表示名等が変わる可能性あり）
         sessionStorage.removeItem(CACHE_KEY);
         return response.data;
