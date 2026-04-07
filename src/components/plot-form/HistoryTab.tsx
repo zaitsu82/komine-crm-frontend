@@ -9,9 +9,111 @@ const ACTION_TYPE_LABELS: Record<string, string> = {
   DELETE: '削除',
 };
 
+const ACTION_TYPE_STYLES: Record<string, string> = {
+  CREATE: 'bg-green-100 text-green-800',
+  UPDATE: 'bg-blue-100 text-blue-800',
+  DELETE: 'bg-red-100 text-red-800',
+};
+
+/**
+ * 履歴レコードの差分1項目
+ */
+interface ChangeDetail {
+  before: unknown;
+  after: unknown;
+}
+
+/**
+ * バックエンド (issue #51) が返す履歴エントリ
+ *
+ * 既存の `@komine/types` 側の HistoryItem は古い shape を持つため、
+ * このコンポーネント内で実際のレスポンスに合わせて拡張型を定義する。
+ */
+interface HistoryEntry {
+  id: string;
+  entityType?: string;
+  entityLabel?: string;
+  entityId?: string;
+  actionType: string;
+  changedFields?: Record<string, ChangeDetail> | string[] | null;
+  fieldLabels?: Record<string, string>;
+  beforeRecord?: Record<string, unknown> | null;
+  afterRecord?: Record<string, unknown> | null;
+  changedBy: string | null;
+  changeReason: string | null;
+  ipAddress?: string | null;
+  createdAt: string | Date;
+}
+
+/**
+ * 値を表示用文字列に整形する
+ */
+function formatValue(value: unknown): string {
+  if (value === null || value === undefined || value === '') {
+    return '（未設定）';
+  }
+  if (typeof value === 'boolean') {
+    return value ? 'はい' : 'いいえ';
+  }
+  if (value instanceof Date) {
+    return value.toLocaleString('ja-JP');
+  }
+  if (typeof value === 'string') {
+    // ISO 日付っぽい文字列は日本語日時表記に
+    if (/^\d{4}-\d{2}-\d{2}T/.test(value)) {
+      const d = new Date(value);
+      if (!Number.isNaN(d.getTime())) {
+        return d.toLocaleString('ja-JP');
+      }
+    }
+    return value;
+  }
+  if (typeof value === 'number') {
+    return value.toLocaleString('ja-JP');
+  }
+  return JSON.stringify(value);
+}
+
+/**
+ * 差分が ChangeDetail 形式（オブジェクト）かどうか判定
+ */
+function isChangeDetailMap(
+  changedFields: HistoryEntry['changedFields']
+): changedFields is Record<string, ChangeDetail> {
+  return (
+    !!changedFields &&
+    !Array.isArray(changedFields) &&
+    typeof changedFields === 'object'
+  );
+}
+
+/**
+ * 履歴行のサマリーテキストを生成する
+ */
+function summarizeChange(history: HistoryEntry): string {
+  if (history.actionType === 'CREATE') {
+    return `${history.entityLabel ?? history.entityType ?? ''}を作成`;
+  }
+  if (history.actionType === 'DELETE') {
+    return `${history.entityLabel ?? history.entityType ?? ''}を削除`;
+  }
+  if (isChangeDetailMap(history.changedFields)) {
+    const labels = Object.keys(history.changedFields).map(
+      (key) => history.fieldLabels?.[key] ?? key
+    );
+    if (labels.length === 0) return '-';
+    if (labels.length <= 3) return labels.join('、');
+    return `${labels.slice(0, 3).join('、')} 他${labels.length - 3}件`;
+  }
+  if (Array.isArray(history.changedFields)) {
+    return history.changedFields.join(', ');
+  }
+  return '-';
+}
+
 export function HistoryTab({ plotDetail }: HistoryTabProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const histories = plotDetail?.histories || [];
+  const histories = (plotDetail?.histories ?? []) as unknown as HistoryEntry[];
 
   if (histories.length === 0) {
     return (
@@ -24,35 +126,134 @@ export function HistoryTab({ plotDetail }: HistoryTabProps) {
 
   return (
     <div className="border border-gin rounded-elegant-lg p-4">
-      <h3 className="text-sm font-semibold text-sumi mb-3">履歴情報</h3>
+      <h3 className="text-sm font-semibold text-sumi mb-3">
+        履歴情報 <span className="text-hai font-normal">（{histories.length}件）</span>
+      </h3>
 
       {/* ヘッダー */}
-      <div className="grid grid-cols-5 gap-4 px-3 py-2 bg-kinari border rounded-t-md text-sm font-medium text-hai">
-        <span>日時</span>
-        <span>操作</span>
-        <span>変更フィールド</span>
-        <span>変更事由</span>
-        <span>変更者</span>
+      <div className="grid grid-cols-12 gap-2 px-3 py-2 bg-kinari border rounded-t-md text-xs font-medium text-hai">
+        <span className="col-span-3">日時</span>
+        <span className="col-span-2">対象 / 操作</span>
+        <span className="col-span-4">変更内容</span>
+        <span className="col-span-2">変更者</span>
+        <span className="col-span-1 text-right">詳細</span>
       </div>
 
       {/* 行 */}
       <div className="border border-t-0 rounded-b-md divide-y">
-        {histories.map((history) => (
-          <div
-            key={history.id}
-            className={`grid grid-cols-5 gap-4 px-3 py-2 text-sm cursor-pointer hover:bg-matsu-50 transition-colors duration-200 ${selectedId === history.id ? 'bg-matsu-50' : ''
-              }`}
-            onClick={() => setSelectedId(selectedId === history.id ? null : history.id)}
-          >
-            <span>{new Date(history.createdAt).toLocaleString('ja-JP')}</span>
-            <span>{ACTION_TYPE_LABELS[history.actionType] || history.actionType}</span>
-            <span className="truncate">
-              {history.changedFields?.join(', ') || '-'}
-            </span>
-            <span className="truncate">{history.changeReason || '-'}</span>
-            <span>{history.changedBy || '-'}</span>
-          </div>
-        ))}
+        {histories.map((history) => {
+          const isExpanded = selectedId === history.id;
+          const actionStyle =
+            ACTION_TYPE_STYLES[history.actionType] ?? 'bg-gray-100 text-gray-800';
+          const actionLabel = ACTION_TYPE_LABELS[history.actionType] ?? history.actionType;
+          return (
+            <div key={history.id}>
+              <button
+                type="button"
+                className={`w-full grid grid-cols-12 gap-2 px-3 py-2 text-sm text-left cursor-pointer hover:bg-matsu-50 transition-colors duration-200 ${
+                  isExpanded ? 'bg-matsu-50' : ''
+                }`}
+                onClick={() => setSelectedId(isExpanded ? null : history.id)}
+              >
+                <span className="col-span-3 text-xs">
+                  {new Date(history.createdAt).toLocaleString('ja-JP')}
+                </span>
+                <span className="col-span-2 flex items-center gap-1">
+                  <span className="text-xs text-sumi">
+                    {history.entityLabel ?? history.entityType ?? ''}
+                  </span>
+                  <span
+                    className={`inline-block px-2 py-0.5 text-xs rounded-full ${actionStyle}`}
+                  >
+                    {actionLabel}
+                  </span>
+                </span>
+                <span className="col-span-4 truncate text-xs">{summarizeChange(history)}</span>
+                <span className="col-span-2 text-xs">{history.changedBy ?? '-'}</span>
+                <span className="col-span-1 text-right text-xs text-hai">
+                  {isExpanded ? '▲' : '▼'}
+                </span>
+              </button>
+
+              {/* 展開時の差分表示 */}
+              {isExpanded && (
+                <div className="px-4 py-3 bg-white border-t text-xs">
+                  {history.changeReason && (
+                    <div className="mb-2">
+                      <span className="font-semibold text-hai">変更事由: </span>
+                      <span className="text-sumi">{history.changeReason}</span>
+                    </div>
+                  )}
+
+                  {history.actionType === 'UPDATE' && isChangeDetailMap(history.changedFields) ? (
+                    <table className="w-full border-collapse">
+                      <thead>
+                        <tr className="bg-kinari text-hai">
+                          <th className="text-left p-2 border">フィールド</th>
+                          <th className="text-left p-2 border">変更前</th>
+                          <th className="text-left p-2 border">変更後</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Object.entries(history.changedFields).map(([key, change]) => (
+                          <tr key={key} className="border-b">
+                            <td className="p-2 border font-medium text-sumi">
+                              {history.fieldLabels?.[key] ?? key}
+                            </td>
+                            <td className="p-2 border text-red-700 line-through">
+                              {formatValue(change.before)}
+                            </td>
+                            <td className="p-2 border text-green-700">
+                              {formatValue(change.after)}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : history.actionType === 'CREATE' && history.afterRecord ? (
+                    <div>
+                      <div className="font-semibold text-hai mb-1">作成内容:</div>
+                      <table className="w-full border-collapse">
+                        <tbody>
+                          {Object.entries(history.afterRecord)
+                            .filter(([k]) => k !== 'id')
+                            .map(([key, value]) => (
+                              <tr key={key} className="border-b">
+                                <td className="p-2 border font-medium text-sumi w-1/3">
+                                  {history.fieldLabels?.[key] ?? key}
+                                </td>
+                                <td className="p-2 border text-sumi">{formatValue(value)}</td>
+                              </tr>
+                            ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : history.actionType === 'DELETE' && history.beforeRecord ? (
+                    <div>
+                      <div className="font-semibold text-hai mb-1">削除されたレコード:</div>
+                      <table className="w-full border-collapse">
+                        <tbody>
+                          {Object.entries(history.beforeRecord)
+                            .filter(([k]) => k !== 'id')
+                            .map(([key, value]) => (
+                              <tr key={key} className="border-b">
+                                <td className="p-2 border font-medium text-sumi w-1/3">
+                                  {history.fieldLabels?.[key] ?? key}
+                                </td>
+                                <td className="p-2 border text-sumi">{formatValue(value)}</td>
+                              </tr>
+                            ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <p className="text-hai">変更内容の詳細はありません</p>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

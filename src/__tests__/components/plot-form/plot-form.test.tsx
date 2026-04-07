@@ -271,8 +271,8 @@ describe('HistoryTab', () => {
     render(<HistoryTab plotDetail={detail} />);
 
     expect(screen.getByText('日時')).toBeInTheDocument();
-    expect(screen.getByText('操作')).toBeInTheDocument();
-    expect(screen.getByText('変更フィールド')).toBeInTheDocument();
+    expect(screen.getByText('対象 / 操作')).toBeInTheDocument();
+    expect(screen.getByText('変更内容')).toBeInTheDocument();
     expect(screen.getByText('変更者')).toBeInTheDocument();
   });
 
@@ -344,7 +344,7 @@ describe('HistoryTab', () => {
     expect(screen.getByText('ARCHIVE')).toBeInTheDocument();
   });
 
-  it('changedFieldsがnullの場合ハイフンを表示する', () => {
+  it('CREATEアクションで変更内容欄に「を作成」と表示する', () => {
     const detail = makePlotDetail({
       histories: [
         {
@@ -358,12 +358,10 @@ describe('HistoryTab', () => {
       ],
     });
     render(<HistoryTab plotDetail={detail} />);
-    // changedFields columnにハイフン、changedByは「管理者」
-    const dashes = screen.getAllByText('-');
-    expect(dashes.length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText(/を作成/)).toBeInTheDocument();
   });
 
-  it('changedFieldsをカンマ区切りで表示する', () => {
+  it('changedFieldsをカンマ区切りで表示する（旧shape: 配列形式）', () => {
     const detail = makePlotDetail({
       histories: [
         {
@@ -398,7 +396,7 @@ describe('HistoryTab', () => {
     expect(dashes.length).toBeGreaterThanOrEqual(1);
   });
 
-  it('行クリックで選択トグルする', () => {
+  it('行クリックで詳細セクションがトグル表示される', () => {
     const detail = makePlotDetail({
       histories: [
         {
@@ -406,26 +404,25 @@ describe('HistoryTab', () => {
           actionType: 'CREATE',
           changedFields: null,
           changedBy: null,
-          changeReason: null,
+          changeReason: '初回登録',
           createdAt: '2024-01-15T10:30:00Z',
         },
       ],
     });
     render(<HistoryTab plotDetail={detail} />);
-    const row = screen.getByText('作成').closest('div[class*="cursor-pointer"]');
+    const row = screen.getByText('作成').closest('button');
     expect(row).toBeInTheDocument();
 
-    // 初期状態: クラスに " bg-matsu-50" が含まれていない（hover:bg-matsu-50 は含まれるが先頭にスペースなし）
-    expect(row?.className).not.toMatch(/(?<![:\w-])bg-matsu-50(?!\w)/);
+    // 初期状態: 詳細パネルの「変更事由:」ラベルは表示されていない
+    expect(screen.queryByText(/変更事由:/)).not.toBeInTheDocument();
 
-    // クリックで選択
+    // クリックで展開: 変更事由が表示される
     fireEvent.click(row!);
-    // 選択状態: bg-matsu-50 がクラスに追加される（hover: ではない直接のクラス）
-    expect(row?.className).toMatch(/ bg-matsu-50/);
+    expect(screen.getByText(/変更事由:/)).toBeInTheDocument();
 
-    // 再クリックで選択解除
+    // 再クリックで折りたたみ
     fireEvent.click(row!);
-    expect(row?.className).not.toMatch(/ bg-matsu-50/);
+    expect(screen.queryByText(/変更事由:/)).not.toBeInTheDocument();
   });
 });
 
