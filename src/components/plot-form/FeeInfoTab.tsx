@@ -72,6 +72,12 @@ export function FeeInfoTab({
           )}
         </div>
 
+        {!hasUsageFee && (
+          <div className="text-center text-hai py-8 border rounded-lg bg-kinari/30">
+            使用料が登録されていません
+          </div>
+        )}
+
         {hasUsageFee && (
           <div className="grid grid-cols-3 gap-4">
             <ViewModeSelect
@@ -179,6 +185,12 @@ export function FeeInfoTab({
             </button>
           )}
         </div>
+
+        {!hasManagementFee && (
+          <div className="text-center text-hai py-8 border rounded-lg bg-kinari/30">
+            管理料が登録されていません
+          </div>
+        )}
 
         {hasManagementFee && (
           <div className="grid grid-cols-3 gap-4">

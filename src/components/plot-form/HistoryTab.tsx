@@ -211,41 +211,66 @@ export function HistoryTab({ plotDetail }: HistoryTabProps) {
                       </tbody>
                     </table>
                   ) : history.actionType === 'CREATE' && history.afterRecord ? (
-                    <div>
-                      <div className="font-semibold text-hai mb-1">作成内容:</div>
-                      <table className="w-full border-collapse">
-                        <tbody>
-                          {Object.entries(history.afterRecord)
-                            .filter(([k]) => k !== 'id')
-                            .map(([key, value]) => (
-                              <tr key={key} className="border-b">
-                                <td className="p-2 border font-medium text-sumi w-1/3">
-                                  {history.fieldLabels?.[key] ?? key}
-                                </td>
-                                <td className="p-2 border text-sumi">{formatValue(value)}</td>
-                              </tr>
-                            ))}
-                        </tbody>
-                      </table>
-                    </div>
+                    (() => {
+                      // 値が入っているフィールドだけ表示（issue #63: 未入力フィールドはノイズなので除外）
+                      const entries = Object.entries(history.afterRecord)
+                        .filter(([k]) => k !== 'id')
+                        .filter(
+                          ([, v]) => v !== null && v !== undefined && v !== ''
+                        );
+                      if (entries.length === 0) {
+                        return <p className="text-hai">作成内容の詳細はありません</p>;
+                      }
+                      return (
+                        <div>
+                          <div className="font-semibold text-hai mb-1">作成内容:</div>
+                          <table className="w-full border-collapse">
+                            <tbody>
+                              {entries.map(([key, value]) => (
+                                <tr key={key} className="border-b">
+                                  <td className="p-2 border font-medium text-sumi w-1/3">
+                                    {history.fieldLabels?.[key] ?? key}
+                                  </td>
+                                  <td className="p-2 border text-sumi">
+                                    {formatValue(value)}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      );
+                    })()
                   ) : history.actionType === 'DELETE' && history.beforeRecord ? (
-                    <div>
-                      <div className="font-semibold text-hai mb-1">削除されたレコード:</div>
-                      <table className="w-full border-collapse">
-                        <tbody>
-                          {Object.entries(history.beforeRecord)
-                            .filter(([k]) => k !== 'id')
-                            .map(([key, value]) => (
-                              <tr key={key} className="border-b">
-                                <td className="p-2 border font-medium text-sumi w-1/3">
-                                  {history.fieldLabels?.[key] ?? key}
-                                </td>
-                                <td className="p-2 border text-sumi">{formatValue(value)}</td>
-                              </tr>
-                            ))}
-                        </tbody>
-                      </table>
-                    </div>
+                    (() => {
+                      const entries = Object.entries(history.beforeRecord)
+                        .filter(([k]) => k !== 'id')
+                        .filter(
+                          ([, v]) => v !== null && v !== undefined && v !== ''
+                        );
+                      if (entries.length === 0) {
+                        return <p className="text-hai">削除されたレコードの詳細はありません</p>;
+                      }
+                      return (
+                        <div>
+                          <div className="font-semibold text-hai mb-1">削除されたレコード:</div>
+                          <table className="w-full border-collapse">
+                            <tbody>
+                              {entries.map(([key, value]) => (
+                                <tr key={key} className="border-b">
+                                  <td className="p-2 border font-medium text-sumi w-1/3">
+                                    {history.fieldLabels?.[key] ?? key}
+                                  </td>
+                                  <td className="p-2 border text-sumi">
+                                    {formatValue(value)}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      );
+                    })()
                   ) : (
                     <p className="text-hai">変更内容の詳細はありません</p>
                   )}
