@@ -892,6 +892,26 @@ describe('plotFormDataToUpdateRequest', () => {
     expect(request.physicalPlot!.notes).toBeUndefined();
   });
 
+  // issue #62: notes 以外の物理区画フィールドが永続化されない問題の回帰テスト
+  it('physicalPlot の plotNumber / areaName / areaSqm を送信する', () => {
+    const formData: PlotUpdateFormData = {
+      physicalPlot: {
+        plotNumber: 'A-200',
+        areaName: '北区域',
+        areaSqm: 3.6,
+        notes: 'メモ',
+      },
+    };
+    const request = plotFormDataToUpdateRequest(formData);
+
+    expect(request.physicalPlot).toEqual({
+      plotNumber: 'A-200',
+      areaName: '北区域',
+      areaSqm: 3.6,
+      notes: 'メモ',
+    });
+  });
+
   it('contractPlotを正しく変換する', () => {
     const formData: PlotUpdateFormData = {
       contractPlot: { contractAreaSqm: 1.8, locationDescription: '右半分' },
