@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import PageHeader from '@/components/page-header';
+import ThemeSwitcher from '@/components/theme-switcher';
 import { ViewType } from '@/types/plot-detail';
 
 const ROLE_LABELS: Record<string, string> = {
@@ -355,6 +356,9 @@ export default function ProfilePage({ onBack, onViewChange }: ProfilePageProps) 
               </form>
             </CardContent>
           </Card>
+
+          {/* 表示テーマ */}
+          <ThemeSwitcher />
         </div>
       </div>
     </div>
