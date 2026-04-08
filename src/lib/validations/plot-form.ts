@@ -291,8 +291,12 @@ export const plotFormSchema = z.object({
 // ===== メインフォームスキーマ（更新用） =====
 
 export const plotUpdateFormSchema = z.object({
-  // 物理区画の更新（notesのみ）
+  // 物理区画の更新（issue #62: notesのみだったため plot_number / area_name / area_sqm が反映されなかった）
   physicalPlot: z.object({
+    plotNumber: z.string().optional(),
+    areaName: z.string().optional(),
+    areaSqm: z.coerce.number().positive().optional(),
+    status: z.string().optional(),
     notes: z.string().optional().nullable(),
   }).optional(),
 
@@ -594,8 +598,12 @@ export function plotFormDataToUpdateRequest(formData: PlotUpdateFormData): Updat
   const request: UpdatePlotRequest = {};
 
   if (formData.physicalPlot) {
+    // issue #62: notes のみ送信していたため、その他のフィールドが永続化されなかった
     request.physicalPlot = {
-      notes: formData.physicalPlot.notes || undefined,
+      plotNumber: formData.physicalPlot.plotNumber || undefined,
+      areaName: formData.physicalPlot.areaName || undefined,
+      areaSqm: formData.physicalPlot.areaSqm,
+      notes: formData.physicalPlot.notes ?? undefined,
     };
   }
 
