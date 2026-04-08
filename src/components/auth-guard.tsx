@@ -60,7 +60,6 @@ function AuthLoadingScreen() {
           <div className="w-2 h-2 bg-matsu rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
           <div className="w-2 h-2 bg-matsu rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
         </div>
-        <p className="mt-4 text-hai text-sm">認証を確認中...</p>
       </div>
     </div>
   );
