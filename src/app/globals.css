@@ -6,6 +6,258 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Sans", "Noto Sans CJK JP", sans-serif;
 }
 
+/* ============================================================
+ * ダークテーマ対応
+ * ------------------------------------------------------------
+ * このプロジェクトは tailwind 設定で固定の和モダンカラーパレット
+ * （sumi/hai/gin/matsu/cha/ai 等）を多用しているため、
+ * 各コンポーネントに `dark:` バリアントを付けるのではなく、
+ * `.dark` クラス配下で代表的な背景・テキスト・ボーダー色を
+ * グローバルに上書きしてダークテーマを適用する。
+ * ============================================================ */
+
+.dark {
+  color-scheme: dark;
+}
+
+.dark body {
+  background-color: #0f1115;
+  color: #e5e7eb;
+}
+
+/* --- 背景色 --- */
+.dark .bg-white,
+.dark .bg-shiro,
+.dark .bg-kinari,
+.dark .bg-gray-50,
+.dark .bg-sumi-50 {
+  background-color: #1a1d23 !important;
+}
+
+.dark .bg-gray-100,
+.dark .bg-hai-50 {
+  background-color: #232730 !important;
+}
+
+.dark .bg-gray-200 {
+  background-color: #2d323d !important;
+}
+
+.dark .bg-matsu-50 {
+  background-color: #15241b !important;
+}
+
+.dark .bg-matsu-100 {
+  background-color: #1c3325 !important;
+}
+
+.dark .bg-cha-50 {
+  background-color: #2a221a !important;
+}
+
+.dark .bg-cha-100 {
+  background-color: #3a2f23 !important;
+}
+
+.dark .bg-ai-50 {
+  background-color: #142225 !important;
+}
+
+.dark .bg-ai-100 {
+  background-color: #1b2e32 !important;
+}
+
+.dark .bg-beni-50 {
+  background-color: #2a1515 !important;
+}
+
+.dark .bg-beni-100 {
+  background-color: #3a1d1d !important;
+}
+
+.dark .bg-kohaku-50 {
+  background-color: #2a230f !important;
+}
+
+.dark .bg-kohaku-100 {
+  background-color: #3a3015 !important;
+}
+
+.dark .bg-green-50 {
+  background-color: #15241b !important;
+}
+
+.dark .bg-red-50 {
+  background-color: #2a1515 !important;
+}
+
+.dark .bg-blue-50 {
+  background-color: #142235 !important;
+}
+
+.dark .bg-yellow-50,
+.dark .bg-amber-50 {
+  background-color: #2a230f !important;
+}
+
+/* --- テキスト色 --- */
+.dark .text-sumi,
+.dark .text-sumi-light,
+.dark .text-sumi-900,
+.dark .text-sumi-800,
+.dark .text-sumi-700,
+.dark .text-sumi-600,
+.dark .text-gray-900,
+.dark .text-gray-800,
+.dark .text-gray-700 {
+  color: #f3f4f6 !important;
+}
+
+.dark .text-sumi-500,
+.dark .text-gray-600,
+.dark .text-gray-500 {
+  color: #d1d5db !important;
+}
+
+.dark .text-hai,
+.dark .text-hai-dark,
+.dark .text-sumi-400,
+.dark .text-sumi-300,
+.dark .text-gray-400 {
+  color: #9ca3af !important;
+}
+
+.dark .text-gin,
+.dark .text-gray-300 {
+  color: #6b7280 !important;
+}
+
+/* 強調・アクセント色は視認性が落ちないように明るめへ */
+.dark .text-matsu,
+.dark .text-matsu-dark,
+.dark .text-matsu-600,
+.dark .text-matsu-700 {
+  color: #7db190 !important;
+}
+
+.dark .text-cha,
+.dark .text-cha-dark {
+  color: #c4b095 !important;
+}
+
+.dark .text-ai,
+.dark .text-ai-dark {
+  color: #8fb0b6 !important;
+}
+
+.dark .text-beni,
+.dark .text-beni-dark {
+  color: #db8585 !important;
+}
+
+.dark .text-kohaku,
+.dark .text-kohaku-dark {
+  color: #d4b87a !important;
+}
+
+.dark .text-red-600,
+.dark .text-red-700 {
+  color: #f87171 !important;
+}
+
+.dark .text-green-600,
+.dark .text-green-700 {
+  color: #6ee7a3 !important;
+}
+
+.dark .text-blue-700,
+.dark .text-blue-800 {
+  color: #93c5fd !important;
+}
+
+/* --- ボーダー色 --- */
+.dark .border-gin,
+.dark .border-gin-light,
+.dark .border-gin-dark,
+.dark .border-gray-100,
+.dark .border-gray-200,
+.dark .border-gray-300,
+.dark .border-sumi-200 {
+  border-color: #3a3f4b !important;
+}
+
+.dark .border-gray-400,
+.dark .border-gray-500 {
+  border-color: #4b5260 !important;
+}
+
+.dark .border-matsu-100,
+.dark .border-matsu-200 {
+  border-color: #1e3d29 !important;
+}
+
+.dark .border-cha-100,
+.dark .border-cha-200 {
+  border-color: #5f503b !important;
+}
+
+.dark .border-ai-100,
+.dark .border-ai-200 {
+  border-color: #1a3033 !important;
+}
+
+.dark .border-beni-100,
+.dark .border-beni-200 {
+  border-color: #5b2626 !important;
+}
+
+.dark .border-kohaku-100,
+.dark .border-kohaku-200 {
+  border-color: #644c1a !important;
+}
+
+/* --- グラデーション --- */
+.dark .bg-gradient-warm {
+  background-image: linear-gradient(135deg, #1a1d23 0%, #15181d 100%) !important;
+}
+
+/* --- フォーカス枠 (デフォルトの青はそのままで視認可能) --- */
+.dark .focus-visible,
+.dark *:focus-visible {
+  outline-color: #60a5fa !important;
+}
+
+/* --- カスタムクラス（globals.css内の汎用スタイル） --- */
+.dark .customer-row {
+  border-color: #3a3f4b;
+}
+
+.dark .customer-row:hover {
+  background: linear-gradient(135deg, #232730, #2d323d);
+  border-color: #6b7280;
+}
+
+.dark .customer-row.selected {
+  background: linear-gradient(135deg, #1e3a5f, #1e3a8a);
+  border-color: #60a5fa;
+}
+
+.dark .aiueo-tab {
+  background: #1a1d23;
+  border-color: #3a3f4b;
+  color: #e5e7eb;
+}
+
+.dark .aiueo-tab:hover:not(:disabled) {
+  background: #232730;
+  border-color: #6b7280;
+}
+
+.dark .aiueo-tab:disabled {
+  background: #15181d;
+  color: #4b5260;
+}
+
 /* 高齢者・アクセシビリティ対応スタイル */
 
 /* フォーカス表示の強化 */
