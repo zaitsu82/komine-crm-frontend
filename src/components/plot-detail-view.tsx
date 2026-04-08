@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
+import { HistoryTab } from '@/components/plot-form/HistoryTab';
 
 // ===== 型定義 =====
 
@@ -404,56 +405,9 @@ function BurialInfoTab({ plot }: { plot: PlotDetailResponse }) {
   );
 }
 
-const ACTION_TYPE_LABELS: Record<string, string> = {
-  CREATE: '作成',
-  UPDATE: '更新',
-  DELETE: '削除',
-};
-
 function HistoryInfoTab({ plot }: { plot: PlotDetailResponse }) {
-  const histories = plot.histories || [];
-
-  if (histories.length === 0) {
-    return (
-      <div className="text-center text-hai py-8">
-        履歴データはありません
-      </div>
-    );
-  }
-
-  return (
-    <div className="bg-white border border-gin rounded-elegant-lg shadow-elegant-sm overflow-hidden">
-      <div className="px-5 py-4 bg-kinari border-b border-gin">
-        <h3 className="font-semibold text-sumi flex items-center">
-          <span className="w-1 h-5 bg-matsu rounded-full mr-3" />
-          履歴情報
-        </h3>
-      </div>
-      <div className="grid grid-cols-5 gap-4 px-4 py-2 bg-kinari/50 border-b border-gin text-sm font-medium text-hai">
-        <span>日時</span>
-        <span>操作</span>
-        <span>更新事由</span>
-        <span>変更フィールド</span>
-        <span>変更者</span>
-      </div>
-      <div className="divide-y divide-gin">
-        {histories.map((history) => (
-          <div
-            key={history.id}
-            className="grid grid-cols-5 gap-4 px-4 py-2 text-sm hover:bg-matsu-50 transition-colors duration-200 cursor-default"
-          >
-            <span>{new Date(history.createdAt).toLocaleString('ja-JP')}</span>
-            <span>{ACTION_TYPE_LABELS[history.actionType] || history.actionType}</span>
-            <span>{history.changeReason || '-'}</span>
-            <span className="truncate">
-              {history.changedFields?.join(', ') || '-'}
-            </span>
-            <span>{history.changedBy || '-'}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+  // 改良版の HistoryTab を再利用（差分表示・日本語ラベル付き）
+  return <HistoryTab plotDetail={plot} />;
 }
 
 function ConstructionInfoTab({ plot }: { plot: PlotDetailResponse }) {

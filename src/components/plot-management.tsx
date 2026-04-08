@@ -40,7 +40,7 @@ export default function PlotManagement({ initialView = 'registry' }: PlotManagem
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // 選択中の区画詳細を取得（編集モードで使用）
-  const { plot: selectedPlotDetail, isLoading: isPlotDetailLoading } = usePlotDetail(selectedPlotId || '');
+  const { plot: selectedPlotDetail, isLoading: isPlotDetailLoading, refresh: refreshPlotDetail } = usePlotDetail(selectedPlotId || '');
 
   // 削除ダイアログ用のstate
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -87,6 +87,9 @@ export default function PlotManagement({ initialView = 'registry' }: PlotManagem
         const request = plotFormDataToUpdateRequest(data);
         const response = await updatePlot(selectedPlotId, request);
         if (response.success) {
+          // 更新APIレスポンスは histories を含まないため、詳細を再取得して
+          // 履歴タブに最新エントリが反映されるようにする
+          await refreshPlotDetail();
           setCurrentView('plot-details');
           showApiSuccess('更新', '区画情報');
         } else {
