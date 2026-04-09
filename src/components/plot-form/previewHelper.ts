@@ -1,5 +1,5 @@
 import type { PlotFormData } from '@/lib/validations/plot-form';
-import type { PreviewSection, PreviewDiffSection } from '@/components/shared/dialogs';
+import type { PreviewSection, PreviewDiffSection, PreviewDiffItem } from '@/components/shared/dialogs';
 
 type SectionConfig = {
   title: string;
@@ -226,6 +226,95 @@ export function buildPlotPreviewSections(data: PlotFormData): PreviewSection[] {
   return sections;
 }
 
+// 配列の差分セクションを生成するヘルパー
+interface ArrayFieldDef {
+  key: string;
+  label: string;
+}
+
+function buildArrayDiffSections(
+  sectionLabel: string,
+  originalArr: Record<string, unknown>[] | undefined,
+  currentArr: Record<string, unknown>[] | undefined,
+  fields: ArrayFieldDef[],
+): PreviewDiffSection[] {
+  const sections: PreviewDiffSection[] = [];
+  const origLen = originalArr?.length || 0;
+  const currLen = currentArr?.length || 0;
+  const maxLen = Math.max(origLen, currLen);
+
+  for (let i = 0; i < maxLen; i++) {
+    const orig = originalArr?.[i];
+    const curr = currentArr?.[i];
+    const items: PreviewDiffItem[] = [];
+
+    if (!orig && curr) {
+      // 新規追加
+      for (const f of fields) {
+        const val = String(curr[f.key] ?? '');
+        if (val) {
+          items.push({ label: f.label, before: '', after: val });
+        }
+      }
+      if (items.length > 0) {
+        sections.push({ title: `${sectionLabel} ${i + 1}（追加）`, items });
+      }
+    } else if (orig && !curr) {
+      // 削除
+      for (const f of fields) {
+        const val = String(orig[f.key] ?? '');
+        if (val) {
+          items.push({ label: f.label, before: val, after: '' });
+        }
+      }
+      if (items.length > 0) {
+        sections.push({ title: `${sectionLabel} ${i + 1}（削除）`, items });
+      }
+    } else if (orig && curr) {
+      // 既存の変更
+      for (const f of fields) {
+        const before = String(orig[f.key] ?? '');
+        const after = String(curr[f.key] ?? '');
+        if (before !== after) {
+          items.push({ label: f.label, before, after });
+        }
+      }
+      if (items.length > 0) {
+        sections.push({ title: `${sectionLabel} ${i + 1}`, items });
+      }
+    }
+  }
+
+  return sections;
+}
+
+const familyContactFields: ArrayFieldDef[] = [
+  { key: 'name', label: '氏名' },
+  { key: 'relationship', label: '続柄' },
+  { key: 'phoneNumber', label: '電話番号' },
+  { key: 'address', label: '住所' },
+  { key: 'email', label: 'メール' },
+];
+
+const buriedPersonFieldDefs: ArrayFieldDef[] = [
+  { key: 'name', label: '氏名' },
+  { key: 'deathDate', label: '命日' },
+  { key: 'burialDate', label: '埋葬日' },
+  { key: 'age', label: '享年' },
+  { key: 'gender', label: '性別' },
+];
+
+const constructionInfoFieldDefs: ArrayFieldDef[] = [
+  { key: 'constructionType', label: '工事種別' },
+  { key: 'contractor', label: '施工業者' },
+  { key: 'startDate', label: '開始日' },
+  { key: 'completionDate', label: '完了日' },
+  { key: 'constructionContent', label: '工事内容' },
+  { key: 'supervisor', label: '監督者' },
+  { key: 'permitNumber', label: '許可番号' },
+  { key: 'notes', label: '備考' },
+];
+
 /**
  * 更新時の差分プレビューセクションを生成
  */
@@ -235,6 +324,7 @@ export function buildPlotDiffSections(
 ): PreviewDiffSection[] {
   const sections: PreviewDiffSection[] = [];
 
+  // フラットフィールドの差分
   for (const config of sectionConfigs) {
     const items = config.fields
       .map((f) => ({
@@ -247,6 +337,28 @@ export function buildPlotDiffSections(
       sections.push({ title: config.title, items });
     }
   }
+
+  // 配列フィールドの差分
+  sections.push(...buildArrayDiffSections(
+    '家族連絡先',
+    original.familyContacts as unknown as Record<string, unknown>[],
+    current.familyContacts as unknown as Record<string, unknown>[],
+    familyContactFields,
+  ));
+
+  sections.push(...buildArrayDiffSections(
+    '埋葬者',
+    original.buriedPersons as unknown as Record<string, unknown>[],
+    current.buriedPersons as unknown as Record<string, unknown>[],
+    buriedPersonFieldDefs,
+  ));
+
+  sections.push(...buildArrayDiffSections(
+    '工事情報',
+    original.constructionInfos as unknown as Record<string, unknown>[],
+    current.constructionInfos as unknown as Record<string, unknown>[],
+    constructionInfoFieldDefs,
+  ));
 
   return sections;
 }
