@@ -13,6 +13,8 @@ import { collectiveBurialApplicationSchema, CollectiveBurialApplicationFormValue
 import { createCollectiveBurialApplication, getCollectiveBurialApplications } from '@/lib/mock-data/collective-burial';
 import { CollectiveBurialApplication } from '@/types/collective-burial';
 import CapacityWarningDialog from '@/components/capacity-warning-dialog';
+import { PreviewDialog } from '@/components/shared/dialogs';
+import type { PreviewSection } from '@/components/shared/dialogs';
 import { COLLECTIVE_BURIAL_LIMITS, getCapacityStatus, getRemainingCapacity, getCapacityPercentage } from '@/config/collective-burial-limits';
 import { showError, showValidationError } from '@/lib/toast';
 
@@ -62,12 +64,104 @@ const errorText = (message?: string) => {
   return <p className="mt-1 text-xs text-beni">{message}</p>;
 };
 
+const burialTypeLabels: Record<string, string> = {
+  family: '家族合祀', relative: '親族合祀', other: 'その他',
+};
+const genderLabels: Record<string, string> = {
+  male: '男性', female: '女性',
+};
+const docTypeLabels: Record<string, string> = {
+  permit: '改葬許可証', certificate: '証明書', agreement: '同意書', other: 'その他',
+};
+
+function buildApplicationPreviewSections(data: CollectiveBurialApplicationFormValues): PreviewSection[] {
+  const sections: PreviewSection[] = [];
+
+  sections.push({
+    title: '基本情報',
+    items: [
+      { label: '申込日', value: data.applicationDate },
+      { label: '合祀希望日', value: data.desiredDate || '' },
+      { label: '合祀種別', value: burialTypeLabels[data.burialType] || data.burialType },
+      { label: '主たる代表者', value: data.mainRepresentative },
+      { label: '区域', value: data.plotSection },
+      { label: '許可番号', value: data.plotNumber },
+      { label: '特別な要望', value: data.specialRequests || '' },
+    ].filter((item) => item.value !== ''),
+  });
+
+  sections.push({
+    title: '申込者情報',
+    items: [
+      { label: '氏名', value: data.applicantName },
+      { label: '氏名（カナ）', value: data.applicantNameKana },
+      { label: '電話番号', value: data.applicantPhone },
+      { label: 'メール', value: data.applicantEmail || '' },
+      { label: '郵便番号', value: data.applicantPostalCode || '' },
+      { label: '住所', value: data.applicantAddress },
+    ].filter((item) => item.value !== ''),
+  });
+
+  for (let i = 0; i < data.persons.length; i++) {
+    const p = data.persons[i];
+    const items = [
+      { label: '氏名', value: p.name },
+      { label: '氏名（カナ）', value: p.nameKana },
+      { label: '続柄', value: p.relationship },
+      { label: '死亡日', value: p.deathDate },
+      { label: '享年', value: p.age || '' },
+      { label: '性別', value: (p.gender && genderLabels[p.gender]) || '' },
+      { label: '元の墓所', value: p.originalPlotNumber || '' },
+      { label: '改葬許可証番号', value: p.certificateNumber || '' },
+    ].filter((item) => item.value !== '');
+    if (items.length > 0) sections.push({ title: `対象者 ${i + 1}`, items });
+  }
+
+  for (let i = 0; i < (data.ceremonies?.length || 0); i++) {
+    const c = data.ceremonies![i];
+    const items = [
+      { label: '実施日', value: c.date || '' },
+      { label: '導師', value: c.officiant || '' },
+      { label: '宗派', value: c.religion || '' },
+      { label: '参列者数', value: c.participants || '' },
+      { label: '場所', value: c.location || '' },
+    ].filter((item) => item.value !== '');
+    if (items.length > 0) sections.push({ title: `法要 ${i + 1}`, items });
+  }
+
+  for (let i = 0; i < (data.documents?.length || 0); i++) {
+    const d = data.documents![i];
+    const items = [
+      { label: '書類種別', value: docTypeLabels[d.type] || d.type },
+      { label: '書類名', value: d.name },
+      { label: '発行日', value: d.issuedDate || '' },
+    ].filter((item) => item.value !== '');
+    if (items.length > 0) sections.push({ title: `書類 ${i + 1}`, items });
+  }
+
+  if (data.totalFee || data.depositAmount || data.paymentMethod) {
+    sections.push({
+      title: '料金情報',
+      items: [
+        { label: '合祀料金総額', value: data.totalFee || '' },
+        { label: '内金・手付金', value: data.depositAmount || '' },
+        { label: '支払方法', value: data.paymentMethod || '' },
+        { label: '支払期日', value: data.paymentDueDate || '' },
+      ].filter((item) => item.value !== ''),
+    });
+  }
+
+  return sections.filter((s) => s.items.length > 0);
+}
+
 export default function CollectiveBurialApplicationForm({ onSubmitSuccess }: CollectiveBurialApplicationFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [lastCreatedId, setLastCreatedId] = useState<string | null>(null);
   const [showCapacityWarning, setShowCapacityWarning] = useState(false);
   const [capacityStatus, setCapacityStatus] = useState<'safe' | 'warning' | 'critical' | 'full'>('safe');
   const [pendingSubmitData, setPendingSubmitData] = useState<CollectiveBurialApplicationFormValues | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewData, setPreviewData] = useState<CollectiveBurialApplicationFormValues | null>(null);
 
   const {
     register,
@@ -171,11 +265,17 @@ export default function CollectiveBurialApplicationForm({ onSubmitSuccess }: Col
     }
   };
 
-  const onSubmit = async (values: CollectiveBurialApplicationFormValues) => {
-    // 人数チェック
-    const canProceed = checkCapacity(values);
+  const onSubmit = (values: CollectiveBurialApplicationFormValues) => {
+    setPreviewData(values);
+    setShowPreview(true);
+  };
+
+  const handlePreviewConfirm = async () => {
+    if (!previewData) return;
+    setShowPreview(false);
+    const canProceed = checkCapacity(previewData);
     if (canProceed) {
-      await performSubmit(values);
+      await performSubmit(previewData);
     }
   };
 
@@ -615,6 +715,20 @@ export default function CollectiveBurialApplicationForm({ onSubmitSuccess }: Col
           </Button>
         </div>
       </form>
+
+      {/* プレビューダイアログ */}
+      {previewData && (
+        <PreviewDialog
+          isOpen={showPreview}
+          onClose={() => setShowPreview(false)}
+          onConfirm={handlePreviewConfirm}
+          title="合祀申込内容の確認"
+          description="以下の内容で申込を登録します"
+          sections={buildApplicationPreviewSections(previewData)}
+          confirmText="確認して登録"
+          isLoading={isSubmitting}
+        />
+      )}
 
       {/* 人数上限警告ダイアログ */}
       <CapacityWarningDialog

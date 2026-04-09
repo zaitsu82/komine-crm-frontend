@@ -25,6 +25,8 @@ import {
   BILLING_STATUS_LABELS,
   BillingStatus,
 } from '@/lib/api';
+import { PreviewDialog } from '@/components/shared/dialogs';
+import type { PreviewSection, PreviewDiffSection } from '@/components/shared/dialogs';
 
 interface CollectiveBurialFormProps {
   /** 編集時のID（新規作成時はnull） */
@@ -49,6 +51,61 @@ const defaultValues: CollectiveBurialFormValues = {
   documents: [],
 };
 
+const burialTypeLabels: Record<string, string> = {
+  family: '家族合祀', relative: '親族合祀', other: 'その他',
+};
+
+function buildBurialPreviewSections(data: CollectiveBurialFormValues): PreviewSection[] {
+  const sections: PreviewSection[] = [];
+  sections.push({
+    title: '基本情報',
+    items: [
+      { label: '契約区画ID', value: data.contractPlotId },
+      { label: '合祀種別', value: burialTypeLabels[data.burialType || ''] || data.burialType || '' },
+      { label: '特別な要望', value: data.specialRequests || '' },
+      { label: '備考', value: data.freeText || '' },
+    ].filter((item) => item.value !== ''),
+  });
+  sections.push({
+    title: '合祀設定',
+    items: [
+      { label: '埋葬上限人数', value: String(data.burialCapacity) },
+      { label: '有効期間（年）', value: String(data.validityPeriodYears) },
+      { label: '請求金額', value: data.billingAmount ? String(data.billingAmount) : '' },
+    ].filter((item) => item.value !== ''),
+  });
+  return sections.filter((s) => s.items.length > 0);
+}
+
+function buildBurialDiffSections(
+  original: CollectiveBurialFormValues,
+  current: CollectiveBurialFormValues
+): PreviewDiffSection[] {
+  const fields = [
+    { label: '合祀種別', key: 'burialType', format: (v: string) => burialTypeLabels[v] || v },
+    { label: '埋葬上限人数', key: 'burialCapacity' },
+    { label: '有効期間（年）', key: 'validityPeriodYears' },
+    { label: '請求金額', key: 'billingAmount' },
+    { label: '特別な要望', key: 'specialRequests' },
+    { label: '備考', key: 'freeText' },
+  ];
+
+  const items = fields.map((f) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const before = String((original as any)[f.key] ?? '');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const after = String((current as any)[f.key] ?? '');
+    return {
+      label: f.label,
+      before: f.format ? f.format(before) : before,
+      after: f.format ? f.format(after) : after,
+    };
+  }).filter((item) => item.before !== item.after);
+
+  if (items.length === 0) return [];
+  return [{ title: '変更内容', items }];
+}
+
 const errorText = (message?: string) => {
   if (!message) return null;
   return <p className="mt-1 text-xs text-beni">{message}</p>;
@@ -61,6 +118,8 @@ export default function CollectiveBurialForm({
   contractPlotId,
 }: CollectiveBurialFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewData, setPreviewData] = useState<CollectiveBurialFormValues | null>(null);
   const isEditMode = !!editId;
 
   // 編集時のデータ取得
@@ -137,41 +196,65 @@ export default function CollectiveBurialForm({
     }
   }, [existingData, isEditMode, reset]);
 
-  const onSubmit = async (values: CollectiveBurialFormValues) => {
+  // 初期フォームデータ（diff用）
+  const [initialFormData, setInitialFormData] = useState<CollectiveBurialFormValues | null>(null);
+  useEffect(() => {
+    if (existingData && isEditMode) {
+      const notesData = parseNotesData(existingData.notes);
+      setInitialFormData({
+        contractPlotId: existingData.contractPlotId,
+        burialCapacity: existingData.burialCapacity,
+        validityPeriodYears: existingData.validityPeriodYears,
+        billingAmount: existingData.billingAmount ?? '',
+        burialType: notesData.burialType || 'family',
+        specialRequests: notesData.specialRequests || '',
+        freeText: notesData.freeText || '',
+        ceremonies: notesData.ceremonies?.map(c => ({
+          date: c.date || '', officiant: c.officiant || '', religion: c.religion || '',
+          participants: c.participants, location: c.location || '', memo: c.memo || '',
+        })) || [],
+        documents: notesData.documents?.map(d => ({
+          type: d.type, name: d.name, issuedDate: d.issuedDate || '', memo: d.memo || '',
+        })) || [],
+      });
+    }
+  }, [existingData, isEditMode]);
+
+  const onSubmit = (values: CollectiveBurialFormValues) => {
+    setPreviewData(values);
+    setShowPreview(true);
+  };
+
+  const handlePreviewConfirm = async () => {
+    if (!previewData) return;
+    setShowPreview(false);
     setIsSubmitting(true);
 
     try {
-      // notesデータを構築
       const notesData = serializeNotesData({
-        burialType: values.burialType,
-        specialRequests: values.specialRequests,
-        freeText: values.freeText,
-        ceremonies: values.ceremonies?.filter(c => c.date || c.officiant || c.religion),
-        documents: values.documents?.filter(d => d.name),
+        burialType: previewData.burialType,
+        specialRequests: previewData.specialRequests,
+        freeText: previewData.freeText,
+        ceremonies: previewData.ceremonies?.filter(c => c.date || c.officiant || c.religion),
+        documents: previewData.documents?.filter(d => d.name),
       });
 
       if (isEditMode && editId) {
-        // 更新
         const result = await updateCollectiveBurial(editId, {
-          burialCapacity: values.burialCapacity,
-          validityPeriodYears: values.validityPeriodYears,
-          billingAmount: typeof values.billingAmount === 'number' ? values.billingAmount : null,
+          burialCapacity: previewData.burialCapacity,
+          validityPeriodYears: previewData.validityPeriodYears,
+          billingAmount: typeof previewData.billingAmount === 'number' ? previewData.billingAmount : null,
           notes: notesData || null,
         });
-
-        if (result) {
-          onSubmitSuccess?.();
-        }
+        if (result) onSubmitSuccess?.();
       } else {
-        // 新規作成
         const result = await createCollectiveBurial({
-          contractPlotId: values.contractPlotId,
-          burialCapacity: values.burialCapacity,
-          validityPeriodYears: values.validityPeriodYears,
-          billingAmount: typeof values.billingAmount === 'number' ? values.billingAmount : undefined,
+          contractPlotId: previewData.contractPlotId,
+          burialCapacity: previewData.burialCapacity,
+          validityPeriodYears: previewData.validityPeriodYears,
+          billingAmount: typeof previewData.billingAmount === 'number' ? previewData.billingAmount : undefined,
           notes: notesData || undefined,
         });
-
         if (result) {
           onSubmitSuccess?.();
           reset(defaultValues);
@@ -537,6 +620,19 @@ export default function CollectiveBurialForm({
           {isSubmitting || isMutating ? '保存中...' : isEditMode ? '更新' : '登録'}
         </Button>
       </div>
+      {previewData && (
+        <PreviewDialog
+          isOpen={showPreview}
+          onClose={() => setShowPreview(false)}
+          onConfirm={handlePreviewConfirm}
+          title={isEditMode ? '合祀情報の更新確認' : '合祀情報の登録確認'}
+          description={isEditMode ? '以下の項目が変更されます' : '以下の内容で登録します'}
+          sections={!isEditMode ? buildBurialPreviewSections(previewData) : undefined}
+          diffSections={isEditMode && initialFormData ? buildBurialDiffSections(initialFormData, previewData) : undefined}
+          confirmText={isEditMode ? '確認して更新' : '確認して登録'}
+          isLoading={isSubmitting || isMutating}
+        />
+      )}
     </form>
   );
 }
