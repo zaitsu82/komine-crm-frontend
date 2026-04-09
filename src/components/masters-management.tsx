@@ -25,7 +25,7 @@ function formatApiError(
 ): string {
   if (!details || details.length === 0) return message;
   const detailLines = details
-    .map((d) => (d.field ? `${d.field}: ${d.message}` : d.message))
+    .map((d) => d.message)
     .join('\n');
   return `${message}\n${detailLines}`;
 }

@@ -11,9 +11,7 @@ function formatErrorDescription(
 ): string | undefined {
   if (!details || details.length === 0) return message;
 
-  const detailLines = details
-    .map((d) => (d.field ? `${d.field}: ${d.message}` : d.message))
-    .join('\n');
+  const detailLines = details.map((d) => d.message).join('\n');
 
   return message ? `${message}\n${detailLines}` : detailLines;
 }
@@ -77,7 +75,11 @@ export function showApiError(
   errorMessage?: string,
   details?: Array<{ field?: string; message: string }>,
 ) {
-  showError(`${operation}に失敗しました`, formatErrorDescription(errorMessage, details));
+  const description = formatErrorDescription(errorMessage, details);
+  toast.error(`${operation}に失敗しました`, {
+    description,
+    duration: details?.length ? 10000 : 5000,
+  });
 }
 
 /**
@@ -102,10 +104,11 @@ export function showValidationError(
   message?: string,
   details?: Array<{ field?: string; message: string }>,
 ) {
-  showError(
-    '入力エラー',
-    formatErrorDescription(message || '入力内容を確認してください。', details),
-  );
+  const description = formatErrorDescription(message || '入力内容を確認してください。', details);
+  toast.error('入力エラー', {
+    description,
+    duration: details?.length ? 10000 : 5000,
+  });
 }
 
 // 直接toast関数もエクスポート（カスタマイズが必要な場合用）
