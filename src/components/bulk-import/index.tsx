@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { bulkCreatePlots } from '@/lib/api/plots';
 import { bulkCreateStaff } from '@/lib/api/staff';
 import { showSuccess, showError } from '@/lib/toast';
+import { ConfirmDialog } from '@/components/shared/dialogs';
 import PageHeader from '@/components/page-header';
 import { ViewType } from '@/types/plot-detail';
 
@@ -293,6 +294,7 @@ function BulkImportPanel({ type }: { type: ImportTab }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitResult, setSubmitResult] = useState<SubmitResult | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const rowCount = type === 'plots' ? plotRows.length : staffRows.length;
@@ -384,8 +386,14 @@ function BulkImportPanel({ type }: { type: ImportTab }) {
     }
   }, [type, plotRows, staffRows]);
 
-  // 送信
-  const handleSubmit = useCallback(async () => {
+  // 送信確認ダイアログを表示
+  const handleSubmit = useCallback(() => {
+    setShowConfirm(true);
+  }, []);
+
+  // 確認後の実際の送信
+  const handleConfirmSubmit = useCallback(async () => {
+    setShowConfirm(false);
     setIsSubmitting(true);
     try {
       if (type === 'plots') {
@@ -809,6 +817,19 @@ function BulkImportPanel({ type }: { type: ImportTab }) {
           </CardContent>
         </Card>
       )}
+
+      {/* 最終確認ダイアログ */}
+      <ConfirmDialog
+        isOpen={showConfirm}
+        onClose={() => setShowConfirm(false)}
+        onConfirm={handleConfirmSubmit}
+        title="一括登録の確認"
+        message={`${typeLabel} ${rowCount}件を一括登録します。この操作は取り消せません。続行しますか？`}
+        confirmText="登録する"
+        cancelText="戻る"
+        variant="warning"
+        isLoading={isSubmitting}
+      />
     </div>
   );
 }

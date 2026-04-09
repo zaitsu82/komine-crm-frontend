@@ -9,6 +9,8 @@ import {
   plotDetailToFormData,
 } from '@/lib/validations/plot-form';
 import type { PlotFormData } from '@/lib/validations/plot-form';
+import { PreviewDialog } from '@/components/shared/dialogs';
+import { buildPlotPreviewSections, buildPlotDiffSections } from './previewHelper';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useMasters } from '@/hooks';
@@ -85,9 +87,21 @@ export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProp
   } = useFieldArray({ control, name: 'constructionInfos' });
 
   const [expandedContactId, setExpandedContactId] = useState<string | null>(null);
+  const [previewData, setPreviewData] = useState<PlotFormData | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
+
+  const initialFormData = plotDetail ? plotDetailToFormData(plotDetail) : null;
 
   const onSubmit = (data: PlotFormData) => {
-    onSave(data);
+    setPreviewData(data);
+    setShowPreview(true);
+  };
+
+  const handleConfirmSubmit = () => {
+    if (previewData) {
+      setShowPreview(false);
+      onSave(previewData);
+    }
   };
 
   const onError = () => {
@@ -425,6 +439,21 @@ export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProp
           {isLoading ? '保存中...' : isEditing ? '更新' : '登録'}
         </Button>
       </div>
+
+      {previewData && (
+        <PreviewDialog
+          isOpen={showPreview}
+          onClose={() => setShowPreview(false)}
+          onConfirm={handleConfirmSubmit}
+          title={isEditing ? '更新内容の確認' : '登録内容の確認'}
+          description={isEditing ? '以下の項目が変更されます' : '以下の内容で登録します'}
+          sections={!isEditing ? buildPlotPreviewSections(previewData) : undefined}
+          diffSections={isEditing && initialFormData ? buildPlotDiffSections(initialFormData, previewData) : undefined}
+          confirmText={isEditing ? '確認して更新' : '確認して登録'}
+          isLoading={isLoading}
+          size="xl"
+        />
+      )}
     </form>
   );
 }

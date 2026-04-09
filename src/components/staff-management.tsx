@@ -20,6 +20,8 @@ import {
   UpdateStaffRequest,
 } from '@/lib/api';
 import { showSuccess, showError, showApiError } from '@/lib/toast';
+import { PreviewDialog } from '@/components/shared/dialogs';
+import type { PreviewSection, PreviewDiffSection } from '@/components/shared/dialogs';
 import PageHeader from '@/components/page-header';
 import { ViewType } from '@/types/plot-detail';
 
@@ -121,6 +123,9 @@ export default function StaffManagement({ onViewChange }: StaffManagementProps) 
   });
   const [formError, setFormError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+
+  // プレビューダイアログ
+  const [showPreview, setShowPreview] = useState(false);
 
   // 権限一覧パネル
   const [showPermissionMatrix, setShowPermissionMatrix] = useState(false);
@@ -258,8 +263,8 @@ export default function StaffManagement({ onViewChange }: StaffManagementProps) 
     setShowDialog(true);
   };
 
-  // フォーム送信
-  const handleSubmit = async () => {
+  // フォーム送信（バリデーション → プレビュー表示）
+  const handleSubmit = () => {
     // バリデーション
     if (!formData.name.trim()) {
       setFormError('氏名を入力してください');
@@ -273,13 +278,18 @@ export default function StaffManagement({ onViewChange }: StaffManagementProps) 
       setFormError('有効なメールアドレスを入力してください');
       return;
     }
+    setFormError('');
+    setShowPreview(true);
+  };
 
+  // プレビュー確認後のAPI送信
+  const handlePreviewConfirm = async () => {
+    setShowPreview(false);
     setIsSaving(true);
     setFormError('');
 
     try {
       if (editingStaff) {
-        // 更新
         const updateData: UpdateStaffRequest = {
           name: formData.name,
           email: formData.email,
@@ -289,7 +299,6 @@ export default function StaffManagement({ onViewChange }: StaffManagementProps) 
         const response = await apiUpdateStaff(editingStaff.id, updateData);
 
         if (response.success) {
-          // リストを再取得
           await fetchStaffList();
           setShowDialog(false);
           showSuccess('スタッフ情報を更新しました');
@@ -297,7 +306,6 @@ export default function StaffManagement({ onViewChange }: StaffManagementProps) 
           setFormError(response.error?.message || 'スタッフの更新に失敗しました');
         }
       } else {
-        // 新規作成
         const createData: CreateStaffRequest = {
           name: formData.name,
           email: formData.email,
@@ -306,7 +314,6 @@ export default function StaffManagement({ onViewChange }: StaffManagementProps) 
         const response = await apiCreateStaff(createData);
 
         if (response.success) {
-          // リストを再取得
           await fetchStaffList();
           setShowDialog(false);
           showSuccess('スタッフを作成しました');
@@ -319,6 +326,29 @@ export default function StaffManagement({ onViewChange }: StaffManagementProps) 
     } finally {
       setIsSaving(false);
     }
+  };
+
+  // スタッフプレビューセクション生成
+  const buildStaffPreviewSections = (): PreviewSection[] => [{
+    title: 'スタッフ情報',
+    items: [
+      { label: '氏名', value: formData.name },
+      { label: 'メールアドレス', value: formData.email },
+      { label: '権限', value: STAFF_ROLE_LABELS[formData.role] },
+      ...(editingStaff ? [{ label: '有効状態', value: formData.isActive ? '有効' : '無効' }] : []),
+    ],
+  }];
+
+  const buildStaffDiffSections = (): PreviewDiffSection[] => {
+    if (!editingStaff) return [];
+    const items = [
+      { label: '氏名', before: editingStaff.name, after: formData.name },
+      { label: 'メールアドレス', before: editingStaff.email, after: formData.email },
+      { label: '権限', before: STAFF_ROLE_LABELS[editingStaff.role], after: STAFF_ROLE_LABELS[formData.role] },
+      { label: '有効状態', before: editingStaff.isActive ? '有効' : '無効', after: formData.isActive ? '有効' : '無効' },
+    ].filter((item) => item.before !== item.after);
+    if (items.length === 0) return [];
+    return [{ title: '変更内容', items }];
   };
 
   // 有効/無効切り替え
@@ -912,6 +942,19 @@ export default function StaffManagement({ onViewChange }: StaffManagementProps) 
           </div>
         </div>
       )}
+      {/* プレビューダイアログ */}
+      <PreviewDialog
+        isOpen={showPreview}
+        onClose={() => setShowPreview(false)}
+        onConfirm={handlePreviewConfirm}
+        title={editingStaff ? 'スタッフ更新内容の確認' : 'スタッフ登録内容の確認'}
+        description={editingStaff ? '以下の項目が変更されます' : '以下の内容でスタッフを登録します'}
+        sections={!editingStaff ? buildStaffPreviewSections() : undefined}
+        diffSections={editingStaff ? buildStaffDiffSections() : undefined}
+        confirmText={editingStaff ? '確認して更新' : '確認して登録'}
+        isLoading={isSaving}
+        size="md"
+      />
     </div>
   );
 }
