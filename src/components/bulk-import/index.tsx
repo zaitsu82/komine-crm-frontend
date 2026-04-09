@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { bulkCreatePlots } from '@/lib/api/plots';
 import { bulkCreateStaff } from '@/lib/api/staff';
-import { showSuccess, showError } from '@/lib/toast';
+import { showSuccess, showError, showApiError } from '@/lib/toast';
 import { ConfirmDialog } from '@/components/shared/dialogs';
 import PageHeader from '@/components/page-header';
 import { ViewType } from '@/types/plot-detail';
@@ -405,7 +405,7 @@ function BulkImportPanel({ type }: { type: ImportTab }) {
           });
           showSuccess(`${response.data.created}件の区画情報を登録しました`);
         } else {
-          showError('一括登録に失敗しました', response.error?.message);
+          showApiError('一括登録', response.error?.message, response.error?.details);
         }
       } else {
         const response = await bulkCreateStaff(staffRows);
@@ -416,7 +416,7 @@ function BulkImportPanel({ type }: { type: ImportTab }) {
           });
           showSuccess(`${response.data.created}件のスタッフ情報を登録しました`);
         } else {
-          showError('一括登録に失敗しました', response.error?.message);
+          showApiError('一括登録', response.error?.message, response.error?.details);
         }
       }
     } catch {

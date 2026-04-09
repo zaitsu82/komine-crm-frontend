@@ -19,6 +19,17 @@ import { showSuccess, showError } from '@/lib/toast';
 import PageHeader from '@/components/page-header';
 import { ViewType } from '@/types/plot-detail';
 
+function formatApiError(
+  message: string,
+  details?: Array<{ field?: string; message: string }>,
+): string {
+  if (!details || details.length === 0) return message;
+  const detailLines = details
+    .map((d) => d.message)
+    .join('\n');
+  return `${message}\n${detailLines}`;
+}
+
 interface MasterTypeConfig {
   key: MasterType;
   label: string;
@@ -124,7 +135,7 @@ export default function MastersManagement({ onViewChange }: MastersManagementPro
         setShowDialog(false);
         showSuccess(`${selectedType.label}を更新しました`);
       } else {
-        setFormError(response.error?.message || '更新に失敗しました');
+        setFormError(formatApiError(response.error?.message || '更新に失敗しました', response.error?.details));
       }
     } else {
       const response = await createMasterItem(selectedType.key, payload);
@@ -133,7 +144,7 @@ export default function MastersManagement({ onViewChange }: MastersManagementPro
         setShowDialog(false);
         showSuccess(`${selectedType.label}を作成しました`);
       } else {
-        setFormError(response.error?.message || '作成に失敗しました');
+        setFormError(formatApiError(response.error?.message || '作成に失敗しました', response.error?.details));
       }
     }
 
@@ -151,7 +162,7 @@ export default function MastersManagement({ onViewChange }: MastersManagementPro
       setItemToDelete(null);
       showSuccess(`${selectedType.label}を削除しました`);
     } else {
-      showError(response.error?.message || '削除に失敗しました');
+      showError(formatApiError(response.error?.message || '削除に失敗しました', response.error?.details));
     }
 
     setIsDeleting(false);

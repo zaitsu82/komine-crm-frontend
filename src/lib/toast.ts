@@ -5,6 +5,17 @@
 
 import { toast } from 'sonner';
 
+function formatErrorDescription(
+  message?: string,
+  details?: Array<{ field?: string; message: string }>,
+): string | undefined {
+  if (!details || details.length === 0) return message;
+
+  const detailLines = details.map((d) => d.message).join('\n');
+
+  return message ? `${message}\n${detailLines}` : detailLines;
+}
+
 /**
  * 成功通知
  */
@@ -57,9 +68,18 @@ export function showApiSuccess(operation: '作成' | '更新' | '削除' | '保�
 
 /**
  * API操作エラー通知
+ * details がある場合はフィールドごとのエラーメッセージを description に表示
  */
-export function showApiError(operation: string, errorMessage?: string) {
-  showError(`${operation}に失敗しました`, errorMessage);
+export function showApiError(
+  operation: string,
+  errorMessage?: string,
+  details?: Array<{ field?: string; message: string }>,
+) {
+  const description = formatErrorDescription(errorMessage, details);
+  toast.error(`${operation}に失敗しました`, {
+    description,
+    duration: details?.length ? 10000 : 5000,
+  });
 }
 
 /**
@@ -78,9 +98,17 @@ export function showAuthError(message?: string) {
 
 /**
  * バリデーションエラー通知
+ * details がある場合はフィールドごとのエラーメッセージを description に表示
  */
-export function showValidationError(message?: string) {
-  showError('入力エラー', message || '入力内容を確認してください。');
+export function showValidationError(
+  message?: string,
+  details?: Array<{ field?: string; message: string }>,
+) {
+  const description = formatErrorDescription(message || '入力内容を確認してください。', details);
+  toast.error('入力エラー', {
+    description,
+    duration: details?.length ? 10000 : 5000,
+  });
 }
 
 // 直接toast関数もエクスポート（カスタマイズが必要な場合用）

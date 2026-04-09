@@ -361,7 +361,7 @@ export default function StaffManagement({ onViewChange }: StaffManagementProps) 
         await fetchStaffList();
         showSuccess(`${staff.name}を${staff.isActive ? '無効' : '有効'}にしました`);
       } else {
-        showApiError('状態の変更', response.error?.message);
+        showApiError('状態の変更', response.error?.message, response.error?.details);
       }
     } catch {
       showError('状態の変更中にエラーが発生しました');
@@ -390,7 +390,7 @@ export default function StaffManagement({ onViewChange }: StaffManagementProps) 
         showSuccess(`${staffToDelete.name}を削除しました`);
         setStaffToDelete(null);
       } else {
-        showApiError('スタッフの削除', response.error?.message);
+        showApiError('スタッフの削除', response.error?.message, response.error?.details);
       }
     } catch {
       showError('スタッフの削除中にエラーが発生しました');
