@@ -81,7 +81,7 @@ export default function PlotManagement({ initialView = 'registry' }: PlotManagem
           setCurrentView('registry');
           showApiSuccess('作成', '区画');
         } else {
-          showApiError('区画登録', response.error?.message);
+          showApiError('区画登録', response.error?.message, response.error?.details);
         }
       } else if (currentView === 'edit' && selectedPlotId) {
         const request = plotFormDataToUpdateRequest(data);
@@ -93,7 +93,7 @@ export default function PlotManagement({ initialView = 'registry' }: PlotManagem
           setCurrentView('plot-details');
           showApiSuccess('更新', '区画情報');
         } else {
-          showApiError('区画情報更新', response.error?.message);
+          showApiError('区画情報更新', response.error?.message, response.error?.details);
         }
       }
     } catch {
@@ -134,7 +134,7 @@ export default function PlotManagement({ initialView = 'registry' }: PlotManagem
         setCurrentView('registry');
         showApiSuccess('削除', '区画データ');
       } else {
-        showApiError('データ削除', response.error?.message);
+        showApiError('データ削除', response.error?.message, response.error?.details);
       }
     } catch {
       showError('削除中にエラーが発生しました');
