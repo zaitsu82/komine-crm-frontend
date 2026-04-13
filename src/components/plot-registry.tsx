@@ -425,7 +425,7 @@ export default function PlotRegistry({
               クリア
             </Button>
           )}
-          <label className="flex items-center gap-1.5 text-xs sm:text-sm text-hai cursor-pointer col-span-2 sm:ml-auto select-none">
+          <label className="items-center gap-1.5 text-xs sm:text-sm text-hai cursor-pointer col-span-2 sm:ml-auto select-none hidden sm:flex">
             <input
               type="checkbox"
               checked={showBuriedPersons}
@@ -436,8 +436,8 @@ export default function PlotRegistry({
           </label>
         </div>
 
-        {/* あいう順タブ */}
-        <div className="mb-4">
+        {/* あいう順タブ（モバイルでは非表示 — 検索バーで代替可能） */}
+        <div className="mb-4 hidden md:block">
           <div
             className="flex flex-wrap gap-1"
             role="tablist"
