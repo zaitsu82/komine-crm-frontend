@@ -197,9 +197,9 @@ export default function MastersManagement({ onViewChange }: MastersManagementPro
         </div>
       ) : (
         <div className="flex-1 overflow-auto">
-          <div className="px-6 py-4">
+          <div className="px-3 md:px-6 py-3 md:py-4">
             {isAdmin && (
-              <div className="mb-4 flex justify-end">
+              <div className="mb-3 flex justify-end">
                 <Button onClick={handleOpenCreate} size="sm" className="cursor-pointer">
                   + 新規追加
                 </Button>
@@ -207,18 +207,18 @@ export default function MastersManagement({ onViewChange }: MastersManagementPro
             )}
 
             {/* Master type tabs */}
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5 md:gap-2 mb-4">
               {MASTER_TYPES.map((type) => (
                 <button
                   key={type.key}
                   onClick={() => setSelectedType(type)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${selectedType.key === type.key
+                  className={`px-2.5 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-medium transition-colors ${selectedType.key === type.key
                     ? 'bg-sumi text-white'
                     : 'bg-kinari text-sumi hover:bg-gin'
                     }`}
                 >
                   {type.label}
-                  <span className="ml-1 text-xs opacity-70">
+                  <span className="ml-0.5 md:ml-1 text-[10px] md:text-xs opacity-70">
                     ({mastersData ? (mastersData[type.dataKey] as MasterItem[]).length : 0})
                   </span>
                 </button>
@@ -230,15 +230,15 @@ export default function MastersManagement({ onViewChange }: MastersManagementPro
               <table className="w-full">
                 <thead className="bg-shiro">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-hai uppercase">名称</th>
+                    <th className="px-2 md:px-4 py-2 md:py-3 text-left text-xs font-medium text-hai uppercase">名称</th>
                     {isSectionName && (
-                      <th className="px-4 py-3 text-left text-xs font-medium text-hai uppercase">期</th>
+                      <th className="px-2 md:px-4 py-2 md:py-3 text-left text-xs font-medium text-hai uppercase">期</th>
                     )}
-                    <th className="px-4 py-3 text-left text-xs font-medium text-hai uppercase">説明</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-hai uppercase">並び順</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-hai uppercase">状態</th>
+                    <th className="px-2 md:px-4 py-2 md:py-3 text-left text-xs font-medium text-hai uppercase hidden sm:table-cell">説明</th>
+                    <th className="px-2 md:px-4 py-2 md:py-3 text-left text-xs font-medium text-hai uppercase hidden sm:table-cell">並び順</th>
+                    <th className="px-2 md:px-4 py-2 md:py-3 text-left text-xs font-medium text-hai uppercase">状態</th>
                     {isAdmin && (
-                      <th className="px-4 py-3 text-left text-xs font-medium text-hai uppercase">操作</th>
+                      <th className="px-2 md:px-4 py-2 md:py-3 text-left text-xs font-medium text-hai uppercase">操作</th>
                     )}
                   </tr>
                 </thead>
@@ -252,17 +252,17 @@ export default function MastersManagement({ onViewChange }: MastersManagementPro
                   ) : (
                     currentItems.map((item) => (
                       <tr key={item.id} className="hover:bg-shiro">
-                        <td className="px-4 py-3 text-sm font-medium text-sumi">{item.name}</td>
+                        <td className="px-2 md:px-4 py-2 md:py-3 text-sm font-medium text-sumi">{item.name}</td>
                         {isSectionName && (
-                          <td className="px-4 py-3 text-sm text-hai">
+                          <td className="px-2 md:px-4 py-2 md:py-3 text-sm text-hai">
                             {(item as SectionNameMasterItem).period || '-'}
                           </td>
                         )}
-                        <td className="px-4 py-3 text-sm text-hai">{item.description || '-'}</td>
-                        <td className="px-4 py-3 text-sm text-hai">{item.sortOrder ?? '-'}</td>
-                        <td className="px-4 py-3">
+                        <td className="px-2 md:px-4 py-2 md:py-3 text-sm text-hai hidden sm:table-cell">{item.description || '-'}</td>
+                        <td className="px-2 md:px-4 py-2 md:py-3 text-sm text-hai hidden sm:table-cell">{item.sortOrder ?? '-'}</td>
+                        <td className="px-2 md:px-4 py-2 md:py-3">
                           <span
-                            className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${item.isActive
+                            className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${item.isActive
                               ? 'bg-matsu-100 text-matsu-800'
                               : 'bg-kinari text-hai'
                               }`}
@@ -271,12 +271,13 @@ export default function MastersManagement({ onViewChange }: MastersManagementPro
                           </span>
                         </td>
                         {isAdmin && (
-                          <td className="px-4 py-3">
-                            <div className="flex gap-2">
+                          <td className="px-2 md:px-4 py-2 md:py-3">
+                            <div className="flex gap-1 md:gap-2">
                               <Button
                                 onClick={() => handleOpenEdit(item)}
                                 variant="outline"
                                 size="sm"
+                                className="text-xs px-2 md:px-3"
                               >
                                 編集
                               </Button>
@@ -287,7 +288,7 @@ export default function MastersManagement({ onViewChange }: MastersManagementPro
                                 }}
                                 variant="outline"
                                 size="sm"
-                                className="text-beni hover:text-beni-dark hover:bg-beni-50"
+                                className="text-beni hover:text-beni-dark hover:bg-beni-50 text-xs px-2 md:px-3"
                               >
                                 削除
                               </Button>
