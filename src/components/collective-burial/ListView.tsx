@@ -122,108 +122,110 @@ export default function CollectiveBurialListView({
         onViewChange={onViewChange}
       />
 
-      {/* 凡例 + アクションボタン */}
-      <div className="flex items-center px-3 md:px-6 py-2 md:py-3 border-b border-gin bg-kinari">
-        <div className="flex-1 flex flex-wrap gap-2 md:gap-4 text-sm">
-          <span className="px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">請求前</span>
-          <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">請求済</span>
-          <span className="px-2 py-0.5 bg-green-100 text-green-800 rounded-full text-xs font-medium">支払済</span>
-        </div>
-        <div className="flex-shrink-0 flex items-center space-x-2">
-          <Button onClick={resetFilters} variant="outline" size="sm" className="h-8 text-xs">
-            リセット
-          </Button>
-          {onBack && (
-            <Button onClick={onBack} variant="outline" size="sm" className="h-8 text-xs">
-              戻る
+      {/* スクロール領域（凡例・フィルター・メインコンテンツ全てスクロール） */}
+      <div className="flex-1 overflow-auto bg-gradient-warm">
+        {/* 凡例 + アクションボタン */}
+        <div className="flex items-center px-3 md:px-6 py-2 md:py-3 border-b border-gin bg-kinari">
+          <div className="flex-1 flex flex-wrap gap-2 md:gap-4 text-sm">
+            <span className="px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">請求前</span>
+            <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">請求済</span>
+            <span className="px-2 py-0.5 bg-green-100 text-green-800 rounded-full text-xs font-medium">支払済</span>
+          </div>
+          <div className="flex-shrink-0 flex items-center space-x-2">
+            <Button onClick={resetFilters} variant="outline" size="sm" className="h-8 text-xs">
+              リセット
             </Button>
-          )}
+            {onBack && (
+              <Button onClick={onBack} variant="outline" size="sm" className="h-8 text-xs">
+                戻る
+              </Button>
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* フィルターエリア */}
-      <div className="bg-white border-b border-gin px-3 md:px-6 py-3 md:py-5">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
-          {/* 検索キーワード */}
-          <div>
-            <Label className="text-xs md:text-sm font-medium text-sumi mb-1 block">検索</Label>
-            <Input
-              type="text"
-              placeholder="区画番号・氏名で検索"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              className="h-9"
-            />
+        {/* フィルターエリア */}
+        <div className="bg-white border-b border-gin px-3 md:px-6 py-3 md:py-5">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
+            {/* 検索キーワード */}
+            <div>
+              <Label className="text-xs md:text-sm font-medium text-sumi mb-1 block">検索</Label>
+              <Input
+                type="text"
+                placeholder="区画番号・氏名で検索"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                className="h-9"
+              />
+            </div>
+
+            {/* 請求ステータス */}
+            <div>
+              <Label className="text-xs md:text-sm font-medium text-sumi mb-1 block">請求ステータス</Label>
+              <Select
+                value={billingStatus}
+                onValueChange={(v) => setBillingStatus(v as BillingStatus | 'all')}
+              >
+                <SelectTrigger className="h-9">
+                  <SelectValue placeholder="すべて" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">すべて</SelectItem>
+                  <SelectItem value="pending">請求前</SelectItem>
+                  <SelectItem value="billed">請求済</SelectItem>
+                  <SelectItem value="paid">支払済</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* 請求予定年 */}
+            <div>
+              <Label className="text-xs md:text-sm font-medium text-sumi mb-1 block">請求予定年</Label>
+              <Select
+                value={String(selectedYear)}
+                onValueChange={(v) => setSelectedYear(v === 'all' ? 'all' : parseInt(v))}
+              >
+                <SelectTrigger className="h-9">
+                  <SelectValue placeholder="すべて" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">すべての年</SelectItem>
+                  {availableYears.map(year => (
+                    <SelectItem key={year} value={String(year)}>
+                      {year}年
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* 検索ボタン */}
+            <div className="flex items-end gap-2">
+              <Button onClick={handleSearch} variant="cha" className="flex-1 h-9">
+                <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                検索
+              </Button>
+              <Button onClick={refresh} variant="outline" size="sm" className="h-9 hidden sm:flex">
+                再読み込み
+              </Button>
+            </div>
           </div>
 
-          {/* 請求ステータス */}
-          <div>
-            <Label className="text-xs md:text-sm font-medium text-sumi mb-1 block">請求ステータス</Label>
-            <Select
-              value={billingStatus}
-              onValueChange={(v) => setBillingStatus(v as BillingStatus | 'all')}
-            >
-              <SelectTrigger className="h-9">
-                <SelectValue placeholder="すべて" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">すべて</SelectItem>
-                <SelectItem value="pending">請求前</SelectItem>
-                <SelectItem value="billed">請求済</SelectItem>
-                <SelectItem value="paid">支払済</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* 請求予定年 */}
-          <div>
-            <Label className="text-xs md:text-sm font-medium text-sumi mb-1 block">請求予定年</Label>
-            <Select
-              value={String(selectedYear)}
-              onValueChange={(v) => setSelectedYear(v === 'all' ? 'all' : parseInt(v))}
-            >
-              <SelectTrigger className="h-9">
-                <SelectValue placeholder="すべて" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">すべての年</SelectItem>
-                {availableYears.map(year => (
-                  <SelectItem key={year} value={String(year)}>
-                    {year}年
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* 検索ボタン */}
-          <div className="flex items-end gap-2">
-            <Button onClick={handleSearch} variant="cha" className="flex-1 h-9">
-              <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              検索
-            </Button>
-            <Button onClick={refresh} variant="outline" size="sm" className="h-9 hidden sm:flex">
+          {/* 検索結果サマリー */}
+          <div className="mt-2 md:mt-4 flex items-center justify-between pt-2 md:pt-4 border-t border-gin">
+            <p className="text-sm text-hai">
+              検索結果: <span className="font-bold text-cha text-lg">{pagination?.totalCount || 0}</span> 件
+            </p>
+            <Button onClick={refresh} variant="outline" size="sm" className="sm:hidden h-8 text-xs">
               再読み込み
             </Button>
           </div>
         </div>
 
-        {/* 検索結果サマリー */}
-        <div className="mt-2 md:mt-4 flex items-center justify-between pt-2 md:pt-4 border-t border-gin">
-          <p className="text-sm text-hai">
-            検索結果: <span className="font-bold text-cha text-lg">{pagination?.totalCount || 0}</span> 件
-          </p>
-          <Button onClick={refresh} variant="outline" size="sm" className="sm:hidden h-8 text-xs">
-            再読み込み
-          </Button>
-        </div>
-      </div>
-
-      {/* メインコンテンツ */}
-      <div className="flex-1 overflow-auto p-3 md:p-6 bg-gradient-warm">
+        {/* メインコンテンツ */}
+        <div className="p-3 md:p-6">
         {isLoading ? (
           <div className="flex items-center justify-center py-16">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cha"></div>
@@ -349,27 +351,28 @@ export default function CollectiveBurialListView({
             ))}
           </div>
         )}
-      </div>
+        </div>
 
-      {/* フッター統計 */}
-      {yearlyStats && yearlyStats.length > 0 && (
-        <div className="bg-white border-t border-gin px-6 py-4">
-          <div className="flex flex-wrap gap-4">
-            <span className="text-sm text-hai font-medium">年別統計:</span>
-            {yearlyStats.slice(0, 5).map(stat => (
-              <span key={stat.year} className="text-sm bg-kinari px-3 py-1 rounded-full border border-gin">
-                <span className="font-semibold text-sumi">{stat.year}年</span>
-                <span className="text-hai ml-1">
-                  {stat.count}件
-                  <span className="text-xs ml-1">
-                    (前{stat.pendingCount}/済{stat.billedCount}/払{stat.paidCount})
+        {/* フッター統計 */}
+        {yearlyStats && yearlyStats.length > 0 && (
+          <div className="bg-white border-t border-gin px-3 md:px-6 py-3 md:py-4">
+            <div className="flex flex-wrap gap-2 md:gap-4">
+              <span className="text-sm text-hai font-medium">年別統計:</span>
+              {yearlyStats.slice(0, 5).map(stat => (
+                <span key={stat.year} className="text-xs md:text-sm bg-kinari px-2 md:px-3 py-1 rounded-full border border-gin">
+                  <span className="font-semibold text-sumi">{stat.year}年</span>
+                  <span className="text-hai ml-1">
+                    {stat.count}件
+                    <span className="text-xs ml-1 hidden sm:inline">
+                      (前{stat.pendingCount}/済{stat.billedCount}/払{stat.paidCount})
+                    </span>
                   </span>
                 </span>
-              </span>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
