@@ -163,10 +163,10 @@ export default function PlotAvailabilityManagement({ onViewChange }: PlotAvailab
       <div className="flex-1 overflow-auto bg-gradient-warm">
 
         {/* ツールバー */}
-        <div className="bg-white border-b border-gin p-4 flex flex-wrap items-center gap-4">
+        <div className="bg-white border-b border-gin p-3 md:p-4 flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2 sm:gap-4">
           {/* 表示形式切替（区画別/面積別） */}
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-hai">表示形式</span>
+            <span className="text-xs font-semibold text-hai whitespace-nowrap">表示形式</span>
             <div className="flex gap-1 p-1 bg-kinari rounded-elegant border border-gin">
               <button
                 onClick={() => setDisplayMode('section')}
@@ -195,20 +195,20 @@ export default function PlotAvailabilityManagement({ onViewChange }: PlotAvailab
 
           {/* フィルター */}
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-hai">フィルター</span>
-            <div className="flex gap-1">
+            <span className="text-xs font-semibold text-hai whitespace-nowrap">フィルタ</span>
+            <div className="flex gap-1 flex-wrap">
               {menuItems.map((item) => (
                 <button
                   key={item.key}
                   onClick={() => setViewMode(item.key as ViewMode)}
                   className={cn(
-                    'px-3 py-1.5 rounded-elegant transition-all duration-200 text-sm flex items-center',
+                    'px-2 md:px-3 py-1.5 rounded-elegant transition-all duration-200 text-xs md:text-sm flex items-center',
                     viewMode === item.key
                       ? 'bg-ai-50 text-ai border border-ai-200 font-semibold'
                       : 'hover:bg-kinari text-hai hover:text-sumi border border-transparent'
                   )}
                 >
-                  <item.icon className="w-4 h-4 mr-1.5 shrink-0" />
+                  <item.icon className="w-3.5 h-3.5 md:w-4 md:h-4 mr-1 shrink-0" />
                   <span>{item.label}</span>
                 </button>
               ))}
@@ -217,8 +217,8 @@ export default function PlotAvailabilityManagement({ onViewChange }: PlotAvailab
 
           {/* 期別フィルター */}
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-hai">期別</span>
-            <div className="flex gap-1">
+            <span className="text-xs font-semibold text-hai whitespace-nowrap">期別</span>
+            <div className="flex gap-1 flex-wrap">
               <button
                 onClick={() => setSelectedPeriod('all')}
                 className={cn(
