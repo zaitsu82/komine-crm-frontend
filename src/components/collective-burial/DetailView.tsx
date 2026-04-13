@@ -104,7 +104,7 @@ export default function CollectiveBurialDetailView({
                 </h3>
               </div>
               <div className="p-5">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
                   <div>
                     <Label className="text-sm text-hai">区画番号</Label>
                     <p className="font-semibold text-sumi mt-1">{data.plotNumber}</p>
@@ -186,7 +186,7 @@ export default function CollectiveBurialDetailView({
                 </h3>
               </div>
               <div className="p-5">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
                   <div className={`p-4 rounded-lg ${isCapacityReached ? 'bg-beni-50 border border-beni-200' : 'bg-matsu-50 border border-matsu-200'}`}>
                     <Label className="text-sm text-hai">現在の埋葬人数</Label>
                     <p className={`text-2xl font-bold mt-1 ${isCapacityReached ? 'text-beni-dark' : 'text-matsu-dark'}`}>

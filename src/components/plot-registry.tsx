@@ -326,10 +326,10 @@ export default function PlotRegistry({
         onViewChange={onViewChange}
       />
 
-      <div className="flex-1 overflow-auto p-6">
+      <div className="flex-1 overflow-auto p-3 md:p-6">
         {/* 検索バー + アクション */}
-        <div className="mb-4 flex items-center gap-3">
-          <div className="flex-1 max-w-md">
+        <div className="mb-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+          <div className="flex-1 sm:max-w-md">
             <Input
               type="text"
               placeholder="氏名・フリガナ・区画番号・電話番号・住所・埋葬者名で検索..."
@@ -359,12 +359,12 @@ export default function PlotRegistry({
             {isLoading ? '検索中...' : '検索'}
           </Button>
           {onNewPlot && (
-            <div className="ml-auto">
+            <div className="sm:ml-auto">
               <Button
                 onClick={onNewPlot}
                 variant="outline"
                 size="default"
-                className="h-10 cursor-pointer"
+                className="h-10 cursor-pointer w-full sm:w-auto"
               >
                 <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -376,11 +376,11 @@ export default function PlotRegistry({
         </div>
 
         {/* フィルタ行 */}
-        <div className="mb-4 flex items-center gap-3 flex-wrap">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-hai whitespace-nowrap">区画ステータス:</span>
+        <div className="mb-4 grid grid-cols-2 sm:flex sm:items-center gap-2 sm:gap-3 sm:flex-wrap">
+          <div className="flex items-center gap-1 sm:gap-2">
+            <span className="text-xs sm:text-sm text-hai whitespace-nowrap">区画:</span>
             <Select value={filterStatus || 'all'} onValueChange={handleFilterStatusChange}>
-              <SelectTrigger className="w-32 h-9 text-sm">
+              <SelectTrigger className="w-full sm:w-32 h-9 text-sm">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -391,10 +391,10 @@ export default function PlotRegistry({
               </SelectContent>
             </Select>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-hai whitespace-nowrap">入金ステータス:</span>
+          <div className="flex items-center gap-1 sm:gap-2">
+            <span className="text-xs sm:text-sm text-hai whitespace-nowrap">入金:</span>
             <Select value={filterPaymentStatus || 'all'} onValueChange={handleFilterPaymentStatusChange}>
-              <SelectTrigger className="w-32 h-9 text-sm">
+              <SelectTrigger className="w-full sm:w-32 h-9 text-sm">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -405,14 +405,14 @@ export default function PlotRegistry({
               </SelectContent>
             </Select>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-hai whitespace-nowrap">エリア:</span>
+          <div className="flex items-center gap-1 sm:gap-2">
+            <span className="text-xs sm:text-sm text-hai whitespace-nowrap">エリア:</span>
             <Input
               type="text"
               placeholder="エリア名"
               value={filterAreaName}
               onChange={(e) => handleFilterAreaNameChange(e.target.value)}
-              className="w-28 h-9 text-sm"
+              className="w-full sm:w-28 h-9 text-sm"
             />
           </div>
           {hasActiveFilters && (
@@ -422,10 +422,10 @@ export default function PlotRegistry({
               onClick={handleClearFilters}
               className="h-9 text-sm text-beni border-beni hover:bg-beni-50"
             >
-              フィルタクリア
+              クリア
             </Button>
           )}
-          <label className="flex items-center gap-1.5 text-sm text-hai cursor-pointer ml-auto select-none">
+          <label className="flex items-center gap-1.5 text-xs sm:text-sm text-hai cursor-pointer col-span-2 sm:ml-auto select-none">
             <input
               type="checkbox"
               checked={showBuriedPersons}
@@ -478,15 +478,15 @@ export default function PlotRegistry({
                 <col className="w-[68px]" />
                 <col className="w-[52px]" />
                 <col className="w-[110px]" />
-                <col className="w-[90px]" />
-                <col className="w-[100px]" />
-                <col className="w-[72px]" />
-                <col />
-                {showBuriedPersons && <col className="w-[90px]" />}
+                <col className="hidden md:table-column w-[90px]" />
+                <col className="hidden lg:table-column w-[100px]" />
+                <col className="hidden lg:table-column w-[72px]" />
+                <col className="hidden md:table-column" />
+                {showBuriedPersons && <col className="hidden lg:table-column w-[90px]" />}
+                <col className="hidden sm:table-column w-[60px]" />
                 <col className="w-[60px]" />
-                <col className="w-[60px]" />
-                <col className="w-[72px]" />
-                <col className="w-[60px]" />
+                <col className="hidden sm:table-column w-[72px]" />
+                <col className="hidden md:table-column w-[60px]" />
               </colgroup>
               <thead className="bg-gradient-matsu sticky top-0 z-10">
                 <tr>
@@ -542,12 +542,12 @@ export default function PlotRegistry({
                       <SortIndicator columnKey="customerName" />
                     </div>
                   </th>
-                  <th className="px-2 py-2 text-left text-xs font-bold text-white">
+                  <th className="px-2 py-2 text-left text-xs font-bold text-white hidden md:table-cell">
                     <span>住所</span>
                   </th>
                   <th
                     className={cn(
-                      "px-2 py-2 text-left text-xs font-bold text-white cursor-pointer transition-all duration-200",
+                      "px-2 py-2 text-left text-xs font-bold text-white cursor-pointer transition-all duration-200 hidden lg:table-cell",
                       "hover:bg-matsu-light",
                       sortKey === 'phoneNumber' && "bg-matsu-dark"
                     )}
@@ -558,20 +558,20 @@ export default function PlotRegistry({
                       <SortIndicator columnKey="phoneNumber" />
                     </div>
                   </th>
-                  <th className="px-2 py-2 text-left text-xs font-bold text-white">
+                  <th className="px-2 py-2 text-left text-xs font-bold text-white hidden lg:table-cell">
                     <span>取扱</span>
                   </th>
-                  <th className="px-2 py-2 text-left text-xs font-bold text-white">
+                  <th className="px-2 py-2 text-left text-xs font-bold text-white hidden md:table-cell">
                     <span>備考</span>
                   </th>
                   {showBuriedPersons && (
-                    <th className="px-2 py-2 text-left text-xs font-bold text-white">
+                    <th className="px-2 py-2 text-left text-xs font-bold text-white hidden lg:table-cell">
                       <span>埋葬者</span>
                     </th>
                   )}
                   <th
                     className={cn(
-                      "px-2 py-2 text-center text-xs font-bold text-white cursor-pointer transition-all duration-200",
+                      "px-2 py-2 text-center text-xs font-bold text-white cursor-pointer transition-all duration-200 hidden sm:table-cell",
                       "hover:bg-matsu-light",
                       sortKey === 'contractDate' && "bg-matsu-dark"
                     )}
@@ -595,7 +595,7 @@ export default function PlotRegistry({
                   </th>
                   <th
                     className={cn(
-                      "px-2 py-2 text-center text-xs font-bold text-white cursor-pointer transition-all duration-200",
+                      "px-2 py-2 text-center text-xs font-bold text-white cursor-pointer transition-all duration-200 hidden sm:table-cell",
                       "hover:bg-matsu-light",
                       sortKey === 'managementFee' && "bg-matsu-dark"
                     )}
@@ -605,7 +605,7 @@ export default function PlotRegistry({
                       <span>管理料</span>
                     </div>
                   </th>
-                  <th className="px-2 py-2 text-left text-xs font-bold text-white">
+                  <th className="px-2 py-2 text-left text-xs font-bold text-white hidden md:table-cell">
                     <span>次請求</span>
                   </th>
                 </tr>
@@ -683,16 +683,16 @@ export default function PlotRegistry({
                             </div>
                           </div>
                         </td>
-                        <td className="px-2 py-2 text-xs text-hai truncate" title={plot.customerAddress || undefined}>
+                        <td className="px-2 py-2 text-xs text-hai truncate hidden md:table-cell" title={plot.customerAddress || undefined}>
                           {truncateAddressToCity(plot.customerAddress)}
                         </td>
-                        <td className="px-2 py-2 text-xs text-hai truncate" title={plot.customerPhoneNumber || undefined}>
+                        <td className="px-2 py-2 text-xs text-hai truncate hidden lg:table-cell" title={plot.customerPhoneNumber || undefined}>
                           {plot.customerPhoneNumber || '-'}
                         </td>
-                        <td className="px-2 py-2 text-xs text-hai truncate" title={plot.agentName || undefined}>
+                        <td className="px-2 py-2 text-xs text-hai truncate hidden lg:table-cell" title={plot.agentName || undefined}>
                           {plot.agentName || '-'}
                         </td>
-                        <td className="px-2 py-2 text-xs text-hai">
+                        <td className="px-2 py-2 text-xs text-hai hidden md:table-cell">
                           <div
                             className="line-clamp-2 break-all"
                             title={[plot.contractNotes, plot.customerNotes].filter(Boolean).join(' / ')}
@@ -701,11 +701,11 @@ export default function PlotRegistry({
                           </div>
                         </td>
                         {showBuriedPersons && (
-                          <td className="px-2 py-2 text-xs text-hai truncate" title={plot.buriedPersonNames?.join(', ') || undefined}>
+                          <td className="px-2 py-2 text-xs text-hai truncate hidden lg:table-cell" title={plot.buriedPersonNames?.join(', ') || undefined}>
                             {plot.buriedPersonNames && plot.buriedPersonNames.length > 0 ? plot.buriedPersonNames.join(', ') : '-'}
                           </td>
                         )}
-                        <td className="px-2 py-2 text-xs text-hai text-center">
+                        <td className="px-2 py-2 text-xs text-hai text-center hidden sm:table-cell">
                           {formatContractDate(plot.contractDate)}
                         </td>
                         <td className="px-2 py-2 text-xs text-center">
@@ -721,10 +721,10 @@ export default function PlotRegistry({
                             {PAYMENT_STATUS_LABELS[paymentStatus] || '-'}
                           </span>
                         </td>
-                        <td className="px-2 py-2 text-xs text-hai text-center">
+                        <td className="px-2 py-2 text-xs text-hai text-center hidden sm:table-cell">
                           {formatMoneyString(plot.managementFee)}
                         </td>
-                        <td className="px-2 py-2 text-xs text-hai truncate" title={plot.nextBillingDate ? new Date(plot.nextBillingDate).toLocaleDateString('ja-JP', { year: 'numeric', month: 'numeric', day: 'numeric' }) : undefined}>
+                        <td className="px-2 py-2 text-xs text-hai truncate hidden md:table-cell" title={plot.nextBillingDate ? new Date(plot.nextBillingDate).toLocaleDateString('ja-JP', { year: 'numeric', month: 'numeric', day: 'numeric' }) : undefined}>
                           {plot.nextBillingDate ? new Date(plot.nextBillingDate).toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric' }) : '-'}
                         </td>
                       </tr>
@@ -749,7 +749,7 @@ export default function PlotRegistry({
         </div>
 
         {/* ページネーションコントロール */}
-        <div className="mt-3 flex items-center justify-between text-sm">
+        <div className="mt-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-sm">
           <div className="flex items-center gap-4 text-hai">
             <div>
               <span className="font-semibold text-sumi">{totalItems > 0 ? startIndex + 1 : 0}</span>
@@ -828,7 +828,7 @@ export default function PlotRegistry({
             </Button>
           </div>
 
-          <div className="flex items-center gap-2 text-hai">
+          <div className="hidden sm:flex items-center gap-2 text-hai">
             <span>表示件数:</span>
             <Select value={String(itemsPerPage)} onValueChange={(v) => handleItemsPerPageChange(Number(v))}>
               <SelectTrigger className="w-24 h-10">

@@ -203,7 +203,7 @@ export default function PlotManagement({ initialView = 'registry' }: PlotManagem
             onViewChange={handleViewChange}
           />
         ) : currentView === 'plot-details' && selectedPlotId ? (
-          <div className="flex-1 p-6 overflow-auto">
+          <div className="flex-1 p-3 md:p-6 overflow-auto">
             <PlotDetailView
               plotId={selectedPlotId}
               onBack={() => {
@@ -230,7 +230,7 @@ export default function PlotManagement({ initialView = 'registry' }: PlotManagem
               onViewChange={handleViewChange}
             />
 
-            <div className="flex-1 p-6 overflow-auto">
+            <div className="flex-1 p-3 md:p-6 overflow-auto">
               <div className="mb-4 flex justify-end">
                 <Button
                   size="sm"

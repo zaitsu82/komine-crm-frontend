@@ -187,7 +187,7 @@ export default function MastersManagement({ onViewChange }: MastersManagementPro
           <p className="text-hai">読み込み中...</p>
         </div>
       ) : loadError ? (
-        <div className="flex-1 p-6">
+        <div className="flex-1 p-3 md:p-6">
           <div className="bg-beni-50 border border-beni-200 rounded-lg p-4">
             <p className="text-beni">{loadError}</p>
             <Button onClick={fetchData} className="mt-2" variant="outline" size="sm">

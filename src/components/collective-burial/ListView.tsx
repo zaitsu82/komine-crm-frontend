@@ -273,16 +273,16 @@ export default function CollectiveBurialListView({
                   <table className="w-full table-fixed">
                     <thead className="bg-kinari border-b border-gin">
                       <tr>
-                        <th className="text-left px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '140px' }}>契約者名</th>
-                        <th className="text-left px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '80px' }}>区画</th>
-                        <th className="text-left px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '100px' }}>区画番号</th>
-                        <th className="text-center px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '80px' }}>契約年</th>
-                        <th className="text-center px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '100px' }}>納骨日</th>
-                        <th className="text-center px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '80px' }}>合祀年</th>
-                        <th className="text-center px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '80px' }}>埋葬上限人数</th>
-                        <th className="text-right px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '100px' }}>請求金額</th>
-                        <th className="text-left px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '120px' }}>備考</th>
-                        <th className="text-center px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '90px' }}>請求ステータス</th>
+                        <th className="text-left px-2 md:px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '140px' }}>契約者名</th>
+                        <th className="text-left px-2 md:px-4 py-3 text-sm font-semibold text-sumi hidden sm:table-cell" style={{ width: '80px' }}>区画</th>
+                        <th className="text-left px-2 md:px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '100px' }}>区画番号</th>
+                        <th className="text-center px-2 md:px-4 py-3 text-sm font-semibold text-sumi hidden md:table-cell" style={{ width: '80px' }}>契約年</th>
+                        <th className="text-center px-2 md:px-4 py-3 text-sm font-semibold text-sumi hidden md:table-cell" style={{ width: '100px' }}>納骨日</th>
+                        <th className="text-center px-2 md:px-4 py-3 text-sm font-semibold text-sumi hidden lg:table-cell" style={{ width: '80px' }}>合祀年</th>
+                        <th className="text-center px-2 md:px-4 py-3 text-sm font-semibold text-sumi hidden lg:table-cell" style={{ width: '80px' }}>埋葬上限</th>
+                        <th className="text-right px-2 md:px-4 py-3 text-sm font-semibold text-sumi hidden sm:table-cell" style={{ width: '100px' }}>請求金額</th>
+                        <th className="text-left px-2 md:px-4 py-3 text-sm font-semibold text-sumi hidden lg:table-cell" style={{ width: '120px' }}>備考</th>
+                        <th className="text-center px-2 md:px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '90px' }}>ステータス</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gin">
@@ -310,39 +310,39 @@ export default function CollectiveBurialListView({
                             className="cursor-pointer transition-all duration-200 hover:bg-cha-50"
                             onClick={() => onSelectRecord?.(record)}
                           >
-                            <td className="px-4 py-3">
+                            <td className="px-2 md:px-4 py-3">
                               <div className="font-medium text-sumi truncate">{record.applicantName || '-'}</div>
                               {record.applicantNameKana && (
                                 <div className="text-xs text-hai truncate">{record.applicantNameKana}</div>
                               )}
                             </td>
-                            <td className="px-4 py-3 text-sm text-hai">
+                            <td className="px-2 md:px-4 py-3 text-sm text-hai hidden sm:table-cell">
                               {record.areaName}
                             </td>
-                            <td className="px-4 py-3">
+                            <td className="px-2 md:px-4 py-3">
                               <span className="font-semibold text-sumi">{record.plotNumber}</span>
                             </td>
-                            <td className="px-4 py-3 text-center text-sm text-sumi">
+                            <td className="px-2 md:px-4 py-3 text-center text-sm text-sumi hidden md:table-cell">
                               {contractYear ? `${contractYear}年` : '-'}
                             </td>
-                            <td className="px-4 py-3 text-center text-sm text-hai">
+                            <td className="px-2 md:px-4 py-3 text-center text-sm text-hai hidden md:table-cell">
                               {formatDate(latestBurialDate)}
                             </td>
-                            <td className="px-4 py-3 text-center text-sm text-sumi">
+                            <td className="px-2 md:px-4 py-3 text-center text-sm text-sumi hidden lg:table-cell">
                               {collectiveBurialYear ? `${collectiveBurialYear}年` : '-'}
                             </td>
-                            <td className="px-4 py-3 text-center text-sm text-sumi">
+                            <td className="px-2 md:px-4 py-3 text-center text-sm text-sumi hidden lg:table-cell">
                               {record.burialCapacity}
                             </td>
-                            <td className="px-4 py-3 text-right text-sm text-sumi">
+                            <td className="px-2 md:px-4 py-3 text-right text-sm text-sumi hidden sm:table-cell">
                               {record.billingAmount != null
                                 ? `¥${record.billingAmount.toLocaleString()}`
                                 : '-'}
                             </td>
-                            <td className="px-4 py-3 text-sm text-hai truncate">
+                            <td className="px-2 md:px-4 py-3 text-sm text-hai truncate hidden lg:table-cell">
                               {record.notes || '-'}
                             </td>
-                            <td className="px-4 py-3 text-center">
+                            <td className="px-2 md:px-4 py-3 text-center">
                               <span className={`px-2 py-1 rounded text-xs font-medium ${BILLING_STATUS_COLORS[record.billingStatus as BillingStatus]}`}>
                                 {BILLING_STATUS_LABELS[record.billingStatus as BillingStatus]}
                               </span>

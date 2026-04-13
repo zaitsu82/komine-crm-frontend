@@ -268,7 +268,7 @@ export default function PlotAvailabilityManagement({ onViewChange }: PlotAvailab
         </div>
 
         {/* メインコンテンツ */}
-        <div className="p-6 relative">
+        <div className="p-3 md:p-6 relative">
           {/* ローディングオーバーレイ */}
           {isLoading && (
             <div className="absolute inset-0 bg-white/60 z-10 flex items-center justify-center">
@@ -280,7 +280,7 @@ export default function PlotAvailabilityManagement({ onViewChange }: PlotAvailab
           )}
 
           {/* 全体サマリー */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 md:gap-4 mb-6">
             <div className="bg-white border border-matsu-200 rounded-elegant-lg p-5 text-center shadow-elegant">
               <div className="text-3xl font-bold text-matsu">{summary.totalCount.toLocaleString()}</div>
               <div className="text-sm text-matsu font-medium mt-1">総区画数</div>
@@ -314,7 +314,7 @@ export default function PlotAvailabilityManagement({ onViewChange }: PlotAvailab
           </div>
 
           {/* 期別サマリーカード */}
-          <div className="grid grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6">
             {periodSummaries.map((ps) => {
               const periodColors = {
                 '1期': { gradient: 'from-matsu to-matsu-dark', light: 'matsu' },
@@ -370,12 +370,12 @@ export default function PlotAvailabilityManagement({ onViewChange }: PlotAvailab
 
           {/* 検索バー */}
           <div className="bg-white rounded-elegant-lg shadow-elegant p-4 mb-4 border border-gin">
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
               <Input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={displayMode === 'section' ? "区画名、期で検索..." : "面積、タイプ、期で検索..."}
-                className="flex-1 max-w-md"
+                className="flex-1 sm:max-w-md"
               />
               <Button
                 onClick={() => setSearchQuery('')}

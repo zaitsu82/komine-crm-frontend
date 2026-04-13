@@ -465,7 +465,7 @@ export default function StaffManagement({ onViewChange }: StaffManagementProps) 
         </div>
 
         {/* Summary Stat Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 px-6 py-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-4 px-3 md:px-6 py-4">
           <div className="bg-white border border-gin rounded-elegant-lg shadow-elegant-sm p-4">
             <p className="text-sm text-hai">総スタッフ数</p>
             <p className="text-2xl font-bold text-sumi mt-1">{stats.total}</p>
@@ -505,7 +505,7 @@ export default function StaffManagement({ onViewChange }: StaffManagementProps) 
         </div>
 
         {/* Search / Filter Area */}
-        <div className="mx-6 mb-4 bg-white border border-gin rounded-elegant-lg shadow-elegant-sm p-4">
+        <div className="mx-3 md:mx-6 mb-4 bg-white border border-gin rounded-elegant-lg shadow-elegant-sm p-3 md:p-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
             <div className="flex-1 flex items-center gap-2 w-full sm:w-auto">
               <div className="relative flex-1 max-w-md">
@@ -552,7 +552,7 @@ export default function StaffManagement({ onViewChange }: StaffManagementProps) 
 
         {/* Permission Matrix Panel */}
         {showPermissionMatrix && (
-          <div className="mx-6 mb-4 bg-white border border-ai-100 rounded-elegant-lg shadow-elegant-sm overflow-hidden">
+          <div className="mx-3 md:mx-6 mb-4 bg-white border border-ai-100 rounded-elegant-lg shadow-elegant-sm overflow-hidden">
             <div className="bg-gradient-to-r from-ai-50 to-kinari px-6 py-3 border-b border-ai-100 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <svg className="w-5 h-5 text-ai" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -655,7 +655,7 @@ export default function StaffManagement({ onViewChange }: StaffManagementProps) 
         )}
 
         {/* Staff Table */}
-        <div className="mx-6 mb-6 bg-white border border-gin rounded-elegant-lg shadow-elegant-sm overflow-hidden">
+        <div className="mx-3 md:mx-6 mb-6 bg-white border border-gin rounded-elegant-lg shadow-elegant-sm overflow-hidden">
           {isLoading ? (
             <div className="p-12 text-center text-hai">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-matsu mx-auto mb-4"></div>
@@ -667,37 +667,37 @@ export default function StaffManagement({ onViewChange }: StaffManagementProps) 
                 <thead>
                   <tr className="bg-kinari border-b border-gin">
                     <th
-                      className="px-4 py-3 text-left text-sm font-semibold text-sumi cursor-pointer hover:bg-matsu-50 transition-colors duration-200"
+                      className="px-2 md:px-4 py-3 text-left text-sm font-semibold text-sumi cursor-pointer hover:bg-matsu-50 transition-colors duration-200 hidden md:table-cell"
                       onClick={() => handleSort('id')}
                     >
                       ID <SortIcon columnKey="id" />
                     </th>
                     <th
-                      className="px-4 py-3 text-left text-sm font-semibold text-sumi cursor-pointer hover:bg-matsu-50 transition-colors duration-200"
+                      className="px-2 md:px-4 py-3 text-left text-sm font-semibold text-sumi cursor-pointer hover:bg-matsu-50 transition-colors duration-200"
                       onClick={() => handleSort('name')}
                     >
                       氏名 <SortIcon columnKey="name" />
                     </th>
                     <th
-                      className="px-4 py-3 text-left text-sm font-semibold text-sumi cursor-pointer hover:bg-matsu-50 transition-colors duration-200"
+                      className="px-2 md:px-4 py-3 text-left text-sm font-semibold text-sumi cursor-pointer hover:bg-matsu-50 transition-colors duration-200 hidden sm:table-cell"
                       onClick={() => handleSort('email')}
                     >
-                      メールアドレス <SortIcon columnKey="email" />
+                      メール <SortIcon columnKey="email" />
                     </th>
                     <th
-                      className="px-4 py-3 text-left text-sm font-semibold text-sumi cursor-pointer hover:bg-matsu-50 transition-colors duration-200"
+                      className="px-2 md:px-4 py-3 text-left text-sm font-semibold text-sumi cursor-pointer hover:bg-matsu-50 transition-colors duration-200"
                       onClick={() => handleSort('role')}
                     >
                       権限 <SortIcon columnKey="role" />
                     </th>
                     <th
-                      className="px-4 py-3 text-left text-sm font-semibold text-sumi cursor-pointer hover:bg-matsu-50 transition-colors duration-200"
+                      className="px-2 md:px-4 py-3 text-left text-sm font-semibold text-sumi cursor-pointer hover:bg-matsu-50 transition-colors duration-200 hidden sm:table-cell"
                       onClick={() => handleSort('isActive')}
                     >
                       状態 <SortIcon columnKey="isActive" />
                     </th>
                     <th
-                      className="px-4 py-3 text-left text-sm font-semibold text-sumi cursor-pointer hover:bg-matsu-50 transition-colors duration-200"
+                      className="px-2 md:px-4 py-3 text-left text-sm font-semibold text-sumi cursor-pointer hover:bg-matsu-50 transition-colors duration-200 hidden lg:table-cell"
                       onClick={() => handleSort('lastLoginAt')}
                     >
                       最終ログイン <SortIcon columnKey="lastLoginAt" />
@@ -716,21 +716,21 @@ export default function StaffManagement({ onViewChange }: StaffManagementProps) 
                       className={`border-b border-gin hover:bg-kinari transition-colors duration-200 ${index % 2 === 0 ? 'bg-white' : 'bg-shiro'
                         } ${!staff.isActive ? 'opacity-60' : ''}`}
                     >
-                      <td className="px-4 py-3 text-sm text-hai">{staff.id}</td>
-                      <td className="px-4 py-3 text-sm font-medium text-sumi">{staff.name}</td>
-                      <td className="px-4 py-3 text-sm text-sumi">{staff.email}</td>
-                      <td className="px-4 py-3 text-sm">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${getRoleBadgeClass(staff.role)}`}>
+                      <td className="px-2 md:px-4 py-3 text-sm text-hai hidden md:table-cell">{staff.id}</td>
+                      <td className="px-2 md:px-4 py-3 text-sm font-medium text-sumi">{staff.name}</td>
+                      <td className="px-2 md:px-4 py-3 text-sm text-sumi hidden sm:table-cell truncate max-w-[200px]">{staff.email}</td>
+                      <td className="px-2 md:px-4 py-3 text-sm">
+                        <span className={`px-2 md:px-3 py-1 rounded-full text-xs font-medium ${getRoleBadgeClass(staff.role)}`}>
                           {STAFF_ROLE_LABELS[staff.role]}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-sm">
+                      <td className="px-2 md:px-4 py-3 text-sm hidden sm:table-cell">
                         {staff.isActive
-                          ? <span className="px-3 py-1 rounded-full text-xs font-medium bg-matsu-50 text-matsu-dark">有効</span>
-                          : <span className="px-3 py-1 rounded-full text-xs font-medium bg-hai-50 text-hai">無効</span>
+                          ? <span className="px-2 md:px-3 py-1 rounded-full text-xs font-medium bg-matsu-50 text-matsu-dark">有効</span>
+                          : <span className="px-2 md:px-3 py-1 rounded-full text-xs font-medium bg-hai-50 text-hai">無効</span>
                         }
                       </td>
-                      <td className="px-4 py-3 text-sm text-hai">
+                      <td className="px-2 md:px-4 py-3 text-sm text-hai hidden lg:table-cell">
                         {formatDateTime(staff.lastLoginAt)}
                       </td>
                       {isAdminUser && (

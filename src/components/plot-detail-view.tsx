@@ -549,26 +549,26 @@ export default function PlotDetailView({ plotId, onEdit, onBack }: PlotDetailVie
   return (
     <div className="w-full">
       {/* ヘッダー */}
-      <div className="flex justify-between items-center mb-6 bg-white border border-gin rounded-elegant-lg shadow-elegant-sm p-5">
-        <div>
-          <h2 className="text-2xl font-bold text-sumi">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4 md:mb-6 bg-white border border-gin rounded-elegant-lg shadow-elegant-sm p-4 md:p-5">
+        <div className="min-w-0">
+          <h2 className="text-lg md:text-2xl font-bold text-sumi truncate">
             {plot.physicalPlot.plotNumber} - {plot.physicalPlot.areaName}
           </h2>
           {primaryCustomer && (
-            <p className="text-hai mt-1">
+            <p className="text-hai mt-1 text-sm md:text-base truncate">
               契約者: {primaryCustomer.name}
               {primaryCustomer.nameKana && ` (${primaryCustomer.nameKana})`}
             </p>
           )}
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-shrink-0">
           {onBack && (
-            <Button onClick={onBack} variant="outline">
+            <Button onClick={onBack} variant="outline" size="sm">
               戻る
             </Button>
           )}
           {onEdit && (
-            <Button onClick={onEdit} className="bg-matsu hover:bg-matsu-dark text-white">
+            <Button onClick={onEdit} className="bg-matsu hover:bg-matsu-dark text-white" size="sm">
               編集
             </Button>
           )}
@@ -576,7 +576,7 @@ export default function PlotDetailView({ plotId, onEdit, onBack }: PlotDetailVie
       </div>
 
       {/* ステータスバッジ */}
-      <div className="flex gap-2 mb-4">
+      <div className="flex flex-wrap gap-2 mb-4">
         <span className={cn(
           'px-3 py-1 rounded-full text-sm font-medium',
           plot.paymentStatus === PaymentStatus.Paid ? 'bg-matsu-50 text-matsu' :
@@ -604,23 +604,23 @@ export default function PlotDetailView({ plotId, onEdit, onBack }: PlotDetailVie
 
       {/* タブ */}
       <Tabs defaultValue="basic" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 h-auto gap-1">
-          <TabsTrigger value="basic" className="py-2 data-[state=active]:bg-matsu data-[state=active]:text-white">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 h-auto gap-1">
+          <TabsTrigger value="basic" className="py-2 text-xs sm:text-sm data-[state=active]:bg-matsu data-[state=active]:text-white">
             基本情報
           </TabsTrigger>
-          <TabsTrigger value="fee" className="py-2 data-[state=active]:bg-matsu data-[state=active]:text-white">
+          <TabsTrigger value="fee" className="py-2 text-xs sm:text-sm data-[state=active]:bg-matsu data-[state=active]:text-white">
             料金情報
           </TabsTrigger>
-          <TabsTrigger value="contacts" className="py-2 data-[state=active]:bg-matsu data-[state=active]:text-white">
+          <TabsTrigger value="contacts" className="py-2 text-xs sm:text-sm data-[state=active]:bg-matsu data-[state=active]:text-white">
             連絡先
           </TabsTrigger>
-          <TabsTrigger value="burial" className="py-2 data-[state=active]:bg-matsu data-[state=active]:text-white">
+          <TabsTrigger value="burial" className="py-2 text-xs sm:text-sm data-[state=active]:bg-matsu data-[state=active]:text-white">
             埋葬情報
           </TabsTrigger>
-          <TabsTrigger value="construction" className="py-2 data-[state=active]:bg-matsu data-[state=active]:text-white">
+          <TabsTrigger value="construction" className="py-2 text-xs sm:text-sm data-[state=active]:bg-matsu data-[state=active]:text-white">
             工事情報
           </TabsTrigger>
-          <TabsTrigger value="history" className="py-2 data-[state=active]:bg-matsu data-[state=active]:text-white">
+          <TabsTrigger value="history" className="py-2 text-xs sm:text-sm data-[state=active]:bg-matsu data-[state=active]:text-white">
             履歴情報
           </TabsTrigger>
         </TabsList>
