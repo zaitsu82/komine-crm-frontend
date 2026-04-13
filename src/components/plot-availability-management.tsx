@@ -163,10 +163,10 @@ export default function PlotAvailabilityManagement({ onViewChange }: PlotAvailab
       <div className="flex-1 overflow-auto bg-gradient-warm">
 
         {/* ツールバー */}
-        <div className="bg-white border-b border-gin p-4 flex flex-wrap items-center gap-4">
+        <div className="bg-white border-b border-gin p-3 md:p-4 flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2 sm:gap-4">
           {/* 表示形式切替（区画別/面積別） */}
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-hai">表示形式</span>
+            <span className="text-xs font-semibold text-hai whitespace-nowrap">表示形式</span>
             <div className="flex gap-1 p-1 bg-kinari rounded-elegant border border-gin">
               <button
                 onClick={() => setDisplayMode('section')}
@@ -195,20 +195,20 @@ export default function PlotAvailabilityManagement({ onViewChange }: PlotAvailab
 
           {/* フィルター */}
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-hai">フィルター</span>
-            <div className="flex gap-1">
+            <span className="text-xs font-semibold text-hai whitespace-nowrap">フィルタ</span>
+            <div className="flex gap-1 flex-wrap">
               {menuItems.map((item) => (
                 <button
                   key={item.key}
                   onClick={() => setViewMode(item.key as ViewMode)}
                   className={cn(
-                    'px-3 py-1.5 rounded-elegant transition-all duration-200 text-sm flex items-center',
+                    'px-2 md:px-3 py-1.5 rounded-elegant transition-all duration-200 text-xs md:text-sm flex items-center',
                     viewMode === item.key
                       ? 'bg-ai-50 text-ai border border-ai-200 font-semibold'
                       : 'hover:bg-kinari text-hai hover:text-sumi border border-transparent'
                   )}
                 >
-                  <item.icon className="w-4 h-4 mr-1.5 shrink-0" />
+                  <item.icon className="w-3.5 h-3.5 md:w-4 md:h-4 mr-1 shrink-0" />
                   <span>{item.label}</span>
                 </button>
               ))}
@@ -217,8 +217,8 @@ export default function PlotAvailabilityManagement({ onViewChange }: PlotAvailab
 
           {/* 期別フィルター */}
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-hai">期別</span>
-            <div className="flex gap-1">
+            <span className="text-xs font-semibold text-hai whitespace-nowrap">期別</span>
+            <div className="flex gap-1 flex-wrap">
               <button
                 onClick={() => setSelectedPeriod('all')}
                 className={cn(
@@ -268,7 +268,7 @@ export default function PlotAvailabilityManagement({ onViewChange }: PlotAvailab
         </div>
 
         {/* メインコンテンツ */}
-        <div className="p-6 relative">
+        <div className="p-3 md:p-6 relative">
           {/* ローディングオーバーレイ */}
           {isLoading && (
             <div className="absolute inset-0 bg-white/60 z-10 flex items-center justify-center">
@@ -279,8 +279,39 @@ export default function PlotAvailabilityManagement({ onViewChange }: PlotAvailab
             </div>
           )}
 
-          {/* 全体サマリー */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+          {/* 全体サマリー — モバイル: コンパクト横並び / デスクトップ: カード */}
+          {/* モバイル用コンパクト表示 */}
+          <div className="md:hidden bg-white border border-gin rounded-elegant-lg p-3 mb-4 shadow-elegant-sm">
+            <div className="flex items-center justify-between gap-2 text-center">
+              <div className="flex-1">
+                <div className="text-xl font-bold text-matsu">{summary.totalCount}</div>
+                <div className="text-[10px] text-hai">総数</div>
+              </div>
+              <div className="w-px h-8 bg-gin" />
+              <div className="flex-1">
+                <div className="text-xl font-bold text-ai">{summary.usedCount}</div>
+                <div className="text-[10px] text-hai">使用</div>
+              </div>
+              <div className="w-px h-8 bg-gin" />
+              <div className="flex-1">
+                <div className="text-xl font-bold text-kohaku">{summary.remainingCount}</div>
+                <div className="text-[10px] text-hai">残</div>
+              </div>
+              <div className="w-px h-8 bg-gin" />
+              <div className="flex-1">
+                <div className="text-xl font-bold text-cha">{summary.usageRate}%</div>
+                <div className="text-[10px] text-hai">使用率</div>
+              </div>
+              <div className="w-px h-8 bg-gin" />
+              <div className="flex-1">
+                <div className="text-xl font-bold text-sumi">{(summary.remainingCount * 2)}</div>
+                <div className="text-[10px] text-hai">半区画</div>
+              </div>
+            </div>
+          </div>
+
+          {/* デスクトップ用カード表示 */}
+          <div className="hidden md:grid md:grid-cols-5 gap-4 mb-6">
             <div className="bg-white border border-matsu-200 rounded-elegant-lg p-5 text-center shadow-elegant">
               <div className="text-3xl font-bold text-matsu">{summary.totalCount.toLocaleString()}</div>
               <div className="text-sm text-matsu font-medium mt-1">総区画数</div>
@@ -314,7 +345,7 @@ export default function PlotAvailabilityManagement({ onViewChange }: PlotAvailab
           </div>
 
           {/* 期別サマリーカード */}
-          <div className="grid grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4 mb-4 md:mb-6">
             {periodSummaries.map((ps) => {
               const periodColors = {
                 '1期': { gradient: 'from-matsu to-matsu-dark', light: 'matsu' },
@@ -329,25 +360,25 @@ export default function PlotAvailabilityManagement({ onViewChange }: PlotAvailab
                   key={ps.period}
                   onClick={() => setSelectedPeriod(ps.period)}
                   className={cn(
-                    "bg-white border rounded-elegant-lg p-5 text-left transition-all duration-300 hover:shadow-elegant-lg",
+                    "bg-white border rounded-elegant-lg p-3 md:p-5 text-left transition-all duration-300 hover:shadow-elegant-lg",
                     selectedPeriod === ps.period
                       ? `border-${colors.light} ring-2 ring-${colors.light}-100 shadow-elegant`
                       : "border-gin hover:border-hai"
                   )}
                 >
-                  <div className="flex justify-between items-center mb-4">
+                  <div className="flex justify-between items-center mb-2 md:mb-4">
                     <span className={cn(
-                      "text-lg font-bold font-mincho",
+                      "text-sm md:text-lg font-bold font-mincho",
                       `text-${colors.light}`
                     )}>{ps.period}</span>
                     <span className={cn(
-                      "text-xs px-3 py-1 rounded-full font-medium",
+                      "text-[10px] md:text-xs px-2 md:px-3 py-0.5 md:py-1 rounded-full font-medium",
                       getUsageRateColor(ps.usageRate)
                     )}>
                       {ps.usageRate}%
                     </span>
                   </div>
-                  <div className="grid grid-cols-3 gap-3 text-sm">
+                  <div className="grid grid-cols-3 gap-1 md:gap-3 text-xs md:text-sm">
                     <div>
                       <div className="text-hai text-xs mb-1">総数</div>
                       <div className="font-bold text-sumi">{ps.totalCount}</div>
@@ -370,12 +401,12 @@ export default function PlotAvailabilityManagement({ onViewChange }: PlotAvailab
 
           {/* 検索バー */}
           <div className="bg-white rounded-elegant-lg shadow-elegant p-4 mb-4 border border-gin">
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
               <Input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={displayMode === 'section' ? "区画名、期で検索..." : "面積、タイプ、期で検索..."}
-                className="flex-1 max-w-md"
+                className="flex-1 sm:max-w-md"
               />
               <Button
                 onClick={() => setSearchQuery('')}
@@ -403,7 +434,7 @@ export default function PlotAvailabilityManagement({ onViewChange }: PlotAvailab
                     <tr>
                       <th
                         className={cn(
-                          "px-4 py-4 text-left text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
+                          "px-2 md:px-4 py-3 md:py-4 text-left text-xs md:text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
                           sortKey === 'period' && "bg-cha-50"
                         )}
                         onClick={() => handleSort('period')}
@@ -417,7 +448,7 @@ export default function PlotAvailabilityManagement({ onViewChange }: PlotAvailab
                       </th>
                       <th
                         className={cn(
-                          "px-4 py-4 text-left text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
+                          "px-2 md:px-4 py-3 md:py-4 text-left text-xs md:text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
                           sortKey === 'section' && "bg-cha-50"
                         )}
                         onClick={() => handleSort('section')}
@@ -431,7 +462,7 @@ export default function PlotAvailabilityManagement({ onViewChange }: PlotAvailab
                       </th>
                       <th
                         className={cn(
-                          "px-4 py-4 text-right text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
+                          "px-2 md:px-4 py-3 md:py-4 text-right text-xs md:text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
                           sortKey === 'totalCount' && "bg-cha-50"
                         )}
                         onClick={() => handleSort('totalCount')}
@@ -445,7 +476,7 @@ export default function PlotAvailabilityManagement({ onViewChange }: PlotAvailab
                       </th>
                       <th
                         className={cn(
-                          "px-4 py-4 text-right text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
+                          "px-2 md:px-4 py-3 md:py-4 text-right text-xs md:text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors hidden sm:table-cell",
                           sortKey === 'usedCount' && "bg-cha-50"
                         )}
                         onClick={() => handleSort('usedCount')}
@@ -459,13 +490,13 @@ export default function PlotAvailabilityManagement({ onViewChange }: PlotAvailab
                       </th>
                       <th
                         className={cn(
-                          "px-4 py-4 text-right text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
+                          "px-2 md:px-4 py-3 md:py-4 text-right text-xs md:text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
                           sortKey === 'remainingCount' && "bg-cha-50"
                         )}
                         onClick={() => handleSort('remainingCount')}
                       >
                         <div className="flex items-center justify-end">
-                          残数
+                          残
                           {sortKey === 'remainingCount' && (
                             <span className="ml-1 text-cha">{sortOrder === 'asc' ? '▲' : '▼'}</span>
                           )}
@@ -473,7 +504,7 @@ export default function PlotAvailabilityManagement({ onViewChange }: PlotAvailab
                       </th>
                       <th
                         className={cn(
-                          "px-4 py-4 text-center text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
+                          "px-2 md:px-4 py-3 md:py-4 text-center text-xs md:text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors hidden md:table-cell",
                           sortKey === 'usageRate' && "bg-cha-50"
                         )}
                         onClick={() => handleSort('usageRate')}
@@ -485,10 +516,10 @@ export default function PlotAvailabilityManagement({ onViewChange }: PlotAvailab
                           )}
                         </div>
                       </th>
-                      <th className="px-4 py-4 text-center text-sm font-bold text-sumi">
+                      <th className="px-2 md:px-4 py-3 md:py-4 text-center text-xs md:text-sm font-bold text-sumi hidden sm:table-cell">
                         状況
                       </th>
-                      <th className="px-4 py-4 text-right text-sm font-bold text-sumi">
+                      <th className="px-2 md:px-4 py-3 md:py-4 text-right text-xs md:text-sm font-bold text-sumi hidden lg:table-cell">
                         面積（㎡）
                       </th>
                     </tr>
@@ -515,33 +546,33 @@ export default function PlotAvailabilityManagement({ onViewChange }: PlotAvailab
                             index % 2 === 0 ? 'bg-white' : 'bg-shiro'
                           )}
                         >
-                          <td className="px-4 py-3 text-sm">
+                          <td className="px-2 md:px-4 py-2 md:py-3 text-sm">
                             <span className={cn(
-                              "px-3 py-1 rounded-full text-xs font-medium",
+                              "px-2 md:px-3 py-0.5 md:py-1 rounded-full text-xs font-medium",
                               periodColors[item.period as keyof typeof periodColors]
                             )}>
                               {item.period}
                             </span>
                           </td>
-                          <td className="px-4 py-3 text-sm font-semibold text-sumi">
+                          <td className="px-2 md:px-4 py-2 md:py-3 text-xs md:text-sm font-semibold text-sumi">
                             {item.section}
                             {item.category && (
-                              <span className="ml-2 text-xs text-hai font-normal">({item.category})</span>
+                              <span className="ml-1 md:ml-2 text-xs text-hai font-normal">({item.category})</span>
                             )}
                           </td>
-                          <td className="px-4 py-3 text-sm text-right text-hai">
+                          <td className="px-2 md:px-4 py-2 md:py-3 text-xs md:text-sm text-right text-hai">
                             {item.totalCount}
                           </td>
-                          <td className="px-4 py-3 text-sm text-right text-matsu font-medium">
+                          <td className="px-2 md:px-4 py-2 md:py-3 text-xs md:text-sm text-right text-matsu font-medium hidden sm:table-cell">
                             {item.usedCount}
                           </td>
                           <td className={cn(
-                            "px-4 py-3 text-sm text-right",
+                            "px-2 md:px-4 py-2 md:py-3 text-xs md:text-sm text-right",
                             getRemainingColor(item.remainingCount, item.totalCount)
                           )}>
                             {item.remainingCount}
                           </td>
-                          <td className="px-4 py-3 text-sm text-center">
+                          <td className="px-2 md:px-4 py-2 md:py-3 text-sm text-center hidden md:table-cell">
                             <div className="flex items-center justify-center space-x-2">
                               <div className="w-16 bg-kinari rounded-full h-2 border border-gin">
                                 <div
@@ -558,22 +589,22 @@ export default function PlotAvailabilityManagement({ onViewChange }: PlotAvailab
                               <span className="text-xs text-hai w-12">{usageRate}%</span>
                             </div>
                           </td>
-                          <td className="px-4 py-3 text-sm text-center">
+                          <td className="px-2 md:px-4 py-2 md:py-3 text-sm text-center hidden sm:table-cell">
                             {item.remainingCount === 0 ? (
-                              <span className="px-3 py-1 bg-beni-50 text-beni rounded-full text-xs font-medium">
+                              <span className="px-2 py-0.5 bg-beni-50 text-beni rounded-full text-xs font-medium">
                                 完売
                               </span>
                             ) : item.remainingCount <= 5 ? (
-                              <span className="px-3 py-1 bg-kohaku-50 text-kohaku rounded-full text-xs font-medium">
+                              <span className="px-2 py-0.5 bg-kohaku-50 text-kohaku rounded-full text-xs font-medium">
                                 残少
                               </span>
                             ) : (
-                              <span className="px-3 py-1 bg-matsu-50 text-matsu rounded-full text-xs font-medium">
+                              <span className="px-2 py-0.5 bg-matsu-50 text-matsu rounded-full text-xs font-medium">
                                 空有
                               </span>
                             )}
                           </td>
-                          <td className="px-4 py-3 text-sm text-right text-hai">
+                          <td className="px-2 md:px-4 py-2 md:py-3 text-sm text-right text-hai hidden lg:table-cell">
                             {remainingArea.toFixed(1)}
                           </td>
                         </tr>
@@ -583,19 +614,19 @@ export default function PlotAvailabilityManagement({ onViewChange }: PlotAvailab
                   {/* 合計行 */}
                   <tfoot className="bg-kinari font-bold border-t-2 border-gin">
                     <tr>
-                      <td className="px-4 py-4 text-sm text-sumi" colSpan={2}>
+                      <td className="px-2 md:px-4 py-3 md:py-4 text-xs md:text-sm text-sumi" colSpan={2}>
                         合計 {selectedPeriod !== 'all' ? `(${selectedPeriod})` : ''}
                       </td>
-                      <td className="px-4 py-4 text-sm text-right text-sumi">
+                      <td className="px-2 md:px-4 py-3 md:py-4 text-xs md:text-sm text-right text-sumi">
                         {displayData.reduce((sum, item) => sum + item.totalCount, 0)}
                       </td>
-                      <td className="px-4 py-4 text-sm text-right text-matsu">
+                      <td className="px-2 md:px-4 py-3 md:py-4 text-xs md:text-sm text-right text-matsu hidden sm:table-cell">
                         {displayData.reduce((sum, item) => sum + item.usedCount, 0)}
                       </td>
-                      <td className="px-4 py-4 text-sm text-right text-kohaku">
+                      <td className="px-2 md:px-4 py-3 md:py-4 text-xs md:text-sm text-right text-kohaku">
                         {displayData.reduce((sum, item) => sum + item.remainingCount, 0)}
                       </td>
-                      <td className="px-4 py-4 text-sm text-center text-sumi">
+                      <td className="px-2 md:px-4 py-3 md:py-4 text-xs md:text-sm text-center text-sumi hidden md:table-cell">
                         {displayData.length > 0 ? (
                           Math.round(
                             (displayData.reduce((sum, item) => sum + item.usedCount, 0) /
@@ -603,8 +634,8 @@ export default function PlotAvailabilityManagement({ onViewChange }: PlotAvailab
                           ) / 10
                         ) : 0}%
                       </td>
-                      <td className="px-4 py-4 text-sm text-center">-</td>
-                      <td className="px-4 py-4 text-sm text-right text-hai">
+                      <td className="px-2 md:px-4 py-3 md:py-4 text-sm text-center hidden sm:table-cell">-</td>
+                      <td className="px-2 md:px-4 py-3 md:py-4 text-sm text-right text-hai hidden lg:table-cell">
                         {(displayData.reduce((sum, item) => sum + item.remainingCount, 0) * PLOT_SIZE.FULL).toFixed(1)}
                       </td>
                     </tr>
@@ -617,7 +648,7 @@ export default function PlotAvailabilityManagement({ onViewChange }: PlotAvailab
                     <tr>
                       <th
                         className={cn(
-                          "px-4 py-4 text-left text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
+                          "px-2 md:px-4 py-3 md:py-4 text-left text-xs md:text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
                           areaSortKey === 'period' && "bg-cha-50"
                         )}
                         onClick={() => handleAreaSort('period')}
@@ -631,13 +662,13 @@ export default function PlotAvailabilityManagement({ onViewChange }: PlotAvailab
                       </th>
                       <th
                         className={cn(
-                          "px-4 py-4 text-right text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
+                          "px-2 md:px-4 py-3 md:py-4 text-right text-xs md:text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
                           areaSortKey === 'areaSqm' && "bg-cha-50"
                         )}
                         onClick={() => handleAreaSort('areaSqm')}
                       >
                         <div className="flex items-center justify-end">
-                          面積（㎡）
+                          面積
                           {areaSortKey === 'areaSqm' && (
                             <span className="ml-1 text-cha">{sortOrder === 'asc' ? '▲' : '▼'}</span>
                           )}
@@ -645,13 +676,13 @@ export default function PlotAvailabilityManagement({ onViewChange }: PlotAvailab
                       </th>
                       <th
                         className={cn(
-                          "px-4 py-4 text-right text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
+                          "px-2 md:px-4 py-3 md:py-4 text-right text-xs md:text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
                           areaSortKey === 'totalCount' && "bg-cha-50"
                         )}
                         onClick={() => handleAreaSort('totalCount')}
                       >
                         <div className="flex items-center justify-end">
-                          区画数
+                          総数
                           {areaSortKey === 'totalCount' && (
                             <span className="ml-1 text-cha">{sortOrder === 'asc' ? '▲' : '▼'}</span>
                           )}
@@ -659,7 +690,7 @@ export default function PlotAvailabilityManagement({ onViewChange }: PlotAvailab
                       </th>
                       <th
                         className={cn(
-                          "px-4 py-4 text-right text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
+                          "px-2 md:px-4 py-3 md:py-4 text-right text-xs md:text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors hidden sm:table-cell",
                           areaSortKey === 'usedCount' && "bg-cha-50"
                         )}
                         onClick={() => handleAreaSort('usedCount')}
@@ -673,13 +704,13 @@ export default function PlotAvailabilityManagement({ onViewChange }: PlotAvailab
                       </th>
                       <th
                         className={cn(
-                          "px-4 py-4 text-right text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
+                          "px-2 md:px-4 py-3 md:py-4 text-right text-xs md:text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
                           areaSortKey === 'remainingCount' && "bg-cha-50"
                         )}
                         onClick={() => handleAreaSort('remainingCount')}
                       >
                         <div className="flex items-center justify-end">
-                          残数
+                          残
                           {areaSortKey === 'remainingCount' && (
                             <span className="ml-1 text-cha">{sortOrder === 'asc' ? '▲' : '▼'}</span>
                           )}
@@ -687,7 +718,7 @@ export default function PlotAvailabilityManagement({ onViewChange }: PlotAvailab
                       </th>
                       <th
                         className={cn(
-                          "px-4 py-4 text-right text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
+                          "px-2 md:px-4 py-3 md:py-4 text-right text-xs md:text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors hidden md:table-cell",
                           areaSortKey === 'remainingAreaSqm' && "bg-cha-50"
                         )}
                         onClick={() => handleAreaSort('remainingAreaSqm')}
@@ -701,7 +732,7 @@ export default function PlotAvailabilityManagement({ onViewChange }: PlotAvailab
                       </th>
                       <th
                         className={cn(
-                          "px-4 py-4 text-left text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
+                          "px-2 md:px-4 py-3 md:py-4 text-left text-xs md:text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors hidden md:table-cell",
                           areaSortKey === 'plotType' && "bg-cha-50"
                         )}
                         onClick={() => handleAreaSort('plotType')}
@@ -713,7 +744,7 @@ export default function PlotAvailabilityManagement({ onViewChange }: PlotAvailab
                           )}
                         </div>
                       </th>
-                      <th className="px-4 py-4 text-center text-sm font-bold text-sumi">
+                      <th className="px-2 md:px-4 py-3 md:py-4 text-center text-xs md:text-sm font-bold text-sumi hidden sm:table-cell">
                         状況
                       </th>
                     </tr>
@@ -735,46 +766,46 @@ export default function PlotAvailabilityManagement({ onViewChange }: PlotAvailab
                             index % 2 === 0 ? 'bg-white' : 'bg-shiro'
                           )}
                         >
-                          <td className="px-4 py-3 text-sm">
+                          <td className="px-2 md:px-4 py-2 md:py-3 text-sm">
                             <span className={cn(
-                              "px-3 py-1 rounded-full text-xs font-medium",
+                              "px-2 md:px-3 py-0.5 md:py-1 rounded-full text-xs font-medium",
                               periodColors[item.period as keyof typeof periodColors]
                             )}>
                               {item.period}
                             </span>
                           </td>
-                          <td className="px-4 py-3 text-sm text-right font-semibold text-sumi">
+                          <td className="px-2 md:px-4 py-2 md:py-3 text-xs md:text-sm text-right font-semibold text-sumi">
                             {item.areaSqm}
                           </td>
-                          <td className="px-4 py-3 text-sm text-right text-hai">
+                          <td className="px-2 md:px-4 py-2 md:py-3 text-xs md:text-sm text-right text-hai">
                             {item.totalCount}
                           </td>
-                          <td className="px-4 py-3 text-sm text-right text-matsu font-medium">
+                          <td className="px-2 md:px-4 py-2 md:py-3 text-xs md:text-sm text-right text-matsu font-medium hidden sm:table-cell">
                             {item.usedCount}
                           </td>
                           <td className={cn(
-                            "px-4 py-3 text-sm text-right",
+                            "px-2 md:px-4 py-2 md:py-3 text-xs md:text-sm text-right",
                             getRemainingColor(item.remainingCount, item.totalCount)
                           )}>
                             {item.remainingCount}
                           </td>
-                          <td className="px-4 py-3 text-sm text-right text-ai font-medium">
+                          <td className="px-2 md:px-4 py-2 md:py-3 text-xs md:text-sm text-right text-ai font-medium hidden md:table-cell">
                             {item.remainingAreaSqm}
                           </td>
-                          <td className="px-4 py-3 text-sm text-hai">
+                          <td className="px-2 md:px-4 py-2 md:py-3 text-xs md:text-sm text-hai hidden md:table-cell">
                             {item.plotType}
                           </td>
-                          <td className="px-4 py-3 text-sm text-center">
+                          <td className="px-2 md:px-4 py-2 md:py-3 text-sm text-center hidden sm:table-cell">
                             {item.remainingCount === 0 ? (
-                              <span className="px-3 py-1 bg-beni-50 text-beni rounded-full text-xs font-medium">
+                              <span className="px-2 py-0.5 bg-beni-50 text-beni rounded-full text-xs font-medium">
                                 完売
                               </span>
                             ) : item.remainingCount <= 5 ? (
-                              <span className="px-3 py-1 bg-kohaku-50 text-kohaku rounded-full text-xs font-medium">
+                              <span className="px-2 py-0.5 bg-kohaku-50 text-kohaku rounded-full text-xs font-medium">
                                 残少
                               </span>
                             ) : (
-                              <span className="px-3 py-1 bg-matsu-50 text-matsu rounded-full text-xs font-medium">
+                              <span className="px-2 py-0.5 bg-matsu-50 text-matsu rounded-full text-xs font-medium">
                                 空有
                               </span>
                             )}
@@ -786,23 +817,23 @@ export default function PlotAvailabilityManagement({ onViewChange }: PlotAvailab
                   {/* 合計行 */}
                   <tfoot className="bg-kinari font-bold border-t-2 border-gin">
                     <tr>
-                      <td className="px-4 py-4 text-sm text-sumi" colSpan={2}>
+                      <td className="px-2 md:px-4 py-3 md:py-4 text-xs md:text-sm text-sumi" colSpan={2}>
                         合計 {selectedPeriod !== 'all' ? `(${selectedPeriod})` : ''}
                       </td>
-                      <td className="px-4 py-4 text-sm text-right text-sumi">
+                      <td className="px-2 md:px-4 py-3 md:py-4 text-xs md:text-sm text-right text-sumi">
                         {displayAreaData.reduce((sum, item) => sum + item.totalCount, 0)}
                       </td>
-                      <td className="px-4 py-4 text-sm text-right text-matsu">
+                      <td className="px-2 md:px-4 py-3 md:py-4 text-xs md:text-sm text-right text-matsu hidden sm:table-cell">
                         {displayAreaData.reduce((sum, item) => sum + item.usedCount, 0)}
                       </td>
-                      <td className="px-4 py-4 text-sm text-right text-kohaku">
+                      <td className="px-2 md:px-4 py-3 md:py-4 text-xs md:text-sm text-right text-kohaku">
                         {displayAreaData.reduce((sum, item) => sum + item.remainingCount, 0)}
                       </td>
-                      <td className="px-4 py-4 text-sm text-right text-ai">
+                      <td className="px-2 md:px-4 py-3 md:py-4 text-xs md:text-sm text-right text-ai hidden md:table-cell">
                         {displayAreaData.reduce((sum, item) => sum + item.remainingAreaSqm, 0).toFixed(1)}
                       </td>
-                      <td className="px-4 py-4 text-sm">-</td>
-                      <td className="px-4 py-4 text-sm text-center">-</td>
+                      <td className="px-2 md:px-4 py-3 md:py-4 text-sm hidden md:table-cell">-</td>
+                      <td className="px-2 md:px-4 py-3 md:py-4 text-sm text-center hidden sm:table-cell">-</td>
                     </tr>
                   </tfoot>
                 </table>

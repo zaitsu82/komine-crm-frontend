@@ -38,6 +38,8 @@ interface PlotDetailSidebarProps {
   onDelete?: () => void;
   collapsed: boolean;
   onToggleCollapse: () => void;
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
 }
 
 export default function PlotDetailSidebar({
@@ -48,6 +50,8 @@ export default function PlotDetailSidebar({
   onDelete,
   collapsed,
   onToggleCollapse,
+  mobileOpen = false,
+  onMobileClose,
 }: PlotDetailSidebarProps) {
   const { user } = useAuth();
 
@@ -64,10 +68,22 @@ export default function PlotDetailSidebar({
     selectedPlotId;
 
   return (
-    <div
-      className={`bg-kinari border-r border-gin fixed top-0 left-0 h-screen overflow-y-auto overflow-x-hidden z-10 flex flex-col transition-all duration-300 ease-in-out ${collapsed ? 'w-16' : 'w-64'
-        }`}
-    >
+    <>
+      {/* モバイルオーバーレイ */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={onMobileClose}
+          aria-hidden="true"
+        />
+      )}
+      <div
+        className={`bg-kinari border-r border-gin fixed top-0 left-0 h-screen overflow-y-auto overflow-x-hidden flex flex-col transition-all duration-300 ease-in-out
+          ${collapsed ? 'w-16' : 'w-64'}
+          ${mobileOpen ? 'translate-x-0 z-50' : '-translate-x-full z-50'}
+          md:translate-x-0 md:z-10
+        `}
+      >
       {/* ヘッダー: ロゴ + タイトル + ハンバーガーボタン */}
       <div className={`flex items-center border-b border-gin ${collapsed ? 'justify-center p-3' : 'justify-between p-4'}`}>
         {!collapsed && (
@@ -291,5 +307,6 @@ export default function PlotDetailSidebar({
         )}
       </div>
     </div>
+    </>
   );
 }

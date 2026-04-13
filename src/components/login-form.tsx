@@ -74,7 +74,7 @@ export function LoginForm() {
         {/* 上部アクセント */}
         <div className="h-1.5 bg-gradient-to-r from-matsu via-cha to-ai" />
 
-        <div className="p-10">
+        <div className="p-6 sm:p-10">
           {/* ロゴ・タイトル */}
           <div className="text-center mb-10">
             <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-gradient-matsu flex items-center justify-center shadow-matsu">
@@ -82,7 +82,7 @@ export function LoginForm() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
               </svg>
             </div>
-            <h1 className="font-mincho text-3xl font-semibold text-sumi mb-2 tracking-wide">
+            <h1 className="font-mincho text-2xl sm:text-3xl font-semibold text-sumi mb-2 tracking-wide">
               小嶺霊園CRM
             </h1>
             <p className="text-hai text-sm tracking-wider">
@@ -263,19 +263,19 @@ export function LoginForm() {
             <div className="mt-6 pt-4 border-t border-dashed border-gin">
               <p className="text-xs text-hai mb-3 font-medium">テストアカウント:</p>
               <div className="space-y-2 text-xs">
-                <div className="flex justify-between items-center bg-gofun/50 rounded px-3 py-2">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center bg-gofun/50 rounded px-3 py-2 gap-0.5">
                   <span className="text-sumi-600">管理者</span>
                   <code className="text-matsu font-mono text-[11px]">admin@example.com / password123</code>
                 </div>
-                <div className="flex justify-between items-center bg-gofun/50 rounded px-3 py-2">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center bg-gofun/50 rounded px-3 py-2 gap-0.5">
                   <span className="text-sumi-600">マネージャー</span>
                   <code className="text-matsu font-mono text-[11px]">manager@example.com / password123</code>
                 </div>
-                <div className="flex justify-between items-center bg-gofun/50 rounded px-3 py-2">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center bg-gofun/50 rounded px-3 py-2 gap-0.5">
                   <span className="text-sumi-600">オペレーター</span>
                   <code className="text-matsu font-mono text-[11px]">operator@example.com / password123</code>
                 </div>
-                <div className="flex justify-between items-center bg-gofun/50 rounded px-3 py-2">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center bg-gofun/50 rounded px-3 py-2 gap-0.5">
                   <span className="text-sumi-600">閲覧者</span>
                   <code className="text-matsu font-mono text-[11px]">viewer@example.com / password123</code>
                 </div>

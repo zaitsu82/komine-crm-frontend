@@ -260,7 +260,7 @@ export default function BulkImportPage({ onViewChange }: BulkImportPageProps) {
         onViewChange={onViewChange}
       />
 
-      <div className="flex-1 overflow-auto p-6">
+      <div className="flex-1 overflow-auto p-3 md:p-6">
         <div className="max-w-6xl mx-auto">
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ImportTab)}>
             <TabsList>

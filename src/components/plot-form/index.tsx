@@ -366,14 +366,14 @@ export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProp
       )}
 
       <Tabs defaultValue="basic-info" className="w-full">
-        <TabsList className="grid w-full grid-cols-6 h-auto">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 h-auto gap-1">
           {Object.entries(tabConfig).map(([tabKey, tab]) => {
             const hasError = tabsWithErrors.has(tabKey);
             return (
               <TabsTrigger
                 key={tabKey}
                 value={tabKey}
-                className={`relative py-2 data-[state=active]:bg-matsu data-[state=active]:text-white ${hasError ? 'text-beni border-b-2 border-beni data-[state=active]:bg-beni' : ''
+                className={`relative py-2 text-xs sm:text-sm data-[state=active]:bg-matsu data-[state=active]:text-white ${hasError ? 'text-beni border-b-2 border-beni data-[state=active]:bg-beni' : ''
                   }`}
               >
                 {hasError && (
@@ -430,7 +430,7 @@ export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProp
 
       </Tabs>
 
-      <div className="flex justify-end space-x-4 mt-8 pt-6 border-t">
+      <div className="flex justify-end space-x-4 mt-6 md:mt-8 pt-4 md:pt-6 border-t">
         <Button
           type="submit"
           disabled={isLoading}
