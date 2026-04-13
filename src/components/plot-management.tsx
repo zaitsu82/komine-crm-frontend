@@ -38,6 +38,7 @@ export default function PlotManagement({ initialView = 'registry' }: PlotManagem
   const [currentView, setCurrentView] = useState<ViewType>(initialView);
   const [isLoading, setIsLoading] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   // 選択中の区画詳細を取得（編集モードで使用）
   const { plot: selectedPlotDetail, isLoading: isPlotDetailLoading, refresh: refreshPlotDetail } = usePlotDetail(selectedPlotId || '');
@@ -160,7 +161,7 @@ export default function PlotManagement({ initialView = 'registry' }: PlotManagem
     }
   };
 
-  const sidebarWidth = sidebarCollapsed ? 'ml-16' : 'ml-64';
+  const sidebarWidth = sidebarCollapsed ? 'md:ml-16' : 'md:ml-64';
 
   return (
     <div className="flex h-screen bg-shiro">
@@ -169,14 +170,30 @@ export default function PlotManagement({ initialView = 'registry' }: PlotManagem
         currentView={currentView}
         selectedPlotId={selectedPlotId}
         onBackToRegistry={handleBackToRegistry}
-        onViewChange={handleViewChange}
+        onViewChange={(view) => { handleViewChange(view); setMobileSidebarOpen(false); }}
         onDelete={handleOpenDeleteDialog}
         collapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+        mobileOpen={mobileSidebarOpen}
+        onMobileClose={() => setMobileSidebarOpen(false)}
       />
 
       {/* Main Content Area */}
-      <div className={`flex-1 flex flex-col ${sidebarWidth} transition-all duration-300`}>
+      <div className={`flex-1 flex flex-col ml-0 ${sidebarWidth} transition-all duration-300`}>
+        {/* モバイルヘッダー（ハンバーガーメニュー） */}
+        <div className="md:hidden flex items-center h-14 px-4 border-b border-gin bg-white flex-shrink-0">
+          <button
+            onClick={() => setMobileSidebarOpen(true)}
+            className="p-2 -ml-2 rounded-md text-sumi hover:bg-kinari"
+            aria-label="メニューを開く"
+          >
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+          <span className="ml-3 font-mincho text-base font-semibold text-sumi truncate">小嶺霊園CRM</span>
+        </div>
+
         {/* Conditional Content Based on Current View */}
         {currentView === 'registry' ? (
           <PlotRegistry

@@ -36,15 +36,15 @@ export default function PageHeader({ title, subtitle, icon, theme, onViewChange 
   const styles = themeStyles[theme];
 
   return (
-    <div className="h-16 border-b border-gin bg-white flex items-center px-5 flex-shrink-0">
+    <div className="h-14 md:h-16 border-b border-gin bg-white flex items-center px-3 md:px-5 flex-shrink-0">
       <div className="flex items-center min-w-0 flex-1">
-        <div className={`w-10 h-10 rounded-lg ${styles.iconBg} flex items-center justify-center flex-shrink-0`}>
+        <div className={`w-8 h-8 md:w-10 md:h-10 rounded-lg ${styles.iconBg} flex items-center justify-center flex-shrink-0`}>
           {icon}
         </div>
-        <div className="ml-3 min-w-0">
-          <h2 className="font-mincho text-xl font-semibold text-sumi truncate">{title}</h2>
+        <div className="ml-2 md:ml-3 min-w-0">
+          <h2 className="font-mincho text-base md:text-xl font-semibold text-sumi truncate">{title}</h2>
           {subtitle && (
-            <p className="text-xs text-hai truncate">{subtitle}</p>
+            <p className="text-[10px] md:text-xs text-hai truncate">{subtitle}</p>
           )}
         </div>
       </div>

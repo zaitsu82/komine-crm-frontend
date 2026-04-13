@@ -183,23 +183,23 @@ export default function PlotListTable({
   return (
     <div className="h-full flex flex-col bg-shiro">
       {/* ヘッダー */}
-      <div className="bg-gradient-to-r from-matsu-50 to-kinari border-b border-matsu-100 px-6 py-5">
-        <div className="flex items-center space-x-4">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-matsu to-matsu-dark flex items-center justify-center shadow-elegant-sm">
-            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+      <div className="bg-gradient-to-r from-matsu-50 to-kinari border-b border-matsu-100 px-4 md:px-6 py-4 md:py-5">
+        <div className="flex items-center space-x-3 md:space-x-4">
+          <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-gradient-to-br from-matsu to-matsu-dark flex items-center justify-center shadow-elegant-sm flex-shrink-0">
+            <svg className="w-4 h-4 md:w-5 md:h-5 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
           </div>
-          <div>
-            <h2 className="font-mincho text-xl font-semibold text-sumi tracking-wide">{title}</h2>
-            <p className="text-sm text-hai mt-0.5">区画・契約情報の検索と管理</p>
+          <div className="min-w-0">
+            <h2 className="font-mincho text-lg md:text-xl font-semibold text-sumi tracking-wide truncate">{title}</h2>
+            <p className="text-xs md:text-sm text-hai mt-0.5 hidden sm:block">区画・契約情報の検索と管理</p>
           </div>
         </div>
       </div>
 
       {/* あいうえおタブ */}
       {showAiueoTabs && (
-        <div className="bg-white border border-gin rounded-elegant-lg shadow-elegant-sm mx-6 mt-4 p-3">
+        <div className="bg-white border border-gin rounded-elegant-lg shadow-elegant-sm mx-3 md:mx-6 mt-3 md:mt-4 p-2 md:p-3">
           <div className="flex flex-wrap gap-1">
             {AIUEO_TABS.map((tab) => {
               const isActive = aiueoTab === tab.key;
@@ -224,12 +224,12 @@ export default function PlotListTable({
 
       {/* ソートコントロール */}
       {showSortControls && (
-        <div className="mx-6 mt-4 bg-white border border-gin rounded-elegant-lg shadow-elegant-sm p-4">
-          <div className="flex flex-wrap items-center gap-4">
+        <div className="mx-3 md:mx-6 mt-3 md:mt-4 bg-white border border-gin rounded-elegant-lg shadow-elegant-sm p-3 md:p-4">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 sm:gap-4">
             <span className="text-sm font-medium text-sumi">並び替え:</span>
             <div className="flex items-center gap-2">
               <Select value={sortKey} onValueChange={(value: SortKey) => setSortKey(value)}>
-                <SelectTrigger className="w-[160px] bg-white border-gin">
+                <SelectTrigger className="w-[140px] sm:w-[160px] bg-white border-gin">
                   <SelectValue placeholder="項目を選択" />
                 </SelectTrigger>
                 <SelectContent>
@@ -241,7 +241,7 @@ export default function PlotListTable({
                 </SelectContent>
               </Select>
               <Select value={sortOrder} onValueChange={(value: SortOrder) => setSortOrder(value)}>
-                <SelectTrigger className="w-[120px] bg-white border-gin">
+                <SelectTrigger className="w-[100px] sm:w-[120px] bg-white border-gin">
                   <SelectValue placeholder="順序" />
                 </SelectTrigger>
                 <SelectContent>
@@ -279,8 +279,8 @@ export default function PlotListTable({
 
       {/* 検索エリア */}
       {showSearch && (
-        <div className="mx-6 mt-4 bg-white border border-gin rounded-elegant-lg shadow-elegant-sm p-4">
-          <div className="flex items-center space-x-2">
+        <div className="mx-3 md:mx-6 mt-3 md:mt-4 bg-white border border-gin rounded-elegant-lg shadow-elegant-sm p-3 md:p-4">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:space-x-2">
             <Input
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
@@ -288,28 +288,30 @@ export default function PlotListTable({
               placeholder="氏名、区画番号、電話番号で検索..."
               className="flex-1 border-gin"
             />
-            <Button onClick={() => { setSearchInput(''); setSearch(''); }} variant="outline" size="sm">
-              クリア
-            </Button>
-            <Button onClick={handleSearch} variant="default" size="sm">
-              検索
-            </Button>
-            <Button onClick={refresh} variant="outline" size="sm">
-              更新
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button onClick={() => { setSearchInput(''); setSearch(''); }} variant="outline" size="sm" className="flex-1 sm:flex-initial">
+                クリア
+              </Button>
+              <Button onClick={handleSearch} variant="default" size="sm" className="flex-1 sm:flex-initial">
+                検索
+              </Button>
+              <Button onClick={refresh} variant="outline" size="sm" className="flex-1 sm:flex-initial">
+                更新
+              </Button>
+            </div>
           </div>
         </div>
       )}
 
       {/* 件数表示 */}
-      <div className="mx-6 mt-4 flex items-center justify-between">
+      <div className="mx-3 md:mx-6 mt-3 md:mt-4 flex items-center justify-between">
         <p className="text-sm text-hai">
           検索結果: <span className="font-bold text-sumi text-lg">{total}</span> 件
         </p>
       </div>
 
       {/* テーブル */}
-      <div className="mx-6 mt-4 bg-white border border-gin rounded-elegant-lg shadow-elegant-sm overflow-hidden flex-1">
+      <div className="mx-3 md:mx-6 mt-3 md:mt-4 bg-white border border-gin rounded-elegant-lg shadow-elegant-sm overflow-hidden flex-1">
         <div className="overflow-x-auto h-full">
           <table className="w-full">
             <thead>
@@ -352,7 +354,7 @@ export default function PlotListTable({
                 </th>
                 <th
                   className={cn(
-                    'px-4 py-3 text-left text-sm font-semibold text-sumi cursor-pointer transition-colors duration-200 hover:bg-cha-50',
+                    'px-4 py-3 text-left text-sm font-semibold text-sumi cursor-pointer transition-colors duration-200 hover:bg-cha-50 hidden sm:table-cell',
                     sortKey === 'contractDate' && 'bg-cha-50'
                   )}
                   onClick={() => handleSort('contractDate')}
@@ -364,7 +366,7 @@ export default function PlotListTable({
                 </th>
                 <th
                   className={cn(
-                    'px-4 py-3 text-right text-sm font-semibold text-sumi cursor-pointer transition-colors duration-200 hover:bg-cha-50',
+                    'px-4 py-3 text-right text-sm font-semibold text-sumi cursor-pointer transition-colors duration-200 hover:bg-cha-50 hidden sm:table-cell',
                     sortKey === 'physicalPlotAreaSqm' && 'bg-cha-50'
                   )}
                   onClick={() => handleSort('physicalPlotAreaSqm')}
@@ -374,16 +376,16 @@ export default function PlotListTable({
                     {renderSortIndicator('physicalPlotAreaSqm')}
                   </div>
                 </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-sumi">
+                <th className="px-4 py-3 text-left text-sm font-semibold text-sumi hidden lg:table-cell">
                   許可番号
                 </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-sumi">
+                <th className="px-4 py-3 text-left text-sm font-semibold text-sumi hidden md:table-cell">
                   電話番号
                 </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-sumi">
+                <th className="px-4 py-3 text-left text-sm font-semibold text-sumi hidden lg:table-cell">
                   住所
                 </th>
-                <th className="px-4 py-3 text-right text-sm font-semibold text-sumi">
+                <th className="px-4 py-3 text-right text-sm font-semibold text-sumi hidden md:table-cell">
                   管理料
                 </th>
                 <th
@@ -443,38 +445,38 @@ export default function PlotListTable({
                       )}
                       onClick={() => onPlotSelect?.(plot)}
                     >
-                      <td className="px-4 py-3 whitespace-nowrap">
+                      <td className="px-2 md:px-4 py-2 md:py-3 whitespace-nowrap">
                         <div>
                           <div className="text-sm font-semibold text-sumi">
                             {plot.customerName || '-'}
                           </div>
-                          <div className="text-sm text-hai">
+                          <div className="text-xs md:text-sm text-hai">
                             {plot.customerNameKana || ''}
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-sumi">
+                      <td className="px-2 md:px-4 py-2 md:py-3 whitespace-nowrap text-sm text-sumi">
                         {plot.areaName || '-'}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm font-semibold text-sumi">
+                      <td className="px-2 md:px-4 py-2 md:py-3 whitespace-nowrap text-sm font-semibold text-sumi">
                         {plot.plotNumber || '-'}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-sumi">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-sumi hidden sm:table-cell">
                         {contractYear}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-sumi text-right">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-sumi text-right hidden sm:table-cell">
                         {plot.physicalPlotAreaSqm}㎡
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-sumi">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-sumi hidden lg:table-cell">
                         {plot.permitNumber || '-'}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-sumi">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-sumi hidden md:table-cell">
                         {plot.customerPhoneNumber || '-'}
                       </td>
-                      <td className="px-4 py-3 text-sm text-sumi max-w-[200px] truncate">
+                      <td className="px-4 py-3 text-sm text-sumi max-w-[200px] truncate hidden lg:table-cell">
                         {plot.customerAddress || '-'}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-sumi text-right">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-sumi text-right hidden md:table-cell">
                         {plot.managementFee ? `${Number(plot.managementFee).toLocaleString()}円` : '-'}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm">
@@ -522,7 +524,7 @@ export default function PlotListTable({
       </div>
 
       {/* ページネーション */}
-      <div className="mx-6 mt-4 mb-6 flex items-center justify-between text-sm text-hai">
+      <div className="mx-3 md:mx-6 mt-3 md:mt-4 mb-4 md:mb-6 flex items-center justify-between text-sm text-hai">
         <span>全 {total} 件</span>
       </div>
     </div>
