@@ -279,8 +279,39 @@ export default function PlotAvailabilityManagement({ onViewChange }: PlotAvailab
             </div>
           )}
 
-          {/* 全体サマリー */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 md:gap-4 mb-6">
+          {/* 全体サマリー — モバイル: コンパクト横並び / デスクトップ: カード */}
+          {/* モバイル用コンパクト表示 */}
+          <div className="md:hidden bg-white border border-gin rounded-elegant-lg p-3 mb-4 shadow-elegant-sm">
+            <div className="flex items-center justify-between gap-2 text-center">
+              <div className="flex-1">
+                <div className="text-xl font-bold text-matsu">{summary.totalCount}</div>
+                <div className="text-[10px] text-hai">総数</div>
+              </div>
+              <div className="w-px h-8 bg-gin" />
+              <div className="flex-1">
+                <div className="text-xl font-bold text-ai">{summary.usedCount}</div>
+                <div className="text-[10px] text-hai">使用</div>
+              </div>
+              <div className="w-px h-8 bg-gin" />
+              <div className="flex-1">
+                <div className="text-xl font-bold text-kohaku">{summary.remainingCount}</div>
+                <div className="text-[10px] text-hai">残</div>
+              </div>
+              <div className="w-px h-8 bg-gin" />
+              <div className="flex-1">
+                <div className="text-xl font-bold text-cha">{summary.usageRate}%</div>
+                <div className="text-[10px] text-hai">使用率</div>
+              </div>
+              <div className="w-px h-8 bg-gin" />
+              <div className="flex-1">
+                <div className="text-xl font-bold text-sumi">{(summary.remainingCount * 2)}</div>
+                <div className="text-[10px] text-hai">半区画</div>
+              </div>
+            </div>
+          </div>
+
+          {/* デスクトップ用カード表示 */}
+          <div className="hidden md:grid md:grid-cols-5 gap-4 mb-6">
             <div className="bg-white border border-matsu-200 rounded-elegant-lg p-5 text-center shadow-elegant">
               <div className="text-3xl font-bold text-matsu">{summary.totalCount.toLocaleString()}</div>
               <div className="text-sm text-matsu font-medium mt-1">総区画数</div>
@@ -314,7 +345,7 @@ export default function PlotAvailabilityManagement({ onViewChange }: PlotAvailab
           </div>
 
           {/* 期別サマリーカード */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4 mb-4 md:mb-6">
             {periodSummaries.map((ps) => {
               const periodColors = {
                 '1期': { gradient: 'from-matsu to-matsu-dark', light: 'matsu' },
@@ -329,25 +360,25 @@ export default function PlotAvailabilityManagement({ onViewChange }: PlotAvailab
                   key={ps.period}
                   onClick={() => setSelectedPeriod(ps.period)}
                   className={cn(
-                    "bg-white border rounded-elegant-lg p-5 text-left transition-all duration-300 hover:shadow-elegant-lg",
+                    "bg-white border rounded-elegant-lg p-3 md:p-5 text-left transition-all duration-300 hover:shadow-elegant-lg",
                     selectedPeriod === ps.period
                       ? `border-${colors.light} ring-2 ring-${colors.light}-100 shadow-elegant`
                       : "border-gin hover:border-hai"
                   )}
                 >
-                  <div className="flex justify-between items-center mb-4">
+                  <div className="flex justify-between items-center mb-2 md:mb-4">
                     <span className={cn(
-                      "text-lg font-bold font-mincho",
+                      "text-sm md:text-lg font-bold font-mincho",
                       `text-${colors.light}`
                     )}>{ps.period}</span>
                     <span className={cn(
-                      "text-xs px-3 py-1 rounded-full font-medium",
+                      "text-[10px] md:text-xs px-2 md:px-3 py-0.5 md:py-1 rounded-full font-medium",
                       getUsageRateColor(ps.usageRate)
                     )}>
                       {ps.usageRate}%
                     </span>
                   </div>
-                  <div className="grid grid-cols-3 gap-3 text-sm">
+                  <div className="grid grid-cols-3 gap-1 md:gap-3 text-xs md:text-sm">
                     <div>
                       <div className="text-hai text-xs mb-1">総数</div>
                       <div className="font-bold text-sumi">{ps.totalCount}</div>
