@@ -106,7 +106,7 @@ test.describe('台帳問い合わせ（区画一覧）', () => {
         await expect(page).toHaveURL(/\/plots\//, { timeout: 10_000 });
 
         // パンくずまたは編集ボタンが表示される（区画詳細ページ確認）
-        const breadcrumb = page.getByRole('link', { name: '台帳' });
+        const breadcrumb = page.getByRole('link', { name: '台帳', exact: true });
         const editButton = page.getByRole('button', { name: '編集' });
 
         await expect(
@@ -129,7 +129,7 @@ test.describe('台帳問い合わせ（区画一覧）', () => {
         await page.waitForTimeout(2_000);
 
         // パンくずの「台帳」リンクをクリック
-        const breadcrumb = page.getByRole('link', { name: '台帳' });
+        const breadcrumb = page.getByRole('link', { name: '台帳', exact: true });
         if (await breadcrumb.isVisible({ timeout: 5_000 }).catch(() => false)) {
           await breadcrumb.click();
           await page.waitForTimeout(1_000);

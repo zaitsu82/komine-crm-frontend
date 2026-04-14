@@ -36,7 +36,7 @@ test.describe('区画詳細表示', () => {
         await expect(page).toHaveURL(/\/plots\//, { timeout: 10_000 });
 
         // パンくずの「台帳」リンクが表示される
-        await expect(page.getByRole('link', { name: '台帳' })).toBeVisible({ timeout: 10_000 });
+        await expect(page.getByRole('link', { name: '台帳', exact: true })).toBeVisible({ timeout: 10_000 });
 
         // 編集ボタンがページ内に表示される
         await expect(page.getByRole('button', { name: '編集' })).toBeVisible();
@@ -154,7 +154,7 @@ test.describe('区画詳細ナビゲーション', () => {
         await expect(sidebar.getByText('スタッフ管理', { exact: true })).toBeVisible();
 
         // パンくずから台帳に戻れる
-        await page.getByRole('link', { name: '台帳' }).click();
+        await page.getByRole('link', { name: '台帳', exact: true }).click();
         await page.waitForTimeout(1_000);
 
         // 一覧画面に戻る
