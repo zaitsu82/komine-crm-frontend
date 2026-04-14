@@ -27,6 +27,7 @@ interface PlotRegistryProps {
   onPlotSelect: (plot: PlotListItem) => void;
   selectedPlotId?: string;
   onNewPlot?: () => void;
+  onPlotHover?: (plot: PlotListItem) => void;
 }
 
 // ===== あいう順タブ =====
@@ -107,6 +108,7 @@ export default function PlotRegistry({
   onPlotSelect,
   selectedPlotId,
   onNewPlot,
+  onPlotHover,
 }: PlotRegistryProps) {
   const [activeTab, setActiveTab] = useState('全');
   const [searchInput, setSearchInput] = useState('');
@@ -659,6 +661,7 @@ export default function PlotRegistry({
                           getRowBgColor(plot, absoluteIndex)
                         )}
                         onClick={() => onPlotSelect(plot)}
+                        onMouseEnter={() => onPlotHover?.(plot)}
                       >
                         <td className="px-2 py-2 text-center">
                           {getStatusBadge(plot)}

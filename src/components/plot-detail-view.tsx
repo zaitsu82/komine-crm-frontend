@@ -40,7 +40,7 @@ interface PlotDetailViewProps {
   plotId: string;
   onEdit?: () => void;
   onBack?: () => void;
-  onDelete?: () => void;
+  onDelete?: (plotCode: string, customerName: string) => void;
 }
 
 // ===== ステータスラベル =====
@@ -618,7 +618,10 @@ export default function PlotDetailView({ plotId, onEdit, onBack, onDelete }: Plo
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem
-                  onClick={onDelete}
+                  onClick={() => onDelete(
+                    plot.physicalPlot.plotNumber,
+                    primaryCustomer?.name || plot.physicalPlot.plotNumber
+                  )}
                   className="text-beni focus:text-beni"
                 >
                   <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">

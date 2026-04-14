@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { deletePlot } from '@/lib/api/plots';
-import { usePlotDetail } from '@/hooks/usePlots';
 import { showError, showApiSuccess, showApiError } from '@/lib/toast';
 import PlotDetailView from '@/components/plot-detail-view';
 import { DeleteConfirmDialog } from '@/components/plot-detail-sidebar';
@@ -13,19 +12,16 @@ export default function PlotDetailPage() {
   const router = useRouter();
   const plotId = params.id as string;
 
-  const { plot } = usePlotDetail(plotId);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ code: string; name: string } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const plotCode = plot?.physicalPlot?.plotNumber || '';
-  const customerName = plot?.roles?.[0]?.customer?.name || plotCode;
-
   const handleDelete = async () => {
+    if (!deleteTarget) return;
     setIsDeleting(true);
     try {
       const response = await deletePlot(plotId);
       if (response.success) {
-        setShowDeleteDialog(false);
+        setDeleteTarget(null);
         showApiSuccess('削除', '区画データ');
         router.push('/plots');
       } else {
@@ -44,16 +40,16 @@ export default function PlotDetailPage() {
         plotId={plotId}
         onBack={() => router.push('/plots')}
         onEdit={() => router.push(`/plots/${plotId}/edit`)}
-        onDelete={() => setShowDeleteDialog(true)}
+        onDelete={(code, name) => setDeleteTarget({ code, name })}
       />
 
       <DeleteConfirmDialog
-        isOpen={showDeleteDialog}
-        targetName={customerName}
-        targetCode={plotCode}
+        isOpen={!!deleteTarget}
+        targetName={deleteTarget?.name || ''}
+        targetCode={deleteTarget?.code || ''}
         isLoading={isDeleting}
         onDelete={handleDelete}
-        onClose={() => setShowDeleteDialog(false)}
+        onClose={() => setDeleteTarget(null)}
       />
     </div>
   );
