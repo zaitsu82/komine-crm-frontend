@@ -100,20 +100,23 @@ test.describe('台帳問い合わせ（区画一覧）', () => {
 
       if (hasRow) {
         await firstRow.click();
-        await page.waitForTimeout(1_000);
+        await page.waitForTimeout(2_000);
 
-        // サイドバーに「台帳一覧に戻る」ボタンが表示される
-        const backButton = page.getByRole('button', { name: '台帳一覧に戻る' });
-        const detailLabel = page.getByText('区画詳細');
+        // URLが /plots/{id} に遷移する
+        await expect(page).toHaveURL(/\/plots\//, { timeout: 10_000 });
+
+        // パンくずまたは編集ボタンが表示される（区画詳細ページ確認）
+        const breadcrumb = page.getByRole('link', { name: '台帳' });
+        const editButton = page.getByRole('button', { name: '編集' });
 
         await expect(
-          backButton.or(detailLabel).first()
+          breadcrumb.or(editButton).first()
         ).toBeVisible({ timeout: 10_000 });
       }
     }
   });
 
-  test('4-6: 区画詳細 → 「台帳一覧に戻る」で一覧に戻る', async ({ page }) => {
+  test('4-6: 区画詳細 → パンくずで一覧に戻る', async ({ page }) => {
     const table = page.locator('table').first();
     const hasTable = await table.isVisible({ timeout: 5_000 }).catch(() => false);
 
@@ -123,14 +126,16 @@ test.describe('台帳問い合わせ（区画一覧）', () => {
 
       if (hasRow) {
         await firstRow.click();
-        await page.waitForTimeout(1_000);
+        await page.waitForTimeout(2_000);
 
-        const backButton = page.getByRole('button', { name: '台帳一覧に戻る' });
-        if (await backButton.isVisible({ timeout: 5_000 }).catch(() => false)) {
-          await backButton.click();
+        // パンくずの「台帳」リンクをクリック
+        const breadcrumb = page.getByRole('link', { name: '台帳' });
+        if (await breadcrumb.isVisible({ timeout: 5_000 }).catch(() => false)) {
+          await breadcrumb.click();
           await page.waitForTimeout(1_000);
 
-          // 一覧画面に戻る（テーブルが再表示）
+          // 一覧画面に戻る
+          await expect(page).toHaveURL('/plots', { timeout: 10_000 });
           await expect(table).toBeVisible({ timeout: 10_000 });
         }
       }

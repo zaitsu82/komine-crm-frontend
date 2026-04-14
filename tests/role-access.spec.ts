@@ -23,21 +23,21 @@ const HIDDEN_MENU_ITEMS: Record<TestRole, string[]> = {
 };
 
 /**
- * サイドバー内のメニューボタンテキストを取得
+ * サイドバー内のメニューリンクテキストを取得
+ * GlobalSidebar は Link (a要素) でメニューを描画
  */
 async function getSidebarMenuTexts(page: Page): Promise<string[]> {
   const sidebar = page.locator('.w-64');
   await expect(sidebar).toBeVisible({ timeout: 15_000 });
 
-  // メニューボタン（button要素）のテキストを取得
-  // ログアウトボタン等を除外するため、メインエリア内のみ取得
-  const menuArea = sidebar.locator('.flex-1');
-  const buttons = menuArea.locator('button');
-  const count = await buttons.count();
+  // メニューリンク（a要素）のテキストを取得
+  const menuArea = sidebar.locator('nav');
+  const links = menuArea.locator('a');
+  const count = await links.count();
 
   const labels: string[] = [];
   for (let i = 0; i < count; i++) {
-    const text = await buttons.nth(i).textContent();
+    const text = await links.nth(i).textContent();
     if (text && text.trim()) {
       labels.push(text.trim());
     }
@@ -129,7 +129,7 @@ test.describe('ロールベースルートガード', () => {
 });
 
 test.describe('ロール別操作権限', () => {
-  test('2-9: viewer はサイドバーに区画削除ボタンが表示されない', async ({ browser }) => {
+  test('2-9: viewer は区画詳細で削除ボタンが表示されない', async ({ browser }) => {
     const context = await browser.newContext({
       storageState: storageStatePath('viewer'),
     });
@@ -139,8 +139,8 @@ test.describe('ロール別操作権限', () => {
     // サイドバーが表示されている
     await expect(page.locator('.w-64')).toBeVisible({ timeout: 15_000 });
 
-    // 「区画情報を削除」ボタンが存在しない
-    await expect(page.getByRole('button', { name: '区画情報を削除' })).not.toBeVisible();
+    // 「区画情報を削除」ボタンが存在しない（ページ内ツールバーのドロップダウン）
+    await expect(page.getByText('区画情報を削除')).not.toBeVisible();
 
     await context.close();
   });

@@ -1,6 +1,9 @@
 /**
  * 区画詳細・登録・編集 E2Eテスト
- * 詳細表示・CRUD操作・バリデーション
+ * 詳細表示・ツールバー・パンくず・削除
+ *
+ * リファクタ後: サイドバーは常にグローバルナビ。
+ * 区画固有アクション（書類作成/書類履歴/削除）はページ内ツールバーに配置。
  */
 import { test, expect } from '@playwright/test';
 import { storageStatePath } from './config/test-accounts';
@@ -27,16 +30,21 @@ test.describe('区画詳細表示', () => {
 
       if (hasRow) {
         await firstRow.click();
-        await page.waitForTimeout(1_000);
+        await page.waitForTimeout(2_000);
 
-        // サイドバーに「区画詳細」ボタンが表示される
-        const detailButton = page.getByRole('button', { name: '区画詳細' });
-        await expect(detailButton).toBeVisible({ timeout: 10_000 });
+        // URLが /plots/[id] に遷移
+        await expect(page).toHaveURL(/\/plots\//, { timeout: 10_000 });
+
+        // パンくずの「台帳」リンクが表示される
+        await expect(page.getByRole('link', { name: '台帳' })).toBeVisible({ timeout: 10_000 });
+
+        // 編集ボタンがページ内に表示される
+        await expect(page.getByRole('button', { name: '編集' })).toBeVisible();
       }
     }
   });
 
-  test('5-2: 区画詳細のサイドバーに書類作成・書類履歴ボタンが表示', async ({ page }) => {
+  test('5-2: 区画詳細のツールバーに書類作成・書類履歴リンクが表示', async ({ page }) => {
     await page.locator('.w-64').getByText('台帳問い合わせ', { exact: true }).click();
     await page.waitForTimeout(1_000);
 
@@ -49,17 +57,16 @@ test.describe('区画詳細表示', () => {
 
       if (hasRow) {
         await firstRow.click();
-        await page.waitForTimeout(1_000);
+        await page.waitForTimeout(2_000);
 
-        const sidebar = page.locator('.w-64');
-        await expect(sidebar.getByRole('button', { name: '書類作成' })).toBeVisible({ timeout: 10_000 });
-        await expect(sidebar.getByRole('button', { name: '書類履歴' })).toBeVisible();
-        await expect(sidebar.getByRole('button', { name: '台帳一覧に戻る' })).toBeVisible();
+        // ページ内のツールバーに書類作成・書類履歴リンクが表示
+        await expect(page.getByRole('link', { name: /書類作成/ })).toBeVisible({ timeout: 10_000 });
+        await expect(page.getByRole('link', { name: /書類履歴/ })).toBeVisible();
       }
     }
   });
 
-  test('5-3: admin は区画詳細で「区画情報を削除」ボタンが表示される', async ({ page }) => {
+  test('5-3: admin は区画詳細で「区画情報を削除」がドロップダウンに表示される', async ({ page }) => {
     await page.locator('.w-64').getByText('台帳問い合わせ', { exact: true }).click();
     await page.waitForTimeout(1_000);
 
@@ -72,9 +79,15 @@ test.describe('区画詳細表示', () => {
 
       if (hasRow) {
         await firstRow.click();
-        await page.waitForTimeout(1_000);
+        await page.waitForTimeout(2_000);
 
-        await expect(page.getByRole('button', { name: '区画情報を削除' })).toBeVisible({ timeout: 10_000 });
+        // "..." ドロップダウンを開く
+        const moreButton = page.getByRole('button', { name: 'その他の操作' });
+        await expect(moreButton).toBeVisible({ timeout: 10_000 });
+        await moreButton.click();
+
+        // ドロップダウン内に「区画情報を削除」が表示される
+        await expect(page.getByText('区画情報を削除')).toBeVisible();
       }
     }
   });
@@ -100,23 +113,24 @@ test.describe('区画詳細 - viewer ロール', () => {
 
       if (hasRow) {
         await firstRow.click();
-        await page.waitForTimeout(1_000);
+        await page.waitForTimeout(2_000);
 
-        await expect(page.getByRole('button', { name: '区画情報を削除' })).not.toBeVisible();
+        // "..." ドロップダウンボタン自体が表示されない（admin限定）
+        await expect(page.getByRole('button', { name: 'その他の操作' })).not.toBeVisible();
       }
     }
   });
 });
 
-test.describe('区画フォーム', () => {
+test.describe('区画詳細ナビゲーション', () => {
   test.use({ storageState: storageStatePath('admin') });
 
-  test('5-5: 区画詳細画面でコンテキストメニューが切り替わる', async ({ page }) => {
+  test('5-5: 区画詳細画面でもグローバルナビが維持される', async ({ page }) => {
     await page.goto('/');
     const sidebar = page.locator('.w-64');
     await expect(sidebar.getByText('台帳問い合わせ', { exact: true })).toBeVisible({ timeout: 20_000 });
 
-    // メインメニューが最初に表示
+    // メインメニューが表示されている
     await expect(sidebar.getByText('合祀管理', { exact: true })).toBeVisible();
 
     // 区画を選択して詳細に入る
@@ -132,22 +146,19 @@ test.describe('区画フォーム', () => {
 
       if (hasRow) {
         await firstRow.click();
+        await page.waitForTimeout(2_000);
+
+        // 区画詳細でもグローバルナビが維持される（サイドバーが切り替わらない）
+        await expect(sidebar.getByText('合祀管理', { exact: true })).toBeVisible({ timeout: 10_000 });
+        await expect(sidebar.getByText('台帳問い合わせ', { exact: true })).toBeVisible();
+        await expect(sidebar.getByText('スタッフ管理', { exact: true })).toBeVisible();
+
+        // パンくずから台帳に戻れる
+        await page.getByRole('link', { name: '台帳' }).click();
         await page.waitForTimeout(1_000);
 
-        // サイドバーがコンテキストビューに切り替わる
-        await expect(sidebar.getByRole('button', { name: '台帳一覧に戻る' })).toBeVisible({ timeout: 10_000 });
-        await expect(sidebar.getByRole('button', { name: '区画詳細' })).toBeVisible();
-
-        // メインメニュー項目は非表示
-        await expect(sidebar.getByText('合祀管理', { exact: true })).not.toBeVisible();
-
-        // 台帳一覧に戻るをクリック
-        await sidebar.getByRole('button', { name: '台帳一覧に戻る' }).click();
-        await page.waitForTimeout(1_000);
-
-        // メインメニューが復帰
-        await expect(sidebar.getByText('台帳問い合わせ', { exact: true })).toBeVisible({ timeout: 10_000 });
-        await expect(sidebar.getByText('合祀管理', { exact: true })).toBeVisible();
+        // 一覧画面に戻る
+        await expect(page).toHaveURL('/plots', { timeout: 10_000 });
       }
     }
   });
