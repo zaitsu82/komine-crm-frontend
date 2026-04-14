@@ -1,8 +1,6 @@
 'use client';
 
 import { ReactNode } from 'react';
-import UserMenu from '@/components/user-menu';
-import { ViewType } from '@/types/plot-detail';
 
 type ColorTheme = 'matsu' | 'cha' | 'ai' | 'sumi' | 'kohaku';
 
@@ -29,10 +27,9 @@ interface PageHeaderProps {
   subtitle?: string;
   icon: ReactNode;
   theme: ColorTheme;
-  onViewChange?: (view: ViewType) => void;
 }
 
-export default function PageHeader({ title, subtitle, icon, theme, onViewChange }: PageHeaderProps) {
+export default function PageHeader({ title, subtitle, icon, theme }: PageHeaderProps) {
   const styles = themeStyles[theme];
 
   return (
@@ -48,11 +45,6 @@ export default function PageHeader({ title, subtitle, icon, theme, onViewChange 
           )}
         </div>
       </div>
-      {onViewChange && (
-        <div className="flex-shrink-0">
-          <UserMenu onViewChange={onViewChange} />
-        </div>
-      )}
     </div>
   );
 }

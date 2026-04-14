@@ -23,11 +23,6 @@ import { showSuccess, showError, showApiError } from '@/lib/toast';
 import { PreviewDialog } from '@/components/shared/dialogs';
 import type { PreviewSection, PreviewDiffSection } from '@/components/shared/dialogs';
 import PageHeader from '@/components/page-header';
-import { ViewType } from '@/types/plot-detail';
-
-interface StaffManagementProps {
-  onViewChange?: (view: ViewType) => void;
-}
 
 type SortKey = 'id' | 'name' | 'email' | 'role' | 'isActive' | 'lastLoginAt';
 type SortOrder = 'asc' | 'desc';
@@ -99,7 +94,7 @@ const getRoleBadgeClass = (role: string) => {
   }
 };
 
-export default function StaffManagement({ onViewChange }: StaffManagementProps) {
+export default function StaffManagement() {
   const { user } = useAuth();
   const isAdminUser = user?.role === 'admin';
 
@@ -433,7 +428,6 @@ export default function StaffManagement({ onViewChange }: StaffManagementProps) 
             <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
         }
-        onViewChange={onViewChange}
       />
 
       <div className="flex-1 overflow-auto">

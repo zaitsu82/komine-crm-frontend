@@ -7,7 +7,6 @@ import { cn } from '@/lib/utils';
 import { ClipboardList, Check, X, BarChart3, Hash } from 'lucide-react';
 import { PlotPeriod, PLOT_SIZE } from '@/types/plot-constants';
 import PageHeader from '@/components/page-header';
-import { ViewType } from '@/types/plot-detail';
 import {
   usePlotInventorySummary,
   usePlotInventoryPeriods,
@@ -30,11 +29,7 @@ const menuItems = [
   { key: 'remaining', label: '残数順', icon: Hash, description: '残数でソート' },
 ];
 
-interface PlotAvailabilityManagementProps {
-  onViewChange?: (view: ViewType) => void;
-}
-
-export default function PlotAvailabilityManagement({ onViewChange }: PlotAvailabilityManagementProps) {
+export default function PlotAvailabilityManagement() {
   const [viewMode, setViewMode] = useState<ViewMode>('all');
   const [displayMode, setDisplayMode] = useState<DisplayMode>('section'); // 区画別 or 面積別
   const [selectedPeriod, setSelectedPeriod] = useState<SelectedPeriod>('all');
@@ -157,7 +152,6 @@ export default function PlotAvailabilityManagement({ onViewChange }: PlotAvailab
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
           </svg>
         }
-        onViewChange={onViewChange}
       />
 
       <div className="flex-1 overflow-auto bg-gradient-warm">

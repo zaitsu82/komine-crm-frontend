@@ -9,7 +9,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import PageHeader from '@/components/page-header';
 import ThemeSwitcher from '@/components/theme-switcher';
-import { ViewType } from '@/types/plot-detail';
 
 const ROLE_LABELS: Record<string, string> = {
   viewer: '閲覧者',
@@ -20,10 +19,9 @@ const ROLE_LABELS: Record<string, string> = {
 
 interface ProfilePageProps {
   onBack: () => void;
-  onViewChange?: (view: ViewType) => void;
 }
 
-export default function ProfilePage({ onBack, onViewChange }: ProfilePageProps) {
+export default function ProfilePage({ onBack }: ProfilePageProps) {
   const { user, changePassword, updateProfile, isLoading } = useAuth();
 
   // プロフィール編集
@@ -139,7 +137,6 @@ export default function ProfilePage({ onBack, onViewChange }: ProfilePageProps) 
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
           </svg>
         }
-        onViewChange={onViewChange}
       />
       <div className="flex-1 overflow-auto">
         <div className="max-w-2xl mx-auto space-y-6 p-6">

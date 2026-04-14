@@ -1,6 +1,6 @@
 /**
  * サイドバーナビゲーション E2Eテスト
- * メニュー遷移・コンテキスト切り替え・ユーザー情報表示
+ * メニュー遷移・アクティブ状態・ユーザー情報表示
  *
  * 注意: ログアウトテストは auth.spec.ts に移動済み（セッション破棄防止）
  */
@@ -71,12 +71,12 @@ test.describe('サイドバーナビゲーション', () => {
     const sidebar = page.locator('.w-64');
     await expect(sidebar.getByText('台帳問い合わせ', { exact: true })).toBeVisible({ timeout: 20_000 });
 
-    // 合祀管理をクリック（テキストはspan内にあるため、親のbutton要素を取得）
-    const menuButton = sidebar.getByRole('button', { name: '合祀管理' });
-    await menuButton.click();
+    // 合祀管理をクリック（Link要素）
+    const menuLink = sidebar.getByRole('link', { name: '合祀管理' });
+    await menuLink.click();
     await page.waitForTimeout(500);
 
     // アクティブ状態のスタイルが適用されているか（bg-matsu-50 クラス）
-    await expect(menuButton).toHaveClass(/matsu/);
+    await expect(menuLink).toHaveClass(/matsu/);
   });
 });

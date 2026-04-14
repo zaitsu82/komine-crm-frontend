@@ -7,6 +7,7 @@
  * Phase 2-B: Plot-centric migration
  */
 
+import Link from 'next/link';
 import {
   PlotDetailResponse,
   PaymentStatus,
@@ -22,9 +23,16 @@ import {
 import { usePlotDetail } from '@/hooks/usePlots';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HistoryTab } from '@/components/plot-form/HistoryTab';
+import { useAuth } from '@/contexts/auth-context';
 
 // ===== 型定義 =====
 
@@ -32,6 +40,7 @@ interface PlotDetailViewProps {
   plotId: string;
   onEdit?: () => void;
   onBack?: () => void;
+  onDelete?: (plotCode: string, customerName: string) => void;
 }
 
 // ===== ステータスラベル =====
@@ -494,7 +503,8 @@ function ConstructionInfoTab({ plot }: { plot: PlotDetailResponse }) {
 
 // ===== メインコンポーネント =====
 
-export default function PlotDetailView({ plotId, onEdit, onBack }: PlotDetailViewProps) {
+export default function PlotDetailView({ plotId, onEdit, onBack, onDelete }: PlotDetailViewProps) {
+  const { user } = useAuth();
   const { plot, isLoading, error, refresh } = usePlotDetail(plotId);
 
   if (isLoading) {
@@ -548,7 +558,20 @@ export default function PlotDetailView({ plotId, onEdit, onBack }: PlotDetailVie
 
   return (
     <div className="w-full">
-      {/* ヘッダー */}
+      {/* パンくずナビゲーション */}
+      <nav className="flex items-center gap-1.5 text-sm text-hai mb-3" aria-label="パンくず">
+        <Link href="/plots" className="hover:text-matsu transition-colors">
+          台帳
+        </Link>
+        <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
+        <span className="text-sumi font-medium truncate">
+          {plot.physicalPlot.plotNumber}
+        </span>
+      </nav>
+
+      {/* ヘッダー + ツールバー */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4 md:mb-6 bg-white border border-gin rounded-elegant-lg shadow-elegant-sm p-4 md:p-5">
         <div className="min-w-0">
           <h2 className="text-lg md:text-2xl font-bold text-sumi truncate">
@@ -561,16 +584,53 @@ export default function PlotDetailView({ plotId, onEdit, onBack }: PlotDetailVie
             </p>
           )}
         </div>
-        <div className="flex gap-2 flex-shrink-0">
-          {onBack && (
-            <Button onClick={onBack} variant="outline" size="sm">
-              戻る
+        <div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
+          <Link href={`/plots/${plotId}/documents/create`}>
+            <Button variant="outline" size="sm" className="gap-1.5">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
+              </svg>
+              <span className="hidden sm:inline">書類作成</span>
             </Button>
-          )}
+          </Link>
+          <Link href={`/plots/${plotId}/documents`}>
+            <Button variant="outline" size="sm" className="gap-1.5">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span className="hidden sm:inline">書類履歴</span>
+            </Button>
+          </Link>
           {onEdit && (
             <Button onClick={onEdit} className="bg-matsu hover:bg-matsu-dark text-white" size="sm">
               編集
             </Button>
+          )}
+          {/* ... ドロップダウンメニュー（削除等） */}
+          {user?.role === 'admin' && onDelete && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="px-2" aria-label="その他の操作">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01" />
+                  </svg>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onClick={() => onDelete(
+                    plot.physicalPlot.plotNumber,
+                    primaryCustomer?.name || plot.physicalPlot.plotNumber
+                  )}
+                  className="text-beni focus:text-beni"
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  区画情報を削除
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
         </div>
       </div>
