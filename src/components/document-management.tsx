@@ -6,7 +6,6 @@ import {
   TemplateId,
 } from './document-template-gallery';
 import { DocumentListView } from './document-list-view';
-import { ViewType } from '@/types/plot-detail';
 import { DocumentDetailView } from './document-detail-view';
 import { DocumentForm } from './document-form';
 import { useDocumentMutations, DocumentDetail } from '@/hooks/useDocuments';
@@ -24,7 +23,6 @@ interface DocumentManagementProps {
   plotDetail?: PlotDetailResponse;
   initialMode?: 'list' | 'create' | 'templates';
   onBack?: () => void;
-  onViewChange?: (view: ViewType) => void;
 }
 
 export function DocumentManagement({
@@ -33,7 +31,6 @@ export function DocumentManagement({
   plotDetail,
   initialMode = 'templates',
   onBack,
-  onViewChange,
 }: DocumentManagementProps) {
   const [viewMode, setViewMode] = useState<ViewMode>(
     initialMode === 'create' ? 'create' : initialMode === 'list' ? 'list' : 'templates'
@@ -182,7 +179,6 @@ export function DocumentManagement({
           customerId={customerId}
           customerName={customerName}
           onCreateNew={customerId ? handleCreateNew : handleBackToTemplates}
-          onViewChange={onViewChange}
           onViewDetail={handleViewDetail}
           onDownload={handleDownload}
           onBack={customerId ? undefined : handleBackToTemplates}

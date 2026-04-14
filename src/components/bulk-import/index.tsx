@@ -11,7 +11,6 @@ import { bulkCreateStaff } from '@/lib/api/staff';
 import { showSuccess, showError, showApiError } from '@/lib/toast';
 import { ConfirmDialog } from '@/components/shared/dialogs';
 import PageHeader from '@/components/page-header';
-import { ViewType } from '@/types/plot-detail';
 
 // ===== 型定義 =====
 
@@ -239,11 +238,7 @@ async function downloadTemplate(type: ImportTab) {
 
 // ===== メインコンポーネント =====
 
-interface BulkImportPageProps {
-  onViewChange?: (view: ViewType) => void;
-}
-
-export default function BulkImportPage({ onViewChange }: BulkImportPageProps) {
+export default function BulkImportPage() {
   const [activeTab, setActiveTab] = useState<ImportTab>('plots');
 
   return (
@@ -257,7 +252,6 @@ export default function BulkImportPage({ onViewChange }: BulkImportPageProps) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
           </svg>
         }
-        onViewChange={onViewChange}
       />
 
       <div className="flex-1 overflow-auto p-3 md:p-6">

@@ -20,7 +20,6 @@ import { cn, truncateAddressToCity } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import PageHeader from '@/components/page-header';
-import { ViewType } from '@/types/plot-detail';
 
 // ===== 型定義 =====
 
@@ -28,7 +27,6 @@ interface PlotRegistryProps {
   onPlotSelect: (plot: PlotListItem) => void;
   selectedPlotId?: string;
   onNewPlot?: () => void;
-  onViewChange?: (view: ViewType) => void;
 }
 
 // ===== あいう順タブ =====
@@ -109,7 +107,6 @@ export default function PlotRegistry({
   onPlotSelect,
   selectedPlotId,
   onNewPlot,
-  onViewChange,
 }: PlotRegistryProps) {
   const [activeTab, setActiveTab] = useState('全');
   const [searchInput, setSearchInput] = useState('');
@@ -323,7 +320,6 @@ export default function PlotRegistry({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
         }
-        onViewChange={onViewChange}
       />
 
       <div className="flex-1 overflow-auto p-3 md:p-6">

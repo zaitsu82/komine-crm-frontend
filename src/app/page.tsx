@@ -1,12 +1,5 @@
-'use client';
-
-import PlotManagement from '@/components/plot-management';
-import { AuthGuard } from '@/components/auth-guard';
+import { redirect } from 'next/navigation';
 
 export default function Home() {
-  return (
-    <AuthGuard>
-      <PlotManagement initialView="registry" />
-    </AuthGuard>
-  );
+  redirect('/plots');
 }

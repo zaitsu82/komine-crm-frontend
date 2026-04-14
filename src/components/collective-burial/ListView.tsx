@@ -21,18 +21,15 @@ import {
   BILLING_STATUS_COLORS,
 } from '@/lib/api';
 import PageHeader from '@/components/page-header';
-import { ViewType } from '@/types/plot-detail';
 
 interface CollectiveBurialListViewProps {
   onBack?: () => void;
   onSelectRecord?: (record: CollectiveBurialListItem) => void;
-  onViewChange?: (view: ViewType) => void;
 }
 
 export default function CollectiveBurialListView({
   onBack,
   onSelectRecord,
-  onViewChange,
 }: CollectiveBurialListViewProps) {
   // フィルター状態
   const [searchQuery, setSearchQuery] = useState('');
@@ -119,7 +116,6 @@ export default function CollectiveBurialListView({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
           </svg>
         }
-        onViewChange={onViewChange}
       />
 
       {/* スクロール領域（凡例・フィルター・メインコンテンツ全てスクロール） */}
@@ -226,131 +222,131 @@ export default function CollectiveBurialListView({
 
         {/* メインコンテンツ */}
         <div className="p-3 md:p-6">
-        {isLoading ? (
-          <div className="flex items-center justify-center py-16">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cha"></div>
-            <span className="ml-3 text-hai">読み込み中...</span>
-          </div>
-        ) : error ? (
-          <div className="text-center py-16 bg-red-50 rounded-elegant-lg border border-red-200">
-            <p className="text-red-600">{error}</p>
-            <Button onClick={refresh} variant="outline" className="mt-4">
-              再試行
-            </Button>
-          </div>
-        ) : groupedByYear.length === 0 ? (
-          <div className="text-center py-16 bg-white rounded-elegant-lg border border-gin">
-            <svg className="w-16 h-16 mx-auto mb-4 text-gin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            <p className="text-hai text-lg">該当するデータがありません</p>
-          </div>
-        ) : (
-          <div className="space-y-8">
-            {groupedByYear.map(group => (
-              <div key={group.year} className="bg-white rounded-elegant-lg shadow-elegant overflow-hidden border border-gin">
-                {/* 年ヘッダー */}
-                <div className="bg-gradient-cha px-3 md:px-6 py-3 md:py-4 relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-                  <div className="relative flex items-center justify-between">
-                    <h3 className="font-mincho text-xl font-semibold text-white tracking-wide">
-                      {group.year === 0 ? '請求予定日未設定' : `${group.year}年 請求予定`}
-                    </h3>
-                    <span className="bg-white text-cha px-4 py-1.5 rounded-full text-sm font-semibold shadow-sm">
-                      {group.totalCount} 件
-                    </span>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-16">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cha"></div>
+              <span className="ml-3 text-hai">読み込み中...</span>
+            </div>
+          ) : error ? (
+            <div className="text-center py-16 bg-red-50 rounded-elegant-lg border border-red-200">
+              <p className="text-red-600">{error}</p>
+              <Button onClick={refresh} variant="outline" className="mt-4">
+                再試行
+              </Button>
+            </div>
+          ) : groupedByYear.length === 0 ? (
+            <div className="text-center py-16 bg-white rounded-elegant-lg border border-gin">
+              <svg className="w-16 h-16 mx-auto mb-4 text-gin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <p className="text-hai text-lg">該当するデータがありません</p>
+            </div>
+          ) : (
+            <div className="space-y-8">
+              {groupedByYear.map(group => (
+                <div key={group.year} className="bg-white rounded-elegant-lg shadow-elegant overflow-hidden border border-gin">
+                  {/* 年ヘッダー */}
+                  <div className="bg-gradient-cha px-3 md:px-6 py-3 md:py-4 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+                    <div className="relative flex items-center justify-between">
+                      <h3 className="font-mincho text-xl font-semibold text-white tracking-wide">
+                        {group.year === 0 ? '請求予定日未設定' : `${group.year}年 請求予定`}
+                      </h3>
+                      <span className="bg-white text-cha px-4 py-1.5 rounded-full text-sm font-semibold shadow-sm">
+                        {group.totalCount} 件
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* テーブル */}
+                  <div className="overflow-x-auto">
+                    <table className="w-full table-fixed">
+                      <thead className="bg-kinari border-b border-gin">
+                        <tr>
+                          <th className="text-left px-2 md:px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '140px' }}>契約者名</th>
+                          <th className="text-left px-2 md:px-4 py-3 text-sm font-semibold text-sumi hidden sm:table-cell" style={{ width: '80px' }}>区画</th>
+                          <th className="text-left px-2 md:px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '100px' }}>区画番号</th>
+                          <th className="text-center px-2 md:px-4 py-3 text-sm font-semibold text-sumi hidden md:table-cell" style={{ width: '80px' }}>契約年</th>
+                          <th className="text-center px-2 md:px-4 py-3 text-sm font-semibold text-sumi hidden md:table-cell" style={{ width: '100px' }}>納骨日</th>
+                          <th className="text-center px-2 md:px-4 py-3 text-sm font-semibold text-sumi hidden lg:table-cell" style={{ width: '80px' }}>合祀年</th>
+                          <th className="text-center px-2 md:px-4 py-3 text-sm font-semibold text-sumi hidden lg:table-cell" style={{ width: '80px' }}>埋葬上限</th>
+                          <th className="text-right px-2 md:px-4 py-3 text-sm font-semibold text-sumi hidden sm:table-cell" style={{ width: '100px' }}>請求金額</th>
+                          <th className="text-left px-2 md:px-4 py-3 text-sm font-semibold text-sumi hidden lg:table-cell" style={{ width: '120px' }}>備考</th>
+                          <th className="text-center px-2 md:px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '90px' }}>ステータス</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gin">
+                        {group.items.map((record) => {
+                          // 最新の納骨日を取得
+                          const latestBurialDate = record.buriedPersons
+                            .map(bp => bp.burialDate)
+                            .filter((d): d is string => d !== null)
+                            .sort()
+                            .at(-1) || null;
+
+                          // 合祀年（請求予定日の年）
+                          const collectiveBurialYear = record.billingScheduledDate
+                            ? new Date(record.billingScheduledDate).getFullYear()
+                            : null;
+
+                          // 契約年
+                          const contractYear = record.contractDate
+                            ? new Date(record.contractDate).getFullYear()
+                            : null;
+
+                          return (
+                            <tr
+                              key={record.id}
+                              className="cursor-pointer transition-all duration-200 hover:bg-cha-50"
+                              onClick={() => onSelectRecord?.(record)}
+                            >
+                              <td className="px-2 md:px-4 py-3">
+                                <div className="font-medium text-sumi truncate">{record.applicantName || '-'}</div>
+                                {record.applicantNameKana && (
+                                  <div className="text-xs text-hai truncate">{record.applicantNameKana}</div>
+                                )}
+                              </td>
+                              <td className="px-2 md:px-4 py-3 text-sm text-hai hidden sm:table-cell">
+                                {record.areaName}
+                              </td>
+                              <td className="px-2 md:px-4 py-3">
+                                <span className="font-semibold text-sumi">{record.plotNumber}</span>
+                              </td>
+                              <td className="px-2 md:px-4 py-3 text-center text-sm text-sumi hidden md:table-cell">
+                                {contractYear ? `${contractYear}年` : '-'}
+                              </td>
+                              <td className="px-2 md:px-4 py-3 text-center text-sm text-hai hidden md:table-cell">
+                                {formatDate(latestBurialDate)}
+                              </td>
+                              <td className="px-2 md:px-4 py-3 text-center text-sm text-sumi hidden lg:table-cell">
+                                {collectiveBurialYear ? `${collectiveBurialYear}年` : '-'}
+                              </td>
+                              <td className="px-2 md:px-4 py-3 text-center text-sm text-sumi hidden lg:table-cell">
+                                {record.burialCapacity}
+                              </td>
+                              <td className="px-2 md:px-4 py-3 text-right text-sm text-sumi hidden sm:table-cell">
+                                {record.billingAmount != null
+                                  ? `¥${record.billingAmount.toLocaleString()}`
+                                  : '-'}
+                              </td>
+                              <td className="px-2 md:px-4 py-3 text-sm text-hai truncate hidden lg:table-cell">
+                                {record.notes || '-'}
+                              </td>
+                              <td className="px-2 md:px-4 py-3 text-center">
+                                <span className={`px-2 py-1 rounded text-xs font-medium ${BILLING_STATUS_COLORS[record.billingStatus as BillingStatus]}`}>
+                                  {BILLING_STATUS_LABELS[record.billingStatus as BillingStatus]}
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
-
-                {/* テーブル */}
-                <div className="overflow-x-auto">
-                  <table className="w-full table-fixed">
-                    <thead className="bg-kinari border-b border-gin">
-                      <tr>
-                        <th className="text-left px-2 md:px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '140px' }}>契約者名</th>
-                        <th className="text-left px-2 md:px-4 py-3 text-sm font-semibold text-sumi hidden sm:table-cell" style={{ width: '80px' }}>区画</th>
-                        <th className="text-left px-2 md:px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '100px' }}>区画番号</th>
-                        <th className="text-center px-2 md:px-4 py-3 text-sm font-semibold text-sumi hidden md:table-cell" style={{ width: '80px' }}>契約年</th>
-                        <th className="text-center px-2 md:px-4 py-3 text-sm font-semibold text-sumi hidden md:table-cell" style={{ width: '100px' }}>納骨日</th>
-                        <th className="text-center px-2 md:px-4 py-3 text-sm font-semibold text-sumi hidden lg:table-cell" style={{ width: '80px' }}>合祀年</th>
-                        <th className="text-center px-2 md:px-4 py-3 text-sm font-semibold text-sumi hidden lg:table-cell" style={{ width: '80px' }}>埋葬上限</th>
-                        <th className="text-right px-2 md:px-4 py-3 text-sm font-semibold text-sumi hidden sm:table-cell" style={{ width: '100px' }}>請求金額</th>
-                        <th className="text-left px-2 md:px-4 py-3 text-sm font-semibold text-sumi hidden lg:table-cell" style={{ width: '120px' }}>備考</th>
-                        <th className="text-center px-2 md:px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '90px' }}>ステータス</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gin">
-                      {group.items.map((record) => {
-                        // 最新の納骨日を取得
-                        const latestBurialDate = record.buriedPersons
-                          .map(bp => bp.burialDate)
-                          .filter((d): d is string => d !== null)
-                          .sort()
-                          .at(-1) || null;
-
-                        // 合祀年（請求予定日の年）
-                        const collectiveBurialYear = record.billingScheduledDate
-                          ? new Date(record.billingScheduledDate).getFullYear()
-                          : null;
-
-                        // 契約年
-                        const contractYear = record.contractDate
-                          ? new Date(record.contractDate).getFullYear()
-                          : null;
-
-                        return (
-                          <tr
-                            key={record.id}
-                            className="cursor-pointer transition-all duration-200 hover:bg-cha-50"
-                            onClick={() => onSelectRecord?.(record)}
-                          >
-                            <td className="px-2 md:px-4 py-3">
-                              <div className="font-medium text-sumi truncate">{record.applicantName || '-'}</div>
-                              {record.applicantNameKana && (
-                                <div className="text-xs text-hai truncate">{record.applicantNameKana}</div>
-                              )}
-                            </td>
-                            <td className="px-2 md:px-4 py-3 text-sm text-hai hidden sm:table-cell">
-                              {record.areaName}
-                            </td>
-                            <td className="px-2 md:px-4 py-3">
-                              <span className="font-semibold text-sumi">{record.plotNumber}</span>
-                            </td>
-                            <td className="px-2 md:px-4 py-3 text-center text-sm text-sumi hidden md:table-cell">
-                              {contractYear ? `${contractYear}年` : '-'}
-                            </td>
-                            <td className="px-2 md:px-4 py-3 text-center text-sm text-hai hidden md:table-cell">
-                              {formatDate(latestBurialDate)}
-                            </td>
-                            <td className="px-2 md:px-4 py-3 text-center text-sm text-sumi hidden lg:table-cell">
-                              {collectiveBurialYear ? `${collectiveBurialYear}年` : '-'}
-                            </td>
-                            <td className="px-2 md:px-4 py-3 text-center text-sm text-sumi hidden lg:table-cell">
-                              {record.burialCapacity}
-                            </td>
-                            <td className="px-2 md:px-4 py-3 text-right text-sm text-sumi hidden sm:table-cell">
-                              {record.billingAmount != null
-                                ? `¥${record.billingAmount.toLocaleString()}`
-                                : '-'}
-                            </td>
-                            <td className="px-2 md:px-4 py-3 text-sm text-hai truncate hidden lg:table-cell">
-                              {record.notes || '-'}
-                            </td>
-                            <td className="px-2 md:px-4 py-3 text-center">
-                              <span className={`px-2 py-1 rounded text-xs font-medium ${BILLING_STATUS_COLORS[record.billingStatus as BillingStatus]}`}>
-                                {BILLING_STATUS_LABELS[record.billingStatus as BillingStatus]}
-                              </span>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
         </div>
 
         {/* フッター統計 */}

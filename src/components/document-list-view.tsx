@@ -33,7 +33,6 @@ import {
   ArrowLeft,
 } from 'lucide-react';
 import PageHeader from '@/components/page-header';
-import { ViewType } from '@/types/plot-detail';
 
 interface DocumentListViewProps {
   /** 顧客IDでフィルター */
@@ -45,7 +44,6 @@ interface DocumentListViewProps {
   onDownload: (id: string) => void;
   /** テンプレートギャラリーに戻る */
   onBack?: () => void;
-  onViewChange?: (view: ViewType) => void;
 }
 
 export function DocumentListView({
@@ -55,7 +53,6 @@ export function DocumentListView({
   onViewDetail,
   onDownload,
   onBack,
-  onViewChange,
 }: DocumentListViewProps) {
   // 顧客IDが指定されている場合は初期フィルターとして設定
   const { data, isLoading, error, params, setPage, setFilters, refresh } = useDocumentList(
@@ -108,7 +105,6 @@ export function DocumentListView({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
         }
-        onViewChange={onViewChange}
       />
 
       <div className="flex-1 overflow-auto p-4 space-y-4">
