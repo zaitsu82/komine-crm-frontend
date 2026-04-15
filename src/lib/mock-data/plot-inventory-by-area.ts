@@ -27,90 +27,90 @@ export interface PeriodAreaSummary {
 
 // 第1期の面積別データ
 export const PERIOD_1_BY_AREA: PlotByAreaItem[] = [
-  { period: '1期', areaSqm: 0.5, totalCount: 35, usedCount: 35, remainingCount: 0, remainingAreaSqm: 0, plotType: '千羽鶴' },
-  { period: '1期', areaSqm: 0.84, totalCount: 10, usedCount: 28, remainingCount: 2, remainingAreaSqm: 10, plotType: '墓林千羽鶴' },
-  { period: '1期', areaSqm: 0.9, totalCount: 30, usedCount: 43, remainingCount: 0, remainingAreaSqm: 1, plotType: '自由' },
-  { period: '1期', areaSqm: 1.3, totalCount: 44, usedCount: 1, remainingCount: 1, remainingAreaSqm: 0.2, plotType: '自由' },
-  { period: '1期', areaSqm: 1.35, totalCount: 1, usedCount: 0, remainingCount: 0, remainingAreaSqm: 1.3, plotType: '自由' },
-  { period: '1期', areaSqm: 1.49, totalCount: 2, usedCount: 2, remainingCount: 0, remainingAreaSqm: 0, plotType: '(社)-1' },
-  { period: '1期', areaSqm: 1.5, totalCount: 15, usedCount: 15, remainingCount: 0, remainingAreaSqm: 0, plotType: '吉相' },
-  { period: '1期', areaSqm: 1.6, totalCount: 2, usedCount: 2, remainingCount: 0, remainingAreaSqm: 0, plotType: '吉相' },
-  { period: '1期', areaSqm: 1.7, totalCount: 2, usedCount: 1, remainingCount: 0, remainingAreaSqm: 0, plotType: '(社)-含む' },
-  { period: '1期', areaSqm: 1.8, totalCount: 242, usedCount: 217, remainingCount: 25, remainingAreaSqm: 45, plotType: '自由' },
-  { period: '1期', areaSqm: 2, totalCount: 14, usedCount: 13, remainingCount: 1, remainingAreaSqm: 6.48, plotType: '自由' },
-  { period: '1期', areaSqm: 2.16, totalCount: 5, usedCount: 12, remainingCount: 3, remainingAreaSqm: 0, plotType: '自由' },
-  { period: '1期', areaSqm: 2.25, totalCount: 12, usedCount: 2, remainingCount: 2, remainingAreaSqm: 4.95, plotType: '自由' },
-  { period: '1期', areaSqm: 2.475, totalCount: 37, usedCount: 35, remainingCount: 0, remainingAreaSqm: 0, plotType: '(社)-含む' },
-  { period: '1期', areaSqm: 2.48, totalCount: 2, usedCount: 24, remainingCount: 5, remainingAreaSqm: 13.5, plotType: '自由' },
-  { period: '1期', areaSqm: 2.7, totalCount: 29, usedCount: 3, remainingCount: 0, remainingAreaSqm: 0, plotType: '(社)-含む' },
-  { period: '1期', areaSqm: 3, totalCount: 3, usedCount: 7, remainingCount: 0, remainingAreaSqm: 0, plotType: '自由' },
-  { period: '1期', areaSqm: 3.15, totalCount: 29, usedCount: 24, remainingCount: 0, remainingAreaSqm: 0, plotType: '自由' },
-  { period: '1期', areaSqm: 3.36, totalCount: 7, usedCount: 7, remainingCount: 2, remainingAreaSqm: 49, plotType: '自由' },
-  { period: '1期', areaSqm: 3.6, totalCount: 833, usedCount: 784, remainingCount: 5, remainingAreaSqm: 176.4, plotType: '自由' },
-  { period: '1期', areaSqm: 3.69, totalCount: 15, usedCount: 15, remainingCount: 0, remainingAreaSqm: 0, plotType: '自由' },
-  { period: '1期', areaSqm: 3.87, totalCount: 36, usedCount: 31, remainingCount: 0, remainingAreaSqm: 19.35, plotType: '自由' },
-  { period: '1期', areaSqm: 4, totalCount: 1, usedCount: 1, remainingCount: 18, remainingAreaSqm: 72.9, plotType: '自由' },
-  { period: '1期', areaSqm: 4.05, totalCount: 293, usedCount: 275, remainingCount: 0, remainingAreaSqm: 0, plotType: '(社)-13含む' },
-  { period: '1期', areaSqm: 4.275, totalCount: 9, usedCount: 7, remainingCount: 2, remainingAreaSqm: 8.55, plotType: '自由' },
-  { period: '1期', areaSqm: 4.5, totalCount: 3, usedCount: 3, remainingCount: 1, remainingAreaSqm: 4.96, plotType: '自由' },
-  { period: '1期', areaSqm: 4.96, totalCount: 8, usedCount: 7, remainingCount: 0, remainingAreaSqm: 0, plotType: '自由' },
-  { period: '1期', areaSqm: 5, totalCount: 1, usedCount: 4, remainingCount: 0, remainingAreaSqm: 0, plotType: '自由' },
-  { period: '1期', areaSqm: 5.12, totalCount: 4, usedCount: 1, remainingCount: 0, remainingAreaSqm: 0, plotType: '吉相' },
-  { period: '1期', areaSqm: 5.2, totalCount: 1, usedCount: 0, remainingCount: 0, remainingAreaSqm: 13.95, plotType: '吉相' },
-  { period: '1期', areaSqm: 6.975, totalCount: 2, usedCount: 3, remainingCount: 2, remainingAreaSqm: 0, plotType: '吉相' },
-  { period: '1期', areaSqm: 7.2, totalCount: 3, usedCount: 3, remainingCount: 1, remainingAreaSqm: 9.92, plotType: '吉相' },
-  { period: '1期', areaSqm: 9.92, totalCount: 2, usedCount: 1, remainingCount: 1, remainingAreaSqm: 10.24, plotType: '吉相' },
-  { period: '1期', areaSqm: 10.24, totalCount: 4, usedCount: 3, remainingCount: 1, remainingAreaSqm: 12.8, plotType: '吉相' },
-  { period: '1期', areaSqm: 12.8, totalCount: 3, usedCount: 2, remainingCount: 1, remainingAreaSqm: 12.8, plotType: '吉相' },
+  { period: '第1期', areaSqm: 0.5, totalCount: 35, usedCount: 35, remainingCount: 0, remainingAreaSqm: 0, plotType: '千羽鶴' },
+  { period: '第1期', areaSqm: 0.84, totalCount: 10, usedCount: 28, remainingCount: 2, remainingAreaSqm: 10, plotType: '墓林千羽鶴' },
+  { period: '第1期', areaSqm: 0.9, totalCount: 30, usedCount: 43, remainingCount: 0, remainingAreaSqm: 1, plotType: '自由' },
+  { period: '第1期', areaSqm: 1.3, totalCount: 44, usedCount: 1, remainingCount: 1, remainingAreaSqm: 0.2, plotType: '自由' },
+  { period: '第1期', areaSqm: 1.35, totalCount: 1, usedCount: 0, remainingCount: 0, remainingAreaSqm: 1.3, plotType: '自由' },
+  { period: '第1期', areaSqm: 1.49, totalCount: 2, usedCount: 2, remainingCount: 0, remainingAreaSqm: 0, plotType: '(社)-1' },
+  { period: '第1期', areaSqm: 1.5, totalCount: 15, usedCount: 15, remainingCount: 0, remainingAreaSqm: 0, plotType: '吉相' },
+  { period: '第1期', areaSqm: 1.6, totalCount: 2, usedCount: 2, remainingCount: 0, remainingAreaSqm: 0, plotType: '吉相' },
+  { period: '第1期', areaSqm: 1.7, totalCount: 2, usedCount: 1, remainingCount: 0, remainingAreaSqm: 0, plotType: '(社)-含む' },
+  { period: '第1期', areaSqm: 1.8, totalCount: 242, usedCount: 217, remainingCount: 25, remainingAreaSqm: 45, plotType: '自由' },
+  { period: '第1期', areaSqm: 2, totalCount: 14, usedCount: 13, remainingCount: 1, remainingAreaSqm: 6.48, plotType: '自由' },
+  { period: '第1期', areaSqm: 2.16, totalCount: 5, usedCount: 12, remainingCount: 3, remainingAreaSqm: 0, plotType: '自由' },
+  { period: '第1期', areaSqm: 2.25, totalCount: 12, usedCount: 2, remainingCount: 2, remainingAreaSqm: 4.95, plotType: '自由' },
+  { period: '第1期', areaSqm: 2.475, totalCount: 37, usedCount: 35, remainingCount: 0, remainingAreaSqm: 0, plotType: '(社)-含む' },
+  { period: '第1期', areaSqm: 2.48, totalCount: 2, usedCount: 24, remainingCount: 5, remainingAreaSqm: 13.5, plotType: '自由' },
+  { period: '第1期', areaSqm: 2.7, totalCount: 29, usedCount: 3, remainingCount: 0, remainingAreaSqm: 0, plotType: '(社)-含む' },
+  { period: '第1期', areaSqm: 3, totalCount: 3, usedCount: 7, remainingCount: 0, remainingAreaSqm: 0, plotType: '自由' },
+  { period: '第1期', areaSqm: 3.15, totalCount: 29, usedCount: 24, remainingCount: 0, remainingAreaSqm: 0, plotType: '自由' },
+  { period: '第1期', areaSqm: 3.36, totalCount: 7, usedCount: 7, remainingCount: 2, remainingAreaSqm: 49, plotType: '自由' },
+  { period: '第1期', areaSqm: 3.6, totalCount: 833, usedCount: 784, remainingCount: 5, remainingAreaSqm: 176.4, plotType: '自由' },
+  { period: '第1期', areaSqm: 3.69, totalCount: 15, usedCount: 15, remainingCount: 0, remainingAreaSqm: 0, plotType: '自由' },
+  { period: '第1期', areaSqm: 3.87, totalCount: 36, usedCount: 31, remainingCount: 0, remainingAreaSqm: 19.35, plotType: '自由' },
+  { period: '第1期', areaSqm: 4, totalCount: 1, usedCount: 1, remainingCount: 18, remainingAreaSqm: 72.9, plotType: '自由' },
+  { period: '第1期', areaSqm: 4.05, totalCount: 293, usedCount: 275, remainingCount: 0, remainingAreaSqm: 0, plotType: '(社)-13含む' },
+  { period: '第1期', areaSqm: 4.275, totalCount: 9, usedCount: 7, remainingCount: 2, remainingAreaSqm: 8.55, plotType: '自由' },
+  { period: '第1期', areaSqm: 4.5, totalCount: 3, usedCount: 3, remainingCount: 1, remainingAreaSqm: 4.96, plotType: '自由' },
+  { period: '第1期', areaSqm: 4.96, totalCount: 8, usedCount: 7, remainingCount: 0, remainingAreaSqm: 0, plotType: '自由' },
+  { period: '第1期', areaSqm: 5, totalCount: 1, usedCount: 4, remainingCount: 0, remainingAreaSqm: 0, plotType: '自由' },
+  { period: '第1期', areaSqm: 5.12, totalCount: 4, usedCount: 1, remainingCount: 0, remainingAreaSqm: 0, plotType: '吉相' },
+  { period: '第1期', areaSqm: 5.2, totalCount: 1, usedCount: 0, remainingCount: 0, remainingAreaSqm: 13.95, plotType: '吉相' },
+  { period: '第1期', areaSqm: 6.975, totalCount: 2, usedCount: 3, remainingCount: 2, remainingAreaSqm: 0, plotType: '吉相' },
+  { period: '第1期', areaSqm: 7.2, totalCount: 3, usedCount: 3, remainingCount: 1, remainingAreaSqm: 9.92, plotType: '吉相' },
+  { period: '第1期', areaSqm: 9.92, totalCount: 2, usedCount: 1, remainingCount: 1, remainingAreaSqm: 10.24, plotType: '吉相' },
+  { period: '第1期', areaSqm: 10.24, totalCount: 4, usedCount: 3, remainingCount: 1, remainingAreaSqm: 12.8, plotType: '吉相' },
+  { period: '第1期', areaSqm: 12.8, totalCount: 3, usedCount: 2, remainingCount: 1, remainingAreaSqm: 12.8, plotType: '吉相' },
 ];
 
 // 第2期の面積別データ
 export const PERIOD_2_BY_AREA: PlotByAreaItem[] = [
-  { period: '2期', areaSqm: 1, totalCount: 183, usedCount: 179, remainingCount: 4, remainingAreaSqm: 4, plotType: '墳墓' },
-  { period: '2期', areaSqm: 1.8, totalCount: 72, usedCount: 63, remainingCount: 9, remainingAreaSqm: 16, plotType: '自由' },
-  { period: '2期', areaSqm: 2, totalCount: 4, usedCount: 4, remainingCount: 0, remainingAreaSqm: 0, plotType: '自由' },
-  { period: '2期', areaSqm: 2.08, totalCount: 125, usedCount: 125, remainingCount: 0, remainingAreaSqm: 0, plotType: '自由' },
-  { period: '2期', areaSqm: 3, totalCount: 158, usedCount: 120, remainingCount: 38, remainingAreaSqm: 114, plotType: '自由' },
-  { period: '2期', areaSqm: 4, totalCount: 54, usedCount: 54, remainingCount: 0, remainingAreaSqm: 0, plotType: '自由' },
-  { period: '2期', areaSqm: 5, totalCount: 1, usedCount: 1, remainingCount: 0, remainingAreaSqm: 0, plotType: '自由' },
-  { period: '2期', areaSqm: 6.73, totalCount: 4, usedCount: 4, remainingCount: 0, remainingAreaSqm: 0, plotType: '自由' },
-  { period: '2期', areaSqm: 8.4, totalCount: 1, usedCount: 1, remainingCount: 0, remainingAreaSqm: 0, plotType: '自由' },
-  { period: '2期', areaSqm: 12, totalCount: 1, usedCount: 1, remainingCount: 0, remainingAreaSqm: 0, plotType: '合計' },
+  { period: '第2期', areaSqm: 1, totalCount: 183, usedCount: 179, remainingCount: 4, remainingAreaSqm: 4, plotType: '墳墓' },
+  { period: '第2期', areaSqm: 1.8, totalCount: 72, usedCount: 63, remainingCount: 9, remainingAreaSqm: 16, plotType: '自由' },
+  { period: '第2期', areaSqm: 2, totalCount: 4, usedCount: 4, remainingCount: 0, remainingAreaSqm: 0, plotType: '自由' },
+  { period: '第2期', areaSqm: 2.08, totalCount: 125, usedCount: 125, remainingCount: 0, remainingAreaSqm: 0, plotType: '自由' },
+  { period: '第2期', areaSqm: 3, totalCount: 158, usedCount: 120, remainingCount: 38, remainingAreaSqm: 114, plotType: '自由' },
+  { period: '第2期', areaSqm: 4, totalCount: 54, usedCount: 54, remainingCount: 0, remainingAreaSqm: 0, plotType: '自由' },
+  { period: '第2期', areaSqm: 5, totalCount: 1, usedCount: 1, remainingCount: 0, remainingAreaSqm: 0, plotType: '自由' },
+  { period: '第2期', areaSqm: 6.73, totalCount: 4, usedCount: 4, remainingCount: 0, remainingAreaSqm: 0, plotType: '自由' },
+  { period: '第2期', areaSqm: 8.4, totalCount: 1, usedCount: 1, remainingCount: 0, remainingAreaSqm: 0, plotType: '自由' },
+  { period: '第2期', areaSqm: 12, totalCount: 1, usedCount: 1, remainingCount: 0, remainingAreaSqm: 0, plotType: '合計' },
 ];
 
 // 第3期の面積別データ
 export const PERIOD_3_BY_AREA: PlotByAreaItem[] = [
-  { period: '3期', areaSqm: 1, totalCount: 123, usedCount: 122, remainingCount: 1, remainingAreaSqm: 1, plotType: '墳墓' },
-  { period: '3期', areaSqm: 1.2, totalCount: 15, usedCount: 15, remainingCount: 0, remainingAreaSqm: 0, plotType: '墳墓' },
-  { period: '3期', areaSqm: 1.35, totalCount: 8, usedCount: 8, remainingCount: 0, remainingAreaSqm: 0, plotType: '墳墓' },
-  { period: '3期', areaSqm: 1.44, totalCount: 20, usedCount: 11, remainingCount: 9, remainingAreaSqm: 13, plotType: '墳墓' },
-  { period: '3期', areaSqm: 1.5, totalCount: 12, usedCount: 6, remainingCount: 6, remainingAreaSqm: 9, plotType: '墳墓' },
-  { period: '3期', areaSqm: 1.8, totalCount: 78, usedCount: 62, remainingCount: 16, remainingAreaSqm: 29, plotType: '墳墓' },
+  { period: '第3期', areaSqm: 1, totalCount: 123, usedCount: 122, remainingCount: 1, remainingAreaSqm: 1, plotType: '墳墓' },
+  { period: '第3期', areaSqm: 1.2, totalCount: 15, usedCount: 15, remainingCount: 0, remainingAreaSqm: 0, plotType: '墳墓' },
+  { period: '第3期', areaSqm: 1.35, totalCount: 8, usedCount: 8, remainingCount: 0, remainingAreaSqm: 0, plotType: '墳墓' },
+  { period: '第3期', areaSqm: 1.44, totalCount: 20, usedCount: 11, remainingCount: 9, remainingAreaSqm: 13, plotType: '墳墓' },
+  { period: '第3期', areaSqm: 1.5, totalCount: 12, usedCount: 6, remainingCount: 6, remainingAreaSqm: 9, plotType: '墳墓' },
+  { period: '第3期', areaSqm: 1.8, totalCount: 78, usedCount: 62, remainingCount: 16, remainingAreaSqm: 29, plotType: '墳墓' },
 ];
 
-// 第3期 樹林・天空の面積別データ
+// 第3期樹林部の面積別データ
 export const PERIOD_3_SPECIAL_BY_AREA: PlotByAreaItem[] = [
-  { period: '3期', areaSqm: 0.6, totalCount: 260, usedCount: 246, remainingCount: 14, remainingAreaSqm: 8.4, plotType: '樹林' },
-  { period: '3期', areaSqm: 1, totalCount: 58, usedCount: 56, remainingCount: 2, remainingAreaSqm: 2.0, plotType: '天空K' },
+  { period: '第3期樹林部', areaSqm: 0.6, totalCount: 260, usedCount: 246, remainingCount: 14, remainingAreaSqm: 8.4, plotType: '樹林' },
+  { period: '第3期樹林部', areaSqm: 1, totalCount: 58, usedCount: 56, remainingCount: 2, remainingAreaSqm: 2.0, plotType: '天空K' },
 ];
 
 // 第4期の面積別データ
 export const PERIOD_4_BY_AREA: PlotByAreaItem[] = [
-  { period: '4期', areaSqm: 1, totalCount: 104, usedCount: 95, remainingCount: 9, remainingAreaSqm: 9, plotType: 'るり庵テラス' },
-  { period: '4期', areaSqm: 1.5, totalCount: 185, usedCount: 140, remainingCount: 45, remainingAreaSqm: 68, plotType: '墳墓' },
-  { period: '4期', areaSqm: 2.4, totalCount: 130, usedCount: 79, remainingCount: 51, remainingAreaSqm: 122, plotType: '墳墓' },
-  { period: '4期', areaSqm: 3, totalCount: 98, usedCount: 38, remainingCount: 60, remainingAreaSqm: 180, plotType: '墳墓' },
-  { period: '4期', areaSqm: 4, totalCount: 29, usedCount: 25, remainingCount: 4, remainingAreaSqm: 16, plotType: '墳墓' },
-  { period: '4期', areaSqm: 5, totalCount: 8, usedCount: 8, remainingCount: 0, remainingAreaSqm: 0, plotType: '自由' },
-  { period: '4期', areaSqm: 8.4, totalCount: 66, usedCount: 6, remainingCount: 60, remainingAreaSqm: 0, plotType: '憩' },
-  { period: '4期', areaSqm: 0.2, totalCount: 56, usedCount: 6, remainingCount: 50, remainingAreaSqm: 12, plotType: '恵' },
-  { period: '4期', areaSqm: 0.3, totalCount: 34, usedCount: 3, remainingCount: 31, remainingAreaSqm: 15, plotType: '恵' },
-  { period: '4期', areaSqm: 0.45, totalCount: 64, usedCount: 1, remainingCount: 63, remainingAreaSqm: 14, plotType: 'るり庵Ⅱ' },
+  { period: '第4期', areaSqm: 1, totalCount: 104, usedCount: 95, remainingCount: 9, remainingAreaSqm: 9, plotType: 'るり庵テラス' },
+  { period: '第4期', areaSqm: 1.5, totalCount: 185, usedCount: 140, remainingCount: 45, remainingAreaSqm: 68, plotType: '墳墓' },
+  { period: '第4期', areaSqm: 2.4, totalCount: 130, usedCount: 79, remainingCount: 51, remainingAreaSqm: 122, plotType: '墳墓' },
+  { period: '第4期', areaSqm: 3, totalCount: 98, usedCount: 38, remainingCount: 60, remainingAreaSqm: 180, plotType: '墳墓' },
+  { period: '第4期', areaSqm: 4, totalCount: 29, usedCount: 25, remainingCount: 4, remainingAreaSqm: 16, plotType: '墳墓' },
+  { period: '第4期', areaSqm: 5, totalCount: 8, usedCount: 8, remainingCount: 0, remainingAreaSqm: 0, plotType: '自由' },
+  { period: '第4期', areaSqm: 8.4, totalCount: 66, usedCount: 6, remainingCount: 60, remainingAreaSqm: 0, plotType: '憩' },
+  { period: '第4期', areaSqm: 0.2, totalCount: 56, usedCount: 6, remainingCount: 50, remainingAreaSqm: 12, plotType: '恵' },
+  { period: '第4期', areaSqm: 0.3, totalCount: 34, usedCount: 3, remainingCount: 31, remainingAreaSqm: 15, plotType: '恵' },
+  { period: '第4期', areaSqm: 0.45, totalCount: 64, usedCount: 1, remainingCount: 63, remainingAreaSqm: 14, plotType: 'るり庵テラスⅡ' },
 ];
 
 // 第4期 つながり区の面積別データ
 export const PERIOD_4_TSUNAGARI_BY_AREA: PlotByAreaItem[] = [
-  { period: '4期', areaSqm: 1, totalCount: 104, usedCount: 95, remainingCount: 9, remainingAreaSqm: 9, plotType: 'つながり区' },
+  { period: '第4期', areaSqm: 1, totalCount: 104, usedCount: 95, remainingCount: 9, remainingAreaSqm: 9, plotType: 'つながり区' },
 ];
 
 // 全面積別データを取得
@@ -127,13 +127,15 @@ export function getAllPlotsByArea(): PlotByAreaItem[] {
 // 期別の面積別データを取得
 export function getPlotsByAreaForPeriod(period: PlotPeriod): PlotByAreaItem[] {
   switch (period) {
-    case '1期':
+    case '第1期':
       return PERIOD_1_BY_AREA;
-    case '2期':
+    case '第2期':
       return PERIOD_2_BY_AREA;
-    case '3期':
-      return [...PERIOD_3_BY_AREA, ...PERIOD_3_SPECIAL_BY_AREA];
-    case '4期':
+    case '第3期':
+      return PERIOD_3_BY_AREA;
+    case '第3期樹林部':
+      return PERIOD_3_SPECIAL_BY_AREA;
+    case '第4期':
       return PERIOD_4_BY_AREA;
     default:
       return [];
@@ -162,7 +164,7 @@ export function calculatePeriodAreaSummary(period: PlotPeriod): PeriodAreaSummar
 
 // 全期の面積別集計を計算
 export function calculateAllPeriodAreaSummaries(): PeriodAreaSummary[] {
-  const periods: PlotPeriod[] = ['1期', '2期', '3期', '4期'];
+  const periods: PlotPeriod[] = ['第1期', '第2期', '第3期', '第3期樹林部', '第4期'];
   return periods.map(period => calculatePeriodAreaSummary(period));
 }
 

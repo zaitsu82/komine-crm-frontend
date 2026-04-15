@@ -216,7 +216,7 @@ async function downloadTemplate(type: ImportTab) {
 
   // Add example data row with light yellow background
   if (type === 'plots') {
-    sheet.addRow(['A-001', '1期', 3.6, 'サンプルデータ（この行は削除してください）']);
+    sheet.addRow(['A-001', '第1期', 3.6, 'サンプルデータ（この行は削除してください）']);
   } else {
     sheet.addRow(['山田太郎', 'taro@example.com', 'operator']);
   }

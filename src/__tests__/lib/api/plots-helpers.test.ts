@@ -25,7 +25,7 @@ function makePlotDetail(overrides: Partial<PlotDetailResponse> = {}): PlotDetail
     physicalPlot: {
       id: 'pp-1',
       plotNumber: 'A-001',
-      areaName: '1期',
+      areaName: '第1期',
       areaSqm: 3.6,
       status: PhysicalPlotStatus.SoldOut,
       notes: null,
@@ -86,7 +86,7 @@ function makePlotListItem(overrides: Partial<PlotListItem> = {}): PlotListItem {
     contractAreaSqm: 3.6,
     locationDescription: null,
     plotNumber: 'A-001',
-    areaName: '1期',
+    areaName: '第1期',
     physicalPlotAreaSqm: 3.6,
     physicalPlotStatus: PhysicalPlotStatus.SoldOut,
     contractDate: '2024-01-15',

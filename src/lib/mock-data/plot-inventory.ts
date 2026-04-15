@@ -33,61 +33,62 @@ export interface InventorySummary {
 
 // 第1期の区画データ
 export const PERIOD_1_INVENTORY: PlotInventoryItem[] = [
-  { period: '1期', section: 'A', totalCount: 149, usedCount: 138, remainingCount: 11 },
-  { period: '1期', section: 'B', totalCount: 6, usedCount: 6, remainingCount: 0 },
-  { period: '1期', section: 'C', totalCount: 136, usedCount: 133, remainingCount: 3 },
-  { period: '1期', section: '吉相', totalCount: 39, usedCount: 31, remainingCount: 8 },
-  { period: '1期', section: 'D', totalCount: 99, usedCount: 94, remainingCount: 5 },
-  { period: '1期', section: 'E', totalCount: 60, usedCount: 53, remainingCount: 7 },
-  { period: '1期', section: 'F', totalCount: 122, usedCount: 112, remainingCount: 10 },
-  { period: '1期', section: 'G', totalCount: 113, usedCount: 108, remainingCount: 5 },
-  { period: '1期', section: 'H', totalCount: 119, usedCount: 116, remainingCount: 3 },
-  { period: '1期', section: 'I', totalCount: 175, usedCount: 163, remainingCount: 12 },
-  { period: '1期', section: 'J', totalCount: 142, usedCount: 118, remainingCount: 24 },
-  { period: '1期', section: 'K', totalCount: 123, usedCount: 106, remainingCount: 17 },
-  { period: '1期', section: 'L', totalCount: 71, usedCount: 68, remainingCount: 3 },
-  { period: '1期', section: 'M', totalCount: 52, usedCount: 51, remainingCount: 1 },
-  { period: '1期', section: 'N', totalCount: 131, usedCount: 122, remainingCount: 9 },
-  { period: '1期', section: 'O', totalCount: 88, usedCount: 83, remainingCount: 5 },
-  { period: '1期', section: 'P', totalCount: 86, usedCount: 78, remainingCount: 8 },
+  { period: '第1期', section: 'A', totalCount: 149, usedCount: 138, remainingCount: 11 },
+  { period: '第1期', section: 'B', totalCount: 6, usedCount: 6, remainingCount: 0 },
+  { period: '第1期', section: 'C', totalCount: 136, usedCount: 133, remainingCount: 3 },
+  { period: '第1期', section: '吉相', totalCount: 39, usedCount: 31, remainingCount: 8 },
+  { period: '第1期', section: 'D', totalCount: 99, usedCount: 94, remainingCount: 5 },
+  { period: '第1期', section: 'E', totalCount: 60, usedCount: 53, remainingCount: 7 },
+  { period: '第1期', section: 'F', totalCount: 122, usedCount: 112, remainingCount: 10 },
+  { period: '第1期', section: 'G', totalCount: 113, usedCount: 108, remainingCount: 5 },
+  { period: '第1期', section: 'H', totalCount: 119, usedCount: 116, remainingCount: 3 },
+  { period: '第1期', section: 'I', totalCount: 175, usedCount: 163, remainingCount: 12 },
+  { period: '第1期', section: 'J', totalCount: 142, usedCount: 118, remainingCount: 24 },
+  { period: '第1期', section: 'K', totalCount: 123, usedCount: 106, remainingCount: 17 },
+  { period: '第1期', section: 'L', totalCount: 71, usedCount: 68, remainingCount: 3 },
+  { period: '第1期', section: 'M', totalCount: 52, usedCount: 51, remainingCount: 1 },
+  { period: '第1期', section: 'N', totalCount: 131, usedCount: 122, remainingCount: 9 },
+  { period: '第1期', section: 'O', totalCount: 88, usedCount: 83, remainingCount: 5 },
+  { period: '第1期', section: 'P', totalCount: 86, usedCount: 78, remainingCount: 8 },
 ];
 
 // 第2期の区画データ
 export const PERIOD_2_INVENTORY: PlotInventoryItem[] = [
-  { period: '2期', section: '1', totalCount: 95, usedCount: 93, remainingCount: 2 },
-  { period: '2期', section: '2', totalCount: 125, usedCount: 125, remainingCount: 0 },
-  { period: '2期', section: '3', totalCount: 94, usedCount: 57, remainingCount: 37 },
-  { period: '2期', section: '5', totalCount: 29, usedCount: 29, remainingCount: 0 },
-  { period: '2期', section: '6', totalCount: 111, usedCount: 107, remainingCount: 4 },
-  { period: '2期', section: '7', totalCount: 86, usedCount: 78, remainingCount: 8 },
-  { period: '2期', section: '8', totalCount: 64, usedCount: 63, remainingCount: 1 },
+  { period: '第2期', section: '1', totalCount: 95, usedCount: 93, remainingCount: 2 },
+  { period: '第2期', section: '2', totalCount: 125, usedCount: 125, remainingCount: 0 },
+  { period: '第2期', section: '3', totalCount: 94, usedCount: 57, remainingCount: 37 },
+  { period: '第2期', section: '5', totalCount: 29, usedCount: 29, remainingCount: 0 },
+  { period: '第2期', section: '6', totalCount: 111, usedCount: 107, remainingCount: 4 },
+  { period: '第2期', section: '7', totalCount: 86, usedCount: 78, remainingCount: 8 },
+  { period: '第2期', section: '8', totalCount: 64, usedCount: 63, remainingCount: 1 },
 ];
 
 // 第3期の区画データ
 export const PERIOD_3_INVENTORY: PlotInventoryItem[] = [
-  { period: '3期', section: '10', totalCount: 133, usedCount: 102, remainingCount: 31 },
-  { period: '3期', section: '11', totalCount: 123, usedCount: 122, remainingCount: 1 },
+  { period: '第3期', section: '10', totalCount: 133, usedCount: 102, remainingCount: 31 },
+  { period: '第3期', section: '11', totalCount: 123, usedCount: 122, remainingCount: 1 },
 ];
 
-// 第3期 樹林・天空の区画データ
+// 第3期樹林部の区画データ
 export const PERIOD_3_SPECIAL_INVENTORY: PlotInventoryItem[] = [
-  { period: '3期', section: '樹林', totalCount: 260, usedCount: 246, remainingCount: 14, category: '樹林・天空' },
-  { period: '3期', section: '天空K', totalCount: 58, usedCount: 56, remainingCount: 2, category: '樹林・天空' },
+  { period: '第3期樹林部', section: '樹林', totalCount: 260, usedCount: 246, remainingCount: 14, category: '樹林・天空' },
+  { period: '第3期樹林部', section: '天空K', totalCount: 58, usedCount: 56, remainingCount: 2, category: '樹林・天空' },
 ];
 
 // 第4期の区画データ
 export const PERIOD_4_INVENTORY: PlotInventoryItem[] = [
-  { period: '4期', section: '1', totalCount: 104, usedCount: 95, remainingCount: 9 },
-  { period: '4期', section: '1.5', totalCount: 185, usedCount: 140, remainingCount: 45 },
-  { period: '4期', section: '2.4', totalCount: 130, usedCount: 79, remainingCount: 51 },
-  { period: '4期', section: '3', totalCount: 98, usedCount: 38, remainingCount: 60 },
-  { period: '4期', section: '4', totalCount: 29, usedCount: 25, remainingCount: 4 },
-  { period: '4期', section: '5', totalCount: 8, usedCount: 8, remainingCount: 0 },
-  { period: '4期', section: '8.4', totalCount: 66, usedCount: 6, remainingCount: 60 },
-  { period: '4期', section: '憩', totalCount: 56, usedCount: 6, remainingCount: 50 },
-  { period: '4期', section: '恵', totalCount: 34, usedCount: 3, remainingCount: 31 },
-  { period: '4期', section: 'るり庵Ⅱ', totalCount: 64, usedCount: 1, remainingCount: 63 },
-  { period: '4期', section: 'るり庵テラス', totalCount: 25, usedCount: 0, remainingCount: 25 },
+  { period: '第4期', section: '1', totalCount: 104, usedCount: 95, remainingCount: 9 },
+  { period: '第4期', section: '1.5', totalCount: 185, usedCount: 140, remainingCount: 45 },
+  { period: '第4期', section: '2.4', totalCount: 130, usedCount: 79, remainingCount: 51 },
+  { period: '第4期', section: '3', totalCount: 98, usedCount: 38, remainingCount: 60 },
+  { period: '第4期', section: '4', totalCount: 29, usedCount: 25, remainingCount: 4 },
+  { period: '第4期', section: '5', totalCount: 8, usedCount: 8, remainingCount: 0 },
+  { period: '第4期', section: '8.4', totalCount: 66, usedCount: 6, remainingCount: 60 },
+  { period: '第4期', section: '憩', totalCount: 56, usedCount: 6, remainingCount: 50 },
+  { period: '第4期', section: '恵', totalCount: 34, usedCount: 3, remainingCount: 31 },
+  { period: '第4期', section: '想', totalCount: 0, usedCount: 0, remainingCount: 0 },
+  { period: '第4期', section: 'るり庵テラスⅡ', totalCount: 64, usedCount: 1, remainingCount: 63 },
+  { period: '第4期', section: 'るり庵テラス', totalCount: 25, usedCount: 0, remainingCount: 25 },
 ];
 
 // 全区画データを取得
@@ -104,13 +105,15 @@ export function getAllPlotInventory(): PlotInventoryItem[] {
 // 期別の区画データを取得
 export function getPlotInventoryByPeriod(period: PlotPeriod): PlotInventoryItem[] {
   switch (period) {
-    case '1期':
+    case '第1期':
       return PERIOD_1_INVENTORY;
-    case '2期':
+    case '第2期':
       return PERIOD_2_INVENTORY;
-    case '3期':
-      return [...PERIOD_3_INVENTORY, ...PERIOD_3_SPECIAL_INVENTORY];
-    case '4期':
+    case '第3期':
+      return PERIOD_3_INVENTORY;
+    case '第3期樹林部':
+      return PERIOD_3_SPECIAL_INVENTORY;
+    case '第4期':
       return PERIOD_4_INVENTORY;
     default:
       return [];
@@ -136,7 +139,7 @@ export function calculatePeriodSummary(period: PlotPeriod): PeriodSummary {
 
 // 全期の集計を計算
 export function calculateAllPeriodSummaries(): PeriodSummary[] {
-  const periods: PlotPeriod[] = ['1期', '2期', '3期', '4期'];
+  const periods: PlotPeriod[] = ['第1期', '第2期', '第3期', '第3期樹林部', '第4期'];
   return periods.map(period => calculatePeriodSummary(period));
 }
 
