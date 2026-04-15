@@ -39,11 +39,6 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
             <UserMenu />
           </div>
 
-          {/* Desktop header bar with UserMenu */}
-          <div className="hidden md:flex items-center justify-end h-12 px-4 border-b border-gin bg-white flex-shrink-0">
-            <UserMenu />
-          </div>
-
           {children}
         </div>
       </div>
