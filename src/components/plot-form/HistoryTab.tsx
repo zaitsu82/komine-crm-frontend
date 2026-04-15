@@ -46,6 +46,15 @@ interface HistoryEntry {
 }
 
 /**
+ * UUID形式の判定
+ */
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function isUuidValue(value: unknown): boolean {
+  return typeof value === 'string' && UUID_REGEX.test(value);
+}
+
+/**
  * 値を表示用文字列に整形する
  */
 function formatValue(value: unknown): string {
@@ -59,6 +68,10 @@ function formatValue(value: unknown): string {
     return value.toLocaleString('ja-JP');
   }
   if (typeof value === 'string') {
+    // UUID値は省略表示（バックエンド側でフィルタされるが、既存データ用のフォールバック）
+    if (isUuidValue(value)) {
+      return `（ID: ${value.substring(0, 8)}…）`;
+    }
     // ISO 日付っぽい文字列は日本語日時表記に
     if (/^\d{4}-\d{2}-\d{2}T/.test(value)) {
       const d = new Date(value);
