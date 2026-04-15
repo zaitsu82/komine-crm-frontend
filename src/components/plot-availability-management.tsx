@@ -224,13 +224,14 @@ export default function PlotAvailabilityManagement() {
               >
                 全期
               </button>
-              {(['1期', '2期', '3期', '4期'] as PlotPeriod[]).map((period) => {
+              {(['第1期', '第2期', '第3期', '第3期樹林部', '第4期'] as PlotPeriod[]).map((period) => {
                 const ps = periodSummaries.find(p => p.period === period);
-                const periodColors = {
-                  '1期': { bg: 'bg-matsu-50', border: 'border-matsu-200', text: 'text-matsu' },
-                  '2期': { bg: 'bg-ai-50', border: 'border-ai-200', text: 'text-ai' },
-                  '3期': { bg: 'bg-cha-50', border: 'border-cha-200', text: 'text-cha' },
-                  '4期': { bg: 'bg-kohaku-50', border: 'border-kohaku-200', text: 'text-kohaku' },
+                const periodColors: Record<string, { bg: string; border: string; text: string }> = {
+                  '第1期': { bg: 'bg-matsu-50', border: 'border-matsu-200', text: 'text-matsu' },
+                  '第2期': { bg: 'bg-ai-50', border: 'border-ai-200', text: 'text-ai' },
+                  '第3期': { bg: 'bg-cha-50', border: 'border-cha-200', text: 'text-cha' },
+                  '第3期樹林部': { bg: 'bg-cha-50', border: 'border-cha-200', text: 'text-cha' },
+                  '第4期': { bg: 'bg-kohaku-50', border: 'border-kohaku-200', text: 'text-kohaku' },
                 };
                 const colors = periodColors[period];
 
@@ -339,15 +340,16 @@ export default function PlotAvailabilityManagement() {
           </div>
 
           {/* 期別サマリーカード */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4 mb-4 md:mb-6">
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 md:gap-4 mb-4 md:mb-6">
             {periodSummaries.map((ps) => {
-              const periodColors = {
-                '1期': { gradient: 'from-matsu to-matsu-dark', light: 'matsu' },
-                '2期': { gradient: 'from-ai to-ai-dark', light: 'ai' },
-                '3期': { gradient: 'from-cha to-cha-dark', light: 'cha' },
-                '4期': { gradient: 'from-kohaku to-kohaku-dark', light: 'kohaku' },
+              const periodColors: Record<string, { gradient: string; light: string }> = {
+                '第1期': { gradient: 'from-matsu to-matsu-dark', light: 'matsu' },
+                '第2期': { gradient: 'from-ai to-ai-dark', light: 'ai' },
+                '第3期': { gradient: 'from-cha to-cha-dark', light: 'cha' },
+                '第3期樹林部': { gradient: 'from-cha to-cha-dark', light: 'cha' },
+                '第4期': { gradient: 'from-kohaku to-kohaku-dark', light: 'kohaku' },
               };
-              const colors = periodColors[ps.period as keyof typeof periodColors];
+              const colors = periodColors[ps.period] ?? { gradient: 'from-hai to-hai-dark', light: 'hai' };
 
               return (
                 <button
@@ -525,11 +527,12 @@ export default function PlotAvailabilityManagement() {
                         ? Math.round((item.usedCount / item.totalCount) * 100 * 10) / 10
                         : 0);
                       const remainingArea = item.remainingCount * PLOT_SIZE.FULL;
-                      const periodColors = {
-                        '1期': 'bg-matsu-50 text-matsu',
-                        '2期': 'bg-ai-50 text-ai',
-                        '3期': 'bg-cha-50 text-cha',
-                        '4期': 'bg-kohaku-50 text-kohaku',
+                      const periodColors: Record<string, string> = {
+                        '第1期': 'bg-matsu-50 text-matsu',
+                        '第2期': 'bg-ai-50 text-ai',
+                        '第3期': 'bg-cha-50 text-cha',
+                        '第3期樹林部': 'bg-cha-50 text-cha',
+                        '第4期': 'bg-kohaku-50 text-kohaku',
                       };
 
                       return (
@@ -745,11 +748,12 @@ export default function PlotAvailabilityManagement() {
                   </thead>
                   <tbody className="divide-y divide-gin">
                     {displayAreaData.map((item, index) => {
-                      const periodColors = {
-                        '1期': 'bg-matsu-50 text-matsu',
-                        '2期': 'bg-ai-50 text-ai',
-                        '3期': 'bg-cha-50 text-cha',
-                        '4期': 'bg-kohaku-50 text-kohaku',
+                      const periodColors: Record<string, string> = {
+                        '第1期': 'bg-matsu-50 text-matsu',
+                        '第2期': 'bg-ai-50 text-ai',
+                        '第3期': 'bg-cha-50 text-cha',
+                        '第3期樹林部': 'bg-cha-50 text-cha',
+                        '第4期': 'bg-kohaku-50 text-kohaku',
                       };
 
                       return (

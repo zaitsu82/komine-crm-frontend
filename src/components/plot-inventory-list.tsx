@@ -230,7 +230,7 @@ export default function PlotInventoryList({ onClose }: PlotInventoryListProps) {
         >
           全期
         </Button>
-        {(['1期', '2期', '3期', '4期'] as PlotPeriod[]).map((period) => (
+        {(['第1期', '第2期', '第3期', '第3期樹林部', '第4期'] as PlotPeriod[]).map((period) => (
           <Button
             key={period}
             variant="outline"
@@ -262,11 +262,12 @@ export default function PlotInventoryList({ onClose }: PlotInventoryListProps) {
               const usageRate = item.totalCount > 0
                 ? Math.round((item.usedCount / item.totalCount) * 100 * 10) / 10
                 : 0;
-              const periodColors = {
-                '1期': 'bg-matsu-50 text-matsu',
-                '2期': 'bg-ai-50 text-ai',
-                '3期': 'bg-cha-50 text-cha',
-                '4期': 'bg-kohaku-50 text-kohaku',
+              const periodColors: Record<string, string> = {
+                '第1期': 'bg-matsu-50 text-matsu',
+                '第2期': 'bg-ai-50 text-ai',
+                '第3期': 'bg-cha-50 text-cha',
+                '第3期樹林部': 'bg-cha-50 text-cha',
+                '第4期': 'bg-kohaku-50 text-kohaku',
               };
               return (
                 <tr

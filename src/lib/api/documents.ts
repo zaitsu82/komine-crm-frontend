@@ -247,7 +247,7 @@ const MOCK_DOCUMENTS: DocumentDetail[] = [
       physicalPlot: {
         id: 'pp-001',
         plotNumber: 'A-56',
-        areaName: '1期',
+        areaName: '第1期',
       },
     },
     customer: {
@@ -287,7 +287,7 @@ const MOCK_DOCUMENTS: DocumentDetail[] = [
       physicalPlot: {
         id: 'pp-002',
         plotNumber: 'B-12',
-        areaName: '2期',
+        areaName: '第2期',
       },
     },
     customer: {

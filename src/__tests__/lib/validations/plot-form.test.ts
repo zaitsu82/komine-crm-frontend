@@ -37,7 +37,7 @@ import {
 // ===== テストヘルパー =====
 
 function validPhysicalPlot() {
-  return { plotNumber: 'A-001', areaName: '1期', areaSqm: 3.6, notes: null };
+  return { plotNumber: 'A-001', areaName: '第1期', areaSqm: 3.6, notes: null };
 }
 
 function validContractPlot() {
@@ -102,7 +102,7 @@ function makePlotDetail(overrides: Partial<PlotDetailResponse> = {}): PlotDetail
     physicalPlot: {
       id: 'pp-1',
       plotNumber: 'A-001',
-      areaName: '1期',
+      areaName: '第1期',
       areaSqm: 3.6,
       status: PhysicalPlotStatus.SoldOut,
       notes: null,
@@ -177,7 +177,7 @@ describe('plot-form.ts - Zodスキーマバリデーション', () => {
     });
 
     it('areaSqmのデフォルト値は3.6', () => {
-      const data = { plotNumber: 'A-001', areaName: '1期' };
+      const data = { plotNumber: 'A-001', areaName: '第1期' };
       const result = physicalPlotSchema.safeParse(data);
       expect(result.success).toBe(true);
       if (result.success) {
@@ -682,7 +682,7 @@ describe('plotFormDataToCreateRequest', () => {
     const request = plotFormDataToCreateRequest(formData);
 
     expect(request.physicalPlot.plotNumber).toBe('A-001');
-    expect(request.physicalPlot.areaName).toBe('1期');
+    expect(request.physicalPlot.areaName).toBe('第1期');
     expect(request.physicalPlot.areaSqm).toBe(3.6);
     expect(request.customer.name).toBe('田中太郎');
     expect(request.customer.role).toBe(ContractRole.Contractor);
@@ -1125,7 +1125,7 @@ describe('plotDetailToFormData', () => {
     const formData = plotDetailToFormData(detail);
 
     expect(formData.physicalPlot.plotNumber).toBe('A-001');
-    expect(formData.physicalPlot.areaName).toBe('1期');
+    expect(formData.physicalPlot.areaName).toBe('第1期');
     expect(formData.physicalPlot.areaSqm).toBe(3.6);
     expect(formData.physicalPlot.notes).toBeNull();
   });
