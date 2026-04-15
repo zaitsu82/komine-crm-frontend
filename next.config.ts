@@ -1,6 +1,17 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
+  transpilePackages: ['@komine/types'],
+  webpack: (config) => {
+    // @komine/types がシンボリンク経由で参照される際、
+    // zod をフロントエンドの node_modules から解決する
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      zod: path.resolve(__dirname, 'node_modules/zod'),
+    };
+    return config;
+  },
   async rewrites() {
     return [
       {

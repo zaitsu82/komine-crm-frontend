@@ -1,13 +1,13 @@
 /**
  * 区画フォームバリデーション
  *
- * @komine/types の CreatePlotRequest / UpdatePlotRequest に対応
- * 型変換なしでAPIリクエストを生成できる構造
+ * スキーマ定義は @komine/types/validations から参照（フロントエンド・バックエンド統一）。
+ * このファイルにはフロントエンド固有の要素のみ残す:
+ * - デフォルト値
+ * - フォームデータ ⇔ APIリクエスト変換関数
  */
 
-import { z } from 'zod';
 import {
-  Gender,
   ContractRole,
   PaymentStatus,
   DmSetting,
@@ -15,334 +15,55 @@ import {
   BillingType,
   AccountType,
 } from '@komine/types';
+import type { CreatePlotRequest, UpdatePlotRequest, PlotDetailResponse } from '@komine/types';
 
-// ===== 共通バリデーション =====
+// ===== スキーマと型を @komine/types から再エクスポート =====
+export {
+  // 個別スキーマ
+  physicalPlotSchema,
+  contractPlotSchema,
+  saleContractSchema,
+  customerSchema,
+  workInfoSchema,
+  billingInfoSchema,
+  usageFeeSchema,
+  managementFeeSchema,
+  gravestoneInfoSchema,
+  familyContactSchema,
+  buriedPersonSchema,
+  constructionInfoSchema,
+  collectiveBurialSchema,
+  // 複合スキーマ
+  plotFormSchema,
+  plotUpdateFormSchema,
+} from '@komine/types/validations';
 
-// オプショナル非負数値（空欄/NaN → null、数値 → number）
-const optionalNonnegativeNumber = z.preprocess(
-  (val) => (val === '' || val === null || val === undefined || Number.isNaN(val) ? null : val),
-  z.coerce.number({ message: '数値を入力してください' }).nonnegative('0以上の数値を入力してください').nullable(),
-);
+export type {
+  PhysicalPlotFormData,
+  ContractPlotFormData,
+  SaleContractFormData,
+  CustomerSectionFormData,
+  WorkInfoFormData,
+  BillingInfoFormData,
+  UsageFeeFormData,
+  ManagementFeeFormData,
+  GravestoneInfoFormData,
+  FamilyContactFormData,
+  BuriedPersonFormData,
+  ConstructionInfoFormData,
+  CollectiveBurialFormData,
+  PlotFormData,
+  PlotUpdateFormData,
+} from '@komine/types/validations';
 
-// オプショナル非負整数
-const optionalNonnegativeInt = z.preprocess(
-  (val) => (val === '' || val === null || val === undefined || Number.isNaN(val) ? null : val),
-  z.coerce.number({ message: '数値を入力してください' }).int('整数を入力してください').nonnegative('0以上の数値を入力してください').nullable(),
-);
-
-// 日付文字列（YYYY-MM-DD形式）
-const dateString = z
-  .string()
-  .regex(/^\d{4}-\d{2}-\d{2}$/, '日付はYYYY-MM-DD形式で入力してください')
-  .optional()
-  .or(z.literal(''));
-
-// 電話番号（ハイフンなし11桁）
-const phoneNumber = z
-  .string()
-  .regex(/^\d{10,11}$/, '電話番号は10〜11桁の数字で入力してください');
-
-// 郵便番号（ハイフンなし7桁）
-const postalCode = z
-  .string()
-  .regex(/^\d{7}$/, '郵便番号は7桁の数字で入力してください');
-
-// メールアドレス（オプショナル）
-const optionalEmail = z
-  .string()
-  .email('正しいメールアドレスを入力してください')
-  .optional()
-  .or(z.literal(''));
-
-// ===== 物理区画スキーマ =====
-
-export const physicalPlotSchema = z.object({
-  plotNumber: z.string().min(1, '区画番号は必須です'),
-  areaName: z.string().min(1, '区画（期）は必須です'),
-  areaSqm: z.coerce.number().positive('面積は正の数値で入力してください').min(1.8, '面積は1.8㎡以上で入力してください').default(3.6),
-  notes: z.string().optional().nullable(),
-});
-
-// ===== 契約区画スキーマ =====
-
-export const contractPlotSchema = z.object({
-  contractAreaSqm: z.coerce.number().positive('契約面積は正の数値で入力してください'),
-  locationDescription: z.string().optional().nullable(),
-});
-
-// ===== 販売契約スキーマ =====
-
-export const saleContractSchema = z.object({
-  contractDate: z.string().min(1, '契約日は必須です').regex(/^\d{4}-\d{2}-\d{2}$/, '契約日はYYYY-MM-DD形式で入力してください'),
-  price: z.coerce.number().nonnegative('価格は0以上で入力してください'),
-  paymentStatus: z.nativeEnum(PaymentStatus).optional().default(PaymentStatus.Unpaid),
-  reservationDate: dateString,
-  acceptanceNumber: z.string().optional(),
-  acceptanceDate: dateString,
-  staffInCharge: z.string().optional().nullable(),
-  agentName: z.string().max(100).optional().nullable(),
-  permitDate: dateString,
-  permitNumber: z.string().optional(),
-  startDate: dateString,
-  notes: z.string().optional().nullable(),
-});
-
-// ===== 顧客スキーマ =====
-
-export const customerSchema = z.object({
-  name: z.string().min(1, '氏名は必須です'),
-  nameKana: z.string().min(1, '氏名カナは必須です').regex(/^[ァ-ヶー\s]+$/, '氏名カナはカタカナで入力してください'),
-  birthDate: dateString.nullable(),
-  gender: z.nativeEnum(Gender).optional().nullable(),
-  postalCode: postalCode,
-  address: z.string().min(1, '住所は必須です'),
-  addressLine2: z.string().optional().nullable(),
-  registeredAddress: z.string().optional().nullable(),
-  phoneNumber: phoneNumber,
-  faxNumber: z.string().optional().nullable(),
-  email: optionalEmail.nullable(),
-  notes: z.string().optional().nullable(),
-  role: z.nativeEnum(ContractRole).optional().default(ContractRole.Contractor),
-});
-
-// ===== 勤務先情報スキーマ =====
-
-export const workInfoSchema = z.object({
-  companyName: z.string().min(1, '勤務先名称は必須です'),
-  companyNameKana: z.string().optional().default(''),
-  workAddress: z.string().optional().default(''),
-  workPostalCode: z.string().optional().default(''),
-  workPhoneNumber: z.string().optional().default(''),
-  dmSetting: z.nativeEnum(DmSetting).optional().default(DmSetting.Allow),
-  addressType: z.nativeEnum(AddressType).optional().default(AddressType.Home),
-  notes: z.string().optional().nullable(),
-});
-
-// ===== 請求情報スキーマ =====
-
-export const billingInfoSchema = z.object({
-  billingType: z.nativeEnum(BillingType),
-  bankName: z.string().min(1, '銀行名は必須です'),
-  branchName: z.string().min(1, '支店名は必須です'),
-  accountType: z.nativeEnum(AccountType),
-  accountNumber: z.string().min(1, '口座番号は必須です'),
-  accountHolder: z.string().min(1, '口座名義は必須です'),
-});
-
-// ===== 使用料スキーマ =====
-
-export const usageFeeSchema = z.object({
-  calculationType: z.string().optional().nullable(),
-  taxType: z.string().optional().nullable(),
-  billingType: z.string().optional().nullable(),
-  billingYears: z.string().optional().nullable(),
-  usageFee: z.string().optional().nullable(),
-  area: z.string().optional().nullable(),
-  unitPrice: z.string().optional().nullable(),
-  paymentMethod: z.string().optional().nullable(),
-});
-
-// ===== 管理料スキーマ =====
-
-export const managementFeeSchema = z.object({
-  calculationType: z.string().optional().nullable(),
-  taxType: z.string().optional().nullable(),
-  billingType: z.string().optional().nullable(),
-  billingYears: z.string().optional().nullable(),
-  area: z.string().optional().nullable(),
-  billingMonth: z.string().optional().nullable(),
-  managementFee: z.string().optional().nullable(),
-  unitPrice: z.string().optional().nullable(),
-  lastBillingMonth: z.string().optional().nullable(),
-  paymentMethod: z.string().optional().nullable(),
-});
-
-// ===== 墓石情報スキーマ =====
-
-export const gravestoneInfoSchema = z.object({
-  gravestoneBase: z.string().optional().nullable(),
-  enclosurePosition: z.string().optional().nullable(),
-  gravestoneDealer: z.string().optional().nullable(),
-  gravestoneType: z.string().optional().nullable(),
-  surroundingArea: z.string().optional().nullable(),
-  gravestoneCost: optionalNonnegativeNumber.optional(),
-  establishmentDeadline: dateString.nullable(),
-  establishmentDate: dateString.nullable(),
-});
-
-// ===== 家族連絡先スキーマ =====
-
-export const familyContactSchema = z.object({
-  id: z.string().optional(), // 既存レコードの場合はID付き
-  emergencyContactFlag: z.boolean().optional().default(false),
-  name: z.string().min(1, '氏名は必須です'),
-  nameKana: z.string().optional().nullable(),
-  birthDate: dateString.nullable(),
-  relationship: z.string().min(1, '続柄は必須です'),
-  postalCode: z.string().optional().nullable(),
-  address: z.string().min(1, '住所は必須です'),
-  phoneNumber: z.string().min(1, '電話番号は必須です'),
-  phoneNumber2: z.string().optional().nullable(),
-  faxNumber: z.string().optional().nullable(),
-  email: optionalEmail.nullable(),
-  registeredAddress: z.string().optional().nullable(),
-  mailingType: z.nativeEnum(AddressType).optional().nullable(),
-  workCompanyName: z.string().optional().nullable(),
-  workCompanyNameKana: z.string().optional().nullable(),
-  workAddress: z.string().optional().nullable(),
-  workPhoneNumber: z.string().optional().nullable(),
-  contactMethod: z.string().optional().nullable(),
-  notes: z.string().optional().nullable(),
-});
-
-// ===== 埋葬者スキーマ =====
-
-export const buriedPersonSchema = z.object({
-  id: z.string().optional(), // 既存レコードの場合はID付き
-  name: z.string().min(1, '氏名は必須です'),
-  nameKana: z.string().optional().nullable(),
-  relationship: z.string().optional().nullable(),
-  birthDate: dateString.nullable(),
-  deathDate: dateString.nullable(),
-  age: optionalNonnegativeInt.optional(),
-  gender: z.nativeEnum(Gender).optional().nullable(),
-  burialDate: dateString.nullable(),
-  posthumousName: z.string().optional().nullable(),
-  reportDate: dateString.nullable(),
-  religion: z.string().optional().nullable(),
-  notes: z.string().optional().nullable(),
-});
-
-// ===== 工事情報スキーマ =====
-
-export const constructionInfoSchema = z.object({
-  id: z.string().optional(),
-  constructionType: z.string().optional().nullable(),
-  startDate: dateString.nullable(),
-  completionDate: dateString.nullable(),
-  contractor: z.string().optional().nullable(),
-  supervisor: z.string().optional().nullable(),
-  progress: z.string().optional().nullable(),
-  workItem1: z.string().optional().nullable(),
-  workDate1: dateString.nullable(),
-  workAmount1: optionalNonnegativeInt.optional(),
-  workStatus1: z.string().optional().nullable(),
-  workItem2: z.string().optional().nullable(),
-  workDate2: dateString.nullable(),
-  workAmount2: optionalNonnegativeInt.optional(),
-  workStatus2: z.string().optional().nullable(),
-  permitNumber: z.string().optional().nullable(),
-  applicationDate: dateString.nullable(),
-  permitDate: dateString.nullable(),
-  permitStatus: z.string().optional().nullable(),
-  paymentType1: z.string().optional().nullable(),
-  paymentAmount1: optionalNonnegativeInt.optional(),
-  paymentDate1: dateString.nullable(),
-  paymentStatus1: z.string().optional().nullable(),
-  paymentType2: z.string().optional().nullable(),
-  paymentAmount2: optionalNonnegativeInt.optional(),
-  paymentScheduledDate2: dateString.nullable(),
-  paymentStatus2: z.string().optional().nullable(),
-  scheduledEndDate: dateString.nullable(),
-  constructionContent: z.string().optional().nullable(),
-  notes: z.string().optional().nullable(),
-});
-
-// ===== 合祀情報スキーマ =====
-
-export const collectiveBurialSchema = z.object({
-  burialCapacity: z.coerce.number().int().positive('埋葬上限は1以上で入力してください'),
-  validityPeriodYears: z.coerce.number().int().positive('有効期間は1年以上で入力してください'),
-  billingAmount: optionalNonnegativeNumber.optional(),
-  notes: z.string().optional().nullable(),
-});
-
-// ===== メインフォームスキーマ（作成用） =====
-
-export const plotFormSchema = z.object({
-  // 物理区画（必須）
-  physicalPlot: physicalPlotSchema,
-
-  // 契約区画（必須）
-  contractPlot: contractPlotSchema,
-
-  // 販売契約（必須）
-  saleContract: saleContractSchema,
-
-  // 顧客情報（必須）
-  customer: customerSchema,
-
-  // オプショナルセクション
-  workInfo: workInfoSchema.optional().nullable(),
-  billingInfo: billingInfoSchema.optional().nullable(),
-  usageFee: usageFeeSchema.optional().nullable(),
-  managementFee: managementFeeSchema.optional().nullable(),
-  gravestoneInfo: gravestoneInfoSchema.optional().nullable(),
-
-  // 配列セクション
-  familyContacts: z.array(familyContactSchema).optional(),
-  buriedPersons: z.array(buriedPersonSchema).optional(),
-  constructionInfos: z.array(constructionInfoSchema).optional(),
-
-  // 合祀情報
-  collectiveBurial: collectiveBurialSchema.optional().nullable(),
-});
-
-// ===== メインフォームスキーマ（更新用） =====
-
-export const plotUpdateFormSchema = z.object({
-  // 物理区画の更新（issue #62: notesのみだったため plot_number / area_name / area_sqm が反映されなかった）
-  physicalPlot: z.object({
-    plotNumber: z.string().optional(),
-    areaName: z.string().optional(),
-    areaSqm: z.coerce.number().positive().optional(),
-    status: z.string().optional(),
-    notes: z.string().optional().nullable(),
-  }).optional(),
-
-  // 契約区画
-  contractPlot: contractPlotSchema.partial().optional(),
-
-  // 販売契約
-  saleContract: saleContractSchema.partial().optional(),
-
-  // 顧客情報
-  customer: customerSchema.partial().optional(),
-
-  // オプショナルセクション
-  workInfo: workInfoSchema.optional().nullable(),
-  billingInfo: billingInfoSchema.optional().nullable(),
-  usageFee: usageFeeSchema.optional().nullable(),
-  managementFee: managementFeeSchema.optional().nullable(),
-  gravestoneInfo: gravestoneInfoSchema.optional().nullable(),
-
-  // 配列セクション（全置換）
-  familyContacts: z.array(familyContactSchema).optional(),
-  buriedPersons: z.array(buriedPersonSchema).optional(),
-  constructionInfos: z.array(constructionInfoSchema).optional(),
-
-  // 合祀情報
-  collectiveBurial: collectiveBurialSchema.optional().nullable(),
-});
-
-// ===== 型エクスポート =====
-
-export type PhysicalPlotFormData = z.infer<typeof physicalPlotSchema>;
-export type ContractPlotFormData = z.infer<typeof contractPlotSchema>;
-export type SaleContractFormData = z.infer<typeof saleContractSchema>;
-export type CustomerSectionFormData = z.infer<typeof customerSchema>;
-export type WorkInfoFormData = z.infer<typeof workInfoSchema>;
-export type BillingInfoFormData = z.infer<typeof billingInfoSchema>;
-export type UsageFeeFormData = z.infer<typeof usageFeeSchema>;
-export type ManagementFeeFormData = z.infer<typeof managementFeeSchema>;
-export type GravestoneInfoFormData = z.infer<typeof gravestoneInfoSchema>;
-export type FamilyContactFormData = z.infer<typeof familyContactSchema>;
-export type BuriedPersonFormData = z.infer<typeof buriedPersonSchema>;
-export type ConstructionInfoFormData = z.infer<typeof constructionInfoSchema>;
-export type CollectiveBurialFormData = z.infer<typeof collectiveBurialSchema>;
-
-export type PlotFormData = z.infer<typeof plotFormSchema>;
-export type PlotUpdateFormData = z.infer<typeof plotUpdateFormSchema>;
+import type {
+  PhysicalPlotFormData,
+  ContractPlotFormData,
+  SaleContractFormData,
+  CustomerSectionFormData,
+  PlotFormData,
+  PlotUpdateFormData,
+} from '@komine/types/validations';
 
 // ===== デフォルト値 =====
 
@@ -407,11 +128,8 @@ export const defaultPlotFormData: PlotFormData = {
 
 // ===== フォームデータ → APIリクエスト変換 =====
 
-import type { CreatePlotRequest, UpdatePlotRequest, PlotDetailResponse } from '@komine/types';
-
 /**
  * PlotFormData を CreatePlotRequest に変換
- * 型が一致しているため、ほぼそのまま使用可能
  */
 export function plotFormDataToCreateRequest(formData: PlotFormData): CreatePlotRequest {
   return {
@@ -598,7 +316,6 @@ export function plotFormDataToUpdateRequest(formData: PlotUpdateFormData): Updat
   const request: UpdatePlotRequest = {};
 
   if (formData.physicalPlot) {
-    // issue #62: notes のみ送信していたため、その他のフィールドが永続化されなかった
     request.physicalPlot = {
       plotNumber: formData.physicalPlot.plotNumber || undefined,
       areaName: formData.physicalPlot.areaName || undefined,
