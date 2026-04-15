@@ -74,6 +74,11 @@ export function BurialInfoTab({
 
       {/* Burial Person Rows */}
       <div className="space-y-3">
+        {buriedPersonFields.length === 0 && (
+          <div className="text-center text-hai py-4 border border-gin rounded-lg">
+            埋葬者が登録されていません
+          </div>
+        )}
         {buriedPersonFields.map((field, index) => {
           const gender = watch(`buriedPersons.${index}.gender`);
           const genderLabel = gender ? genderLabels[gender as Gender] : '-';

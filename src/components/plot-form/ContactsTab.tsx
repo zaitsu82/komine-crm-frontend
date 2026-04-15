@@ -42,6 +42,11 @@ export function ContactsTab({
       </div>
 
       <div className="space-y-3">
+        {familyContactFields.length === 0 && (
+          <div className="text-center text-hai py-4 border border-gin rounded-lg">
+            家族連絡先が登録されていません
+          </div>
+        )}
         {familyContactFields.map((field, index) => (
           <div key={field.id} className="border rounded-lg overflow-hidden">
             {/* Summary Line */}

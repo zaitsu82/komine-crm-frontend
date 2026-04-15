@@ -216,6 +216,17 @@ body {
   border-color: #644c1a !important;
 }
 
+/* --- ホバー背景色 --- */
+.dark .hover\:bg-white:hover,
+.dark .hover\:bg-matsu-50:hover {
+  background-color: #232730 !important;
+}
+
+.dark .hover\:bg-gray-50:hover,
+.dark .hover\:bg-kinari:hover {
+  background-color: #232730 !important;
+}
+
 /* --- グラデーション --- */
 .dark .bg-gradient-warm {
   background-image: linear-gradient(135deg, #1a1d23 0%, #15181d 100%) !important;

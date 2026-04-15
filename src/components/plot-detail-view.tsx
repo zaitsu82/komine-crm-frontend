@@ -270,9 +270,11 @@ function FeeInfoTab({ plot }: { plot: PlotDetailResponse }) {
       )}
 
       {!plot.usageFee && !plot.managementFee && (
-        <div className="text-center text-hai py-8">
-          料金情報が登録されていません
-        </div>
+        <Section title="料金情報">
+          <div className="col-span-full text-center text-hai py-4">
+            料金情報が登録されていません
+          </div>
+        </Section>
       )}
     </div>
   );
@@ -285,7 +287,7 @@ function ContactsTab({ plot }: { plot: PlotDetailResponse }) {
       <Section title="契約関係者">
         {plot.roles.length > 0 ? (
           plot.roles.map((role, idx) => (
-            <div key={role.id || idx} className="col-span-full border border-gin rounded-elegant p-4 mb-2 bg-kinari/30">
+            <div key={role.id || idx} className={`col-span-full ${idx > 0 ? 'border-t border-gin pt-4' : ''}`}>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <InfoField label="役割" value={CONTRACT_ROLE_LABELS[role.role as ContractRole]} />
                 <InfoField label="氏名" value={role.customer.name} />
@@ -308,7 +310,7 @@ function ContactsTab({ plot }: { plot: PlotDetailResponse }) {
       <Section title="家族連絡先">
         {plot.familyContacts && plot.familyContacts.length > 0 ? (
           plot.familyContacts.map((contact, idx) => (
-            <div key={contact.id || idx} className="col-span-full border border-gin rounded-elegant p-4 mb-2 bg-kinari/30">
+            <div key={contact.id || idx} className={`col-span-full ${idx > 0 ? 'border-t border-gin pt-4' : ''}`}>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <InfoField label="氏名" value={contact.name} />
                 <InfoField label="ふりがな" value={contact.nameKana} />
@@ -360,7 +362,7 @@ function BurialInfoTab({ plot }: { plot: PlotDetailResponse }) {
       <Section title="埋葬者一覧">
         {plot.buriedPersons && plot.buriedPersons.length > 0 ? (
           plot.buriedPersons.map((person, idx) => (
-            <div key={person.id || idx} className="col-span-full border border-gin rounded-elegant p-4 mb-2 bg-kinari/30">
+            <div key={person.id || idx} className={`col-span-full ${idx > 0 ? 'border-t border-gin pt-4' : ''}`}>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <InfoField label="氏名" value={person.name} />
                 <InfoField label="ふりがな" value={person.nameKana} />
@@ -425,7 +427,7 @@ function ConstructionInfoTab({ plot }: { plot: PlotDetailResponse }) {
       <Section title="工事記録">
         {plot.constructionInfos && plot.constructionInfos.length > 0 ? (
           plot.constructionInfos.map((record, idx) => (
-            <div key={record.id || idx} className="col-span-full border border-gin rounded-elegant p-4 mb-2 bg-kinari/30">
+            <div key={record.id || idx} className={`col-span-full ${idx > 0 ? 'border-t border-gin pt-4' : ''}`}>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <InfoField label="施工業者" value={record.contractor} />
                 <InfoField label="監督者" value={record.supervisor} />
