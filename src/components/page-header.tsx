@@ -1,6 +1,7 @@
 'use client';
 
 import { ReactNode } from 'react';
+import UserMenu from '@/components/user-menu';
 
 type ColorTheme = 'matsu' | 'cha' | 'ai' | 'sumi' | 'kohaku';
 
@@ -44,6 +45,9 @@ export default function PageHeader({ title, subtitle, icon, theme }: PageHeaderP
             <p className="text-[10px] md:text-xs text-hai truncate">{subtitle}</p>
           )}
         </div>
+      </div>
+      <div className="hidden md:block flex-shrink-0 ml-4">
+        <UserMenu />
       </div>
     </div>
   );
