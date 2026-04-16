@@ -17,6 +17,7 @@ import {
 } from '@/lib/api';
 import { showSuccess, showError } from '@/lib/toast';
 import PageHeader from '@/components/page-header';
+import { clearMastersCache } from '@/hooks/useMasters';
 
 function formatApiError(
   message: string,
@@ -126,6 +127,7 @@ export default function MastersManagement() {
     if (editingItem) {
       const response = await updateMasterItem(selectedType.key, editingItem.id, payload);
       if (response.success) {
+        clearMastersCache();
         await fetchData();
         setShowDialog(false);
         showSuccess(`${selectedType.label}を更新しました`);
@@ -135,6 +137,7 @@ export default function MastersManagement() {
     } else {
       const response = await createMasterItem(selectedType.key, payload);
       if (response.success) {
+        clearMastersCache();
         await fetchData();
         setShowDialog(false);
         showSuccess(`${selectedType.label}を作成しました`);
@@ -152,6 +155,7 @@ export default function MastersManagement() {
 
     const response = await deleteMasterItem(selectedType.key, itemToDelete.id);
     if (response.success) {
+      clearMastersCache();
       await fetchData();
       setShowDeleteConfirm(false);
       setItemToDelete(null);

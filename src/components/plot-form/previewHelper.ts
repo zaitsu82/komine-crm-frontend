@@ -32,7 +32,7 @@ const sectionConfigs: SectionConfig[] = [
     title: '物理区画情報',
     fields: [
       { key: 'physicalPlot.plotNumber', label: '区画番号' },
-      { key: 'physicalPlot.areaName', label: '区画（期）' },
+      { key: 'physicalPlot.areaName', label: '区画' },
       { key: 'physicalPlot.areaSqm', label: '面積（㎡）', format: formatNumber },
       { key: 'physicalPlot.notes', label: '備考' },
     ],

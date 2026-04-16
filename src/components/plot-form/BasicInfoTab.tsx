@@ -53,10 +53,10 @@ export function BasicInfoTab({
             placeholder="例: A-001"
           />
 
-          {/* 区画（期）の選択 - 2段階セレクト */}
+          {/* 区画の選択 - 期→区画の2段階セレクト */}
           <div>
             <Label className="text-sm font-medium">
-              区画（期）
+              区画
               <span className="text-beni"> *</span>
             </Label>
             {viewMode ? (
