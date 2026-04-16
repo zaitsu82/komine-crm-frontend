@@ -297,6 +297,23 @@ body {
   border-color: #4b5260 !important;
 }
 
+/* ホバー（Tailwind 標準色） */
+.dark .hover\:bg-white:hover {
+  background-color: #232730 !important;
+}
+
+.dark .hover\:bg-white\/50:hover {
+  background-color: rgba(35, 39, 48, 0.5) !important;
+}
+
+.dark .hover\:bg-gray-50:hover {
+  background-color: #232730 !important;
+}
+
+.dark .hover\:bg-blue-50:hover {
+  background-color: #142235 !important;
+}
+
 /* shadcn tabs: data-[state=active]:bg-white の白を暗色に */
 .dark .data-\[state\=active\]\:bg-white[data-state="active"] {
   background-color: #2d323d !important;
