@@ -9,6 +9,7 @@ import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import {
   FieldDef,
+  FieldType,
   MAIN_SHEET_FIELDS,
   FAMILY_CONTACT_FIELDS,
   BURIED_PERSON_FIELDS,
@@ -16,6 +17,35 @@ import {
   SHEET_NAMES,
   MAX_PLOTS_PER_BATCH,
 } from './plotFields';
+
+const TYPE_LABEL: Record<FieldType, string> = {
+  string: '文字列',
+  number: '数値',
+  integer: '整数',
+  date: '日付',
+  yearMonth: '年月',
+  boolean: '真偽値',
+  enum: '選択肢',
+};
+
+function formatType(f: FieldDef): string {
+  const base = TYPE_LABEL[f.type];
+  switch (f.type) {
+    case 'string':
+      return f.maxLength ? `${base}（最大${f.maxLength}文字）` : base;
+    case 'date':
+      return `${base}（YYYY-MM-DD）`;
+    case 'yearMonth':
+      return `${base}（YYYY-MM）`;
+    case 'boolean':
+      return `${base}（true / false）`;
+    case 'number':
+    case 'integer':
+      return f.positive ? `${base}（正の数のみ）` : base;
+    default:
+      return base;
+  }
+}
 
 function FieldTable({ fields, mode }: { fields: FieldDef[]; mode: 'create' | 'update' }) {
   return (
@@ -38,10 +68,7 @@ function FieldTable({ fields, mode }: { fields: FieldDef[]; mode: 'create' | 'up
                 <td className="px-3 py-1.5 text-center">
                   {required ? <span className="text-beni">○</span> : <span className="text-hai">-</span>}
                 </td>
-                <td className="px-3 py-1.5 text-hai whitespace-nowrap">
-                  {f.type}
-                  {f.maxLength ? `(${f.maxLength})` : ''}
-                </td>
+                <td className="px-3 py-1.5 text-hai whitespace-nowrap">{formatType(f)}</td>
                 <td className="px-3 py-1.5 text-hai">{f.description ?? '-'}</td>
               </tr>
             );
