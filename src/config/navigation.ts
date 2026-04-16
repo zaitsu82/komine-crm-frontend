@@ -3,7 +3,7 @@ import { UserRole } from '@/types/plot-detail';
 export interface NavItem {
   label: string;
   path: string;
-  icon: 'search' | 'archive' | 'grid' | 'file-text' | 'users' | 'settings' | 'upload';
+  icon: 'search' | 'archive' | 'grid' | 'file-text' | 'users' | 'settings' | 'upload' | 'bank';
   requiredRoles: UserRole[];
 }
 
@@ -20,6 +20,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: '合祀管理', path: '/collective-burials', requiredRoles: ['viewer', 'operator', 'manager', 'admin'], icon: 'archive' },
       { label: '区画残数管理', path: '/plot-availability', requiredRoles: ['viewer', 'operator', 'manager', 'admin'], icon: 'grid' },
       { label: '書類管理', path: '/documents', requiredRoles: ['viewer', 'operator', 'manager', 'admin'], icon: 'file-text' },
+      { label: 'ゆうちょ連携', path: '/yucho', requiredRoles: ['operator', 'manager', 'admin'], icon: 'bank' },
     ],
   },
   {
