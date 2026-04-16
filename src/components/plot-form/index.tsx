@@ -149,7 +149,7 @@ export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProp
   const fieldLabels: Record<string, string> = {
     // 物理区画
     'physicalPlot.plotNumber': '区画番号',
-    'physicalPlot.areaName': '区画（期）',
+    'physicalPlot.areaName': '区画',
     'physicalPlot.areaSqm': '面積',
     'physicalPlot.notes': '備考',
     // 契約区画

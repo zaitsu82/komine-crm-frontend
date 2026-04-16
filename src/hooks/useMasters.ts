@@ -51,6 +51,14 @@ function isCacheValid(): boolean {
 }
 
 /**
+ * useMastersのグローバルキャッシュをクリア（フック外からも呼び出し可能）
+ * マスタ更新後に呼ぶことで、次回useMasters呼び出し時に最新データを取得させる
+ */
+export function clearMastersCache(): void {
+  globalCache = { data: null, lastFetched: null };
+}
+
+/**
  * 全マスタデータ管理フック
  * キャッシュ機能付き - マスタデータは頻繁に変わらないため
  */
