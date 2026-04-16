@@ -551,15 +551,52 @@ export function sortPlotsByNumber(plots: PlotListItem[]): PlotListItem[] {
 
 /**
  * 区画情報の一括登録
+ *
+ * items は CreatePlotRequest 形式の配列。簡易用途として旧シグネチャ（4項目）にも対応。
+ * バックエンドの対応フィールド拡充は zaitsu82/komine-crm-backend#74 で進行中。
  */
 export async function bulkCreatePlots(
-  items: Array<{ plotNumber: string; areaName: string; areaSqm?: number; notes?: string }>
+  items: Array<Record<string, unknown>>
 ): Promise<ApiResponse<{
   totalRequested: number;
   created: number;
   results: Array<{ row: number; id: string; plotNumber: string; areaName: string }>;
 }>> {
-  return apiPost('/plots/bulk', { items });
+  // 旧シグネチャ（{ plotNumber, areaName, areaSqm?, notes? }）との互換のため、
+  // 平坦な形で渡された場合は physicalPlot にネストする
+  const normalized = items.map((item) => {
+    if ('physicalPlot' in item || 'customer' in item || 'contractPlot' in item) {
+      return item;
+    }
+    return {
+      physicalPlot: {
+        plotNumber: item.plotNumber,
+        areaName: item.areaName,
+        areaSqm: item.areaSqm,
+        notes: item.notes,
+      },
+    };
+  });
+  return apiPost('/plots/bulk', { items: normalized });
+}
+
+/**
+ * 区画情報の一括更新（編集）
+ *
+ * items の各要素は plotNumber を必須とし、その他のフィールドは部分更新。
+ * 空欄（undefined）のフィールドは既存値を保持する。
+ *
+ * バックエンドエンドポイント PUT /api/v1/plots/bulk は
+ * zaitsu82/komine-crm-backend#74 で実装予定。
+ */
+export async function bulkUpdatePlots(
+  items: Array<{ plotNumber: string } & Record<string, unknown>>
+): Promise<ApiResponse<{
+  totalRequested: number;
+  updated: number;
+  results: Array<{ row: number; id: string; plotNumber: string }>;
+}>> {
+  return apiPut('/plots/bulk', { items });
 }
 
 /**
