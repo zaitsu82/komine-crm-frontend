@@ -95,7 +95,13 @@ export default function GlobalSidebar({
             </Link>
           )}
           <button
-            onClick={onToggleCollapse}
+            onClick={() => {
+              if (mobileOpen) {
+                onMobileClose?.();
+              } else {
+                onToggleCollapse();
+              }
+            }}
             className={`p-2 rounded-md text-hai hover:text-sumi hover:bg-white cursor-pointer transition-colors ${focusRing}`}
             aria-label={collapsed ? 'メニューを開く' : 'メニューを閉じる'}
           >
