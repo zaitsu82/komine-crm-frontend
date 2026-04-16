@@ -7,17 +7,175 @@ body {
 }
 
 /* ============================================================
- * ダークテーマ対応
+ * テーマトークン（CSS 変数）
  * ------------------------------------------------------------
- * このプロジェクトは tailwind 設定で固定の和モダンカラーパレット
- * （sumi/hai/gin/matsu/cha/ai 等）を多用しているため、
- * 各コンポーネントに `dark:` バリアントを付けるのではなく、
- * `.dark` クラス配下で代表的な背景・テキスト・ボーダー色を
- * グローバルに上書きしてダークテーマを適用する。
+ * 和モダンカラーを CSS 変数として定義し、:root（ライト）と
+ * .dark（ダーク）で値を差し替える。tailwind.config.ts では
+ * これらの変数を参照するため、bg-xxx / text-xxx / border-xxx /
+ * hover:bg-xxx / from-xxx / to-xxx / data-[state=active]:bg-xxx
+ * などすべての variant prefix で自動的にテーマに追従する。
  * ============================================================ */
+
+:root {
+  color-scheme: light;
+
+  /* ベース */
+  --color-sumi: #1a1a1a;
+  --color-sumi-light: #2d2d2d;
+  --color-sumi-50: #f5f5f5;
+  --color-hai: #6b6b6b;
+  --color-hai-light: #8a8a8a;
+  --color-hai-dark: #4a4a4a;
+  --color-hai-50: #f0f0f0;
+  --color-gin: #c0c0c0;
+  --color-gin-light: #d8d8d8;
+  --color-gin-dark: #a0a0a0;
+  --color-shiro: #fafaf8;
+  --color-kinari: #f5f3ef;
+
+  /* 松葉色 (matsu) - プライマリ */
+  --color-matsu: #2d5a3d;
+  --color-matsu-light: #3d7a52;
+  --color-matsu-dark: #1e3d29;
+  --color-matsu-50: #e8f0eb;
+  --color-matsu-100: #d4e5da;
+  --color-matsu-200: #a8cbb5;
+  --color-matsu-300: #7db190;
+  --color-matsu-400: #52976b;
+  --color-matsu-500: #2d5a3d;
+  --color-matsu-600: #264e34;
+  --color-matsu-700: #1e3d29;
+  --color-matsu-800: #172c1f;
+  --color-matsu-900: #0f1b14;
+
+  /* 茶色 (cha) - セカンダリ */
+  --color-cha: #8b7355;
+  --color-cha-light: #a08060;
+  --color-cha-dark: #6b5a45;
+  --color-cha-50: #f7f4f0;
+  --color-cha-100: #ede7df;
+  --color-cha-200: #d9ccba;
+  --color-cha-300: #c4b095;
+  --color-cha-400: #b09470;
+  --color-cha-500: #8b7355;
+  --color-cha-600: #756248;
+  --color-cha-700: #5f503b;
+  --color-cha-800: #493e2e;
+  --color-cha-900: #332c21;
+
+  /* 藍色 (ai) - アクセント */
+  --color-ai: #264348;
+  --color-ai-light: #3a6066;
+  --color-ai-dark: #1a3033;
+  --color-ai-50: #e8eced;
+  --color-ai-100: #d1d9db;
+  --color-ai-200: #a3b3b7;
+  --color-ai-300: #758d93;
+  --color-ai-400: #47676f;
+  --color-ai-500: #264348;
+  --color-ai-600: #20383c;
+  --color-ai-700: #1a2d30;
+  --color-ai-800: #142224;
+  --color-ai-900: #0e1718;
+
+  /* 紅色 (beni) - エラー・警告 */
+  --color-beni: #b54a4a;
+  --color-beni-light: #c96a6a;
+  --color-beni-dark: #8f3a3a;
+  --color-beni-50: #fbe9e9;
+  --color-beni-100: #f5d4d4;
+  --color-beni-200: #e8a8a8;
+  --color-beni-300: #db7c7c;
+  --color-beni-400: #ce5050;
+  --color-beni-500: #b54a4a;
+  --color-beni-600: #973e3e;
+  --color-beni-700: #793232;
+  --color-beni-800: #5b2626;
+  --color-beni-900: #3d1a1a;
+
+  /* 琥珀色 (kohaku) - 警告 */
+  --color-kohaku: #c4a35a;
+  --color-kohaku-light: #d4b87a;
+  --color-kohaku-dark: #a4863a;
+  --color-kohaku-50: #fdf6e3;
+  --color-kohaku-100: #f9ecc7;
+  --color-kohaku-200: #f2d98f;
+  --color-kohaku-300: #ebc657;
+  --color-kohaku-400: #d4b040;
+  --color-kohaku-500: #c4a35a;
+  --color-kohaku-600: #a4863a;
+  --color-kohaku-700: #84692a;
+  --color-kohaku-800: #644c1a;
+  --color-kohaku-900: #442f0a;
+
+  /* グラデーション */
+  --gradient-warm: linear-gradient(135deg, #fafaf8 0%, #f5f3ef 100%);
+  --gradient-matsu: linear-gradient(135deg, #2d5a3d 0%, #1e3d29 100%);
+  --gradient-cha: linear-gradient(135deg, #8b7355 0%, #6b5a45 100%);
+  --gradient-ai: linear-gradient(135deg, #264348 0%, #1a3033 100%);
+}
 
 .dark {
   color-scheme: dark;
+
+  /* ベース - ダーク反転（bg/text の意味が逆転する色は両立値に調整） */
+  --color-sumi: #f3f4f6;           /* text-sumi → 明るいテキスト */
+  --color-sumi-light: #d1d5db;
+  --color-sumi-50: #1a1d23;        /* bg-sumi-50 → 暗い背景 */
+  --color-hai: #9ca3af;
+  --color-hai-light: #b8bcc5;
+  --color-hai-dark: #9ca3af;
+  --color-hai-50: #232730;
+  --color-gin: #3a3f4b;             /* border-gin をダーク用に */
+  --color-gin-light: #4b5260;
+  --color-gin-dark: #3a3f4b;
+  --color-shiro: #1a1d23;
+  --color-kinari: #1a1d23;
+
+  /* 松葉色 - ダーク */
+  --color-matsu: #7db190;
+  --color-matsu-light: #a8cbb5;
+  --color-matsu-dark: #7db190;
+  --color-matsu-50: #15241b;
+  --color-matsu-100: #1c3325;
+  --color-matsu-200: #1e3d29;
+  /* 300-900 はアクセント色のためライトと同値を維持 */
+
+  /* 茶色 - ダーク */
+  --color-cha: #c4b095;
+  --color-cha-light: #d9ccba;
+  --color-cha-dark: #c4b095;
+  --color-cha-50: #2a221a;
+  --color-cha-100: #3a2f23;
+  --color-cha-200: #5f503b;
+
+  /* 藍色 - ダーク */
+  --color-ai: #8fb0b6;
+  --color-ai-light: #a3b3b7;
+  --color-ai-dark: #8fb0b6;
+  --color-ai-50: #142225;
+  --color-ai-100: #1b2e32;
+  --color-ai-200: #1a3033;
+
+  /* 紅色 - ダーク */
+  --color-beni: #db8585;
+  --color-beni-light: #e8a8a8;
+  --color-beni-dark: #db8585;
+  --color-beni-50: #2a1515;
+  --color-beni-100: #3a1d1d;
+  --color-beni-200: #5b2626;
+
+  /* 琥珀色 - ダーク */
+  --color-kohaku: #d4b87a;
+  --color-kohaku-light: #f2d98f;
+  --color-kohaku-dark: #d4b87a;
+  --color-kohaku-50: #2a230f;
+  --color-kohaku-100: #3a3015;
+  --color-kohaku-200: #644c1a;
+
+  /* グラデーション - ダーク */
+  --gradient-warm: linear-gradient(135deg, #1a1d23 0%, #15181d 100%);
+  /* gradient-matsu/cha/ai はブランド色そのままの強いグラデーションを維持 */
 }
 
 .dark body {
@@ -25,17 +183,23 @@ body {
   color: #e5e7eb;
 }
 
-/* --- 背景色 --- */
+/* ============================================================
+ * Tailwind 標準色のダーク補正
+ * ------------------------------------------------------------
+ * bg-white / bg-gray-* / bg-yellow-* / bg-blue-* / bg-green-* /
+ * bg-red-* などは Tailwind 組み込みのため tailwind.config.ts で
+ * CSS 変数化できない。残る限定的な個別上書きで対応する。
+ *
+ * 将来的には semantic token（bg-card / bg-warning / bg-info 等）
+ * に置き換えて完全に CSS 変数化することを検討。
+ * ============================================================ */
+
 .dark .bg-white,
-.dark .bg-shiro,
-.dark .bg-kinari,
-.dark .bg-gray-50,
-.dark .bg-sumi-50 {
+.dark .bg-gray-50 {
   background-color: #1a1d23 !important;
 }
 
-.dark .bg-gray-100,
-.dark .bg-hai-50 {
+.dark .bg-gray-100 {
   background-color: #232730 !important;
 }
 
@@ -43,56 +207,28 @@ body {
   background-color: #2d323d !important;
 }
 
-.dark .bg-matsu-50 {
-  background-color: #15241b !important;
-}
-
-.dark .bg-matsu-100 {
-  background-color: #1c3325 !important;
-}
-
-.dark .bg-cha-50 {
-  background-color: #2a221a !important;
-}
-
-.dark .bg-cha-100 {
-  background-color: #3a2f23 !important;
-}
-
-.dark .bg-ai-50 {
-  background-color: #142225 !important;
-}
-
-.dark .bg-ai-100 {
-  background-color: #1b2e32 !important;
-}
-
-.dark .bg-beni-50 {
-  background-color: #2a1515 !important;
-}
-
-.dark .bg-beni-100 {
-  background-color: #3a1d1d !important;
-}
-
-.dark .bg-kohaku-50 {
-  background-color: #2a230f !important;
-}
-
-.dark .bg-kohaku-100 {
-  background-color: #3a3015 !important;
-}
-
 .dark .bg-green-50 {
   background-color: #15241b !important;
+}
+
+.dark .bg-green-100 {
+  background-color: #1c3325 !important;
 }
 
 .dark .bg-red-50 {
   background-color: #2a1515 !important;
 }
 
+.dark .bg-red-100 {
+  background-color: #3a1d1d !important;
+}
+
 .dark .bg-blue-50 {
   background-color: #142235 !important;
+}
+
+.dark .bg-blue-100 {
+  background-color: #1b2e48 !important;
 }
 
 .dark .bg-yellow-50,
@@ -100,64 +236,29 @@ body {
   background-color: #2a230f !important;
 }
 
-/* --- テキスト色 --- */
-.dark .text-sumi,
-.dark .text-sumi-light,
-.dark .text-sumi-900,
-.dark .text-sumi-800,
-.dark .text-sumi-700,
-.dark .text-sumi-600,
+.dark .bg-yellow-100,
+.dark .bg-amber-100 {
+  background-color: #3a3015 !important;
+}
+
+/* テキスト（Tailwind 標準色） */
 .dark .text-gray-900,
 .dark .text-gray-800,
 .dark .text-gray-700 {
   color: #f3f4f6 !important;
 }
 
-.dark .text-sumi-500,
-.dark .text-gray-600,
-.dark .text-gray-500 {
+.dark .text-gray-500,
+.dark .text-gray-600 {
   color: #d1d5db !important;
 }
 
-.dark .text-hai,
-.dark .text-hai-dark,
-.dark .text-sumi-400,
-.dark .text-sumi-300,
 .dark .text-gray-400 {
   color: #9ca3af !important;
 }
 
-.dark .text-gin,
 .dark .text-gray-300 {
   color: #6b7280 !important;
-}
-
-/* 強調・アクセント色は視認性が落ちないように明るめへ */
-.dark .text-matsu,
-.dark .text-matsu-dark,
-.dark .text-matsu-600,
-.dark .text-matsu-700 {
-  color: #7db190 !important;
-}
-
-.dark .text-cha,
-.dark .text-cha-dark {
-  color: #c4b095 !important;
-}
-
-.dark .text-ai,
-.dark .text-ai-dark {
-  color: #8fb0b6 !important;
-}
-
-.dark .text-beni,
-.dark .text-beni-dark {
-  color: #db8585 !important;
-}
-
-.dark .text-kohaku,
-.dark .text-kohaku-dark {
-  color: #d4b87a !important;
 }
 
 .dark .text-red-600,
@@ -170,19 +271,24 @@ body {
   color: #6ee7a3 !important;
 }
 
+.dark .text-green-800 {
+  color: #86efac !important;
+}
+
 .dark .text-blue-700,
 .dark .text-blue-800 {
   color: #93c5fd !important;
 }
 
-/* --- ボーダー色 --- */
-.dark .border-gin,
-.dark .border-gin-light,
-.dark .border-gin-dark,
+.dark .text-yellow-800,
+.dark .text-amber-800 {
+  color: #fcd34d !important;
+}
+
+/* ボーダー（Tailwind 標準色） */
 .dark .border-gray-100,
 .dark .border-gray-200,
-.dark .border-gray-300,
-.dark .border-sumi-200 {
+.dark .border-gray-300 {
   border-color: #3a3f4b !important;
 }
 
@@ -191,54 +297,38 @@ body {
   border-color: #4b5260 !important;
 }
 
-.dark .border-matsu-100,
-.dark .border-matsu-200 {
-  border-color: #1e3d29 !important;
-}
-
-.dark .border-cha-100,
-.dark .border-cha-200 {
-  border-color: #5f503b !important;
-}
-
-.dark .border-ai-100,
-.dark .border-ai-200 {
-  border-color: #1a3033 !important;
-}
-
-.dark .border-beni-100,
-.dark .border-beni-200 {
-  border-color: #5b2626 !important;
-}
-
-.dark .border-kohaku-100,
-.dark .border-kohaku-200 {
-  border-color: #644c1a !important;
-}
-
-/* --- ホバー背景色 --- */
-.dark .hover\:bg-white:hover,
-.dark .hover\:bg-matsu-50:hover {
+/* ホバー（Tailwind 標準色） */
+.dark .hover\:bg-white:hover {
   background-color: #232730 !important;
 }
 
-.dark .hover\:bg-gray-50:hover,
-.dark .hover\:bg-kinari:hover {
+.dark .hover\:bg-white\/50:hover {
+  background-color: rgba(35, 39, 48, 0.5) !important;
+}
+
+.dark .hover\:bg-gray-50:hover {
   background-color: #232730 !important;
 }
 
-/* --- グラデーション --- */
-.dark .bg-gradient-warm {
-  background-image: linear-gradient(135deg, #1a1d23 0%, #15181d 100%) !important;
+.dark .hover\:bg-blue-50:hover {
+  background-color: #142235 !important;
 }
 
-/* --- フォーカス枠 (デフォルトの青はそのままで視認可能) --- */
+/* shadcn tabs: data-[state=active]:bg-white の白を暗色に */
+.dark .data-\[state\=active\]\:bg-white[data-state="active"] {
+  background-color: #2d323d !important;
+}
+
+/* フォーカス枠（ダーク用） */
 .dark .focus-visible,
 .dark *:focus-visible {
   outline-color: #60a5fa !important;
 }
 
-/* --- カスタムクラス（globals.css内の汎用スタイル） --- */
+/* ============================================================
+ * カスタムクラス（独自の汎用コンポーネントスタイル）
+ * ============================================================ */
+
 .dark .customer-row {
   border-color: #3a3f4b;
 }
