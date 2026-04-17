@@ -241,6 +241,48 @@ body {
   background-color: #3a3015 !important;
 }
 
+/* ============================================================
+ * ダークモード: ブランド色の背景補正
+ * ------------------------------------------------------------
+ * --color-matsu / --color-cha / --color-ai / --color-beni の
+ * ベーストークンはダークモードで明るい値に反転されている
+ * （text-matsu 等のアクセント文字色として可読にするため）。
+ * そのまま bg として使うと白テキストと組み合わさって発光した
+ * ように見えるので、背景用途では -600/-500 シェードに差し替え。
+ * ============================================================ */
+
+.dark .bg-matsu {
+  background-color: var(--color-matsu-600) !important;
+}
+
+.dark .hover\:bg-matsu-light:hover {
+  background-color: var(--color-matsu-500) !important;
+}
+
+.dark .bg-cha {
+  background-color: var(--color-cha-600) !important;
+}
+
+.dark .hover\:bg-cha-light:hover {
+  background-color: var(--color-cha-500) !important;
+}
+
+.dark .bg-ai {
+  background-color: var(--color-ai-600) !important;
+}
+
+.dark .hover\:bg-ai-light:hover {
+  background-color: var(--color-ai-500) !important;
+}
+
+.dark .bg-beni {
+  background-color: var(--color-beni-600) !important;
+}
+
+.dark .hover\:bg-beni-light:hover {
+  background-color: var(--color-beni-500) !important;
+}
+
 /* テキスト（Tailwind 標準色） */
 .dark .text-gray-900,
 .dark .text-gray-800,
