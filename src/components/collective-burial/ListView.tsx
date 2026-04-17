@@ -40,6 +40,9 @@ export default function CollectiveBurialListView({
   const { items, pagination, isLoading, error, search, refresh } = useCollectiveBurialList();
   const { data: yearlyStats } = useCollectiveBurialStats();
 
+  // 現在年（毎レンダー取得。日付ハードコードしない）
+  const currentYear = new Date().getFullYear();
+
   // 年の選択肢を生成
   const availableYears = useMemo(() => {
     if (!yearlyStats) return [];
@@ -55,6 +58,16 @@ export default function CollectiveBurialListView({
     });
   };
 
+  // 今年のみに絞り込み
+  const filterByCurrentYear = () => {
+    setSelectedYear(currentYear);
+    search({
+      search: searchQuery || undefined,
+      billingStatus: billingStatus === 'all' ? undefined : billingStatus,
+      year: currentYear,
+    });
+  };
+
   // フィルターリセット
   const resetFilters = () => {
     setSearchQuery('');
@@ -62,6 +75,39 @@ export default function CollectiveBurialListView({
     setSelectedYear('all');
     search({});
   };
+
+  // 今年の請求対象者サマリ（件数・内訳は yearlyStats を優先、金額は items から集計）
+  const currentYearSummary = useMemo(() => {
+    const statsRow = yearlyStats?.find(s => s.year === currentYear);
+    const itemsThisYear = items.filter(item => {
+      if (!item.billingScheduledDate) return false;
+      return new Date(item.billingScheduledDate).getFullYear() === currentYear;
+    });
+
+    const totalCount = statsRow?.count ?? itemsThisYear.length;
+    const pendingCount = statsRow?.pendingCount ?? itemsThisYear.filter(i => i.billingStatus === 'pending').length;
+    const billedCount = statsRow?.billedCount ?? itemsThisYear.filter(i => i.billingStatus === 'billed').length;
+    const paidCount = statsRow?.paidCount ?? itemsThisYear.filter(i => i.billingStatus === 'paid').length;
+
+    const totalAmount = itemsThisYear.reduce((sum, i) => sum + (i.billingAmount ?? 0), 0);
+    const paidAmount = itemsThisYear
+      .filter(i => i.billingStatus === 'paid')
+      .reduce((sum, i) => sum + (i.billingAmount ?? 0), 0);
+    const outstandingAmount = totalAmount - paidAmount;
+
+    const paidRate = totalCount > 0 ? Math.round((paidCount / totalCount) * 100) : 0;
+
+    return {
+      totalCount,
+      pendingCount,
+      billedCount,
+      paidCount,
+      totalAmount,
+      paidAmount,
+      outstandingAmount,
+      paidRate,
+    };
+  }, [items, yearlyStats, currentYear]);
 
   // 年別グループ化
   const groupedByYear = useMemo(() => {
@@ -95,8 +141,13 @@ export default function CollectiveBurialListView({
         items: groupItems,
         totalCount: groupItems.length,
       }))
-      .sort((a, b) => a.year - b.year);
-  }, [items, selectedYear]);
+      .sort((a, b) => {
+        // 今年のグループを最上部に固定
+        if (a.year === currentYear) return -1;
+        if (b.year === currentYear) return 1;
+        return a.year - b.year;
+      });
+  }, [items, selectedYear, currentYear]);
 
   // 日付フォーマット
   const formatDate = (dateStr: string | null): string => {
@@ -220,6 +271,105 @@ export default function CollectiveBurialListView({
           </div>
         </div>
 
+        {/* 今年の請求対象者サマリカード */}
+        <div className="px-3 md:px-6 pt-3 md:pt-6">
+          <div className="bg-white rounded-elegant-lg shadow-elegant overflow-hidden border-2 border-matsu-300">
+            <div className="bg-gradient-to-r from-matsu to-matsu-light px-4 md:px-6 py-3 md:py-4 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+              <div className="relative flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 md:gap-3 min-w-0">
+                  <span className="bg-white/20 text-white px-2 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap">
+                    今年
+                  </span>
+                  <h3 className="font-mincho text-base md:text-xl font-semibold text-white tracking-wide truncate">
+                    {currentYear}年 請求対象者
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={filterByCurrentYear}
+                  className="flex-shrink-0 bg-white text-matsu-700 hover:bg-matsu-50 transition-colors px-3 py-1 rounded-full text-xs font-semibold shadow-sm"
+                >
+                  今年のみ表示
+                </button>
+              </div>
+            </div>
+
+            {currentYearSummary.totalCount === 0 ? (
+              <div className="px-4 md:px-6 py-6 md:py-8 text-center">
+                <p className="text-hai text-sm md:text-base">今年の請求対象者はいません</p>
+              </div>
+            ) : (
+              <div className="px-4 md:px-6 py-4 md:py-5">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                  {/* 件数サマリ */}
+                  <div>
+                    <div className="flex items-baseline gap-2 mb-2">
+                      <span className="text-3xl md:text-4xl font-bold text-matsu">
+                        {currentYearSummary.totalCount}
+                      </span>
+                      <span className="text-sm text-hai">件</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2 text-xs">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded-full font-medium">
+                        請求前 {currentYearSummary.pendingCount}
+                      </span>
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full font-medium">
+                        請求済 {currentYearSummary.billedCount}
+                      </span>
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-100 text-green-800 rounded-full font-medium">
+                        支払済 {currentYearSummary.paidCount}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* 進捗バー */}
+                  <div>
+                    <div className="flex items-baseline justify-between mb-2">
+                      <span className="text-xs md:text-sm text-hai font-medium">入金完了率</span>
+                      <span className="text-xl md:text-2xl font-bold text-matsu">
+                        {currentYearSummary.paidRate}
+                        <span className="text-sm text-hai ml-0.5">%</span>
+                      </span>
+                    </div>
+                    <div className="w-full bg-kinari rounded-full h-3 overflow-hidden border border-gin">
+                      <div
+                        className="h-full bg-gradient-to-r from-matsu-400 to-matsu transition-all duration-500"
+                        style={{ width: `${currentYearSummary.paidRate}%` }}
+                      />
+                    </div>
+                    <p className="text-xs text-hai mt-1">
+                      {currentYearSummary.paidCount} / {currentYearSummary.totalCount} 件入金済
+                    </p>
+                  </div>
+
+                  {/* 金額サマリ */}
+                  <div className="space-y-1">
+                    <div className="flex justify-between items-baseline">
+                      <span className="text-xs md:text-sm text-hai">請求総額</span>
+                      <span className="text-sm md:text-base font-semibold text-sumi">
+                        ¥{currentYearSummary.totalAmount.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-baseline">
+                      <span className="text-xs md:text-sm text-hai">入金済額</span>
+                      <span className="text-sm md:text-base font-semibold text-green-700">
+                        ¥{currentYearSummary.paidAmount.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-baseline pt-1 border-t border-gin">
+                      <span className="text-xs md:text-sm text-hai">未収額</span>
+                      <span className="text-sm md:text-base font-semibold text-red-700">
+                        ¥{currentYearSummary.outstandingAmount.toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* メインコンテンツ */}
         <div className="p-3 md:p-6">
           {isLoading ? (
@@ -243,16 +393,36 @@ export default function CollectiveBurialListView({
             </div>
           ) : (
             <div className="space-y-8">
-              {groupedByYear.map(group => (
-                <div key={group.year} className="bg-white rounded-elegant-lg shadow-elegant overflow-hidden border border-gin">
+              {groupedByYear.map(group => {
+                const isCurrentYear = group.year === currentYear;
+                return (
+                <div
+                  key={group.year}
+                  className={`bg-white rounded-elegant-lg shadow-elegant overflow-hidden ${
+                    isCurrentYear ? 'border-2 border-matsu-300 ring-2 ring-matsu-100' : 'border border-gin'
+                  }`}
+                >
                   {/* 年ヘッダー */}
-                  <div className="bg-gradient-cha px-3 md:px-6 py-3 md:py-4 relative overflow-hidden">
+                  <div
+                    className={`px-3 md:px-6 py-3 md:py-4 relative overflow-hidden ${
+                      isCurrentYear ? 'bg-gradient-to-r from-matsu to-matsu-light' : 'bg-gradient-cha'
+                    }`}
+                  >
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-                    <div className="relative flex items-center justify-between">
-                      <h3 className="font-mincho text-xl font-semibold text-white tracking-wide">
-                        {group.year === 0 ? '請求予定日未設定' : `${group.year}年 請求予定`}
-                      </h3>
-                      <span className="bg-white text-cha px-4 py-1.5 rounded-full text-sm font-semibold shadow-sm">
+                    <div className="relative flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        {isCurrentYear && (
+                          <span className="bg-white/25 text-white px-2 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap">
+                            今年
+                          </span>
+                        )}
+                        <h3 className="font-mincho text-xl font-semibold text-white tracking-wide truncate">
+                          {group.year === 0 ? '請求予定日未設定' : `${group.year}年 請求予定`}
+                        </h3>
+                      </div>
+                      <span className={`px-4 py-1.5 rounded-full text-sm font-semibold shadow-sm whitespace-nowrap ${
+                        isCurrentYear ? 'bg-white text-matsu-700' : 'bg-white text-cha'
+                      }`}>
                         {group.totalCount} 件
                       </span>
                     </div>
@@ -344,7 +514,8 @@ export default function CollectiveBurialListView({
                     </table>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
