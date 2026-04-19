@@ -140,7 +140,7 @@ export default function YuchoManagement() {
       const text = await blob.text();
       setPreviewText(text);
     } catch (e) {
-      showError('プレビュー取得に失敗', e instanceof Error ? e.message : String(e));
+      showError('プレビューの取得に失敗しました', e instanceof Error ? e.message : String(e));
       setPreviewText('');
     } finally {
       setIsPreviewLoading(false);
@@ -152,10 +152,10 @@ export default function YuchoManagement() {
     try {
       const blob = await exportYuchoCsv(buildExportParams());
       downloadBlob(`yucho_${billingYear}.csv`, blob);
-      showSuccess('CSVを出力したよ', `${billingYear}年度 ${totalCount}件`);
+      showSuccess('CSVを出力しました', `${billingYear}年度 ${totalCount}件`);
       setPreviewOpen(false);
     } catch (e) {
-      showError('CSV出力に失敗', e instanceof Error ? e.message : String(e));
+      showError('CSV出力に失敗しました', e instanceof Error ? e.message : String(e));
     } finally {
       setIsExporting(false);
     }
@@ -225,7 +225,7 @@ export default function YuchoManagement() {
             <div className="flex items-start gap-2 text-matsu">
               <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
               <div className="text-sm">
-                <p className="font-medium">データ取得に失敗したよ</p>
+                <p className="font-medium">データの取得に失敗しました</p>
                 <p className="text-xs text-hai mt-0.5">{error}</p>
               </div>
             </div>
@@ -350,7 +350,7 @@ function LoadingState() {
 
 function ManagementTable({ items }: { items: YuchoBillingItem[] }) {
   if (items.length === 0) {
-    return <EmptyState message="対象の管理料データがないよ" />;
+    return <EmptyState message="対象期間の管理料データが見つかりません" />;
   }
   return (
     <>
@@ -415,7 +415,7 @@ function ManagementTable({ items }: { items: YuchoBillingItem[] }) {
 
 function CollectiveTable({ items }: { items: YuchoBillingItem[] }) {
   if (items.length === 0) {
-    return <EmptyState message="対象の合祀料金データがないよ" />;
+    return <EmptyState message="対象期間の合祀料金データが見つかりません" />;
   }
   return (
     <>
