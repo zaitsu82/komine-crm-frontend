@@ -28,7 +28,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: 'スタッフ管理', path: '/staff', requiredRoles: ['manager', 'admin'], icon: 'users' },
       { label: 'マスタ管理', path: '/masters', requiredRoles: ['admin'], icon: 'settings' },
-      { label: '一括登録', path: '/bulk-import', requiredRoles: ['manager', 'admin'], icon: 'upload' },
+      { label: '一括登録・編集', path: '/bulk-import', requiredRoles: ['manager', 'admin'], icon: 'upload' },
     ],
   },
 ];

@@ -33,10 +33,19 @@ export default function BulkImportPage() {
       <div className="flex-1 overflow-auto p-3 md:p-6">
         <div className="max-w-6xl mx-auto">
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as BulkTab)}>
-            <TabsList>
-              <TabsTrigger value="plots-create">区画 一括登録</TabsTrigger>
-              <TabsTrigger value="plots-update">区画 一括編集</TabsTrigger>
-              <TabsTrigger value="staff">スタッフ 一括登録</TabsTrigger>
+            <TabsList className="flex w-full max-w-full overflow-x-auto justify-start sm:inline-flex sm:w-auto sm:justify-center">
+              <TabsTrigger value="plots-create">
+                <span className="sm:hidden">区画登録</span>
+                <span className="hidden sm:inline">区画 一括登録</span>
+              </TabsTrigger>
+              <TabsTrigger value="plots-update">
+                <span className="sm:hidden">区画編集</span>
+                <span className="hidden sm:inline">区画 一括編集</span>
+              </TabsTrigger>
+              <TabsTrigger value="staff">
+                <span className="sm:hidden">スタッフ登録</span>
+                <span className="hidden sm:inline">スタッフ 一括登録</span>
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="plots-create">
