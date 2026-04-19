@@ -158,6 +158,19 @@ export type {
   PostcardTemplateData,
 } from './documents';
 
+// ゆうちょ連携APIのエクスポート
+export { getYuchoBilling, exportYuchoCsv, downloadBlob } from './yucho';
+export type {
+  YuchoCategory,
+  YuchoStatus,
+  YuchoBillingInfo,
+  YuchoBillingItem,
+  YuchoBillingSummary,
+  YuchoBillingResponse,
+  YuchoBillingParams,
+  YuchoExportParams,
+} from './yucho';
+
 // 区画在庫管理APIのエクスポート
 export {
   getInventorySummary,

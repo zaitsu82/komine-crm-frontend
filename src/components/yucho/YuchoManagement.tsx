@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Landmark, Download, FileText, Wallet, Users } from 'lucide-react';
+import { Landmark, Download, FileText, Wallet, Users, Loader2, AlertCircle } from 'lucide-react';
 import PageHeader from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import {
@@ -13,39 +13,51 @@ import {
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BaseDialog } from '@/components/shared/dialogs/BaseDialog';
-import { showSuccess } from '@/lib/toast';
+import { showSuccess, showError } from '@/lib/toast';
+import { useAsyncData } from '@/hooks/useAsyncData';
 import {
-  getYuchoBillings,
-  type ManagementFeeBilling,
-  type CollectiveBurialBilling,
-} from '@/lib/mock-data/yucho-billing';
-import { buildYuchoCsv, downloadCsv } from './yuchoCsv';
+  getYuchoBilling,
+  exportYuchoCsv,
+  downloadBlob,
+  type YuchoBillingItem,
+} from '@/lib/api/yucho';
 
 const AVAILABLE_YEARS = [2024, 2025, 2026];
-const DEFAULT_CLIENT_CODE = '00000000';
-const DEFAULT_CLIENT_NAME = '小嶺霊園';
-const DEFAULT_DEPOSITOR_CODE = '000000';
+const DEFAULT_CLIENT_CODE = '0000000000';
+const DEFAULT_CLIENT_NAME = 'ｺﾐﾈﾚｲｴﾝ';
 
 function formatYen(amount: number) {
   return `¥${amount.toLocaleString('ja-JP')}`;
 }
 
-function statusBadge(status: 'pending' | 'ready' | 'exported') {
-  const styles: Record<typeof status, string> = {
-    pending: 'bg-kinari text-hai border-gin',
-    ready: 'bg-matsu-50 text-matsu border-matsu-200',
-    exported: 'bg-ai/10 text-ai border-ai/30',
-  };
-  const labels: Record<typeof status, string> = {
-    pending: '未確定',
-    ready: '出力準備',
-    exported: '出力済',
-  };
+/**
+ * BillingInfo の口座番号からゆうちょ風の表示「記号-番号」を組み立てる。
+ * 方式A前提: branch_name の3桁数字を支店コードとして「1{支店コード}0」を記号、account_number を番号として表示。
+ */
+function formatYuchoAccount(item: YuchoBillingItem): string {
+  const info = item.billingInfo;
+  if (!info) return '—';
+  const branch = (info.branchName ?? '').match(/\d{3}/)?.[0];
+  const symbol = branch ? `1${branch}0` : info.branchName ?? '';
+  const number = info.accountNumber ?? '';
+  if (!symbol && !number) return '—';
+  return `${symbol}${symbol && number ? '-' : ''}${number}`;
+}
+
+function statusBadge(status: string) {
+  const isUnpaid = status === 'unpaid' || status === 'pending';
+  const isPaid = status === 'paid';
+  const styles = isPaid
+    ? 'bg-ai/10 text-ai border-ai/30'
+    : isUnpaid
+      ? 'bg-matsu-50 text-matsu border-matsu-200'
+      : 'bg-kinari text-hai border-gin';
+  const label = isPaid ? '支払済' : isUnpaid ? '請求対象' : status;
   return (
     <span
-      className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] md:text-xs border font-medium ${styles[status]}`}
+      className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] md:text-xs border font-medium ${styles}`}
     >
-      {labels[status]}
+      {label}
     </span>
   );
 }
@@ -86,26 +98,67 @@ export default function YuchoManagement() {
   const [billingYear, setBillingYear] = useState(2026);
   const [activeTab, setActiveTab] = useState<'management' | 'collective'>('management');
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
-  const { management, collective, managementTotal, collectiveTotal, grandTotal, totalCount } =
-    useMemo(() => getYuchoBillings(billingYear), [billingYear]);
-
-  const csvPreview = useMemo(
-    () =>
-      buildYuchoCsv(management, collective, {
-        clientCode: DEFAULT_CLIENT_CODE,
-        clientName: DEFAULT_CLIENT_NAME,
-        depositorCode: DEFAULT_DEPOSITOR_CODE,
-        withdrawalDate: `${billingYear}0531`,
-        billingYear,
-      }),
-    [management, collective, billingYear],
+  const { data, isLoading, error } = useAsyncData(
+    () => getYuchoBilling({ year: billingYear, status: 'unbilled' }),
+    { deps: [billingYear] },
   );
 
-  const handleDownload = () => {
-    downloadCsv(`yucho_${billingYear}.csv`, csvPreview);
-    showSuccess('CSVを出力したよ', `${billingYear}年度 ${totalCount}件`);
-    setPreviewOpen(false);
+  const summary = data?.summary;
+  const management = useMemo(
+    () => (data?.items ?? []).filter((i) => i.category === 'management'),
+    [data],
+  );
+  const collective = useMemo(
+    () => (data?.items ?? []).filter((i) => i.category === 'collective'),
+    [data],
+  );
+  const managementTotal = summary?.byCategory.management.amount ?? 0;
+  const collectiveTotal = summary?.byCategory.collective.amount ?? 0;
+  const grandTotal = summary?.totalAmount ?? 0;
+  const totalCount = summary?.totalCount ?? 0;
+
+  // プレビュー用: バックエンドのCSV出力(全銀協固定長)を取得して表示
+  const [previewText, setPreviewText] = useState<string>('');
+  const [isPreviewLoading, setIsPreviewLoading] = useState(false);
+
+  const transferDate = `${billingYear}-05-31`;
+
+  const buildExportParams = () => ({
+    year: billingYear,
+    transferDate,
+    clientCode: DEFAULT_CLIENT_CODE,
+    clientName: DEFAULT_CLIENT_NAME,
+  });
+
+  const openPreview = async () => {
+    setPreviewOpen(true);
+    setIsPreviewLoading(true);
+    try {
+      const blob = await exportYuchoCsv(buildExportParams());
+      const text = await blob.text();
+      setPreviewText(text);
+    } catch (e) {
+      showError('プレビュー取得に失敗', e instanceof Error ? e.message : String(e));
+      setPreviewText('');
+    } finally {
+      setIsPreviewLoading(false);
+    }
+  };
+
+  const handleDownload = async () => {
+    setIsExporting(true);
+    try {
+      const blob = await exportYuchoCsv(buildExportParams());
+      downloadBlob(`yucho_${billingYear}.csv`, blob);
+      showSuccess('CSVを出力したよ', `${billingYear}年度 ${totalCount}件`);
+      setPreviewOpen(false);
+    } catch (e) {
+      showError('CSV出力に失敗', e instanceof Error ? e.message : String(e));
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   return (
@@ -143,8 +196,8 @@ export default function YuchoManagement() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setPreviewOpen(true)}
-                disabled={totalCount === 0}
+                onClick={openPreview}
+                disabled={totalCount === 0 || isLoading}
               >
                 <FileText className="w-4 h-4 mr-1.5" />
                 プレビュー
@@ -153,14 +206,31 @@ export default function YuchoManagement() {
                 variant="ai"
                 size="sm"
                 onClick={handleDownload}
-                disabled={totalCount === 0}
+                disabled={totalCount === 0 || isLoading || isExporting}
               >
-                <Download className="w-4 h-4 mr-1.5" />
+                {isExporting ? (
+                  <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+                ) : (
+                  <Download className="w-4 h-4 mr-1.5" />
+                )}
                 CSV出力
               </Button>
             </div>
           </div>
         </div>
+
+        {/* エラー表示 */}
+        {error && (
+          <div className="bg-white rounded-lg border border-matsu-200 p-3 md:p-4 shadow-elegant-sm">
+            <div className="flex items-start gap-2 text-matsu">
+              <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+              <div className="text-sm">
+                <p className="font-medium">データ取得に失敗したよ</p>
+                <p className="text-xs text-hai mt-0.5">{error}</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* サマリー */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
@@ -207,10 +277,18 @@ export default function YuchoManagement() {
             </TabsList>
 
             <TabsContent value="management">
-              <ManagementTable items={management} />
+              {isLoading ? (
+                <LoadingState />
+              ) : (
+                <ManagementTable items={management} />
+              )}
             </TabsContent>
             <TabsContent value="collective">
-              <CollectiveTable items={collective} />
+              {isLoading ? (
+                <LoadingState />
+              ) : (
+                <CollectiveTable items={collective} />
+              )}
             </TabsContent>
           </Tabs>
         </div>
@@ -228,25 +306,49 @@ export default function YuchoManagement() {
             <Button variant="outline" onClick={() => setPreviewOpen(false)}>
               閉じる
             </Button>
-            <Button variant="ai" onClick={handleDownload} disabled={totalCount === 0}>
-              <Download className="w-4 h-4 mr-1.5" />
+            <Button
+              variant="ai"
+              onClick={handleDownload}
+              disabled={totalCount === 0 || isExporting}
+            >
+              {isExporting ? (
+                <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+              ) : (
+                <Download className="w-4 h-4 mr-1.5" />
+              )}
               ダウンロード
             </Button>
           </>
         }
       >
-        <pre className="bg-sumi text-white text-[10px] md:text-xs p-3 md:p-4 rounded-md overflow-auto max-h-[50vh] whitespace-pre font-mono">
-          {csvPreview || '出力対象データがありません'}
-        </pre>
+        {isPreviewLoading ? (
+          <div className="flex items-center justify-center p-8 text-hai">
+            <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+            読み込み中...
+          </div>
+        ) : (
+          <pre className="bg-sumi text-white text-[10px] md:text-xs p-3 md:p-4 rounded-md overflow-auto max-h-[50vh] whitespace-pre font-mono">
+            {previewText || '出力対象データがありません'}
+          </pre>
+        )}
         <p className="text-[10px] md:text-xs text-hai mt-2">
-          ※ フォーマットは仮実装。ゆうちょBizダイレクト仕様確定後に正式対応予定。
+          ※ 全銀協フォーマット(120バイト固定長)。委託者コード・委託者名は仮値。ゆうちょBizダイレクト仕様確定後に正式対応予定。
         </p>
       </BaseDialog>
     </div>
   );
 }
 
-function ManagementTable({ items }: { items: ManagementFeeBilling[] }) {
+function LoadingState() {
+  return (
+    <div className="bg-white rounded-lg border border-gin p-8 md:p-12 text-center">
+      <Loader2 className="w-6 h-6 mx-auto mb-2 animate-spin text-hai" />
+      <p className="text-sm text-hai">読み込み中...</p>
+    </div>
+  );
+}
+
+function ManagementTable({ items }: { items: YuchoBillingItem[] }) {
   if (items.length === 0) {
     return <EmptyState message="対象の管理料データがないよ" />;
   }
@@ -267,20 +369,18 @@ function ManagementTable({ items }: { items: ManagementFeeBilling[] }) {
             </thead>
             <tbody>
               {items.map((item) => (
-                <tr key={item.id} className="border-t border-gin hover:bg-kinari/50">
+                <tr key={item.sourceId} className="border-t border-gin hover:bg-kinari/50">
                   <td className="px-4 py-3 font-mono text-sumi">{item.plotNumber}</td>
-                  <td className="px-4 py-3 text-sumi">{item.section}</td>
+                  <td className="px-4 py-3 text-sumi">{item.areaName}</td>
                   <td className="px-4 py-3 text-sumi">
-                    <div>{item.contractorName}</div>
-                    <div className="text-xs text-hai">{item.contractorNameKana}</div>
+                    <div>{item.customerName ?? '—'}</div>
+                    <div className="text-xs text-hai">{item.customerNameKana ?? ''}</div>
                   </td>
-                  <td className="px-4 py-3 font-mono text-xs text-hai">
-                    {item.yuchoSymbol}-{item.yuchoNumber}
-                  </td>
+                  <td className="px-4 py-3 font-mono text-xs text-hai">{formatYuchoAccount(item)}</td>
                   <td className="px-4 py-3 text-right font-mincho text-sumi">
-                    {formatYen(item.amount)}
+                    {formatYen(item.billingAmount)}
                   </td>
-                  <td className="px-4 py-3 text-center">{statusBadge(item.status)}</td>
+                  <td className="px-4 py-3 text-center">{statusBadge(item.billingStatus)}</td>
                 </tr>
               ))}
             </tbody>
@@ -291,22 +391,20 @@ function ManagementTable({ items }: { items: ManagementFeeBilling[] }) {
       <div className="md:hidden space-y-2">
         {items.map((item) => (
           <div
-            key={item.id}
+            key={item.sourceId}
             className="bg-white rounded-lg border border-gin p-3 shadow-elegant-sm"
           >
             <div className="flex items-start justify-between gap-2 mb-2">
               <div className="min-w-0">
                 <p className="font-mono text-xs text-hai">{item.plotNumber}</p>
-                <p className="text-sm text-sumi truncate">{item.contractorName}</p>
-                <p className="text-[10px] text-hai truncate">{item.contractorNameKana}</p>
+                <p className="text-sm text-sumi truncate">{item.customerName ?? '—'}</p>
+                <p className="text-[10px] text-hai truncate">{item.customerNameKana ?? ''}</p>
               </div>
-              {statusBadge(item.status)}
+              {statusBadge(item.billingStatus)}
             </div>
             <div className="flex items-end justify-between pt-2 border-t border-gin">
-              <p className="font-mono text-[10px] text-hai">
-                {item.yuchoSymbol}-{item.yuchoNumber}
-              </p>
-              <p className="font-mincho text-sumi">{formatYen(item.amount)}</p>
+              <p className="font-mono text-[10px] text-hai">{formatYuchoAccount(item)}</p>
+              <p className="font-mincho text-sumi">{formatYen(item.billingAmount)}</p>
             </div>
           </div>
         ))}
@@ -315,7 +413,7 @@ function ManagementTable({ items }: { items: ManagementFeeBilling[] }) {
   );
 }
 
-function CollectiveTable({ items }: { items: CollectiveBurialBilling[] }) {
+function CollectiveTable({ items }: { items: YuchoBillingItem[] }) {
   if (items.length === 0) {
     return <EmptyState message="対象の合祀料金データがないよ" />;
   }
@@ -326,8 +424,8 @@ function CollectiveTable({ items }: { items: CollectiveBurialBilling[] }) {
           <table className="w-full text-sm">
             <thead className="bg-kinari text-hai text-xs">
               <tr>
+                <th className="text-left px-4 py-3 font-medium">区画番号</th>
                 <th className="text-left px-4 py-3 font-medium">申込者</th>
-                <th className="text-left px-4 py-3 font-medium">対象故人</th>
                 <th className="text-left px-4 py-3 font-medium">記号・番号</th>
                 <th className="text-right px-4 py-3 font-medium">金額</th>
                 <th className="text-center px-4 py-3 font-medium">状態</th>
@@ -335,19 +433,17 @@ function CollectiveTable({ items }: { items: CollectiveBurialBilling[] }) {
             </thead>
             <tbody>
               {items.map((item) => (
-                <tr key={item.id} className="border-t border-gin hover:bg-kinari/50">
+                <tr key={item.sourceId} className="border-t border-gin hover:bg-kinari/50">
+                  <td className="px-4 py-3 font-mono text-sumi">{item.plotNumber}</td>
                   <td className="px-4 py-3 text-sumi">
-                    <div>{item.applicantName}</div>
-                    <div className="text-xs text-hai">{item.applicantNameKana}</div>
+                    <div>{item.customerName ?? '—'}</div>
+                    <div className="text-xs text-hai">{item.customerNameKana ?? ''}</div>
                   </td>
-                  <td className="px-4 py-3 text-sumi">{item.deceasedName}</td>
-                  <td className="px-4 py-3 font-mono text-xs text-hai">
-                    {item.yuchoSymbol}-{item.yuchoNumber}
-                  </td>
+                  <td className="px-4 py-3 font-mono text-xs text-hai">{formatYuchoAccount(item)}</td>
                   <td className="px-4 py-3 text-right font-mincho text-sumi">
-                    {formatYen(item.amount)}
+                    {formatYen(item.billingAmount)}
                   </td>
-                  <td className="px-4 py-3 text-center">{statusBadge(item.status)}</td>
+                  <td className="px-4 py-3 text-center">{statusBadge(item.billingStatus)}</td>
                 </tr>
               ))}
             </tbody>
@@ -358,22 +454,20 @@ function CollectiveTable({ items }: { items: CollectiveBurialBilling[] }) {
       <div className="md:hidden space-y-2">
         {items.map((item) => (
           <div
-            key={item.id}
+            key={item.sourceId}
             className="bg-white rounded-lg border border-gin p-3 shadow-elegant-sm"
           >
             <div className="flex items-start justify-between gap-2 mb-2">
               <div className="min-w-0">
-                <p className="text-sm text-sumi truncate">{item.applicantName}</p>
-                <p className="text-[10px] text-hai truncate">{item.applicantNameKana}</p>
-                <p className="text-xs text-hai mt-1">故人: {item.deceasedName}</p>
+                <p className="font-mono text-xs text-hai">{item.plotNumber}</p>
+                <p className="text-sm text-sumi truncate">{item.customerName ?? '—'}</p>
+                <p className="text-[10px] text-hai truncate">{item.customerNameKana ?? ''}</p>
               </div>
-              {statusBadge(item.status)}
+              {statusBadge(item.billingStatus)}
             </div>
             <div className="flex items-end justify-between pt-2 border-t border-gin">
-              <p className="font-mono text-[10px] text-hai">
-                {item.yuchoSymbol}-{item.yuchoNumber}
-              </p>
-              <p className="font-mincho text-sumi">{formatYen(item.amount)}</p>
+              <p className="font-mono text-[10px] text-hai">{formatYuchoAccount(item)}</p>
+              <p className="font-mincho text-sumi">{formatYen(item.billingAmount)}</p>
             </div>
           </div>
         ))}
