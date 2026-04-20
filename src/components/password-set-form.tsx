@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -20,6 +20,8 @@ const MODE_CONFIG = {
     submittingLabel: '設定中...',
     successMessage: 'パスワードを設定しました。ログインしてください。',
     noCodeMessage: '招待リンクが無効です。管理者に招待メールの再送をご依頼ください。',
+    expiredHint: '招待リンクの有効期限が切れている可能性があります。管理者に招待メールの再送を依頼してください。',
+    retryCta: null,
   },
   reset: {
     title: 'パスワード再設定',
@@ -28,6 +30,11 @@ const MODE_CONFIG = {
     submittingLabel: '再設定中...',
     successMessage: 'パスワードを再設定しました。ログインしてください。',
     noCodeMessage: 'リセットリンクが無効です。再度パスワードリセットをお試しください。',
+    expiredHint: 'リセットリンクの有効期限が切れている可能性があります。再度パスワードリセットをお試しください。',
+    retryCta: {
+      label: 'パスワードリセットをやり直す',
+      href: '/login',
+    },
   },
 } as const
 
@@ -36,17 +43,14 @@ export function PasswordSetForm({ mode }: PasswordSetFormProps) {
   const searchParams = useSearchParams()
   const config = MODE_CONFIG[mode]
 
+  const code = searchParams.get('code')
+
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
-  const [code, setCode] = useState<string | null>(null)
-
-  useEffect(() => {
-    const codeParam = searchParams.get('code')
-    setCode(codeParam)
-  }, [searchParams])
+  const [isExpired, setIsExpired] = useState(false)
 
   const validatePassword = (): string | null => {
     if (newPassword.length < 8) {
@@ -84,6 +88,8 @@ export function PasswordSetForm({ mode }: PasswordSetFormProps) {
       if (result.success) {
         setIsSuccess(true)
       } else {
+        const isInvalidToken = result.error?.code === 'INVALID_TOKEN'
+        setIsExpired(isInvalidToken)
         setError(
           result.error?.message || 'パスワードの設定に失敗しました'
         )
@@ -130,11 +136,6 @@ export function PasswordSetForm({ mode }: PasswordSetFormProps) {
         </Card>
       </div>
     )
-  }
-
-  // コードなしの場合
-  if (code === null && typeof window !== 'undefined') {
-    // searchParams の読み込みが完了するまで待つ
   }
 
   return (
@@ -228,8 +229,20 @@ export function PasswordSetForm({ mode }: PasswordSetFormProps) {
 
               {/* エラーメッセージ */}
               {error && (
-                <div className="bg-beni-50 border border-beni-200 rounded-elegant px-4 py-3">
+                <div className="bg-beni-50 border border-beni-200 rounded-elegant px-4 py-3 space-y-2">
                   <p className="text-beni text-sm">{error}</p>
+                  {isExpired && (
+                    <p className="text-beni/80 text-xs">{config.expiredHint}</p>
+                  )}
+                  {isExpired && config.retryCta && (
+                    <button
+                      type="button"
+                      onClick={() => router.push(config.retryCta!.href)}
+                      className="text-beni text-xs underline hover:text-beni-light"
+                    >
+                      {config.retryCta.label}
+                    </button>
+                  )}
                 </div>
               )}
 
