@@ -193,6 +193,8 @@ const config: Config = {
         'gradient-matsu': 'var(--gradient-matsu)',
         'gradient-cha': 'var(--gradient-cha)',
         'gradient-ai': 'var(--gradient-ai)',
+        'gradient-sumi': 'var(--gradient-sumi)',
+        'gradient-kohaku': 'var(--gradient-kohaku)',
       },
     },
   },
