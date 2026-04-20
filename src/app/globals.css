@@ -113,6 +113,8 @@ body {
   --gradient-matsu: linear-gradient(135deg, #2d5a3d 0%, #1e3d29 100%);
   --gradient-cha: linear-gradient(135deg, #8b7355 0%, #6b5a45 100%);
   --gradient-ai: linear-gradient(135deg, #264348 0%, #1a3033 100%);
+  --gradient-sumi: linear-gradient(135deg, #2c3139 0%, #1a1d23 100%);
+  --gradient-kohaku: linear-gradient(135deg, #a4863a 0%, #84692a 100%);
 }
 
 .dark {

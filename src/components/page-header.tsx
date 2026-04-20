@@ -5,21 +5,25 @@ import UserMenu from '@/components/user-menu';
 
 type ColorTheme = 'matsu' | 'cha' | 'ai' | 'sumi' | 'kohaku';
 
+// グラデーションは CSS 変数経由で定義されているため、ダークモードでも
+// ブランド色の深いグラデーションが維持される（`from-matsu` 等の
+// Tailwind ユーティリティはダーク反転で明るくなり、白アイコンが
+// 発光して見えにくくなるので使わない）。
 const themeStyles: Record<ColorTheme, { iconBg: string }> = {
   matsu: {
-    iconBg: 'bg-gradient-to-br from-matsu to-matsu-dark shadow-elegant-sm',
+    iconBg: 'bg-gradient-matsu shadow-elegant-sm',
   },
   cha: {
     iconBg: 'bg-gradient-cha shadow-cha',
   },
   ai: {
-    iconBg: 'bg-gradient-to-br from-ai to-ai-dark shadow-elegant-sm',
+    iconBg: 'bg-gradient-ai shadow-elegant-sm',
   },
   sumi: {
-    iconBg: 'bg-gradient-to-br from-sumi to-sumi-light shadow-elegant-sm',
+    iconBg: 'bg-gradient-sumi shadow-elegant-sm',
   },
   kohaku: {
-    iconBg: 'bg-gradient-to-br from-kohaku to-kohaku-dark shadow-elegant-sm',
+    iconBg: 'bg-gradient-kohaku shadow-elegant-sm',
   },
 };
 
