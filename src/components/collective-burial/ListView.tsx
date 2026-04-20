@@ -274,7 +274,7 @@ export default function CollectiveBurialListView({
         {/* 今年の請求対象者サマリカード */}
         <div className="px-3 md:px-6 pt-3 md:pt-6">
           <div className="bg-white rounded-elegant-lg shadow-elegant overflow-hidden border-2 border-matsu-300">
-            <div className="bg-gradient-to-r from-matsu to-matsu-light px-4 md:px-6 py-3 md:py-4 relative overflow-hidden">
+            <div className="bg-gradient-matsu px-4 md:px-6 py-3 md:py-4 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
               <div className="relative flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 md:gap-3 min-w-0">
@@ -405,7 +405,7 @@ export default function CollectiveBurialListView({
                   {/* 年ヘッダー */}
                   <div
                     className={`px-3 md:px-6 py-3 md:py-4 relative overflow-hidden ${
-                      isCurrentYear ? 'bg-gradient-to-r from-matsu to-matsu-light' : 'bg-gradient-cha'
+                      isCurrentYear ? 'bg-gradient-matsu' : 'bg-gradient-cha'
                     }`}
                   >
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
