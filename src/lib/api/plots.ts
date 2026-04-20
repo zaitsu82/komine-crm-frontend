@@ -14,6 +14,8 @@ import {
   PaymentStatus,
   ContractStatus,
   ContractRole,
+  BulkCreatePlotsResponse,
+  BulkUpdatePlotsResponse,
 } from '@komine/types';
 import { apiGet, apiPost, apiPut, apiDelete, shouldUseMockData } from './client';
 import { ApiResponse } from './types';
@@ -553,15 +555,11 @@ export function sortPlotsByNumber(plots: PlotListItem[]): PlotListItem[] {
  * 区画情報の一括登録
  *
  * items は CreatePlotRequest 形式の配列。簡易用途として旧シグネチャ（4項目）にも対応。
- * バックエンドの対応フィールド拡充は zaitsu82/komine-crm-backend#74 で進行中。
+ * レスポンスは部分成功許容（issue #76 Phase 1）: failed[] に失敗行の詳細が入る。
  */
 export async function bulkCreatePlots(
   items: Array<Record<string, unknown>>
-): Promise<ApiResponse<{
-  totalRequested: number;
-  created: number;
-  results: Array<{ row: number; id: string; plotNumber: string; areaName: string }>;
-}>> {
+): Promise<ApiResponse<BulkCreatePlotsResponse>> {
   // 旧シグネチャ（{ plotNumber, areaName, areaSqm?, notes? }）との互換のため、
   // 平坦な形で渡された場合は physicalPlot にネストする
   const normalized = items.map((item) => {
@@ -585,17 +583,11 @@ export async function bulkCreatePlots(
  *
  * items の各要素は plotNumber を必須とし、その他のフィールドは部分更新。
  * 空欄（undefined）のフィールドは既存値を保持する。
- *
- * バックエンドエンドポイント PUT /api/v1/plots/bulk は
- * zaitsu82/komine-crm-backend#74 で実装予定。
+ * レスポンスは部分成功許容（issue #76 Phase 1）。
  */
 export async function bulkUpdatePlots(
   items: Array<{ plotNumber: string } & Record<string, unknown>>
-): Promise<ApiResponse<{
-  totalRequested: number;
-  updated: number;
-  results: Array<{ row: number; id: string; plotNumber: string }>;
-}>> {
+): Promise<ApiResponse<BulkUpdatePlotsResponse>> {
   return apiPut('/plots/bulk', { items });
 }
 

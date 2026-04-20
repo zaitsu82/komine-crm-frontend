@@ -38,7 +38,12 @@ export function BulkUpdatePlotPanel() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [submitResult, setSubmitResult] = useState<{
     totalRequested: number;
-    updated: number;
+    succeeded: number;
+    failed: Array<{
+      row: number;
+      plotNumber?: string | null;
+      error: { message: string; details?: Array<{ field?: string; message: string }> };
+    }>;
   } | null>(null);
 
   const handleFileSelect = useCallback(async (f: File) => {
@@ -82,11 +87,15 @@ export function BulkUpdatePlotPanel() {
       const payload = buildBulkUpdatePayload(plots);
       const response = await bulkUpdatePlots(payload);
       if (response.success) {
-        setSubmitResult({
-          totalRequested: response.data.totalRequested,
-          updated: response.data.updated,
-        });
-        showSuccess(`${response.data.updated}件の区画情報を更新しました`);
+        const { totalRequested, succeeded, failed } = response.data;
+        setSubmitResult({ totalRequested, succeeded, failed });
+        if (failed.length === 0) {
+          showSuccess(`${succeeded}件の区画情報を更新しました`);
+        } else if (succeeded === 0) {
+          showError(`${failed.length}件すべての更新に失敗しました`);
+        } else {
+          showError(`${succeeded}件成功 / ${failed.length}件失敗`);
+        }
       } else {
         showApiError('一括編集', response.error?.message, response.error?.details);
       }
@@ -217,7 +226,8 @@ export function BulkUpdatePlotPanel() {
         <SubmitResultCard
           mode="update"
           totalRequested={submitResult.totalRequested}
-          succeeded={submitResult.updated}
+          succeeded={submitResult.succeeded}
+          failed={submitResult.failed}
           onReset={handleReset}
         />
       )}

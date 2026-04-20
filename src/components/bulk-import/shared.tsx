@@ -166,10 +166,20 @@ export function ValidationErrorList({ errors }: ValidationErrorListProps) {
   );
 }
 
+export interface BulkFailureItem {
+  row: number;
+  plotNumber?: string | null;
+  error: {
+    message: string;
+    details?: Array<{ field?: string; message: string }>;
+  };
+}
+
 export interface SubmitResultCardProps {
   mode: 'create' | 'update';
   totalRequested: number;
   succeeded: number;
+  failed?: BulkFailureItem[];
   onReset: () => void;
 }
 
@@ -177,10 +187,32 @@ export function SubmitResultCard({
   mode,
   totalRequested,
   succeeded,
+  failed = [],
   onReset,
 }: SubmitResultCardProps) {
-  const title = mode === 'create' ? '一括登録が完了しました' : '一括編集が完了しました';
+  const allSucceeded = failed.length === 0;
+  const allFailed = succeeded === 0 && failed.length > 0;
+  const partial = !allSucceeded && !allFailed;
+
+  const title = allSucceeded
+    ? mode === 'create'
+      ? '一括登録が完了しました'
+      : '一括編集が完了しました'
+    : allFailed
+      ? mode === 'create'
+        ? '一括登録が失敗しました'
+        : '一括編集が失敗しました'
+      : mode === 'create'
+        ? '一括登録が部分的に完了しました'
+        : '一括編集が部分的に完了しました';
   const action = mode === 'create' ? '登録成功' : '更新成功';
+
+  const summaryClass = allSucceeded
+    ? 'bg-matsu-50 border-matsu-200'
+    : allFailed
+      ? 'bg-beni-50 border-beni-200'
+      : 'bg-kinari border-gin';
+  const titleClass = allSucceeded ? 'text-matsu' : allFailed ? 'text-beni' : 'text-sumi';
 
   return (
     <Card>
@@ -188,26 +220,69 @@ export function SubmitResultCard({
         <CardTitle className="text-lg">処理結果</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="p-6 bg-matsu-50 border border-matsu-200 rounded-lg text-center">
+        <div className={`p-6 border rounded-lg text-center ${summaryClass}`}>
           <svg
-            className="w-16 h-16 mx-auto mb-4 text-matsu"
+            className={`w-16 h-16 mx-auto mb-4 ${titleClass}`}
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
             aria-hidden="true"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
+            {allSucceeded ? (
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            ) : (
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"
+              />
+            )}
           </svg>
-          <h3 className="text-xl font-semibold text-matsu mb-2">{title}</h3>
+          <h3 className={`text-xl font-semibold mb-2 ${titleClass}`}>{title}</h3>
           <p className="text-sumi">
             リクエスト数: {totalRequested}件 / {action}: {succeeded}件
+            {failed.length > 0 && ` / 失敗: ${failed.length}件`}
           </p>
         </div>
+
+        {failed.length > 0 && (
+          <div className="mt-6 p-4 bg-beni-50 border border-beni-200 rounded-lg">
+            <h4 className="font-semibold text-beni mb-2">
+              失敗した行 ({failed.length}件)
+              {partial && ' — 他行は正常に処理されました'}
+            </h4>
+            <ul className="space-y-1 max-h-96 overflow-y-auto">
+              {failed.slice(0, 100).map((f, idx) => (
+                <li key={idx} className="text-sm text-beni">
+                  行{f.row + 1}
+                  {f.plotNumber ? `（${f.plotNumber}）` : ''}: {f.error.message}
+                  {f.error.details && f.error.details.length > 0 && (
+                    <ul className="ml-4 text-xs opacity-80">
+                      {f.error.details.map((d, i) => (
+                        <li key={i}>
+                          {d.field ? `[${d.field}] ` : ''}
+                          {d.message}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </li>
+              ))}
+              {failed.length > 100 && (
+                <li className="text-sm text-beni font-medium">
+                  ...他 {failed.length - 100} 件
+                </li>
+              )}
+            </ul>
+          </div>
+        )}
+
         <div className="mt-6 flex justify-center">
           <Button onClick={onReset}>新しいファイルをアップロード</Button>
         </div>

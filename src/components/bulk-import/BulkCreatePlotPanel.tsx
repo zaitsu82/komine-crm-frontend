@@ -28,7 +28,12 @@ export function BulkCreatePlotPanel() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [submitResult, setSubmitResult] = useState<{
     totalRequested: number;
-    created: number;
+    succeeded: number;
+    failed: Array<{
+      row: number;
+      plotNumber?: string | null;
+      error: { message: string; details?: Array<{ field?: string; message: string }> };
+    }>;
   } | null>(null);
 
   const handleFileSelect = useCallback(async (f: File) => {
@@ -72,11 +77,15 @@ export function BulkCreatePlotPanel() {
       const payload = buildBulkCreatePayload(plots);
       const response = await bulkCreatePlots(payload);
       if (response.success) {
-        setSubmitResult({
-          totalRequested: response.data.totalRequested,
-          created: response.data.created,
-        });
-        showSuccess(`${response.data.created}件の区画情報を登録しました`);
+        const { totalRequested, succeeded, failed } = response.data;
+        setSubmitResult({ totalRequested, succeeded, failed });
+        if (failed.length === 0) {
+          showSuccess(`${succeeded}件の区画情報を登録しました`);
+        } else if (succeeded === 0) {
+          showError(`${failed.length}件すべての登録に失敗しました`);
+        } else {
+          showError(`${succeeded}件成功 / ${failed.length}件失敗`);
+        }
       } else {
         showApiError('一括登録', response.error?.message, response.error?.details);
       }
@@ -177,7 +186,8 @@ export function BulkCreatePlotPanel() {
         <SubmitResultCard
           mode="create"
           totalRequested={submitResult.totalRequested}
-          succeeded={submitResult.created}
+          succeeded={submitResult.succeeded}
+          failed={submitResult.failed}
           onReset={handleReset}
         />
       )}
