@@ -412,6 +412,15 @@ export async function resetPassword(
 ): Promise<ApiResponse<{ message: string }>> {
   if (shouldUseMockData()) {
     await new Promise((resolve) => setTimeout(resolve, 500));
+    if (code.startsWith('invalid-')) {
+      return {
+        success: false,
+        error: {
+          code: 'INVALID_TOKEN',
+          message: 'トークンが無効です',
+        },
+      };
+    }
     return {
       success: true,
       data: {
