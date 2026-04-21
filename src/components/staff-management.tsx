@@ -15,6 +15,7 @@ import {
   updateStaff as apiUpdateStaff,
   deleteStaff as apiDeleteStaff,
   toggleStaffActive as apiToggleStaffActive,
+  resendInvitation as apiResendInvitation,
   StaffListItem,
   CreateStaffRequest,
   UpdateStaffRequest,
@@ -129,6 +130,9 @@ export default function StaffManagement() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [staffToDelete, setStaffToDelete] = useState<StaffListItem | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // 招待メール再送
+  const [resendingStaffId, setResendingStaffId] = useState<number | null>(null);
 
   // スタッフ一覧を取得
   const fetchStaffList = useCallback(async () => {
@@ -360,6 +364,29 @@ export default function StaffManagement() {
       }
     } catch {
       showError('状態の変更中にエラーが発生しました');
+    }
+  };
+
+  // 招待メール再送
+  const handleResendInvitation = async (staff: StaffListItem) => {
+    if (!window.confirm(`${staff.name}（${staff.email}）に招待メールを再送しますか？`)) {
+      return;
+    }
+
+    setResendingStaffId(staff.id);
+
+    try {
+      const response = await apiResendInvitation(staff.id);
+
+      if (response.success) {
+        showSuccess(`${staff.name}に招待メールを再送しました`);
+      } else {
+        showApiError('招待メールの再送', response.error?.message, response.error?.details);
+      }
+    } catch {
+      showError('招待メールの再送中にエラーが発生しました');
+    } finally {
+      setResendingStaffId(null);
     }
   };
 
@@ -729,12 +756,20 @@ export default function StaffManagement() {
                       </td>
                       {isAdminUser && (
                         <td className="px-4 py-3 text-center">
-                          <div className="flex items-center justify-center gap-2">
+                          <div className="flex items-center justify-center gap-2 flex-wrap">
                             <button
                               onClick={() => handleOpenEditDialog(staff)}
                               className="border border-gin text-sumi hover:bg-kinari rounded-elegant px-3 py-1.5 transition-all duration-200 text-xs font-medium"
                             >
                               編集
+                            </button>
+                            <button
+                              onClick={() => handleResendInvitation(staff)}
+                              disabled={resendingStaffId === staff.id}
+                              className="border border-ai text-ai hover:bg-ai-50 rounded-elegant px-3 py-1.5 transition-all duration-200 text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                              title="パスワード未設定のスタッフに招待メールを再送します"
+                            >
+                              {resendingStaffId === staff.id ? '再送中...' : '招待再送'}
                             </button>
                             <button
                               onClick={() => handleToggleActive(staff)}

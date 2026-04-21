@@ -78,6 +78,7 @@ export {
   updateStaff,
   deleteStaff,
   toggleStaffActive,
+  resendInvitation,
   ROLE_LABELS,
 } from './staff';
 export type {
@@ -88,6 +89,7 @@ export type {
   CreateStaffRequest,
   UpdateStaffRequest,
   ToggleActiveResponse,
+  ResendInvitationResponse,
   StaffSearchParams,
 } from './staff';
 

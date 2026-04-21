@@ -61,6 +61,11 @@ export interface ToggleActiveResponse {
   message: string;
 }
 
+// 招待メール再送レスポンス
+export interface ResendInvitationResponse {
+  message: string;
+}
+
 // スタッフ検索パラメータ
 export interface StaffSearchParams {
   page?: number;
@@ -299,6 +304,32 @@ async function mockDeleteStaff(id: number): Promise<ApiResponse<{ message: strin
 }
 
 /**
+ * モック: 招待メール再送信
+ */
+async function mockResendInvitation(id: number): Promise<ApiResponse<ResendInvitationResponse>> {
+  await new Promise((resolve) => setTimeout(resolve, 300));
+
+  const staff = MOCK_STAFF.find((s) => s.id === id);
+
+  if (!staff) {
+    return {
+      success: false,
+      error: {
+        code: 'NOT_FOUND',
+        message: 'スタッフが見つかりません',
+      },
+    };
+  }
+
+  return {
+    success: true,
+    data: {
+      message: '招待メールを再送信しました',
+    },
+  };
+}
+
+/**
  * モック: スタッフ有効/無効切り替え
  */
 async function mockToggleStaffActive(id: number): Promise<ApiResponse<ToggleActiveResponse>> {
@@ -426,4 +457,15 @@ export async function toggleStaffActive(id: number): Promise<ApiResponse<ToggleA
   }
 
   return apiPut<ToggleActiveResponse>(`/staff/${id}/toggle-active`);
+}
+
+/**
+ * 招待メール再送信
+ */
+export async function resendInvitation(id: number): Promise<ApiResponse<ResendInvitationResponse>> {
+  if (shouldUseMockData()) {
+    return mockResendInvitation(id);
+  }
+
+  return apiPost<ResendInvitationResponse>(`/staff/${id}/resend-invitation`);
 }
