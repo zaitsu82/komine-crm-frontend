@@ -150,7 +150,25 @@ const config: Config = {
           'text': 'var(--color-sumi)',
           'bg-light': 'var(--color-shiro)',
           'border': 'var(--color-gin)',
-        }
+        },
+
+        // ===============================================================
+        // Semantic tokens (shadcn互換エイリアス)
+        // 和モダントークン（shiro/kinari/sumi/hai/gin/beni）の用途別別名。
+        // これらは新規 shadcn 系コンポーネント実装時に使う。
+        // 既存コンポーネントで和モダントークンを直接使っている箇所は
+        // そのままでOK（どちらも同じCSS変数を参照）。
+        // ===============================================================
+        'card': 'var(--color-shiro)',              // カード背景 = 白
+        'card-foreground': 'var(--color-sumi)',    // カード上のテキスト
+        'muted': 'var(--color-kinari)',            // muted背景 = 生成色
+        'muted-foreground': 'var(--color-hai)',    // muted背景上のテキスト = 灰
+        'popover': 'var(--color-shiro)',           // ポップオーバー背景
+        'popover-foreground': 'var(--color-sumi)',
+        'input': 'var(--color-gin)',               // 入力フィールドボーダー
+        'ring': 'var(--color-matsu)',              // フォーカスリング
+        'destructive': 'var(--color-beni)',        // 破壊的アクション（削除等）
+        'destructive-foreground': '#ffffff',
       },
       // タッチ対応の最小タップサイズ
       spacing: {

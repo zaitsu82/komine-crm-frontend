@@ -127,6 +127,50 @@ const { user, login, logout, isAuthenticated } = useAuth();
 - `Dialog` - モーダルダイアログ
 - `Table` - テーブル
 - `Tabs` - タブ
+- `StatCard` - KPI/統計値表示カード（`theme`: matsu/cha/ai/kohaku/beni/sumi）
+- `EmptyState` - データ0件時の空状態表示（icon + title + description + action）
+- `StatusBadge` - 支払い/契約/区画状態バッジ（色+パターン記号で色覚対応）
+- `PageSection` - セクション見出し+コンテンツの統一レイアウト
+
+### デザインシステム（カラー・タイポグラフィ）
+
+#### 和モダンカラートークン
+
+全トークンは`globals.css`でCSS変数として定義、`tailwind.config.ts`で参照。ライト/ダークモード自動切替。
+
+| トークン | 用途 | 例 |
+|---|---|---|
+| `matsu`（松葉） | プライマリ（主要アクション） | `bg-matsu`（ボタン）、`text-matsu`（リンク） |
+| `cha`（茶） | セカンダリ | `bg-cha-50 border-cha-200`（情報カード） |
+| `ai`（藍） | アクセント・情報系 | 情報タイプバッジ、リンク強調 |
+| `kohaku`（琥珀） | 警告・未完了 | 「未入金」「要対応」 |
+| `beni`（紅） | エラー・破壊的操作 | 「滞納」「削除」 |
+| `sumi`（墨） | テキスト（本文） | `text-sumi` |
+| `hai`（灰） | テキスト（補足・muted） | `text-hai` |
+| `gin`（銀） | ボーダー | `border-gin` |
+| `shiro`（白） | カード背景 | `bg-shiro`、`bg-white` |
+| `kinari`（生成） | muted背景 | `bg-kinari` |
+
+**shadcn互換エイリアス**（新規shadcn系コンポーネント用）: `card` / `muted` / `input` / `ring` / `destructive` など
+
+#### 使用ルール
+
+- **Tailwind標準色（`gray-*`/`red-*`/`green-*`等）は極力使わない**。既存の和モダントークンに置き換える（既存コードで混在しているのは徐々に置換）
+- **状態色は `StatusBadge` 経由**で表現する。生の `bg-red-*` 等を直接使わない
+- **新規コンポーネントは `StatCard` / `EmptyState` / `StatusBadge` / `PageSection` を再利用**してスタイルを統一
+
+#### タイポグラフィ
+
+| 種類 | Tailwindクラス | 用途 |
+|---|---|---|
+| 明朝 | `font-mincho` | 見出し（h1〜h3）、タイトル |
+| ゴシック（デフォルト） | `font-sans` | 本文・ラベル |
+| 等幅数字 | `tabular-nums` | 金額・数値（ゼロ幅揃え） |
+
+ルール:
+- **明朝は見出しのみ**。本文で使うと可読性低下
+- **数値は必ず `tabular-nums`** を付ける（特にテーブルのカラム揃え）
+- フォントサイズはモバイルベース（`text-xs` → `md:text-sm` のように段階的に）
 
 ### カスタムフック
 
