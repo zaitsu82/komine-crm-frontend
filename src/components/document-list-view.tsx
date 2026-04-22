@@ -119,7 +119,7 @@ export function DocumentListView({
           </div>
           <Button onClick={onCreateNew} size="sm" className="bg-matsu-600 hover:bg-matsu-700 cursor-pointer">
             <Plus className="mr-1 h-4 w-4" />
-            新規登録
+            新規作成
           </Button>
         </div>
 
