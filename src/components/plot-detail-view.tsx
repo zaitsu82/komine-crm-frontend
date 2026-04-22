@@ -669,7 +669,7 @@ export default function PlotDetailView({ plotId, onEdit, onBack, onDelete }: Plo
           {/* 契約者 */}
           <div className="min-w-0 col-span-2 md:col-span-1">
             <p className="text-[11px] md:text-xs text-hai">契約者</p>
-            <p className="mt-1 font-mincho text-base md:text-lg font-semibold text-sumi truncate">
+            <p className="mt-1 text-base md:text-lg font-semibold text-sumi truncate">
               {primaryCustomer?.name || '-'}
             </p>
             {primaryCustomer?.nameKana && (

@@ -37,7 +37,7 @@ export function ContactsTab({
           onClick={() => addFamilyContact(getDefaultContact())}
         >
           <Plus className="h-4 w-4 mr-1" />
-          新規追加
+          連絡先を追加
         </Button>
       </div>
 

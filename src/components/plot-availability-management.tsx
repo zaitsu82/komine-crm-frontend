@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { ClipboardList, Check, X, BarChart3, Hash } from 'lucide-react';
+import { ClipboardList, Check, X, BarChart3, Hash, Layers, PieChart, Grid3X3 } from 'lucide-react';
+import { StatCard } from '@/components/ui/stat-card';
 import { PlotPeriod, PLOT_SIZE } from '@/types/plot-constants';
 import PageHeader from '@/components/page-header';
 import {
@@ -307,36 +308,49 @@ export default function PlotAvailabilityManagement() {
 
           {/* デスクトップ用カード表示 */}
           <div className="hidden md:grid md:grid-cols-5 gap-4 mb-6">
-            <div className="bg-white border border-matsu-200 rounded-elegant-lg p-5 text-center shadow-elegant">
-              <div className="text-3xl font-bold text-matsu">{summary.totalCount.toLocaleString()}</div>
-              <div className="text-sm text-matsu font-medium mt-1">総区画数</div>
-              <div className="text-xs text-hai mt-2">{areaStats.totalArea.toLocaleString()}㎡</div>
-            </div>
-            <div className="bg-white border border-ai-200 rounded-elegant-lg p-5 text-center shadow-elegant">
-              <div className="text-3xl font-bold text-ai">{summary.usedCount.toLocaleString()}</div>
-              <div className="text-sm text-ai font-medium mt-1">使用済区画数</div>
-              <div className="text-xs text-hai mt-2">{areaStats.usedArea.toLocaleString()}㎡</div>
-            </div>
-            <div className="bg-white border border-kohaku-200 rounded-elegant-lg p-5 text-center shadow-elegant">
-              <div className="text-3xl font-bold text-kohaku">{summary.remainingCount.toLocaleString()}</div>
-              <div className="text-sm text-kohaku font-medium mt-1">残区画数</div>
-              <div className="text-xs text-hai mt-2">{areaStats.remainingArea.toLocaleString()}㎡</div>
-            </div>
-            <div className="bg-white border border-cha-200 rounded-elegant-lg p-5 text-center shadow-elegant">
-              <div className="text-3xl font-bold text-cha">{summary.usageRate}%</div>
-              <div className="text-sm text-cha font-medium mt-1">使用率</div>
-              <div className="w-full bg-cha-100 rounded-full h-2 mt-3">
-                <div
-                  className="bg-cha h-2 rounded-full transition-all duration-500"
-                  style={{ width: `${summary.usageRate}%` }}
-                />
-              </div>
-            </div>
-            <div className="bg-white border border-gin rounded-elegant-lg p-5 text-center shadow-elegant">
-              <div className="text-3xl font-bold text-sumi">{(summary.remainingCount * 2).toLocaleString()}</div>
-              <div className="text-sm text-hai font-medium mt-1">半区画換算</div>
-              <div className="text-xs text-hai mt-2">1.8㎡×{(summary.remainingCount * 2).toLocaleString()}</div>
-            </div>
+            <StatCard
+              label="総区画数"
+              value={summary.totalCount.toLocaleString()}
+              description={`${areaStats.totalArea.toLocaleString()}㎡`}
+              icon={<Layers className="w-4 h-4" />}
+              theme="matsu"
+            />
+            <StatCard
+              label="使用済区画数"
+              value={summary.usedCount.toLocaleString()}
+              description={`${areaStats.usedArea.toLocaleString()}㎡`}
+              icon={<Check className="w-4 h-4" />}
+              theme="ai"
+            />
+            <StatCard
+              label="残区画数"
+              value={summary.remainingCount.toLocaleString()}
+              description={`${areaStats.remainingArea.toLocaleString()}㎡`}
+              icon={<Hash className="w-4 h-4" />}
+              theme="kohaku"
+            />
+            <StatCard
+              label="使用率"
+              value={summary.usageRate}
+              unit="%"
+              icon={<PieChart className="w-4 h-4" />}
+              theme="cha"
+              description={
+                <span className="block w-full bg-cha-50 rounded-full h-1.5 mt-1">
+                  <span
+                    className="block bg-cha h-1.5 rounded-full transition-all duration-500"
+                    style={{ width: `${summary.usageRate}%` }}
+                  />
+                </span>
+              }
+            />
+            <StatCard
+              label="半区画換算"
+              value={(summary.remainingCount * 2).toLocaleString()}
+              description={`1.8㎡ × ${(summary.remainingCount * 2).toLocaleString()}`}
+              icon={<Grid3X3 className="w-4 h-4" />}
+              theme="sumi"
+            />
           </div>
 
           {/* 期別サマリーカード */}

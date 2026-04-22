@@ -24,6 +24,8 @@ import { showSuccess, showError, showApiError } from '@/lib/toast';
 import { PreviewDialog } from '@/components/shared/dialogs';
 import type { PreviewSection, PreviewDiffSection } from '@/components/shared/dialogs';
 import PageHeader from '@/components/page-header';
+import { StatCard } from '@/components/ui/stat-card';
+import { Users, UserCheck, ShieldCheck, Briefcase, Edit3, Eye } from 'lucide-react';
 
 type SortKey = 'id' | 'name' | 'email' | 'role' | 'isActive' | 'lastLoginAt';
 type SortOrder = 'asc' | 'desc';
@@ -487,42 +489,42 @@ export default function StaffManagement() {
 
         {/* Summary Stat Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-4 px-3 md:px-6 py-4">
-          <div className="bg-white border border-gin rounded-elegant-lg shadow-elegant-sm p-4">
-            <p className="text-sm text-hai">総スタッフ数</p>
-            <p className="text-2xl font-bold text-sumi mt-1">{stats.total}</p>
-          </div>
-          <div className="bg-white border border-gin rounded-elegant-lg shadow-elegant-sm p-4">
-            <p className="text-sm text-hai">有効</p>
-            <p className="text-2xl font-bold text-matsu mt-1">{stats.active}</p>
-          </div>
-          <div className="bg-white border border-gin rounded-elegant-lg shadow-elegant-sm p-4">
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-hai">管理者</p>
-              <span className="w-2 h-2 rounded-full bg-beni"></span>
-            </div>
-            <p className="text-2xl font-bold text-sumi mt-1">{stats.adminCount}</p>
-          </div>
-          <div className="bg-white border border-gin rounded-elegant-lg shadow-elegant-sm p-4">
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-hai">マネージャー</p>
-              <span className="w-2 h-2 rounded-full bg-kohaku"></span>
-            </div>
-            <p className="text-2xl font-bold text-sumi mt-1">{stats.managerCount}</p>
-          </div>
-          <div className="bg-white border border-gin rounded-elegant-lg shadow-elegant-sm p-4">
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-hai">オペレーター</p>
-              <span className="w-2 h-2 rounded-full bg-matsu"></span>
-            </div>
-            <p className="text-2xl font-bold text-sumi mt-1">{stats.operatorCount}</p>
-          </div>
-          <div className="bg-white border border-gin rounded-elegant-lg shadow-elegant-sm p-4">
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-hai">閲覧者</p>
-              <span className="w-2 h-2 rounded-full bg-ai"></span>
-            </div>
-            <p className="text-2xl font-bold text-sumi mt-1">{stats.viewerCount}</p>
-          </div>
+          <StatCard
+            label="総スタッフ数"
+            value={stats.total}
+            icon={<Users className="w-4 h-4" />}
+            theme="sumi"
+          />
+          <StatCard
+            label="有効"
+            value={stats.active}
+            icon={<UserCheck className="w-4 h-4" />}
+            theme="matsu"
+          />
+          <StatCard
+            label="管理者"
+            value={stats.adminCount}
+            icon={<ShieldCheck className="w-4 h-4" />}
+            theme="beni"
+          />
+          <StatCard
+            label="マネージャー"
+            value={stats.managerCount}
+            icon={<Briefcase className="w-4 h-4" />}
+            theme="kohaku"
+          />
+          <StatCard
+            label="オペレーター"
+            value={stats.operatorCount}
+            icon={<Edit3 className="w-4 h-4" />}
+            theme="matsu"
+          />
+          <StatCard
+            label="閲覧者"
+            value={stats.viewerCount}
+            icon={<Eye className="w-4 h-4" />}
+            theme="ai"
+          />
         </div>
 
         {/* Search / Filter Area */}

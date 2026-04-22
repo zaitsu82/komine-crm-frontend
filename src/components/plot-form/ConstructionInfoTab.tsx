@@ -27,7 +27,7 @@ export function ConstructionInfoTab({
           onClick={() => addConstructionInfo(getDefaultConstructionInfo())}
         >
           <Plus className="h-4 w-4 mr-1" />
-          新規追加
+          工事を追加
         </Button>
       </div>
 
