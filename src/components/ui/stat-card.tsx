@@ -36,7 +36,8 @@ const iconWrapperVariants = cva(
         ai: 'bg-ai-50 text-ai',
         kohaku: 'bg-kohaku-50 text-kohaku-dark',
         beni: 'bg-beni-50 text-beni',
-        sumi: 'bg-kinari text-sumi',
+        // sumi: bg-kinari はダークでカード背景と同色になるため hai-50 に差し替え
+        sumi: 'bg-kinari dark:bg-hai-50 text-sumi',
       },
     },
     defaultVariants: {

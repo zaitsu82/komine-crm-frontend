@@ -134,45 +134,45 @@ body {
   --color-shiro: #1a1d23;
   --color-kinari: #1a1d23;
 
-  /* 松葉色 - ダーク */
+  /* 松葉色 - ダーク（カード背景 #1a1d23 と区別できる明度に調整） */
   --color-matsu: #7db190;
   --color-matsu-light: #a8cbb5;
   --color-matsu-dark: #7db190;
-  --color-matsu-50: #15241b;
-  --color-matsu-100: #1c3325;
-  --color-matsu-200: #1e3d29;
+  --color-matsu-50: #213828;
+  --color-matsu-100: #2a4434;
+  --color-matsu-200: #365542;
   /* 300-900 はアクセント色のためライトと同値を維持 */
 
   /* 茶色 - ダーク */
   --color-cha: #c4b095;
   --color-cha-light: #d9ccba;
   --color-cha-dark: #c4b095;
-  --color-cha-50: #2a221a;
-  --color-cha-100: #3a2f23;
+  --color-cha-50: #322820;
+  --color-cha-100: #453929;
   --color-cha-200: #5f503b;
 
   /* 藍色 - ダーク */
   --color-ai: #8fb0b6;
   --color-ai-light: #a3b3b7;
   --color-ai-dark: #8fb0b6;
-  --color-ai-50: #142225;
-  --color-ai-100: #1b2e32;
-  --color-ai-200: #1a3033;
+  --color-ai-50: #1e2e33;
+  --color-ai-100: #273b40;
+  --color-ai-200: #355056;
 
   /* 紅色 - ダーク */
   --color-beni: #db8585;
   --color-beni-light: #e8a8a8;
   --color-beni-dark: #db8585;
-  --color-beni-50: #2a1515;
-  --color-beni-100: #3a1d1d;
+  --color-beni-50: #331c1c;
+  --color-beni-100: #4a2828;
   --color-beni-200: #5b2626;
 
   /* 琥珀色 - ダーク */
   --color-kohaku: #d4b87a;
   --color-kohaku-light: #f2d98f;
   --color-kohaku-dark: #d4b87a;
-  --color-kohaku-50: #2a230f;
-  --color-kohaku-100: #3a3015;
+  --color-kohaku-50: #342b14;
+  --color-kohaku-100: #4a3c20;
   --color-kohaku-200: #644c1a;
 
   /* グラデーション - ダーク */
