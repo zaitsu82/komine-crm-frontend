@@ -60,7 +60,7 @@ export function BurialInfoTab({
           onClick={() => addBuriedPerson(getDefaultBuriedPerson())}
         >
           <Plus className="h-4 w-4 mr-1" />
-          新規追加
+          埋葬者を追加
         </Button>
       </div>
 

@@ -4,6 +4,14 @@ import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Plus } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import {
   getAllMasters,
@@ -195,33 +203,74 @@ export default function MastersManagement() {
         </div>
       ) : (
         <div className="flex-1 overflow-auto">
-          <div className="px-3 md:px-6 py-3 md:py-4">
-            {isAdmin && (
-              <div className="mb-3 flex justify-end">
-                <Button onClick={handleOpenCreate} size="sm" className="cursor-pointer">
-                  + 新規追加
-                </Button>
-              </div>
-            )}
-
-            {/* Master type tabs */}
-            <div className="flex flex-wrap gap-1.5 md:gap-2 mb-4">
-              {MASTER_TYPES.map((type) => (
-                <button
-                  key={type.key}
-                  onClick={() => setSelectedType(type)}
-                  className={`px-2.5 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-medium transition-colors ${selectedType.key === type.key
-                    ? 'bg-sumi text-white'
-                    : 'bg-kinari text-sumi hover:bg-gin'
-                    }`}
-                >
-                  {type.label}
-                  <span className="ml-0.5 md:ml-1 text-[10px] md:text-xs opacity-70">
-                    ({mastersData ? (mastersData[type.dataKey] as MasterItem[]).length : 0})
-                  </span>
-                </button>
-              ))}
+          <div className="px-3 md:px-6 py-3 md:py-4 md:flex md:gap-4">
+            {/* モバイル: Select ドロップダウン */}
+            <div className="md:hidden mb-3">
+              <Label htmlFor="master-type-select" className="block mb-1 text-xs text-hai">マスタ種別</Label>
+              <Select
+                value={selectedType.key}
+                onValueChange={(v) => {
+                  const next = MASTER_TYPES.find((t) => t.key === v);
+                  if (next) setSelectedType(next);
+                }}
+              >
+                <SelectTrigger id="master-type-select">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {MASTER_TYPES.map((type) => {
+                    const count = mastersData ? (mastersData[type.dataKey] as MasterItem[]).length : 0;
+                    return (
+                      <SelectItem key={type.key} value={type.key}>
+                        {type.label}（{count}件）
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
             </div>
+
+            {/* デスクトップ: 左サイドセグメンテッドナビ */}
+            <nav
+              aria-label="マスタ種別"
+              className="hidden md:flex md:flex-col md:w-48 md:flex-shrink-0 md:gap-1 md:sticky md:top-0 md:self-start"
+            >
+              {MASTER_TYPES.map((type) => {
+                const count = mastersData ? (mastersData[type.dataKey] as MasterItem[]).length : 0;
+                const isActive = selectedType.key === type.key;
+                return (
+                  <button
+                    key={type.key}
+                    onClick={() => setSelectedType(type)}
+                    className={`flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium transition-colors tabular-nums ${isActive
+                      ? 'bg-matsu text-white'
+                      : 'text-sumi hover:bg-kinari'
+                      }`}
+                  >
+                    <span>{type.label}</span>
+                    <span
+                      className={`ml-2 inline-flex items-center justify-center min-w-[1.5rem] h-5 px-1.5 rounded-full text-[10px] ${isActive
+                        ? 'bg-white/20 text-white'
+                        : 'bg-kinari text-hai'
+                        }`}
+                    >
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </nav>
+
+            {/* コンテンツエリア */}
+            <div className="flex-1 min-w-0">
+              {isAdmin && (
+                <div className="mb-3 flex justify-end">
+                  <Button onClick={handleOpenCreate} size="sm" className="cursor-pointer">
+                    <Plus className="w-4 h-4 mr-1" />
+                    新規登録
+                  </Button>
+                </div>
+              )}
 
             {/* Table */}
             <div className="bg-white rounded-lg border border-gin overflow-hidden">
@@ -298,6 +347,7 @@ export default function MastersManagement() {
                   )}
                 </tbody>
               </table>
+            </div>
             </div>
 
           </div>

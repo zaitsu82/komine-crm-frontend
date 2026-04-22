@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EmptyState } from '@/components/ui/empty-state';
+import { StatCard } from '@/components/ui/stat-card';
 import { BaseDialog } from '@/components/shared/dialogs/BaseDialog';
 import { showSuccess, showError } from '@/lib/toast';
 import { useAsyncData } from '@/hooks/useAsyncData';
@@ -60,38 +61,6 @@ function statusBadge(status: string) {
     >
       {label}
     </span>
-  );
-}
-
-interface SummaryCardProps {
-  label: string;
-  value: string;
-  sub?: string;
-  icon: React.ReactNode;
-  accent: 'matsu' | 'cha' | 'ai' | 'kohaku';
-}
-
-const accentStyles: Record<SummaryCardProps['accent'], string> = {
-  matsu: 'bg-matsu-50 text-matsu border-matsu-200',
-  cha: 'bg-cha-50 text-cha border-cha/30',
-  ai: 'bg-ai/10 text-ai border-ai/30',
-  kohaku: 'bg-kohaku/10 text-kohaku border-kohaku/30',
-};
-
-function SummaryCard({ label, value, sub, icon, accent }: SummaryCardProps) {
-  return (
-    <div className="bg-white rounded-lg border border-gin p-3 md:p-4 shadow-elegant-sm">
-      <div className="flex items-center justify-between mb-2">
-        <p className="text-xs text-hai">{label}</p>
-        <div
-          className={`w-7 h-7 md:w-8 md:h-8 rounded-md flex items-center justify-center border ${accentStyles[accent]}`}
-        >
-          {icon}
-        </div>
-      </div>
-      <p className="font-mincho text-lg md:text-2xl font-semibold text-sumi">{value}</p>
-      {sub && <p className="text-[10px] md:text-xs text-hai mt-0.5">{sub}</p>}
-    </div>
   );
 }
 
@@ -235,33 +204,33 @@ export default function YuchoManagement() {
 
         {/* サマリー */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-          <SummaryCard
+          <StatCard
             label="管理料合計"
             value={formatYen(managementTotal)}
-            sub={`${management.length}件`}
+            description={`${management.length}件`}
             icon={<Wallet className="w-4 h-4" />}
-            accent="matsu"
+            theme="matsu"
           />
-          <SummaryCard
+          <StatCard
             label="合祀料金合計"
             value={formatYen(collectiveTotal)}
-            sub={`${collective.length}件`}
+            description={`${collective.length}件`}
             icon={<Users className="w-4 h-4" />}
-            accent="cha"
+            theme="cha"
           />
-          <SummaryCard
+          <StatCard
             label="総合計"
             value={formatYen(grandTotal)}
-            sub={`全${totalCount}件`}
+            description={`全${totalCount}件`}
             icon={<Landmark className="w-4 h-4" />}
-            accent="ai"
+            theme="ai"
           />
-          <SummaryCard
+          <StatCard
             label="引落予定日"
             value={`${billingYear}/05/31`}
-            sub="※仮設定"
+            description="※仮設定"
             icon={<FileText className="w-4 h-4" />}
-            accent="kohaku"
+            theme="kohaku"
           />
         </div>
 
@@ -397,7 +366,7 @@ function ManagementTable({ items, year }: { items: YuchoBillingItem[]; year: num
                     <div className="text-xs text-hai">{item.customerNameKana ?? ''}</div>
                   </td>
                   <td className="px-4 py-3 font-mono text-xs text-hai">{formatYuchoAccount(item)}</td>
-                  <td className="px-4 py-3 text-right font-mincho text-sumi">
+                  <td className="px-4 py-3 text-right text-sumi tabular-nums">
                     {formatYen(item.billingAmount)}
                   </td>
                   <td className="px-4 py-3 text-center">{statusBadge(item.billingStatus)}</td>
@@ -424,7 +393,7 @@ function ManagementTable({ items, year }: { items: YuchoBillingItem[]; year: num
             </div>
             <div className="flex items-end justify-between pt-2 border-t border-gin">
               <p className="font-mono text-[10px] text-hai">{formatYuchoAccount(item)}</p>
-              <p className="font-mincho text-sumi">{formatYen(item.billingAmount)}</p>
+              <p className="text-sumi tabular-nums">{formatYen(item.billingAmount)}</p>
             </div>
           </div>
         ))}
@@ -479,7 +448,7 @@ function CollectiveTable({ items, year }: { items: YuchoBillingItem[]; year: num
                     <div className="text-xs text-hai">{item.customerNameKana ?? ''}</div>
                   </td>
                   <td className="px-4 py-3 font-mono text-xs text-hai">{formatYuchoAccount(item)}</td>
-                  <td className="px-4 py-3 text-right font-mincho text-sumi">
+                  <td className="px-4 py-3 text-right text-sumi tabular-nums">
                     {formatYen(item.billingAmount)}
                   </td>
                   <td className="px-4 py-3 text-center">{statusBadge(item.billingStatus)}</td>
@@ -506,7 +475,7 @@ function CollectiveTable({ items, year }: { items: YuchoBillingItem[]; year: num
             </div>
             <div className="flex items-end justify-between pt-2 border-t border-gin">
               <p className="font-mono text-[10px] text-hai">{formatYuchoAccount(item)}</p>
-              <p className="font-mincho text-sumi">{formatYen(item.billingAmount)}</p>
+              <p className="text-sumi tabular-nums">{formatYen(item.billingAmount)}</p>
             </div>
           </div>
         ))}
