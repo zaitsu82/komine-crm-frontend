@@ -243,7 +243,7 @@ export default function MastersManagement() {
                     key={type.key}
                     onClick={() => setSelectedType(type)}
                     className={`flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium transition-colors tabular-nums ${isActive
-                      ? 'bg-sumi text-white'
+                      ? 'bg-matsu text-white'
                       : 'text-sumi hover:bg-kinari'
                       }`}
                   >
