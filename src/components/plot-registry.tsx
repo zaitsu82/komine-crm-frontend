@@ -19,6 +19,8 @@ import { Button } from '@/components/ui/button';
 import { cn, truncateAddressToCity } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { StatusBadge, type StatusBadgeProps } from '@/components/ui/status-badge';
+import { EmptyState } from '@/components/ui/empty-state';
 import PageHeader from '@/components/page-header';
 
 // ===== 型定義 =====
@@ -75,6 +77,15 @@ const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
   [PaymentStatus.Overdue]: '滞納',
   [PaymentStatus.Refunded]: '返金済',
   [PaymentStatus.Cancelled]: 'キャンセル',
+};
+
+const PAYMENT_STATUS_VARIANTS: Record<PaymentStatus, StatusBadgeProps['variant']> = {
+  [PaymentStatus.Unpaid]: 'unpaid',
+  [PaymentStatus.Paid]: 'paid',
+  [PaymentStatus.PartialPaid]: 'partial',
+  [PaymentStatus.Overdue]: 'overdue',
+  [PaymentStatus.Refunded]: 'refunded',
+  [PaymentStatus.Cancelled]: 'cancelled',
 };
 
 const PLOT_STATUS_LABELS: Record<PhysicalPlotStatus, string> = {
@@ -708,17 +719,17 @@ export default function PlotRegistry({
                           {formatContractDate(plot.contractDate)}
                         </td>
                         <td className="px-2 py-2 text-xs text-center">
-                          <span className={cn(
-                            "px-1.5 py-0.5 rounded text-[10px] font-medium",
-                            paymentStatus === PaymentStatus.Paid && 'bg-matsu-50 text-matsu',
-                            paymentStatus === PaymentStatus.Unpaid && 'bg-kohaku-50 text-kohaku-dark',
-                            paymentStatus === PaymentStatus.PartialPaid && 'bg-kohaku-50 text-kohaku-dark',
-                            paymentStatus === PaymentStatus.Overdue && 'bg-beni-50 text-beni',
-                            paymentStatus === PaymentStatus.Refunded && 'bg-ai-50 text-ai-dark',
-                            paymentStatus === PaymentStatus.Cancelled && 'bg-gin text-hai',
-                          )}>
-                            {PAYMENT_STATUS_LABELS[paymentStatus] || '-'}
-                          </span>
+                          {paymentStatus ? (
+                            <StatusBadge
+                              variant={PAYMENT_STATUS_VARIANTS[paymentStatus]}
+                              size="sm"
+                              withSymbol
+                            >
+                              {PAYMENT_STATUS_LABELS[paymentStatus]}
+                            </StatusBadge>
+                          ) : (
+                            <span className="text-hai">-</span>
+                          )}
                         </td>
                         <td className="px-2 py-2 text-xs text-hai text-center hidden sm:table-cell">
                           {formatMoneyString(plot.managementFee)}
@@ -731,14 +742,35 @@ export default function PlotRegistry({
                   })
                 ) : (
                   <tr>
-                    <td colSpan={showBuriedPersons ? 13 : 12} className="px-4 py-12 text-center text-hai">
-                      <div className="flex flex-col items-center">
-                        <svg className="w-12 h-12 text-gin mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-                        </svg>
-                        <p className="text-base font-medium">該当する区画が見つかりません</p>
-                        <p className="text-sm mt-1">検索条件を変更してください</p>
-                      </div>
+                    <td colSpan={showBuriedPersons ? 13 : 12} className="px-4 md:px-6 py-6">
+                      <EmptyState
+                        container="plain"
+                        icon={
+                          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15z" />
+                          </svg>
+                        }
+                        title={hasActiveFilters || searchQuery.trim() || activeTab !== '全'
+                          ? '該当する区画が見つかりませんでした'
+                          : '区画データがまだありません'}
+                        description={hasActiveFilters || searchQuery.trim() || activeTab !== '全'
+                          ? '検索語やフィルターを緩めて再検索してください。'
+                          : '新規区画を登録するとここに表示されます。'}
+                        action={(hasActiveFilters || searchQuery.trim() || activeTab !== '全') ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setSearchInput('');
+                              setSearchQuery('');
+                              handleClearFilters();
+                              setActiveTab('全');
+                            }}
+                          >
+                            条件をクリア
+                          </Button>
+                        ) : undefined}
+                      />
                     </td>
                   </tr>
                 )}

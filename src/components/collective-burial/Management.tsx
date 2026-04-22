@@ -6,10 +6,13 @@
  */
 
 import { useState, useCallback } from 'react';
+import { FileQuestion } from 'lucide-react';
 import CollectiveBurialListView from './ListView';
 import CollectiveBurialDetailView from './DetailView';
 import { useCollectiveBurialDetail } from '@/hooks/useCollectiveBurials';
 import { CollectiveBurialListItem } from '@/lib/api';
+import { EmptyState } from '@/components/ui/empty-state';
+import { Button } from '@/components/ui/button';
 type ViewMode = 'list' | 'detail';
 
 interface CollectiveBurialManagementProps {
@@ -66,16 +69,17 @@ export default function CollectiveBurialManagement({ onBack }: CollectiveBurialM
 
   if (!detailData) {
     return (
-      <div className="h-full flex items-center justify-center bg-shiro">
-        <div className="text-center">
-          <p className="text-hai mb-4">データが見つかりません</p>
-          <button
-            onClick={handleCloseDetail}
-            className="px-4 py-2 bg-cha text-white rounded hover:bg-cha-dark"
-          >
-            一覧に戻る
-          </button>
-        </div>
+      <div className="h-full flex items-center justify-center bg-shiro p-4">
+        <EmptyState
+          icon={<FileQuestion />}
+          title="データが見つかりません"
+          description="指定された合祀データは存在しないか、削除された可能性があります"
+          action={
+            <Button onClick={handleCloseDetail} variant="default">
+              一覧に戻る
+            </Button>
+          }
+        />
       </div>
     );
   }
