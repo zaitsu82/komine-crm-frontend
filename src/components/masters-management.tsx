@@ -272,82 +272,82 @@ export default function MastersManagement() {
                 </div>
               )}
 
-            {/* Table */}
-            <div className="bg-white rounded-lg border border-gin overflow-hidden">
-              <table className="w-full">
-                <thead className="bg-shiro">
-                  <tr>
-                    <th className="px-2 md:px-4 py-2 md:py-3 text-left text-xs font-medium text-hai uppercase">名称</th>
-                    {isSectionName && (
-                      <th className="px-2 md:px-4 py-2 md:py-3 text-left text-xs font-medium text-hai uppercase">期</th>
-                    )}
-                    <th className="px-2 md:px-4 py-2 md:py-3 text-left text-xs font-medium text-hai uppercase hidden sm:table-cell">説明</th>
-                    <th className="px-2 md:px-4 py-2 md:py-3 text-left text-xs font-medium text-hai uppercase hidden sm:table-cell">並び順</th>
-                    <th className="px-2 md:px-4 py-2 md:py-3 text-left text-xs font-medium text-hai uppercase">状態</th>
-                    {isAdmin && (
-                      <th className="px-2 md:px-4 py-2 md:py-3 text-left text-xs font-medium text-hai uppercase">操作</th>
-                    )}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gin">
-                  {currentItems.length === 0 ? (
+              {/* Table */}
+              <div className="bg-white rounded-lg border border-gin overflow-hidden">
+                <table className="w-full">
+                  <thead className="bg-shiro">
                     <tr>
-                      <td colSpan={(isAdmin ? 5 : 4) + (isSectionName ? 1 : 0)} className="px-4 py-8 text-center text-hai">
-                        データがありません
-                      </td>
+                      <th className="px-2 md:px-4 py-2 md:py-3 text-left text-xs font-medium text-hai uppercase">名称</th>
+                      {isSectionName && (
+                        <th className="px-2 md:px-4 py-2 md:py-3 text-left text-xs font-medium text-hai uppercase">期</th>
+                      )}
+                      <th className="px-2 md:px-4 py-2 md:py-3 text-left text-xs font-medium text-hai uppercase hidden sm:table-cell">説明</th>
+                      <th className="px-2 md:px-4 py-2 md:py-3 text-left text-xs font-medium text-hai uppercase hidden sm:table-cell">並び順</th>
+                      <th className="px-2 md:px-4 py-2 md:py-3 text-left text-xs font-medium text-hai uppercase">状態</th>
+                      {isAdmin && (
+                        <th className="px-2 md:px-4 py-2 md:py-3 text-left text-xs font-medium text-hai uppercase">操作</th>
+                      )}
                     </tr>
-                  ) : (
-                    currentItems.map((item) => (
-                      <tr key={item.id} className="hover:bg-shiro">
-                        <td className="px-2 md:px-4 py-2 md:py-3 text-sm font-medium text-sumi">{item.name}</td>
-                        {isSectionName && (
-                          <td className="px-2 md:px-4 py-2 md:py-3 text-sm text-hai">
-                            {(item as SectionNameMasterItem).period || '-'}
-                          </td>
-                        )}
-                        <td className="px-2 md:px-4 py-2 md:py-3 text-sm text-hai hidden sm:table-cell">{item.description || '-'}</td>
-                        <td className="px-2 md:px-4 py-2 md:py-3 text-sm text-hai hidden sm:table-cell">{item.sortOrder ?? '-'}</td>
-                        <td className="px-2 md:px-4 py-2 md:py-3">
-                          <span
-                            className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${item.isActive
-                              ? 'bg-matsu-100 text-matsu-800'
-                              : 'bg-kinari text-hai'
-                              }`}
-                          >
-                            {item.isActive ? '有効' : '無効'}
-                          </span>
+                  </thead>
+                  <tbody className="divide-y divide-gin">
+                    {currentItems.length === 0 ? (
+                      <tr>
+                        <td colSpan={(isAdmin ? 5 : 4) + (isSectionName ? 1 : 0)} className="px-4 py-8 text-center text-hai">
+                          データがありません
                         </td>
-                        {isAdmin && (
-                          <td className="px-2 md:px-4 py-2 md:py-3">
-                            <div className="flex gap-1 md:gap-2">
-                              <Button
-                                onClick={() => handleOpenEdit(item)}
-                                variant="outline"
-                                size="sm"
-                                className="text-xs px-2 md:px-3"
-                              >
-                                編集
-                              </Button>
-                              <Button
-                                onClick={() => {
-                                  setItemToDelete(item);
-                                  setShowDeleteConfirm(true);
-                                }}
-                                variant="outline"
-                                size="sm"
-                                className="text-beni hover:text-beni-dark hover:bg-beni-50 text-xs px-2 md:px-3"
-                              >
-                                削除
-                              </Button>
-                            </div>
-                          </td>
-                        )}
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
+                    ) : (
+                      currentItems.map((item) => (
+                        <tr key={item.id} className="hover:bg-shiro">
+                          <td className="px-2 md:px-4 py-2 md:py-3 text-sm font-medium text-sumi">{item.name}</td>
+                          {isSectionName && (
+                            <td className="px-2 md:px-4 py-2 md:py-3 text-sm text-hai">
+                              {(item as SectionNameMasterItem).period || '-'}
+                            </td>
+                          )}
+                          <td className="px-2 md:px-4 py-2 md:py-3 text-sm text-hai hidden sm:table-cell">{item.description || '-'}</td>
+                          <td className="px-2 md:px-4 py-2 md:py-3 text-sm text-hai hidden sm:table-cell">{item.sortOrder ?? '-'}</td>
+                          <td className="px-2 md:px-4 py-2 md:py-3">
+                            <span
+                              className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${item.isActive
+                                ? 'bg-matsu-100 text-matsu-800'
+                                : 'bg-kinari text-hai'
+                                }`}
+                            >
+                              {item.isActive ? '有効' : '無効'}
+                            </span>
+                          </td>
+                          {isAdmin && (
+                            <td className="px-2 md:px-4 py-2 md:py-3">
+                              <div className="flex gap-1 md:gap-2">
+                                <Button
+                                  onClick={() => handleOpenEdit(item)}
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-xs px-2 md:px-3"
+                                >
+                                  編集
+                                </Button>
+                                <Button
+                                  onClick={() => {
+                                    setItemToDelete(item);
+                                    setShowDeleteConfirm(true);
+                                  }}
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-beni hover:text-beni-dark hover:bg-beni-50 text-xs px-2 md:px-3"
+                                >
+                                  削除
+                                </Button>
+                              </div>
+                            </td>
+                          )}
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
 
           </div>
