@@ -13,6 +13,8 @@ import { usePlots } from '@/hooks/usePlots';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { StatusBadge, type StatusBadgeProps } from '@/components/ui/status-badge';
+import { EmptyState } from '@/components/ui/empty-state';
 import { cn } from '@/lib/utils';
 
 // ===== 型定義 =====
@@ -56,13 +58,13 @@ const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
   [PaymentStatus.Cancelled]: 'キャンセル',
 };
 
-const PAYMENT_STATUS_COLORS: Record<PaymentStatus, string> = {
-  [PaymentStatus.Unpaid]: 'text-kohaku-dark bg-kohaku-50',
-  [PaymentStatus.Paid]: 'text-matsu-dark bg-matsu-50',
-  [PaymentStatus.PartialPaid]: 'text-kohaku-dark bg-kohaku-50',
-  [PaymentStatus.Overdue]: 'text-beni bg-beni-50',
-  [PaymentStatus.Refunded]: 'text-ai bg-ai-50',
-  [PaymentStatus.Cancelled]: 'text-hai bg-kinari',
+const PAYMENT_STATUS_VARIANTS: Record<PaymentStatus, StatusBadgeProps['variant']> = {
+  [PaymentStatus.Unpaid]: 'unpaid',
+  [PaymentStatus.Paid]: 'paid',
+  [PaymentStatus.PartialPaid]: 'partial',
+  [PaymentStatus.Overdue]: 'overdue',
+  [PaymentStatus.Refunded]: 'refunded',
+  [PaymentStatus.Cancelled]: 'cancelled',
 };
 
 // ===== ヘルパー関数 =====
@@ -330,7 +332,7 @@ export default function PlotListTable({
                 </th>
                 <th
                   className={cn(
-                    'px-4 py-3 text-left text-sm font-semibold text-sumi cursor-pointer transition-colors duration-200 hover:bg-cha-50',
+                    'px-4 py-3 text-left text-sm font-semibold text-sumi cursor-pointer transition-colors duration-200 hover:bg-cha-50 hidden sm:table-cell',
                     sortKey === 'areaName' && 'bg-cha-50'
                   )}
                   onClick={() => handleSort('areaName')}
@@ -402,7 +404,7 @@ export default function PlotListTable({
                 </th>
                 <th
                   className={cn(
-                    'px-4 py-3 text-right text-sm font-semibold text-sumi cursor-pointer transition-colors duration-200 hover:bg-cha-50',
+                    'px-4 py-3 text-right text-sm font-semibold text-sumi cursor-pointer transition-colors duration-200 hover:bg-cha-50 hidden sm:table-cell',
                     sortKey === 'uncollectedAmount' && 'bg-cha-50'
                   )}
                   onClick={() => handleSort('uncollectedAmount')}
@@ -453,12 +455,21 @@ export default function PlotListTable({
                           <div className="text-xs md:text-sm text-hai">
                             {plot.customerNameKana || ''}
                           </div>
+                          {/* モバイル専用: エリアと未集金額を補足表示 */}
+                          <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-hai sm:hidden">
+                            {plot.areaName && <span>{plot.areaName}</span>}
+                            {(plot.uncollectedAmount ?? 0) > 0 && (
+                              <span className="text-beni font-medium tabular-nums">
+                                未収 {(plot.uncollectedAmount ?? 0).toLocaleString()}円
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </td>
-                      <td className="px-2 md:px-4 py-2 md:py-3 whitespace-nowrap text-sm text-sumi">
+                      <td className="px-2 md:px-4 py-2 md:py-3 whitespace-nowrap text-sm text-sumi hidden sm:table-cell">
                         {plot.areaName || '-'}
                       </td>
-                      <td className="px-2 md:px-4 py-2 md:py-3 whitespace-nowrap text-sm font-semibold text-sumi">
+                      <td className="px-2 md:px-4 py-2 md:py-3 whitespace-nowrap text-sm font-semibold text-sumi tabular-nums">
                         {plot.plotNumber || '-'}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-sumi hidden sm:table-cell">
@@ -479,21 +490,19 @@ export default function PlotListTable({
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-sumi text-right hidden md:table-cell">
                         {plot.managementFee ? `${Number(plot.managementFee).toLocaleString()}円` : '-'}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm">
+                      <td className="px-2 md:px-4 py-2 md:py-3 whitespace-nowrap text-sm">
                         {paymentStatus && (
-                          <span
-                            className={cn(
-                              'px-3 py-1 rounded-full text-xs font-medium',
-                              PAYMENT_STATUS_COLORS[paymentStatus]
-                            )}
+                          <StatusBadge
+                            variant={PAYMENT_STATUS_VARIANTS[paymentStatus]}
+                            withSymbol
                           >
                             {PAYMENT_STATUS_LABELS[paymentStatus]}
-                          </span>
+                          </StatusBadge>
                         )}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right hidden sm:table-cell">
                         <span className={cn(
-                          'font-medium',
+                          'font-medium tabular-nums',
                           (plot.uncollectedAmount ?? 0) > 0 ? 'text-beni' : 'text-sumi'
                         )}>
                           {(plot.uncollectedAmount ?? 0).toLocaleString()}円
@@ -504,17 +513,36 @@ export default function PlotListTable({
                 })
               ) : (
                 <tr>
-                  <td colSpan={11} className="px-6 py-8 text-center text-sm text-hai">
-                    <div className="flex flex-col items-center">
-                      <svg className="w-12 h-12 text-gin mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-                      </svg>
-                      <p className="text-base font-medium">
-                        {searchQuery.trim()
-                          ? '検索条件に該当するデータが見つかりませんでした'
-                          : 'データがありません'}
-                      </p>
-                    </div>
+                  <td colSpan={11} className="px-4 md:px-6 py-6">
+                    <EmptyState
+                      container="plain"
+                      icon={
+                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15z" />
+                        </svg>
+                      }
+                      title={
+                        searchQuery.trim()
+                          ? '検索条件に該当する区画が見つかりませんでした'
+                          : '区画データがまだありません'
+                      }
+                      description={
+                        searchQuery.trim()
+                          ? '氏名・区画番号・電話番号の綴りを見直すか、あいうえおタブを切り替えて再検索してください。'
+                          : '条件を変えるか、一括登録から区画を追加してください。'
+                      }
+                      action={
+                        searchQuery.trim() ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => { setSearchInput(''); setSearch(''); setAiueoTab('all'); }}
+                          >
+                            検索条件をクリア
+                          </Button>
+                        ) : undefined
+                      }
+                    />
                   </td>
                 </tr>
               )}

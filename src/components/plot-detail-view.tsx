@@ -29,6 +29,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu';
+import { StatusBadge, type StatusBadgeProps } from '@/components/ui/status-badge';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HistoryTab } from '@/components/plot-form/HistoryTab';
@@ -54,6 +55,15 @@ const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
   [PaymentStatus.Cancelled]: 'キャンセル',
 };
 
+const PAYMENT_STATUS_VARIANTS: Record<PaymentStatus, StatusBadgeProps['variant']> = {
+  [PaymentStatus.Unpaid]: 'unpaid',
+  [PaymentStatus.Paid]: 'paid',
+  [PaymentStatus.PartialPaid]: 'partial',
+  [PaymentStatus.Overdue]: 'overdue',
+  [PaymentStatus.Refunded]: 'refunded',
+  [PaymentStatus.Cancelled]: 'cancelled',
+};
+
 const CONTRACT_STATUS_LABELS: Record<ContractStatus, string> = {
   [ContractStatus.Draft]: '下書き',
   [ContractStatus.Reserved]: '予約済',
@@ -64,10 +74,26 @@ const CONTRACT_STATUS_LABELS: Record<ContractStatus, string> = {
   [ContractStatus.Transferred]: '継承済',
 };
 
+const CONTRACT_STATUS_VARIANTS: Record<ContractStatus, StatusBadgeProps['variant']> = {
+  [ContractStatus.Draft]: 'neutral',
+  [ContractStatus.Reserved]: 'info',
+  [ContractStatus.Active]: 'active',
+  [ContractStatus.Suspended]: 'warning',
+  [ContractStatus.Terminated]: 'neutral',
+  [ContractStatus.Cancelled]: 'cancelled',
+  [ContractStatus.Transferred]: 'info',
+};
+
 const PHYSICAL_STATUS_LABELS: Record<PhysicalPlotStatus, string> = {
   [PhysicalPlotStatus.Available]: '利用可能',
   [PhysicalPlotStatus.PartiallySold]: '一部販売済',
   [PhysicalPlotStatus.SoldOut]: '完売',
+};
+
+const PHYSICAL_STATUS_VARIANTS: Record<PhysicalPlotStatus, StatusBadgeProps['variant']> = {
+  [PhysicalPlotStatus.Available]: 'available',
+  [PhysicalPlotStatus.PartiallySold]: 'pending',
+  [PhysicalPlotStatus.SoldOut]: 'sold',
 };
 
 const GENDER_LABELS: Record<Gender, string> = {
@@ -637,31 +663,64 @@ export default function PlotDetailView({ plotId, onEdit, onBack, onDelete }: Plo
         </div>
       </div>
 
-      {/* ステータスバッジ */}
-      <div className="flex flex-wrap gap-2 mb-4">
-        <span className={cn(
-          'px-3 py-1 rounded-full text-sm font-medium',
-          plot.paymentStatus === PaymentStatus.Paid ? 'bg-matsu-50 text-matsu' :
-            plot.paymentStatus === PaymentStatus.Unpaid ? 'bg-kohaku-50 text-kohaku-dark' :
-              plot.paymentStatus === PaymentStatus.Overdue ? 'bg-beni-50 text-beni' :
-                'bg-kinari text-hai'
-        )}>
-          {PAYMENT_STATUS_LABELS[plot.paymentStatus as PaymentStatus]}
-        </span>
-        <span className={cn(
-          'px-3 py-1 rounded-full text-sm font-medium',
-          plot.contractStatus === ContractStatus.Active ? 'bg-ai-50 text-ai-dark' :
-            plot.contractStatus === ContractStatus.Suspended ? 'bg-kohaku-50 text-kohaku-dark' :
-              'bg-kinari text-hai'
-        )}>
-          {CONTRACT_STATUS_LABELS[plot.contractStatus as ContractStatus]}
-        </span>
-        <span className={cn(
-          'px-3 py-1 rounded-full text-sm font-medium',
-          (plot.uncollectedAmount ?? 0) > 0 ? 'bg-beni-50 text-beni' : 'bg-kinari text-hai'
-        )}>
-          未集金額: {(plot.uncollectedAmount ?? 0).toLocaleString()}円
-        </span>
+      {/* サマリーカード */}
+      <div className="mb-4 md:mb-6 rounded-elegant-lg border border-gin bg-white shadow-elegant-sm p-4 md:p-5">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
+          {/* 契約者 */}
+          <div className="min-w-0 col-span-2 md:col-span-1">
+            <p className="text-[11px] md:text-xs text-hai">契約者</p>
+            <p className="mt-1 font-mincho text-base md:text-lg font-semibold text-sumi truncate">
+              {primaryCustomer?.name || '-'}
+            </p>
+            {primaryCustomer?.nameKana && (
+              <p className="text-[11px] md:text-xs text-hai truncate">
+                {primaryCustomer.nameKana}
+              </p>
+            )}
+          </div>
+          {/* 未収金額 */}
+          <div className="min-w-0">
+            <p className="text-[11px] md:text-xs text-hai">未収金額</p>
+            <p className={cn(
+              'mt-1 text-lg md:text-2xl font-semibold tabular-nums',
+              (plot.uncollectedAmount ?? 0) > 0 ? 'text-beni' : 'text-sumi'
+            )}>
+              {(plot.uncollectedAmount ?? 0).toLocaleString()}
+              <span className="text-xs md:text-sm text-hai ml-1 font-normal">円</span>
+            </p>
+          </div>
+          {/* 直近請求月（管理料） */}
+          <div className="min-w-0">
+            <p className="text-[11px] md:text-xs text-hai">直近請求</p>
+            <p className="mt-1 text-sm md:text-base font-semibold text-sumi tabular-nums truncate">
+              {plot.managementFee?.lastBillingMonth || '―'}
+            </p>
+          </div>
+          {/* 区画状態 */}
+          <div className="min-w-0 col-span-2 md:col-span-1">
+            <p className="text-[11px] md:text-xs text-hai mb-1.5">状態</p>
+            <div className="flex flex-wrap gap-1.5">
+              <StatusBadge
+                variant={PAYMENT_STATUS_VARIANTS[plot.paymentStatus as PaymentStatus]}
+                withSymbol
+              >
+                {PAYMENT_STATUS_LABELS[plot.paymentStatus as PaymentStatus]}
+              </StatusBadge>
+              <StatusBadge
+                variant={CONTRACT_STATUS_VARIANTS[plot.contractStatus as ContractStatus]}
+                withSymbol
+              >
+                {CONTRACT_STATUS_LABELS[plot.contractStatus as ContractStatus]}
+              </StatusBadge>
+              <StatusBadge
+                variant={PHYSICAL_STATUS_VARIANTS[plot.physicalPlot.status]}
+                withSymbol
+              >
+                {PHYSICAL_STATUS_LABELS[plot.physicalPlot.status]}
+              </StatusBadge>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* タブ */}

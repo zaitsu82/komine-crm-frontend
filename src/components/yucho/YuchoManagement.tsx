@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { EmptyState } from '@/components/ui/empty-state';
 import { BaseDialog } from '@/components/shared/dialogs/BaseDialog';
 import { showSuccess, showError } from '@/lib/toast';
 import { useAsyncData } from '@/hooks/useAsyncData';
@@ -180,7 +181,7 @@ export default function YuchoManagement() {
                 value={String(billingYear)}
                 onValueChange={(v) => setBillingYear(Number(v))}
               >
-                <SelectTrigger className="w-32 md:w-40">
+                <SelectTrigger id="yucho-year-select" className="w-32 md:w-40">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -280,14 +281,14 @@ export default function YuchoManagement() {
               {isLoading ? (
                 <LoadingState />
               ) : (
-                <ManagementTable items={management} />
+                <ManagementTable items={management} year={billingYear} />
               )}
             </TabsContent>
             <TabsContent value="collective">
               {isLoading ? (
                 <LoadingState />
               ) : (
-                <CollectiveTable items={collective} />
+                <CollectiveTable items={collective} year={billingYear} />
               )}
             </TabsContent>
           </Tabs>
@@ -348,9 +349,28 @@ function LoadingState() {
   );
 }
 
-function ManagementTable({ items }: { items: YuchoBillingItem[] }) {
+function ManagementTable({ items, year }: { items: YuchoBillingItem[]; year: number }) {
   if (items.length === 0) {
-    return <EmptyState message="対象期間の管理料データが見つかりません" />;
+    return (
+      <EmptyState
+        icon={<Wallet className="w-6 h-6" />}
+        title={`${year}年度の管理料請求対象がありません`}
+        description="対象年度を切り替えるか、区画の管理料マスタが登録されているか確認してください。"
+        action={
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              const target = document.getElementById('yucho-year-select');
+              target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              target?.focus();
+            }}
+          >
+            対象年度を変更
+          </Button>
+        }
+      />
+    );
   }
   return (
     <>
@@ -413,9 +433,28 @@ function ManagementTable({ items }: { items: YuchoBillingItem[] }) {
   );
 }
 
-function CollectiveTable({ items }: { items: YuchoBillingItem[] }) {
+function CollectiveTable({ items, year }: { items: YuchoBillingItem[]; year: number }) {
   if (items.length === 0) {
-    return <EmptyState message="対象期間の合祀料金データが見つかりません" />;
+    return (
+      <EmptyState
+        icon={<Users className="w-6 h-6" />}
+        title={`${year}年度の合祀料金請求対象がありません`}
+        description="対象年度を切り替えるか、合祀者の請求予定年が今年度に設定されているか確認してください。"
+        action={
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              const target = document.getElementById('yucho-year-select');
+              target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              target?.focus();
+            }}
+          >
+            対象年度を変更
+          </Button>
+        }
+      />
+    );
   }
   return (
     <>
@@ -476,10 +515,3 @@ function CollectiveTable({ items }: { items: YuchoBillingItem[] }) {
   );
 }
 
-function EmptyState({ message }: { message: string }) {
-  return (
-    <div className="bg-white rounded-lg border border-gin border-dashed p-8 md:p-12 text-center">
-      <p className="text-sm text-hai">{message}</p>
-    </div>
-  );
-}
