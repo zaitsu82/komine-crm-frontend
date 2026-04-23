@@ -643,7 +643,7 @@ export default function PlotRegistry({
         <div className="bg-white rounded-elegant-lg border border-gin shadow-elegant overflow-hidden flex-1">
           <div className="overflow-auto h-full">
             <table className="w-full divide-y divide-gin text-sm table-fixed">
-              {/* 状態 / 区画No / エリア / 契約者 / 住所 / 電話 / 取扱 / 備考(flex) / [埋葬者] / 契約日 / 入金 / 管理料 / 次請求 */}
+              {/* 状態 / 区画No / エリア / 契約者 / 住所 / 電話 / 取扱 / 許可番号 / 備考(flex) / [埋葬者] / 契約日 / 入金 / 管理料 / 次請求 */}
               <colgroup>
                 <col className="w-[40px]" />
                 <col className="w-[68px]" />
@@ -652,6 +652,7 @@ export default function PlotRegistry({
                 <col className="hidden md:table-column w-[90px]" />
                 <col className="hidden lg:table-column w-[100px]" />
                 <col className="hidden lg:table-column w-[72px]" />
+                <col className="hidden lg:table-column w-[96px]" />
                 <col className="hidden md:table-column" />
                 {showBuriedPersons && <col className="hidden lg:table-column w-[90px]" />}
                 <col className="hidden sm:table-column w-[60px]" />
@@ -732,6 +733,9 @@ export default function PlotRegistry({
                   <th className="px-2 py-2 text-left text-xs font-bold text-white hidden lg:table-cell">
                     <span>取扱</span>
                   </th>
+                  <th className="px-2 py-2 text-left text-xs font-bold text-white hidden lg:table-cell">
+                    <span>許可番号</span>
+                  </th>
                   <th className="px-2 py-2 text-left text-xs font-bold text-white hidden md:table-cell">
                     <span>備考</span>
                   </th>
@@ -794,6 +798,7 @@ export default function PlotRegistry({
                         <td className="px-2 py-2.5"><Skeleton className="h-4 w-16" /></td>
                         <td className="px-2 py-2.5"><Skeleton className="h-4 w-20" /></td>
                         <td className="px-2 py-2.5"><Skeleton className="h-4 w-14" /></td>
+                        <td className="px-2 py-2.5"><Skeleton className="h-4 w-20" /></td>
                         <td className="px-2 py-2.5"><Skeleton className="h-4 w-full" /></td>
                         {showBuriedPersons && <td className="px-2 py-2.5"><Skeleton className="h-4 w-16" /></td>}
                         <td className="px-2 py-2.5"><Skeleton className="h-4 w-12" /></td>
@@ -805,7 +810,7 @@ export default function PlotRegistry({
                   </>
                 ) : error ? (
                   <tr>
-                    <td colSpan={showBuriedPersons ? 13 : 12} className="px-4 py-12 text-center text-beni">
+                    <td colSpan={showBuriedPersons ? 14 : 13} className="px-4 py-12 text-center text-beni">
                       <div className="flex flex-col items-center">
                         <svg className="w-12 h-12 text-beni mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -864,6 +869,9 @@ export default function PlotRegistry({
                         <td className="px-2 py-2 text-xs text-hai truncate hidden lg:table-cell" title={plot.agentName || undefined}>
                           {plot.agentName || '-'}
                         </td>
+                        <td className="px-2 py-2 text-xs text-hai tabular-nums truncate hidden lg:table-cell" title={plot.permitNumber || undefined}>
+                          {plot.permitNumber || '-'}
+                        </td>
                         <td className="px-2 py-2 text-xs text-hai hidden md:table-cell">
                           <div
                             className="line-clamp-2 break-all"
@@ -904,7 +912,7 @@ export default function PlotRegistry({
                   })
                 ) : (
                   <tr>
-                    <td colSpan={showBuriedPersons ? 13 : 12} className="px-4 md:px-6 py-6">
+                    <td colSpan={showBuriedPersons ? 14 : 13} className="px-4 md:px-6 py-6">
                       <EmptyState
                         container="plain"
                         icon={
