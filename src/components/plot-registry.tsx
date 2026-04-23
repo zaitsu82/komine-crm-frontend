@@ -22,6 +22,33 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { StatusBadge, type StatusBadgeProps } from '@/components/ui/status-badge';
 import { EmptyState } from '@/components/ui/empty-state';
 import PageHeader from '@/components/page-header';
+import { ChevronDown, ChevronUp, SlidersHorizontal, X } from 'lucide-react';
+
+// ===== 検索履歴 =====
+
+const SEARCH_HISTORY_KEY = 'komine:plots:search-history';
+const SEARCH_HISTORY_MAX = 5;
+
+function loadSearchHistory(): string[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(SEARCH_HISTORY_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.filter((v): v is string => typeof v === 'string').slice(0, SEARCH_HISTORY_MAX) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveSearchHistory(history: string[]) {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(history.slice(0, SEARCH_HISTORY_MAX)));
+  } catch {
+    // ignore quota/disabled errors
+  }
+}
 
 // ===== 型定義 =====
 
@@ -136,6 +163,16 @@ export default function PlotRegistry({
   const [filterPaymentStatus, setFilterPaymentStatus] = useState<PaymentStatus | undefined>(undefined);
   const [filterAreaName, setFilterAreaName] = useState('');
   const [showBuriedPersons, setShowBuriedPersons] = useState(false);
+  const [isFilterExpanded, setIsFilterExpanded] = useState(false);
+  const [isAiueoExpanded, setIsAiueoExpanded] = useState(false);
+
+  // 検索履歴
+  const [searchHistory, setSearchHistory] = useState<string[]>([]);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+
+  useEffect(() => {
+    setSearchHistory(loadSearchHistory());
+  }, []);
 
   // サーバーサイドページネーション
   const [currentPage, setCurrentPage] = useState(1);
@@ -202,11 +239,37 @@ export default function PlotRegistry({
 
   // 検索実行（Enterキーまたは検索ボタンクリック）
   const handleSearch = () => {
+    const trimmed = searchInput.trim();
     setSearchQuery(searchInput);
     setCurrentPage(1);
-    if (searchInput.trim()) {
+    setIsSearchFocused(false);
+    if (trimmed) {
       setActiveTab('全');
+      // 履歴に追加（重複排除、最新が先頭）
+      setSearchHistory((prev) => {
+        const next = [trimmed, ...prev.filter((q) => q !== trimmed)].slice(0, SEARCH_HISTORY_MAX);
+        saveSearchHistory(next);
+        return next;
+      });
     }
+  };
+
+  const handleUseHistoryItem = (query: string) => {
+    setSearchInput(query);
+    setSearchQuery(query);
+    setCurrentPage(1);
+    setActiveTab('全');
+    setIsSearchFocused(false);
+    setSearchHistory((prev) => {
+      const next = [query, ...prev.filter((q) => q !== query)].slice(0, SEARCH_HISTORY_MAX);
+      saveSearchHistory(next);
+      return next;
+    });
+  };
+
+  const handleClearHistory = () => {
+    setSearchHistory([]);
+    saveSearchHistory([]);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -337,16 +400,56 @@ export default function PlotRegistry({
 
       <div className="flex-1 overflow-auto p-3 md:p-6">
         {/* 検索バー + アクション */}
-        <div className="mb-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
-          <div className="flex-1 sm:max-w-md">
+        <div className="mb-3 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+          <div className="relative flex-1 sm:max-w-md">
             <Input
               type="text"
               placeholder="氏名・フリガナ・区画番号・電話番号・住所・埋葬者名で検索..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyPress={handleKeyPress}
+              onFocus={() => setIsSearchFocused(true)}
+              onBlur={() => setTimeout(() => setIsSearchFocused(false), 150)}
               className="h-10 text-sm"
+              autoComplete="off"
             />
+            {/* 検索履歴ドロップダウン */}
+            {isSearchFocused && searchHistory.length > 0 && (
+              <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-gin rounded-elegant shadow-elegant-lg z-20 overflow-hidden">
+                <div className="flex items-center justify-between px-3 py-1.5 border-b border-gin bg-kinari/50">
+                  <span className="text-[11px] font-semibold text-hai">最近の検索</span>
+                  <button
+                    type="button"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      handleClearHistory();
+                    }}
+                    className="text-[11px] text-hai hover:text-beni transition-colors"
+                  >
+                    履歴をクリア
+                  </button>
+                </div>
+                <ul className="max-h-60 overflow-y-auto">
+                  {searchHistory.map((q) => (
+                    <li key={q}>
+                      <button
+                        type="button"
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          handleUseHistoryItem(q);
+                        }}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-sumi hover:bg-kinari transition-colors text-left"
+                      >
+                        <svg className="w-3.5 h-3.5 text-hai shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span className="truncate">{q}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
           <Button
             onClick={handleSearch}
@@ -384,57 +487,61 @@ export default function PlotRegistry({
           )}
         </div>
 
-        {/* フィルタ行 */}
-        <div className="mb-4 grid grid-cols-2 sm:flex sm:items-center gap-2 sm:gap-3 sm:flex-wrap">
-          <div className="flex items-center gap-1 sm:gap-2">
-            <span className="text-xs sm:text-sm text-hai whitespace-nowrap">区画:</span>
-            <Select value={filterStatus || 'all'} onValueChange={handleFilterStatusChange}>
-              <SelectTrigger className="w-full sm:w-32 h-9 text-sm">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">全て</SelectItem>
-                {Object.entries(PLOT_STATUS_LABELS).map(([value, label]) => (
-                  <SelectItem key={value} value={value}>{label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex items-center gap-1 sm:gap-2">
-            <span className="text-xs sm:text-sm text-hai whitespace-nowrap">入金:</span>
-            <Select value={filterPaymentStatus || 'all'} onValueChange={handleFilterPaymentStatusChange}>
-              <SelectTrigger className="w-full sm:w-32 h-9 text-sm">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">全て</SelectItem>
-                {Object.entries(PAYMENT_STATUS_LABELS).map(([value, label]) => (
-                  <SelectItem key={value} value={value}>{label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex items-center gap-1 sm:gap-2">
-            <span className="text-xs sm:text-sm text-hai whitespace-nowrap">エリア:</span>
-            <Input
-              type="text"
-              placeholder="エリア名"
-              value={filterAreaName}
-              onChange={(e) => handleFilterAreaNameChange(e.target.value)}
-              className="w-full sm:w-28 h-9 text-sm"
-            />
-          </div>
+        {/* フィルタ・あいう順の切替ボタン + アクティブ条件バッジ */}
+        <div className="mb-3 flex items-center gap-2 flex-wrap">
+          <button
+            type="button"
+            onClick={() => setIsFilterExpanded((v) => !v)}
+            aria-expanded={isFilterExpanded}
+            className={cn(
+              'inline-flex items-center gap-1.5 px-3 h-9 rounded-elegant border text-xs sm:text-sm transition-colors',
+              isFilterExpanded || hasActiveFilters
+                ? 'bg-ai-50 text-ai border-ai-200'
+                : 'bg-white text-hai border-gin hover:bg-kinari'
+            )}
+          >
+            <SlidersHorizontal className="w-3.5 h-3.5" />
+            フィルター
+            {hasActiveFilters && (
+              <span className="inline-flex items-center justify-center w-4 h-4 bg-ai text-white text-[10px] font-bold rounded-full">
+                {[filterStatus, filterPaymentStatus, filterAreaName.trim() || undefined].filter(Boolean).length}
+              </span>
+            )}
+            {isFilterExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsAiueoExpanded((v) => !v)}
+            aria-expanded={isAiueoExpanded}
+            className={cn(
+              'hidden md:inline-flex items-center gap-1.5 px-3 h-9 rounded-elegant border text-xs sm:text-sm transition-colors',
+              isAiueoExpanded || activeTab !== '全'
+                ? 'bg-matsu-50 text-matsu border-matsu-200'
+                : 'bg-white text-hai border-gin hover:bg-kinari'
+            )}
+          >
+            あいう順
+            {activeTab !== '全' && (
+              <span className="inline-flex items-center justify-center px-1.5 h-4 bg-matsu text-white text-[10px] font-bold rounded-full">
+                {AIUEO_TABS.find((t) => t.key === activeTab)?.shortLabel}
+              </span>
+            )}
+            {isAiueoExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+          </button>
+
           {hasActiveFilters && (
-            <Button
-              variant="outline"
-              size="sm"
+            <button
+              type="button"
               onClick={handleClearFilters}
-              className="h-9 text-sm text-beni border-beni hover:bg-beni-50"
+              className="inline-flex items-center gap-1 px-2 h-9 rounded-elegant text-xs text-beni hover:bg-beni-50 transition-colors"
             >
-              クリア
-            </Button>
+              <X className="w-3.5 h-3.5" />
+              フィルタ解除
+            </button>
           )}
-          <label className="items-center gap-1.5 text-xs sm:text-sm text-hai cursor-pointer col-span-2 sm:ml-auto select-none hidden sm:flex">
+
+          <label className="hidden md:inline-flex items-center gap-1.5 text-xs sm:text-sm text-hai cursor-pointer select-none ml-auto">
             <input
               type="checkbox"
               checked={showBuriedPersons}
@@ -445,37 +552,92 @@ export default function PlotRegistry({
           </label>
         </div>
 
-        {/* あいう順タブ（モバイルでは非表示 — 検索バーで代替可能） */}
-        <div className="mb-4 hidden md:block">
-          <div
-            className="flex flex-wrap gap-1"
-            role="tablist"
-            aria-label="あいう順で絞り込み"
-          >
-            {AIUEO_TABS.map((tab, index) => {
-              const isActive = activeTab === tab.key;
-
-              return (
-                <button
-                  key={tab.key}
-                  role="tab"
-                  aria-selected={isActive}
-                  aria-controls="plot-list"
-                  tabIndex={focusedTabIndex === index ? 0 : -1}
-                  onClick={() => handleTabChange(tab.key)}
-                  onKeyDown={(e) => handleTabKeyDown(e, index)}
-                  className={cn(
-                    "aiueo-tab",
-                    "min-w-[44px] min-h-[44px] text-base",
-                    isActive && "active"
-                  )}
-                >
-                  {tab.shortLabel}
-                </button>
-              );
-            })}
+        {/* フィルタ行（折りたたみ） */}
+        {isFilterExpanded && (
+          <div className="mb-3 p-3 bg-white border border-gin rounded-elegant grid grid-cols-2 sm:flex sm:items-center gap-2 sm:gap-3 sm:flex-wrap">
+            <div className="flex items-center gap-1 sm:gap-2">
+              <span className="text-xs sm:text-sm text-hai whitespace-nowrap">区画:</span>
+              <Select value={filterStatus || 'all'} onValueChange={handleFilterStatusChange}>
+                <SelectTrigger className="w-full sm:w-32 h-9 text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">全て</SelectItem>
+                  {Object.entries(PLOT_STATUS_LABELS).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>{label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center gap-1 sm:gap-2">
+              <span className="text-xs sm:text-sm text-hai whitespace-nowrap">入金:</span>
+              <Select value={filterPaymentStatus || 'all'} onValueChange={handleFilterPaymentStatusChange}>
+                <SelectTrigger className="w-full sm:w-32 h-9 text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">全て</SelectItem>
+                  {Object.entries(PAYMENT_STATUS_LABELS).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>{label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center gap-1 sm:gap-2">
+              <span className="text-xs sm:text-sm text-hai whitespace-nowrap">エリア:</span>
+              <Input
+                type="text"
+                placeholder="エリア名"
+                value={filterAreaName}
+                onChange={(e) => handleFilterAreaNameChange(e.target.value)}
+                className="w-full sm:w-28 h-9 text-sm"
+              />
+            </div>
+            <label className="md:hidden items-center gap-1.5 text-xs sm:text-sm text-hai cursor-pointer col-span-2 select-none flex">
+              <input
+                type="checkbox"
+                checked={showBuriedPersons}
+                onChange={(e) => setShowBuriedPersons(e.target.checked)}
+                className="rounded border-gin accent-matsu"
+              />
+              埋葬者を表示
+            </label>
           </div>
-        </div>
+        )}
+
+        {/* あいう順タブ（折りたたみ、デスクトップのみ） */}
+        {isAiueoExpanded && (
+          <div className="mb-3 p-3 bg-white border border-gin rounded-elegant hidden md:block">
+            <div
+              className="flex flex-wrap gap-1"
+              role="tablist"
+              aria-label="あいう順で絞り込み"
+            >
+              {AIUEO_TABS.map((tab, index) => {
+                const isActive = activeTab === tab.key;
+
+                return (
+                  <button
+                    key={tab.key}
+                    role="tab"
+                    aria-selected={isActive}
+                    aria-controls="plot-list"
+                    tabIndex={focusedTabIndex === index ? 0 : -1}
+                    onClick={() => handleTabChange(tab.key)}
+                    onKeyDown={(e) => handleTabKeyDown(e, index)}
+                    className={cn(
+                      "aiueo-tab",
+                      "min-w-[44px] min-h-[44px] text-base",
+                      isActive && "active"
+                    )}
+                  >
+                    {tab.shortLabel}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* 区画一覧テーブル */}
         <div className="bg-white rounded-elegant-lg border border-gin shadow-elegant overflow-hidden flex-1">
