@@ -7,7 +7,9 @@
  * Phase 2-B: Plot-centric migration
  */
 
+import { useState } from 'react';
 import Link from 'next/link';
+import { ChevronDown } from 'lucide-react';
 import {
   PlotDetailResponse,
   PaymentStatus,
@@ -163,18 +165,54 @@ function InfoField({ label, value }: { label: string; value: string | null | und
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({
+  title,
+  children,
+  defaultOpen = true,
+  collapsible = true,
+}: {
+  title: string;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
+  collapsible?: boolean;
+}) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+  const headingId = `section-${title.replace(/\s+/g, '-')}`;
+
   return (
     <div className="bg-white border border-gin rounded-elegant-lg shadow-elegant-sm overflow-hidden mb-4">
-      <div className="px-5 py-4 bg-kinari border-b border-gin">
-        <h3 className="font-semibold text-sumi flex items-center">
-          <span className="w-1 h-5 bg-matsu rounded-full mr-3" />
-          {title}
-        </h3>
-      </div>
-      <dl className="p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {children}
-      </dl>
+      {collapsible ? (
+        <button
+          type="button"
+          onClick={() => setIsOpen((v) => !v)}
+          aria-expanded={isOpen}
+          aria-controls={headingId}
+          className="w-full px-4 md:px-5 py-3 md:py-4 bg-kinari border-b border-gin flex items-center justify-between hover:bg-kinari/70 transition-colors"
+        >
+          <h3 className="font-semibold text-sumi flex items-center text-sm md:text-base">
+            <span className="w-1 h-4 md:h-5 bg-matsu rounded-full mr-2 md:mr-3" />
+            {title}
+          </h3>
+          <ChevronDown
+            className={cn(
+              'w-4 h-4 text-hai transition-transform duration-200 shrink-0',
+              isOpen && 'rotate-180'
+            )}
+          />
+        </button>
+      ) : (
+        <div className="px-5 py-4 bg-kinari border-b border-gin">
+          <h3 className="font-semibold text-sumi flex items-center">
+            <span className="w-1 h-5 bg-matsu rounded-full mr-3" />
+            {title}
+          </h3>
+        </div>
+      )}
+      {isOpen && (
+        <dl id={headingId} className="p-4 md:p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+          {children}
+        </dl>
+      )}
     </div>
   );
 }
@@ -723,50 +761,57 @@ export default function PlotDetailView({ plotId, onEdit, onBack, onDelete }: Plo
         </div>
       </div>
 
-      {/* タブ */}
+      {/* タブ — モバイル: 横スクロール / タブレット以上: グリッド */}
       <Tabs defaultValue="basic" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 h-auto gap-1">
-          <TabsTrigger value="basic" className="py-2 text-xs sm:text-sm data-[state=active]:bg-matsu data-[state=active]:text-white">
+        <TabsList
+          className={cn(
+            // モバイル: フルwidthで横スクロール、スナップ付き
+            'flex w-full overflow-x-auto overflow-y-hidden snap-x snap-mandatory scrollbar-thin h-auto gap-1',
+            // sm以上: グリッドレイアウトに戻す
+            'sm:grid sm:grid-cols-3 lg:grid-cols-6 sm:overflow-visible sm:snap-none'
+          )}
+        >
+          <TabsTrigger value="basic" className="shrink-0 sm:shrink snap-start px-3 sm:px-2 py-2 text-xs sm:text-sm whitespace-nowrap data-[state=active]:bg-matsu data-[state=active]:text-white">
             基本情報
           </TabsTrigger>
-          <TabsTrigger value="fee" className="py-2 text-xs sm:text-sm data-[state=active]:bg-matsu data-[state=active]:text-white">
+          <TabsTrigger value="fee" className="shrink-0 sm:shrink snap-start px-3 sm:px-2 py-2 text-xs sm:text-sm whitespace-nowrap data-[state=active]:bg-matsu data-[state=active]:text-white">
             料金情報
           </TabsTrigger>
-          <TabsTrigger value="contacts" className="py-2 text-xs sm:text-sm data-[state=active]:bg-matsu data-[state=active]:text-white">
+          <TabsTrigger value="contacts" className="shrink-0 sm:shrink snap-start px-3 sm:px-2 py-2 text-xs sm:text-sm whitespace-nowrap data-[state=active]:bg-matsu data-[state=active]:text-white">
             連絡先
           </TabsTrigger>
-          <TabsTrigger value="burial" className="py-2 text-xs sm:text-sm data-[state=active]:bg-matsu data-[state=active]:text-white">
+          <TabsTrigger value="burial" className="shrink-0 sm:shrink snap-start px-3 sm:px-2 py-2 text-xs sm:text-sm whitespace-nowrap data-[state=active]:bg-matsu data-[state=active]:text-white">
             埋葬情報
           </TabsTrigger>
-          <TabsTrigger value="construction" className="py-2 text-xs sm:text-sm data-[state=active]:bg-matsu data-[state=active]:text-white">
+          <TabsTrigger value="construction" className="shrink-0 sm:shrink snap-start px-3 sm:px-2 py-2 text-xs sm:text-sm whitespace-nowrap data-[state=active]:bg-matsu data-[state=active]:text-white">
             工事情報
           </TabsTrigger>
-          <TabsTrigger value="history" className="py-2 text-xs sm:text-sm data-[state=active]:bg-matsu data-[state=active]:text-white">
+          <TabsTrigger value="history" className="shrink-0 sm:shrink snap-start px-3 sm:px-2 py-2 text-xs sm:text-sm whitespace-nowrap data-[state=active]:bg-matsu data-[state=active]:text-white">
             履歴情報
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="basic" className="mt-6">
+        <TabsContent value="basic" className="mt-4 md:mt-6">
           <BasicInfoTab plot={plot} />
         </TabsContent>
 
-        <TabsContent value="fee" className="mt-6">
+        <TabsContent value="fee" className="mt-4 md:mt-6">
           <FeeInfoTab plot={plot} />
         </TabsContent>
 
-        <TabsContent value="contacts" className="mt-6">
+        <TabsContent value="contacts" className="mt-4 md:mt-6">
           <ContactsTab plot={plot} />
         </TabsContent>
 
-        <TabsContent value="burial" className="mt-6">
+        <TabsContent value="burial" className="mt-4 md:mt-6">
           <BurialInfoTab plot={plot} />
         </TabsContent>
 
-        <TabsContent value="construction" className="mt-6">
+        <TabsContent value="construction" className="mt-4 md:mt-6">
           <ConstructionInfoTab plot={plot} />
         </TabsContent>
 
-        <TabsContent value="history" className="mt-6">
+        <TabsContent value="history" className="mt-4 md:mt-6">
           <HistoryInfoTab plot={plot} />
         </TabsContent>
       </Tabs>
