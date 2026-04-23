@@ -4,7 +4,14 @@ import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { ClipboardList, Check, X, BarChart3, Hash, Layers, PieChart, Grid3X3 } from 'lucide-react';
+import { ClipboardList, Check, X, BarChart3, Hash, Layers, PieChart, Grid3X3, ChevronDown, ChevronUp } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { StatCard } from '@/components/ui/stat-card';
 import { PlotPeriod, PLOT_SIZE } from '@/types/plot-constants';
 import PageHeader from '@/components/page-header';
@@ -38,6 +45,8 @@ export default function PlotAvailabilityManagement() {
   const [areaSortKey, setAreaSortKey] = useState<AreaSortKey>('period');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isKpiExpanded, setIsKpiExpanded] = useState(false);
+  const [isPeriodCardsExpanded, setIsPeriodCardsExpanded] = useState(true);
 
   // API Hooks
   const { summary: inventorySummary, isLoading: isSummaryLoading } = usePlotInventorySummary();
@@ -188,79 +197,39 @@ export default function PlotAvailabilityManagement() {
             </div>
           </div>
 
-          {/* フィルター */}
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-hai whitespace-nowrap">フィルタ</span>
-            <div className="flex gap-1 flex-wrap">
-              {menuItems.map((item) => (
-                <button
-                  key={item.key}
-                  onClick={() => setViewMode(item.key as ViewMode)}
-                  className={cn(
-                    'px-2 md:px-3 py-1.5 rounded-elegant transition-all duration-200 text-xs md:text-sm flex items-center',
-                    viewMode === item.key
-                      ? 'bg-ai-50 text-ai border border-ai-200 font-semibold'
-                      : 'hover:bg-kinari text-hai hover:text-sumi border border-transparent'
-                  )}
-                >
-                  <item.icon className="w-3.5 h-3.5 md:w-4 md:h-4 mr-1 shrink-0" />
-                  <span>{item.label}</span>
-                </button>
-              ))}
-            </div>
+          {/* フィルター（viewMode） */}
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-xs font-semibold text-hai whitespace-nowrap">絞り込み</span>
+            <Select value={viewMode} onValueChange={(v) => setViewMode(v as ViewMode)}>
+              <SelectTrigger className="h-9 w-[200px] md:w-[220px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {menuItems.map((item) => (
+                  <SelectItem key={item.key} value={item.key}>
+                    <span className="flex items-center gap-2">
+                      <item.icon className="w-3.5 h-3.5 shrink-0" />
+                      {item.label}
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
-          {/* 期別フィルター */}
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-hai whitespace-nowrap">期別</span>
-            <div className="flex gap-1 flex-wrap">
+          {/* 期フィルタバッジ（選択中のみ表示、期別カードで期選択） */}
+          {selectedPeriod !== 'all' && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-hai whitespace-nowrap">期</span>
               <button
                 onClick={() => setSelectedPeriod('all')}
-                className={cn(
-                  'px-3 py-1.5 rounded-elegant transition-all duration-200 text-sm',
-                  selectedPeriod === 'all'
-                    ? 'bg-matsu-50 text-matsu border border-matsu-200 font-semibold'
-                    : 'hover:bg-kinari text-hai hover:text-sumi border border-transparent'
-                )}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-elegant bg-ai-50 text-ai border border-ai-200 text-sm font-medium hover:bg-ai-100 transition-colors"
               >
-                全期
+                {selectedPeriod}
+                <X className="w-3.5 h-3.5" />
               </button>
-              {(['第1期', '第2期', '第3期', '第3期樹林部', '第4期'] as PlotPeriod[]).map((period) => {
-                const ps = periodSummaries.find(p => p.period === period);
-                const periodColors: Record<string, { bg: string; border: string; text: string }> = {
-                  '第1期': { bg: 'bg-matsu-50', border: 'border-matsu-200', text: 'text-matsu' },
-                  '第2期': { bg: 'bg-ai-50', border: 'border-ai-200', text: 'text-ai' },
-                  '第3期': { bg: 'bg-cha-50', border: 'border-cha-200', text: 'text-cha' },
-                  '第3期樹林部': { bg: 'bg-cha-50', border: 'border-cha-200', text: 'text-cha' },
-                  '第4期': { bg: 'bg-kohaku-50', border: 'border-kohaku-200', text: 'text-kohaku' },
-                };
-                const colors = periodColors[period];
-
-                return (
-                  <button
-                    key={period}
-                    onClick={() => setSelectedPeriod(period)}
-                    className={cn(
-                      'px-3 py-1.5 rounded-elegant transition-all duration-200 text-sm',
-                      selectedPeriod === period
-                        ? `${colors.bg} ${colors.text} border ${colors.border} font-semibold`
-                        : 'hover:bg-kinari text-hai hover:text-sumi border border-transparent'
-                    )}
-                  >
-                    {period}
-                    {ps && (
-                      <span className={cn(
-                        "ml-1 text-xs px-1.5 py-0.5 rounded-full",
-                        getUsageRateColor(ps.usageRate || 0)
-                      )}>
-                        残{ps.remainingCount || 0}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
             </div>
-          </div>
+          )}
         </div>
 
         {/* メインコンテンツ */}
@@ -275,138 +244,166 @@ export default function PlotAvailabilityManagement() {
             </div>
           )}
 
-          {/* 全体サマリー — モバイル: コンパクト横並び / デスクトップ: カード */}
-          {/* モバイル用コンパクト表示 */}
-          <div className="md:hidden bg-white border border-gin rounded-elegant-lg p-3 mb-4 shadow-elegant-sm">
-            <div className="flex items-center justify-between gap-2 text-center">
-              <div className="flex-1">
-                <div className="text-xl font-bold text-matsu">{summary.totalCount}</div>
-                <div className="text-[10px] text-hai">総数</div>
+          {/* 全体サマリー — 常時コンパクト表示 + 折りたたみで詳細カード */}
+          <div className="bg-white border border-gin rounded-elegant-lg mb-4 shadow-elegant-sm overflow-hidden">
+            {/* コンパクトサマリー（常時表示） */}
+            <button
+              type="button"
+              onClick={() => setIsKpiExpanded((v) => !v)}
+              aria-expanded={isKpiExpanded}
+              className="w-full p-3 flex items-center gap-2 hover:bg-kinari/40 transition-colors"
+            >
+              <div className="flex-1 flex items-center justify-between gap-2 text-center">
+                <div className="flex-1 min-w-0">
+                  <div className="text-lg md:text-xl font-bold text-matsu tabular-nums">{summary.totalCount}</div>
+                  <div className="text-[10px] md:text-xs text-hai">総数</div>
+                </div>
+                <div className="w-px h-8 bg-gin" />
+                <div className="flex-1 min-w-0">
+                  <div className="text-lg md:text-xl font-bold text-ai tabular-nums">{summary.usedCount}</div>
+                  <div className="text-[10px] md:text-xs text-hai">使用</div>
+                </div>
+                <div className="w-px h-8 bg-gin" />
+                <div className="flex-1 min-w-0">
+                  <div className="text-lg md:text-xl font-bold text-kohaku tabular-nums">{summary.remainingCount}</div>
+                  <div className="text-[10px] md:text-xs text-hai">残</div>
+                </div>
+                <div className="w-px h-8 bg-gin" />
+                <div className="flex-1 min-w-0">
+                  <div className="text-lg md:text-xl font-bold text-cha tabular-nums">{summary.usageRate}%</div>
+                  <div className="text-[10px] md:text-xs text-hai">使用率</div>
+                </div>
+                <div className="w-px h-8 bg-gin hidden sm:block" />
+                <div className="flex-1 min-w-0 hidden sm:block">
+                  <div className="text-lg md:text-xl font-bold text-sumi tabular-nums">{(summary.remainingCount * 2)}</div>
+                  <div className="text-[10px] md:text-xs text-hai">半区画</div>
+                </div>
               </div>
-              <div className="w-px h-8 bg-gin" />
-              <div className="flex-1">
-                <div className="text-xl font-bold text-ai">{summary.usedCount}</div>
-                <div className="text-[10px] text-hai">使用</div>
-              </div>
-              <div className="w-px h-8 bg-gin" />
-              <div className="flex-1">
-                <div className="text-xl font-bold text-kohaku">{summary.remainingCount}</div>
-                <div className="text-[10px] text-hai">残</div>
-              </div>
-              <div className="w-px h-8 bg-gin" />
-              <div className="flex-1">
-                <div className="text-xl font-bold text-cha">{summary.usageRate}%</div>
-                <div className="text-[10px] text-hai">使用率</div>
-              </div>
-              <div className="w-px h-8 bg-gin" />
-              <div className="flex-1">
-                <div className="text-xl font-bold text-sumi">{(summary.remainingCount * 2)}</div>
-                <div className="text-[10px] text-hai">半区画</div>
-              </div>
-            </div>
-          </div>
+              <span className="shrink-0 inline-flex items-center gap-1 text-xs text-hai whitespace-nowrap">
+                <span className="hidden sm:inline">{isKpiExpanded ? '詳細を閉じる' : '詳細を表示'}</span>
+                {isKpiExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </span>
+            </button>
 
-          {/* デスクトップ用カード表示 */}
-          <div className="hidden md:grid md:grid-cols-5 gap-4 mb-6">
-            <StatCard
-              label="総区画数"
-              value={summary.totalCount.toLocaleString()}
-              description={`${areaStats.totalArea.toLocaleString()}㎡`}
-              icon={<Layers className="w-4 h-4" />}
-              theme="matsu"
-            />
-            <StatCard
-              label="使用済区画数"
-              value={summary.usedCount.toLocaleString()}
-              description={`${areaStats.usedArea.toLocaleString()}㎡`}
-              icon={<Check className="w-4 h-4" />}
-              theme="ai"
-            />
-            <StatCard
-              label="残区画数"
-              value={summary.remainingCount.toLocaleString()}
-              description={`${areaStats.remainingArea.toLocaleString()}㎡`}
-              icon={<Hash className="w-4 h-4" />}
-              theme="kohaku"
-            />
-            <StatCard
-              label="使用率"
-              value={summary.usageRate}
-              unit="%"
-              icon={<PieChart className="w-4 h-4" />}
-              theme="cha"
-              description={
-                <span className="block w-full bg-cha-50 rounded-full h-1.5 mt-1">
-                  <span
-                    className="block bg-cha h-1.5 rounded-full transition-all duration-500"
-                    style={{ width: `${summary.usageRate}%` }}
-                  />
-                </span>
-              }
-            />
-            <StatCard
-              label="半区画換算"
-              value={(summary.remainingCount * 2).toLocaleString()}
-              description={`1.8㎡ × ${(summary.remainingCount * 2).toLocaleString()}`}
-              icon={<Grid3X3 className="w-4 h-4" />}
-              theme="sumi"
-            />
-          </div>
-
-          {/* 期別サマリーカード */}
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 md:gap-4 mb-4 md:mb-6">
-            {periodSummaries.map((ps) => {
-              const periodColors: Record<string, { gradient: string; light: string }> = {
-                '第1期': { gradient: 'from-matsu to-matsu-dark', light: 'matsu' },
-                '第2期': { gradient: 'from-ai to-ai-dark', light: 'ai' },
-                '第3期': { gradient: 'from-cha to-cha-dark', light: 'cha' },
-                '第3期樹林部': { gradient: 'from-cha to-cha-dark', light: 'cha' },
-                '第4期': { gradient: 'from-kohaku to-kohaku-dark', light: 'kohaku' },
-              };
-              const colors = periodColors[ps.period] ?? { gradient: 'from-hai to-hai-dark', light: 'hai' };
-
-              return (
-                <button
-                  key={ps.period}
-                  onClick={() => setSelectedPeriod(ps.period)}
-                  className={cn(
-                    "bg-white border rounded-elegant-lg p-3 md:p-5 text-left transition-all duration-300 hover:shadow-elegant-lg",
-                    selectedPeriod === ps.period
-                      ? `border-${colors.light} ring-2 ring-${colors.light}-100 shadow-elegant`
-                      : "border-gin hover:border-hai"
-                  )}
-                >
-                  <div className="flex justify-between items-center mb-2 md:mb-4">
-                    <span className={cn(
-                      "text-sm md:text-lg font-bold font-mincho",
-                      `text-${colors.light}`
-                    )}>{ps.period}</span>
-                    <span className={cn(
-                      "text-[10px] md:text-xs px-2 md:px-3 py-0.5 md:py-1 rounded-full font-medium",
-                      getUsageRateColor(ps.usageRate)
-                    )}>
-                      {ps.usageRate}%
+            {/* 詳細KPIカード（展開時のみ） */}
+            {isKpiExpanded && (
+              <div className="border-t border-gin p-3 md:p-4 grid grid-cols-2 md:grid-cols-5 gap-2 md:gap-4">
+                <StatCard
+                  label="総区画数"
+                  value={summary.totalCount.toLocaleString()}
+                  description={`${areaStats.totalArea.toLocaleString()}㎡`}
+                  icon={<Layers className="w-4 h-4" />}
+                  theme="matsu"
+                />
+                <StatCard
+                  label="使用済区画数"
+                  value={summary.usedCount.toLocaleString()}
+                  description={`${areaStats.usedArea.toLocaleString()}㎡`}
+                  icon={<Check className="w-4 h-4" />}
+                  theme="ai"
+                />
+                <StatCard
+                  label="残区画数"
+                  value={summary.remainingCount.toLocaleString()}
+                  description={`${areaStats.remainingArea.toLocaleString()}㎡`}
+                  icon={<Hash className="w-4 h-4" />}
+                  theme="kohaku"
+                />
+                <StatCard
+                  label="使用率"
+                  value={summary.usageRate}
+                  unit="%"
+                  icon={<PieChart className="w-4 h-4" />}
+                  theme="cha"
+                  description={
+                    <span className="block w-full bg-cha-50 rounded-full h-1.5 mt-1">
+                      <span
+                        className="block bg-cha h-1.5 rounded-full transition-all duration-500"
+                        style={{ width: `${summary.usageRate}%` }}
+                      />
                     </span>
-                  </div>
-                  <div className="grid grid-cols-3 gap-1 md:gap-3 text-xs md:text-sm">
-                    <div>
-                      <div className="text-hai text-xs mb-1">総数</div>
-                      <div className="font-bold text-sumi">{ps.totalCount}</div>
-                    </div>
-                    <div>
-                      <div className="text-hai text-xs mb-1">使用</div>
-                      <div className="font-bold text-matsu">{ps.usedCount}</div>
-                    </div>
-                    <div>
-                      <div className="text-hai text-xs mb-1">残り</div>
-                      <div className={cn("font-bold", getRemainingColor(ps.remainingCount, ps.totalCount))}>
-                        {ps.remainingCount}
+                  }
+                />
+                <StatCard
+                  label="半区画換算"
+                  value={(summary.remainingCount * 2).toLocaleString()}
+                  description={`1.8㎡ × ${(summary.remainingCount * 2).toLocaleString()}`}
+                  icon={<Grid3X3 className="w-4 h-4" />}
+                  theme="sumi"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* 期別サマリーカード — 折りたたみ可能（クリックで期選択） */}
+          <div className="mb-4 md:mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-hai">期別サマリー {selectedPeriod !== 'all' && <span className="ml-1 text-ai">（{selectedPeriod}を選択中）</span>}</span>
+              <button
+                type="button"
+                onClick={() => setIsPeriodCardsExpanded((v) => !v)}
+                aria-expanded={isPeriodCardsExpanded}
+                className="inline-flex items-center gap-1 text-xs text-hai hover:text-sumi transition-colors"
+              >
+                {isPeriodCardsExpanded ? '折りたたむ' : '展開'}
+                {isPeriodCardsExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+              </button>
+            </div>
+            {isPeriodCardsExpanded && (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 md:gap-3">
+                {periodSummaries.map((ps) => {
+                  const periodColors: Record<string, { light: string }> = {
+                    '第1期': { light: 'matsu' },
+                    '第2期': { light: 'ai' },
+                    '第3期': { light: 'cha' },
+                    '第3期樹林部': { light: 'cha' },
+                    '第4期': { light: 'kohaku' },
+                  };
+                  const colors = periodColors[ps.period] ?? { light: 'hai' };
+
+                  return (
+                    <button
+                      key={ps.period}
+                      onClick={() => setSelectedPeriod(selectedPeriod === ps.period ? 'all' : ps.period)}
+                      className={cn(
+                        'bg-white border rounded-elegant p-2.5 md:p-3 text-left transition-all duration-200 hover:shadow-elegant',
+                        selectedPeriod === ps.period
+                          ? `border-${colors.light} ring-2 ring-${colors.light}-100 shadow-elegant`
+                          : 'border-gin hover:border-hai'
+                      )}
+                    >
+                      <div className="flex justify-between items-center mb-1.5 md:mb-2">
+                        <span className={cn('text-xs md:text-sm font-bold font-mincho truncate', `text-${colors.light}`)}>
+                          {ps.period}
+                        </span>
+                        <span className={cn(
+                          'text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded-full font-medium tabular-nums shrink-0 ml-1',
+                          getUsageRateColor(ps.usageRate)
+                        )}>
+                          {ps.usageRate}%
+                        </span>
                       </div>
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
+                      <div className="grid grid-cols-3 gap-1 text-[11px] md:text-xs">
+                        <div>
+                          <div className="text-hai">総</div>
+                          <div className="font-semibold text-sumi tabular-nums">{ps.totalCount}</div>
+                        </div>
+                        <div>
+                          <div className="text-hai">使用</div>
+                          <div className="font-semibold text-matsu tabular-nums">{ps.usedCount}</div>
+                        </div>
+                        <div>
+                          <div className="text-hai">残</div>
+                          <div className={cn('font-semibold tabular-nums', getRemainingColor(ps.remainingCount, ps.totalCount))}>
+                            {ps.remainingCount}
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* 検索バー */}
