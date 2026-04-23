@@ -238,10 +238,13 @@ export function useDocumentMutations() {
           `document-${id.slice(0, 8)}.pdf`;
         downloadPdfFromBase64(response.data.pdf, fileName);
         return true;
-      } else {
-        setError(response.error?.message || 'PDFの再生成に失敗しました');
-        return false;
       }
+      setError(
+        !response.success
+          ? response.error.message
+          : 'PDFの再生成に失敗しました',
+      );
+      return false;
     } catch (err) {
       setError('PDFのダウンロードに失敗しました');
       console.error('Error regenerating PDF for download:', err);
