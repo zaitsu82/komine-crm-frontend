@@ -18,8 +18,9 @@ import {
   updateDocument,
   deleteDocument,
   uploadDocumentFile,
-  getDocumentDownloadUrl,
+  regenerateDocumentPdf,
   generatePdf,
+  downloadPdfFromBase64,
   DOCUMENT_TYPE_LABELS,
   DOCUMENT_STATUS_LABELS,
   DOCUMENT_STATUS_COLORS,
@@ -226,21 +227,25 @@ export function useDocumentMutations() {
     }
   }, []);
 
-  const download = useCallback(async (id: string): Promise<string | null> => {
+  const download = useCallback(async (id: string): Promise<boolean> => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await getDocumentDownloadUrl(id);
-      if (response.success) {
-        return response.data.url;
+      const response = await regenerateDocumentPdf(id);
+      if (response.success && response.data.pdf) {
+        const fileName =
+          response.data.fileName ||
+          `document-${id.slice(0, 8)}.pdf`;
+        downloadPdfFromBase64(response.data.pdf, fileName);
+        return true;
       } else {
-        setError(response.error?.message || 'ダウンロードURLの取得に失敗しました');
-        return null;
+        setError(response.error?.message || 'PDFの再生成に失敗しました');
+        return false;
       }
     } catch (err) {
-      setError('ダウンロードURLの取得に失敗しました');
-      console.error('Error getting download URL:', err);
-      return null;
+      setError('PDFのダウンロードに失敗しました');
+      console.error('Error regenerating PDF for download:', err);
+      return false;
     } finally {
       setIsLoading(false);
     }

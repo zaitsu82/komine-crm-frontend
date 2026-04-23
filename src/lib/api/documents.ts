@@ -187,6 +187,8 @@ export interface GeneratePdfResponse {
   pdf: string; // Base64エンコードされたPDF
   mimeType: string;
   fileSize: number;
+  /** 再生成APIなどでクライアント保存用に返す場合あり */
+  fileName?: string;
 }
 
 // =============================================================================
@@ -548,6 +550,47 @@ async function mockGeneratePdf(
   };
 }
 
+async function mockRegenerateDocumentPdf(id: string): Promise<ApiResponse<GeneratePdfResponse>> {
+  await new Promise((resolve) => setTimeout(resolve, 300));
+
+  const doc = MOCK_DOCUMENTS.find((d) => d.id === id);
+  if (!doc) {
+    return {
+      success: false,
+      error: {
+        code: 'NOT_FOUND',
+        message: '書類が見つかりません',
+      },
+    };
+  }
+
+  if (!doc.templateType || !['invoice', 'postcard'].includes(doc.templateType)) {
+    return {
+      success: false,
+      error: {
+        code: 'NO_TEMPLATE_DATA',
+        message: 'テンプレートデータが保存されていないため、再生成できません',
+      },
+    };
+  }
+
+  const mockPdf = 'JVBERi0xLjQKJeLjz9MKMSAwIG9iago8PAovVHlwZSAvQ2F0YWxvZwovUGFnZXMgMiAwIFIKPj4KZW5kb2Jq';
+  const baseName =
+    (doc.name || 'document').replace(/[/\\?%*:|"<>]/g, '_').trim() || 'document';
+  const fileName = baseName.toLowerCase().endsWith('.pdf') ? baseName : `${baseName}.pdf`;
+
+  return {
+    success: true,
+    data: {
+      documentId: id,
+      pdf: mockPdf,
+      mimeType: 'application/pdf',
+      fileSize: mockPdf.length,
+      fileName,
+    },
+  };
+}
+
 // =============================================================================
 // API関数
 // =============================================================================
@@ -694,6 +737,19 @@ export async function generatePdf(
   }
 
   return apiPost<GeneratePdfResponse>('/documents/generate-pdf', data);
+}
+
+/**
+ * 保存済みテンプレートデータからPDFを再生成（ダウンロード用）
+ */
+export async function regenerateDocumentPdf(
+  id: string
+): Promise<ApiResponse<GeneratePdfResponse>> {
+  if (shouldUseMockData()) {
+    return mockRegenerateDocumentPdf(id);
+  }
+
+  return apiPost<GeneratePdfResponse>(`/documents/${id}/regenerate-pdf`);
 }
 
 /**

@@ -114,10 +114,8 @@ export function DocumentManagement({
 
   const handleDownload = useCallback(
     async (id: string) => {
-      const url = await download(id);
-      if (url) {
-        window.open(url, '_blank');
-      } else {
+      const ok = await download(id);
+      if (!ok) {
         toast.error('ダウンロードに失敗しました');
       }
     },
