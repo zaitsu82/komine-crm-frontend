@@ -2,11 +2,180 @@
 
 .komine-invoice-preview {
   font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic Pro', 'Meiryo', sans-serif;
-  font-size: 12px;
-  line-height: 1.6;
-  color: #333;
+  font-size: 13px;
+  line-height: 1.9;
+  color: #222;
   background: white;
 }
+
+/* ─── 護持費のお知らせ レイアウト ─── */
+.komine-invoice-preview .notice-container {
+  max-width: 210mm;
+  margin: 0 auto;
+  padding: 20mm 22mm;
+}
+
+.komine-invoice-preview .top-recipient {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 15px;
+  margin-bottom: 28px;
+}
+
+.komine-invoice-preview .top-recipient .name-input {
+  min-width: 180px;
+  border: none;
+  border-bottom: 1px solid #222;
+  padding: 2px 8px;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  flex: 1;
+  max-width: 280px;
+}
+
+.komine-invoice-preview .notice-title {
+  text-align: center;
+  font-size: 22px;
+  letter-spacing: 10px;
+  margin-bottom: 32px;
+  font-weight: normal;
+}
+
+.komine-invoice-preview .greeting p {
+  margin-bottom: 4px;
+}
+
+.komine-invoice-preview .greeting {
+  margin-bottom: 18px;
+}
+
+.komine-invoice-preview .season-input {
+  min-width: 110px;
+  max-width: 180px;
+  border: none;
+  border-bottom: 1px solid #222;
+  padding: 0 6px;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  text-align: center;
+}
+
+.komine-invoice-preview .keigu {
+  text-align: right;
+  margin: 14px 8px 34px 0;
+}
+
+.komine-invoice-preview .statement {
+  margin-bottom: 22px;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.komine-invoice-preview .statement .name-input-mid {
+  min-width: 140px;
+  border: none;
+  border-bottom: 1px solid #222;
+  padding: 0 6px;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  text-align: center;
+  max-width: 220px;
+}
+
+.komine-invoice-preview .payment-block {
+  margin: 6px 0 28px 18px;
+}
+
+.komine-invoice-preview .payment-row {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.komine-invoice-preview .field-num-input {
+  width: 56px;
+  border: none;
+  border-bottom: 1px solid #222;
+  padding: 0 6px;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  text-align: center;
+}
+
+.komine-invoice-preview .field-amount-input {
+  min-width: 140px;
+  border: none;
+  border-bottom: 1px solid #222;
+  padding: 0 6px;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  text-align: right;
+  letter-spacing: 2px;
+  font-weight: bold;
+}
+
+.komine-invoice-preview .field-date-input {
+  min-width: 160px;
+  border: none;
+  border-bottom: 1px solid #222;
+  padding: 0 6px;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  text-align: center;
+}
+
+.komine-invoice-preview .note-line {
+  margin-bottom: 14px;
+}
+
+.komine-invoice-preview .bullet-list {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 6px 8px;
+}
+
+.komine-invoice-preview .bullet-list li {
+  padding-left: 16px;
+  text-indent: -16px;
+  margin-bottom: 6px;
+}
+
+.komine-invoice-preview .bullet-list li::before {
+  content: '・';
+}
+
+.komine-invoice-preview .signature {
+  margin-top: 48px;
+  text-align: right;
+  line-height: 1.8;
+}
+
+.komine-invoice-preview .signature .org {
+  margin-bottom: 2px;
+}
+
+.komine-invoice-preview .signature .tel {
+  letter-spacing: 1px;
+}
+
+.komine-invoice-preview .notice-editable:focus {
+  outline: none;
+  background: rgba(240, 253, 250, 0.8);
+  box-shadow: inset 0 0 0 1px rgba(15, 118, 110, 0.25);
+}
+
+/* ─── 旧請求書レイアウト（互換・未使用になる予定） ─── */
 
 .komine-invoice-preview * {
   box-sizing: border-box;
@@ -204,6 +373,195 @@
   margin-top: 10px;
 }
 
+/* ──────────── お支払い方法のご案内 ──────────── */
+.komine-payment-preview {
+  font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic Pro', 'Meiryo', sans-serif;
+  font-size: 13px;
+  line-height: 1.9;
+  color: #222;
+  background: white;
+}
+
+.komine-payment-preview * {
+  box-sizing: border-box;
+}
+
+.komine-payment-preview .guide-container {
+  max-width: 210mm;
+  margin: 0 auto;
+  padding: 18mm 20mm;
+}
+
+.komine-payment-preview .top-title {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.komine-payment-preview .section-heading {
+  font-size: 14px;
+  font-weight: bold;
+  margin-top: 16px;
+  margin-bottom: 8px;
+}
+
+.komine-payment-preview .section-heading::before {
+  content: '・';
+}
+
+.komine-payment-preview .section-body {
+  margin-left: 20px;
+}
+
+.komine-payment-preview .ordered {
+  list-style: none;
+  padding-left: 0;
+  margin: 6px 0 12px 10px;
+}
+
+.komine-payment-preview .ordered li {
+  position: relative;
+  padding-left: 28px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.komine-payment-preview .ordered li:nth-child(1)::before {
+  content: '①';
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.komine-payment-preview .ordered li:nth-child(2)::before {
+  content: '②';
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.komine-payment-preview .notices {
+  margin: 8px 0 12px 10px;
+  font-size: 12.5px;
+}
+
+.komine-payment-preview .notices .note {
+  padding-left: 16px;
+  text-indent: -16px;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.komine-payment-preview .notices .note > span:first-child {
+  flex-shrink: 0;
+}
+
+.komine-payment-preview .bank-list {
+  margin: 6px 0 12px 10px;
+}
+
+.komine-payment-preview .bank-item {
+  margin-bottom: 12px;
+}
+
+.komine-payment-preview .bank-header {
+  padding-left: 0;
+  font-weight: bold;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.komine-payment-preview .bank-detail {
+  margin-left: 22px;
+  margin-top: 4px;
+}
+
+.komine-payment-preview .bank-detail .row {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  padding: 3px 0;
+  border-bottom: 1px solid #d8d8d8;
+}
+
+.komine-payment-preview .bank-detail .row:last-child {
+  border-bottom: none;
+}
+
+.komine-payment-preview .bank-detail .label {
+  min-width: 72px;
+  color: #555;
+  font-size: 12.5px;
+}
+
+.komine-payment-preview .bank-detail .value {
+  flex: 1;
+}
+
+.komine-payment-preview .bank-detail .sub-label {
+  color: #888;
+  font-size: 11px;
+}
+
+.komine-payment-preview .footer-notice {
+  margin: 20px 0 8px 4px;
+  font-size: 12.5px;
+  line-height: 1.9;
+}
+
+.komine-payment-preview .footer-notice .highlight {
+  font-weight: bold;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.komine-payment-preview .signature {
+  margin-top: 24px;
+  text-align: right;
+  line-height: 1.8;
+}
+
+.komine-payment-preview .signature .org-name {
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 2px;
+  justify-content: flex-end;
+}
+
+.komine-payment-preview .signature .tel {
+  letter-spacing: 1px;
+  justify-content: flex-end;
+}
+
+/* テキストの種 */
+.komine-payment-preview.doc-preset-mincho .guide-container {
+  font-family: 'Noto Serif JP', 'Hiragino Mincho ProN', 'Yu Mincho', 'MS Mincho',
+    serif;
+}
+
+.komine-payment-preview.doc-preset-gothic_large .guide-container {
+  font-size: 14px;
+}
+
+.komine-payment-preview.doc-preset-gothic_large .top-title {
+  font-size: 17px;
+}
+
+.komine-payment-preview.doc-preset-compact .guide-container {
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.komine-payment-preview.doc-preset-compact .top-title {
+  font-size: 15px;
+}
+
 /* はがき */
 .komine-postcard-preview {
   font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic Pro', 'Meiryo', sans-serif;
@@ -360,7 +718,35 @@
   font-size: 11px;
 }
 
-/* ─── テキストの種（プレビュー）請求書 ─── */
+/* ─── テキストの種（プレビュー）護持費のお知らせ ─── */
+.komine-invoice-preview.doc-preset-mincho .notice-container {
+  font-family: 'Noto Serif JP', 'Hiragino Mincho ProN', 'Yu Mincho', 'MS Mincho',
+    serif;
+}
+
+.komine-invoice-preview.doc-preset-mincho .notice-title {
+  letter-spacing: 14px;
+}
+
+.komine-invoice-preview.doc-preset-gothic_large .notice-container {
+  font-size: 14px;
+}
+
+.komine-invoice-preview.doc-preset-gothic_large .notice-title {
+  font-size: 26px;
+}
+
+.komine-invoice-preview.doc-preset-compact .notice-container {
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.komine-invoice-preview.doc-preset-compact .notice-title {
+  font-size: 19px;
+  letter-spacing: 6px;
+}
+
+/* ─── テキストの種（プレビュー）旧請求書 ─── */
 .komine-invoice-preview.doc-preset-mincho .invoice-container {
   font-family: 'Noto Serif JP', 'Hiragino Mincho ProN', 'Yu Mincho', 'MS Mincho',
     serif;

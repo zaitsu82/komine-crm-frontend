@@ -32,7 +32,6 @@ import {
   Eye,
   ArrowLeft,
 } from 'lucide-react';
-import PageHeader from '@/components/page-header';
 
 interface DocumentListViewProps {
   /** 顧客IDでフィルター */
@@ -48,7 +47,6 @@ interface DocumentListViewProps {
 
 export function DocumentListView({
   customerId,
-  customerName,
   onCreateNew,
   onViewDetail,
   onDownload,
@@ -95,36 +93,24 @@ export function DocumentListView({
   };
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
-      <PageHeader
-        title={customerName ? `${customerName} 様の書類` : '書類管理'}
-        subtitle="書類の作成・管理"
-        theme="matsu"
-        icon={
-          <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
-        }
-      />
-
-      <div className="flex-1 overflow-auto p-4 space-y-4">
-        <div className="flex justify-between items-center">
-          <div>
-            {onBack && (
-              <Button variant="ghost" size="sm" onClick={onBack}>
-                <ArrowLeft className="mr-1 h-4 w-4" />
-                テンプレート
-              </Button>
-            )}
-          </div>
-          <Button onClick={onCreateNew} size="sm" className="bg-matsu-600 hover:bg-matsu-700 cursor-pointer">
-            <Plus className="mr-1 h-4 w-4" />
-            新規作成
-          </Button>
+    <div className="p-3 md:p-6 space-y-4">
+      <div className="flex justify-between items-center">
+        <div>
+          {onBack && (
+            <Button variant="ghost" size="sm" onClick={onBack}>
+              <ArrowLeft className="mr-1 h-4 w-4" />
+              テンプレート
+            </Button>
+          )}
         </div>
+        <Button onClick={onCreateNew} size="sm" className="bg-matsu hover:bg-matsu-dark text-white cursor-pointer">
+          <Plus className="mr-1 h-4 w-4" />
+          新規作成
+        </Button>
+      </div>
 
-        {/* フィルター */}
-        <div className="flex flex-wrap gap-4 p-4 bg-kinari-50 rounded-lg">
+      {/* フィルター */}
+      <div className="flex flex-wrap gap-4 p-4 bg-kinari-50 rounded-lg border border-gin">
           <div className="flex-1 min-w-[200px]">
             <div className="relative">
               <Input
@@ -136,7 +122,7 @@ export function DocumentListView({
               />
               <button
                 onClick={handleSearch}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-sumi-400 hover:text-sumi-600"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-hai hover:text-sumi"
               >
                 <Search className="h-4 w-4" />
               </button>
@@ -176,148 +162,147 @@ export function DocumentListView({
           </Button>
         </div>
 
-        {/* エラー表示 */}
-        {error && (
-          <div className="p-4 bg-beni-50 text-beni-700 rounded-lg">
-            {error}
-          </div>
-        )}
+      {/* エラー表示 */}
+      {error && (
+        <div className="p-4 bg-beni-50 border border-beni-200 text-beni rounded-lg">
+          {error}
+        </div>
+      )}
 
-        {/* テーブル */}
-        <div className="bg-white rounded-lg border border-sumi-200 overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-sumi-50">
+      {/* テーブル */}
+      <div className="bg-white rounded-lg border border-gin overflow-hidden">
+        <table className="w-full">
+          <thead className="bg-shiro">
+            <tr>
+              <th className="px-4 py-3 text-left text-sm font-medium text-sumi">書類名</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-sumi">種類</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-sumi">ステータス</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-sumi">顧客</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-sumi">ファイル</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-sumi">作成日</th>
+              <th className="px-4 py-3 text-center text-sm font-medium text-sumi">操作</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gin">
+            {isLoading ? (
               <tr>
-                <th className="px-4 py-3 text-left text-sm font-medium text-sumi-700">書類名</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-sumi-700">種類</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-sumi-700">ステータス</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-sumi-700">顧客</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-sumi-700">ファイル</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-sumi-700">作成日</th>
-                <th className="px-4 py-3 text-center text-sm font-medium text-sumi-700">操作</th>
+                <td colSpan={7} className="px-4 py-8 text-center text-hai">
+                  読み込み中...
+                </td>
               </tr>
-            </thead>
-            <tbody className="divide-y divide-sumi-100">
-              {isLoading ? (
-                <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-sumi-500">
-                    読み込み中...
+            ) : !data?.items?.length ? (
+              <tr>
+                <td colSpan={7} className="px-4 py-8 text-center text-hai">
+                  <FileText className="mx-auto h-12 w-12 text-gin mb-2" />
+                  書類がありません
+                </td>
+              </tr>
+            ) : (
+              data.items.map((doc) => (
+                <tr
+                  key={doc.id}
+                  className="hover:bg-kinari-50 cursor-pointer"
+                  onClick={() => onViewDetail(doc.id)}
+                >
+                  <td className="px-4 py-3">
+                    <div className="font-medium text-sumi">{doc.name}</div>
+                    {doc.description && (
+                      <div className="text-sm text-hai truncate max-w-[200px]">
+                        {doc.description}
+                      </div>
+                    )}
                   </td>
-                </tr>
-              ) : !data?.items?.length ? (
-                <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-sumi-500">
-                    <FileText className="mx-auto h-12 w-12 text-sumi-300 mb-2" />
-                    書類がありません
+                  <td className="px-4 py-3">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-ai/10 text-ai border border-ai/30">
+                      {DOCUMENT_TYPE_LABELS[doc.type]}
+                    </span>
                   </td>
-                </tr>
-              ) : (
-                data.items.map((doc) => (
-                  <tr
-                    key={doc.id}
-                    className="hover:bg-kinari-50 cursor-pointer"
-                    onClick={() => onViewDetail(doc.id)}
-                  >
-                    <td className="px-4 py-3">
-                      <div className="font-medium text-sumi-900">{doc.name}</div>
-                      {doc.description && (
-                        <div className="text-sm text-sumi-500 truncate max-w-[200px]">
-                          {doc.description}
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-ai-100 text-ai-800">
-                        {DOCUMENT_TYPE_LABELS[doc.type]}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${DOCUMENT_STATUS_COLORS[doc.status]}`}
+                  <td className="px-4 py-3">
+                    <span
+                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${DOCUMENT_STATUS_COLORS[doc.status]}`}
+                    >
+                      {DOCUMENT_STATUS_LABELS[doc.status]}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-sm text-sumi">
+                    {doc.customer?.name || '-'}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-sumi">
+                    {doc.fileName ? (
+                      <div>
+                        <div className="truncate max-w-[150px]">{doc.fileName}</div>
+                        <div className="text-xs text-hai">{formatFileSize(doc.fileSize)}</div>
+                      </div>
+                    ) : (
+                      '-'
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-sumi">
+                    {formatDate(doc.createdAt)}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onViewDetail(doc.id);
+                        }}
                       >
-                        {DOCUMENT_STATUS_LABELS[doc.status]}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-sumi-600">
-                      {doc.customer?.name || '-'}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-sumi-600">
-                      {doc.fileName ? (
-                        <div>
-                          <div className="truncate max-w-[150px]">{doc.fileName}</div>
-                          <div className="text-xs text-sumi-400">{formatFileSize(doc.fileSize)}</div>
-                        </div>
-                      ) : (
-                        '-'
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-sumi-600">
-                      {formatDate(doc.createdAt)}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center justify-center gap-2">
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      {doc.fileName && (
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={(e) => {
                             e.stopPropagation();
-                            onViewDetail(doc.id);
+                            onDownload(doc.id);
                           }}
                         >
-                          <Eye className="h-4 w-4" />
+                          <Download className="h-4 w-4" />
                         </Button>
-                        {doc.fileName && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onDownload(doc.id);
-                            }}
-                          >
-                            <Download className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* ページネーション */}
-        {data && data.pagination.totalPages > 1 && (
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-sumi-600">
-              {data.pagination.total}件中 {(params.page - 1) * params.limit + 1}-
-              {Math.min(params.page * params.limit, data.pagination.total)}件を表示
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage(params.page - 1)}
-                disabled={params.page === 1}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <span className="text-sm text-sumi-600">
-                {params.page} / {data.pagination.totalPages}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage(params.page + 1)}
-                disabled={params.page >= data.pagination.totalPages}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        )}
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
+
+      {/* ページネーション */}
+      {data && data.pagination.totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-hai">
+            {data.pagination.total}件中 {(params.page - 1) * params.limit + 1}-
+            {Math.min(params.page * params.limit, data.pagination.total)}件を表示
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage(params.page - 1)}
+              disabled={params.page === 1}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="text-sm text-sumi">
+              {params.page} / {data.pagination.totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage(params.page + 1)}
+              disabled={params.page >= data.pagination.totalPages}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

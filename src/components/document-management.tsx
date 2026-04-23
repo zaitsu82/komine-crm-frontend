@@ -11,7 +11,9 @@ import { DocumentForm } from './document-form';
 import { useDocumentMutations, DocumentDetail } from '@/hooks/useDocuments';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, FileText } from 'lucide-react';
+import PageHeader from '@/components/page-header';
+import { ConfirmDialog } from '@/components/shared/dialogs';
 import { PlotDetailResponse } from '@komine/types';
 
 type ViewMode = 'templates' | 'list' | 'detail' | 'create' | 'edit';
@@ -24,6 +26,15 @@ interface DocumentManagementProps {
   initialMode?: 'list' | 'create' | 'templates';
   onBack?: () => void;
 }
+
+const TEMPLATE_LABELS: Record<TemplateId, string> = {
+  invoice: '護持費のお知らせ',
+  postcard: 'はがき',
+  contract: '契約書',
+  permit: '許可証（永代使用）',
+  'payment-guide': 'お支払い方法のご案内',
+  other: 'その他',
+};
 
 export function DocumentManagement({
   customerId,
@@ -86,13 +97,10 @@ export function DocumentManagement({
     setViewMode('edit');
   }, []);
 
-  const handleSaved = useCallback(
-    (doc: DocumentDetail) => {
-      setSelectedDocumentId(doc.id);
-      setViewMode('detail');
-    },
-    []
-  );
+  const handleSaved = useCallback((doc: DocumentDetail) => {
+    setSelectedDocumentId(doc.id);
+    setViewMode('detail');
+  }, []);
 
   const handleDeleteRequest = useCallback((id: string) => {
     setDocumentToDelete(id);
@@ -123,11 +131,8 @@ export function DocumentManagement({
   );
 
   const handleBack = useCallback(() => {
-    if (onBack) {
-      onBack();
-    } else {
-      handleBackToTemplates();
-    }
+    if (onBack) onBack();
+    else handleBackToTemplates();
   }, [onBack, handleBackToTemplates]);
 
   const formOnBack =
@@ -137,111 +142,123 @@ export function DocumentManagement({
         ? handleBackToTemplates
         : handleBackToList;
 
+  // ページヘッダーのサブタイトル
+  const headerSubtitle = (() => {
+    switch (viewMode) {
+      case 'templates':
+        return 'テンプレートから書類を作成';
+      case 'list':
+        return '作成済み書類の一覧・管理';
+      case 'detail':
+        return '書類の詳細を表示';
+      case 'create':
+        return selectedTemplateId
+          ? `${TEMPLATE_LABELS[selectedTemplateId]}を作成`
+          : '新規書類の作成';
+      case 'edit':
+        return '書類の編集';
+      default:
+        return '書類の作成・管理';
+    }
+  })();
+
+  const headerTitle = customerName ? `${customerName} 様の書類` : '書類管理';
+
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      {/* 顧客コンテキストヘッダー */}
-      {customerId && customerName && viewMode === 'list' && (
-        <div className="px-6 py-2 flex items-center gap-4 border-b border-gin">
+      <PageHeader
+        title={headerTitle}
+        subtitle={headerSubtitle}
+        theme="matsu"
+        icon={<FileText className="w-4 h-4 md:w-5 md:h-5 text-white" />}
+      />
+
+      {/* 顧客コンテキスト時の戻るバー */}
+      {customerId && customerName && (viewMode === 'templates' || viewMode === 'list') && (
+        <div className="px-3 md:px-6 py-2 flex items-center gap-4 border-b border-gin bg-kinari-50/60">
           <Button variant="ghost" size="sm" onClick={handleBack}>
             <ArrowLeft className="mr-2 h-4 w-4" />
-            顧客詳細に戻る
+            {viewMode === 'templates' ? '区画詳細に戻る' : '顧客詳細に戻る'}
           </Button>
-          <div className="text-sumi-600 text-sm">
-            <span className="font-medium">{customerName}</span> 様の書類
+          <div className="text-hai text-xs md:text-sm">
+            <span className="font-medium text-sumi">{customerName}</span> 様の書類
+            {viewMode === 'templates' ? 'を作成' : ''}
           </div>
         </div>
       )}
 
-      {/* 顧客コンテキストヘッダー（テンプレートギャラリー） */}
-      {customerId && customerName && viewMode === 'templates' && (
-        <div className="mb-4 flex items-center gap-4">
-          <Button variant="ghost" onClick={handleBack}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            区画詳細に戻る
-          </Button>
-          <div className="text-sumi-600">
-            <span className="font-medium">{customerName}</span> 様の書類を作成
+      <div className="flex-1 overflow-auto">
+        {viewMode === 'templates' && (
+          <div className="p-3 md:p-6">
+            <DocumentTemplateGallery
+              onSelectTemplate={handleSelectTemplate}
+              onViewHistory={handleViewHistory}
+            />
           </div>
-        </div>
-      )}
+        )}
 
-      {viewMode === 'templates' && (
-        <DocumentTemplateGallery
-          onSelectTemplate={handleSelectTemplate}
-          onViewHistory={handleViewHistory}
-        />
-      )}
+        {viewMode === 'list' && (
+          <DocumentListView
+            customerId={customerId}
+            customerName={customerName}
+            onCreateNew={customerId ? handleCreateNew : handleBackToTemplates}
+            onViewDetail={handleViewDetail}
+            onDownload={handleDownload}
+            onBack={customerId ? undefined : handleBackToTemplates}
+          />
+        )}
 
-      {viewMode === 'list' && (
-        <DocumentListView
-          customerId={customerId}
-          customerName={customerName}
-          onCreateNew={customerId ? handleCreateNew : handleBackToTemplates}
-          onViewDetail={handleViewDetail}
-          onDownload={handleDownload}
-          onBack={customerId ? undefined : handleBackToTemplates}
-        />
-      )}
-
-      {viewMode === 'detail' && selectedDocumentId && (
-        <DocumentDetailView
-          documentId={selectedDocumentId}
-          onBack={handleBackToList}
-          onEdit={handleEdit}
-          onDelete={handleDeleteRequest}
-          onDownload={handleDownload}
-        />
-      )}
-
-      {viewMode === 'create' && (
-        <DocumentForm
-          customerId={customerId}
-          templateId={selectedTemplateId || undefined}
-          plotDetail={plotDetail}
-          onBack={formOnBack}
-          onSaved={handleSaved}
-        />
-      )}
-
-      {viewMode === 'edit' && selectedDocumentId && (
-        <DocumentForm
-          documentId={selectedDocumentId}
-          onBack={handleBackToList}
-          onSaved={handleSaved}
-        />
-      )}
-
-      {/* 削除確認ダイアログ */}
-      {deleteDialogOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
-            <div className="bg-beni-600 text-white px-6 py-4 rounded-t-lg">
-              <h3 className="text-lg font-semibold">書類の削除</h3>
-            </div>
-            <div className="p-6">
-              <p className="text-sumi-700">
-                この書類を削除してもよろしいですか？この操作は取り消せません。
-              </p>
-            </div>
-            <div className="px-6 py-4 bg-sumi-50 rounded-b-lg flex justify-end space-x-3">
-              <Button
-                variant="outline"
-                onClick={() => setDeleteDialogOpen(false)}
-                disabled={isMutating}
-              >
-                キャンセル
-              </Button>
-              <Button
-                className="bg-beni-600 hover:bg-beni-700 text-white"
-                onClick={handleDeleteConfirm}
-                disabled={isMutating}
-              >
-                {isMutating ? '削除中...' : '削除'}
-              </Button>
-            </div>
+        {viewMode === 'detail' && selectedDocumentId && (
+          <div className="p-3 md:p-6">
+            <DocumentDetailView
+              documentId={selectedDocumentId}
+              onBack={handleBackToList}
+              onEdit={handleEdit}
+              onDelete={handleDeleteRequest}
+              onDownload={handleDownload}
+            />
           </div>
-        </div>
-      )}
+        )}
+
+        {viewMode === 'create' && (
+          <div className="p-3 md:p-6">
+            <DocumentForm
+              customerId={customerId}
+              templateId={selectedTemplateId || undefined}
+              plotDetail={plotDetail}
+              onBack={formOnBack}
+              onSaved={handleSaved}
+            />
+          </div>
+        )}
+
+        {viewMode === 'edit' && selectedDocumentId && (
+          <div className="p-3 md:p-6">
+            <DocumentForm
+              documentId={selectedDocumentId}
+              onBack={handleBackToList}
+              onSaved={handleSaved}
+            />
+          </div>
+        )}
+      </div>
+
+      <ConfirmDialog
+        isOpen={deleteDialogOpen}
+        onClose={() => {
+          if (!isMutating) {
+            setDeleteDialogOpen(false);
+            setDocumentToDelete(null);
+          }
+        }}
+        onConfirm={handleDeleteConfirm}
+        title="書類の削除"
+        message="この書類を削除してもよろしいですか？この操作は取り消せません。"
+        confirmText="削除"
+        cancelText="キャンセル"
+        variant="danger"
+        isLoading={isMutating}
+      />
     </div>
   );
 }

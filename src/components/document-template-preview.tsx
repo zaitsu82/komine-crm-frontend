@@ -1,6 +1,6 @@
 'use client';
 
-import { Plus, Trash2, Type } from 'lucide-react';
+import { Type } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
@@ -74,48 +74,92 @@ export interface InvoicePreviewItem {
 }
 
 function formatYen(amount: number): string {
-  return new Intl.NumberFormat('ja-JP', {
-    style: 'currency',
-    currency: 'JPY',
-  }).format(amount);
+  if (!Number.isFinite(amount)) return '';
+  return new Intl.NumberFormat('ja-JP').format(amount);
 }
+
+/** 月に応じた既定の時候の挨拶 */
+function getDefaultSeasonGreeting(date: Date = new Date()): string {
+  const m = date.getMonth() + 1;
+  const table: Record<number, string> = {
+    1: '厳寒の候',
+    2: '晩冬の候',
+    3: '早春の候',
+    4: '春暖の候',
+    5: '新緑の候',
+    6: '初夏の候',
+    7: '盛夏の候',
+    8: '残暑の候',
+    9: '初秋の候',
+    10: '秋涼の候',
+    11: '晩秋の候',
+    12: '師走の候',
+  };
+  return table[m] ?? '時下';
+}
+
+/** 「◯◯の候」のよく使われる候補 */
+const SEASON_GREETING_PRESETS = [
+  '厳寒の候',
+  '晩冬の候',
+  '早春の候',
+  '春暖の候',
+  '陽春の候',
+  '新緑の候',
+  '初夏の候',
+  '梅雨の候',
+  '盛夏の候',
+  '残暑の候',
+  '初秋の候',
+  '秋涼の候',
+  '晩秋の候',
+  '師走の候',
+];
 
 interface InvoiceLivePreviewProps {
   templateData: Record<string, string>;
   onTemplateDataChange: (key: string, value: string) => void;
   textStylePreset: DocumentTextStylePresetId;
   onTextStyleChange: (id: DocumentTextStylePresetId) => void;
-  invoiceItems: InvoicePreviewItem[];
-  onItemChange: (
+  /** 旧請求書互換：現状の護持費のお知らせレイアウトでは未使用 */
+  invoiceItems?: InvoicePreviewItem[];
+  onItemChange?: (
     index: number,
     field: keyof InvoicePreviewItem,
     value: string
   ) => void;
-  onAddItem: () => void;
-  onRemoveItem: (index: number) => void;
-  subtotal: number;
-  tax: number;
-  total: number;
+  onAddItem?: () => void;
+  onRemoveItem?: (index: number) => void;
+  subtotal?: number;
+  tax?: number;
+  total?: number;
 }
 
 /**
- * 請求書PDFテンプレートに近いレイアウトで、その場編集できるプレビュー
+ * 「護持費のお知らせ」レイアウトで、その場で編集できるプレビュー。
+ * 下線付きテキストボックスで
+ *  - 左上の宛名
+ *  - 中央の宛名
+ *  - 護持費の更新年数（◯年分）
+ *  - お支払金額
+ *  - 次回お預かり日
+ * を編集可能。
  */
 export function InvoiceLivePreview({
   templateData,
   onTemplateDataChange,
   textStylePreset,
   onTextStyleChange,
-  invoiceItems,
-  onItemChange,
-  onAddItem,
-  onRemoveItem,
-  subtotal,
-  tax,
-  total,
 }: InvoiceLivePreviewProps) {
-  const issueDate =
-    templateData.invoiceDate || templateData.issueDate || '';
+  const customerName = templateData.customerName || '';
+  const yearCount = templateData.yearCount || '';
+  const amountStr = templateData.amount || '';
+  const nextNoticeDate = templateData.nextNoticeDate || '';
+  const seasonGreeting =
+    templateData.seasonGreeting || getDefaultSeasonGreeting();
+
+  const amountNum = parseFloat(amountStr);
+  const amountDisplay = Number.isFinite(amountNum) ? formatYen(amountNum) : '';
 
   return (
     <div className="space-y-4">
@@ -129,221 +173,143 @@ export function InvoiceLivePreview({
           textStylePreset !== 'default' && `doc-preset-${textStylePreset}`
         )}
       >
-      <div className="invoice-container">
-        <div className="header">
-          <h1>請 求 書</h1>
-        </div>
+        <div className="notice-container">
+          {/* 左上の宛名 */}
+          <div className="top-recipient">
+            <input
+              type="text"
+              className="notice-editable name-input"
+              value={customerName}
+              onChange={(e) =>
+                onTemplateDataChange('customerName', e.target.value)
+              }
+              placeholder="宛名"
+              aria-label="宛名（左上）"
+            />
+            <span>様</span>
+          </div>
 
-        <div className="invoice-info">
-          <div className="customer-info">
-            <div className="customer-name-row">
+          <h1 className="notice-title">護 持 費 の お 知 ら せ</h1>
+
+          <div className="greeting">
+            <p className="inline-flex flex-wrap items-baseline gap-1">
+              <span>拝啓&nbsp;</span>
               <input
                 type="text"
-                className="preview-input flex-1 min-w-0 bg-transparent"
-                value={templateData.customerName || ''}
+                className="notice-editable season-input"
+                list="season-greeting-presets"
+                value={seasonGreeting}
                 onChange={(e) =>
-                  onTemplateDataChange('customerName', e.target.value)
+                  onTemplateDataChange('seasonGreeting', e.target.value)
                 }
-                placeholder="顧客名"
-                aria-label="顧客名（プレビュー）"
+                placeholder="早春の候"
+                aria-label="時候の挨拶（例：早春の候）"
               />
-              <span className="suffix">様</span>
-            </div>
-            <div className="customer-address">
-              <textarea
-                className="preview-textarea"
-                value={templateData.customerAddress || ''}
+              <datalist id="season-greeting-presets">
+                {SEASON_GREETING_PRESETS.map((g) => (
+                  <option key={g} value={g} />
+                ))}
+              </datalist>
+              <span>、貴家におかれましては益々ご健勝のこととお慶び申し上げます。</span>
+            </p>
+            <p>平素はひとかたならぬご厚情を賜り心よりお礼申し上げます。</p>
+            <p>
+              さて表題の件につきましてご案内いたしますので、何卒よろしくお願い致します。
+            </p>
+          </div>
+
+          <div className="keigu">敬具</div>
+
+          {/* 中央の宛名（再掲） */}
+          <div className="statement">
+            <span>この度、</span>
+            <input
+              type="text"
+              className="notice-editable name-input-mid"
+              value={customerName}
+              onChange={(e) =>
+                onTemplateDataChange('customerName', e.target.value)
+              }
+              placeholder="宛名"
+              aria-label="宛名（本文中）"
+            />
+            <span>様の今回のお支払金額をお知らせ致します。</span>
+          </div>
+
+          <div className="payment-block">
+            <div className="payment-row">
+              <span>護持費の更新として</span>
+              <input
+                type="text"
+                inputMode="numeric"
+                className="notice-editable field-num-input"
+                value={yearCount}
                 onChange={(e) =>
-                  onTemplateDataChange('customerAddress', e.target.value)
+                  onTemplateDataChange('yearCount', e.target.value)
                 }
-                placeholder="住所"
-                rows={3}
-                aria-label="顧客住所（プレビュー）"
+                placeholder="1"
+                aria-label="更新年数"
               />
+              <span>年分</span>
             </div>
+            <div className="payment-row">
+              <span>お支払は</span>
+              <span>￥</span>
+              <input
+                type="text"
+                inputMode="numeric"
+                className="notice-editable field-amount-input"
+                value={amountStr}
+                onChange={(e) =>
+                  onTemplateDataChange(
+                    'amount',
+                    e.target.value.replace(/[^\d.]/g, '')
+                  )
+                }
+                placeholder="10000"
+                aria-label="お支払金額"
+              />
+              <span>となります。</span>
+            </div>
+            {amountDisplay && (
+              <div className="text-xs text-sumi-500 pl-1">
+                表示: ￥ {amountDisplay}
+              </div>
+            )}
           </div>
-          <div className="invoice-meta">
-            <table>
-              <tbody>
-                <tr>
-                  <td className="label">請求書番号:</td>
-                  <td>
-                    <input
-                      type="text"
-                      className="preview-input preview-meta-input"
-                      value={templateData.invoiceNumber || ''}
-                      onChange={(e) =>
-                        onTemplateDataChange('invoiceNumber', e.target.value)
-                      }
-                      aria-label="請求書番号（プレビュー）"
-                    />
-                  </td>
-                </tr>
-                <tr>
-                  <td className="label">発行日:</td>
-                  <td>
-                    <input
-                      type="date"
-                      className="preview-input preview-meta-input"
-                      value={issueDate}
-                      onChange={(e) => {
-                        const v = e.target.value;
-                        onTemplateDataChange('issueDate', v);
-                        onTemplateDataChange('invoiceDate', v);
-                      }}
-                      aria-label="発行日（プレビュー）"
-                    />
-                  </td>
-                </tr>
-                <tr>
-                  <td className="label">お支払期限:</td>
-                  <td>
-                    <input
-                      type="date"
-                      className="preview-input preview-meta-input"
-                      value={templateData.dueDate || ''}
-                      onChange={(e) =>
-                        onTemplateDataChange('dueDate', e.target.value)
-                      }
-                      aria-label="お支払期限（プレビュー）"
-                    />
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+
+          <div className="note-line">
+            尚、次回の
+            <input
+              type="text"
+              className="notice-editable field-date-input"
+              value={nextNoticeDate}
+              onChange={(e) =>
+                onTemplateDataChange('nextNoticeDate', e.target.value)
+              }
+              placeholder="2026年12月31日"
+              aria-label="次回お預かり日"
+            />
+            には、{yearCount || '◯'}
+            年間分をお預かり致しますので、よろしくお願い申し上げます。
           </div>
-        </div>
 
-        <div className="total-box">
-          <div className="total-label">ご請求金額（税込）</div>
-          <div className="total-amount">{total}</div>
-        </div>
+          <ul className="bullet-list">
+            <li>お支払方法は別紙金融機関をご利用下さい。</li>
+            <li>
+              又、ご不明な点は、小嶺霊園
+              管理事務所へお問い合わせ下さいませ。
+            </li>
+          </ul>
 
-        <table className="items-table">
-          <thead>
-            <tr>
-              <th style={{ width: '50%' }}>品目・内容</th>
-              <th style={{ width: '15%' }} className="text-center">
-                数量
-              </th>
-              <th style={{ width: '17.5%' }} className="text-right">
-                単価
-              </th>
-              <th style={{ width: '12.5%' }} className="text-right">
-                金額
-              </th>
-              <th style={{ width: '5%' }} />
-            </tr>
-          </thead>
-          <tbody>
-            {invoiceItems.map((item, i) => (
-              <tr key={i}>
-                <td>
-                  <input
-                    type="text"
-                    className="preview-input-table"
-                    value={item.description}
-                    onChange={(e) =>
-                      onItemChange(i, 'description', e.target.value)
-                    }
-                    aria-label={`明細${i + 1} 品目`}
-                  />
-                </td>
-                <td className="text-center">
-                  <input
-                    type="number"
-                    min={0}
-                    className="preview-input-table text-center"
-                    value={item.quantity}
-                    onChange={(e) =>
-                      onItemChange(i, 'quantity', e.target.value)
-                    }
-                    aria-label={`明細${i + 1} 数量`}
-                  />
-                </td>
-                <td className="text-right">
-                  <input
-                    type="number"
-                    min={0}
-                    className="preview-input-table text-right"
-                    value={item.unitPrice}
-                    onChange={(e) =>
-                      onItemChange(i, 'unitPrice', e.target.value)
-                    }
-                    aria-label={`明細${i + 1} 単価`}
-                  />
-                </td>
-                <td className="text-right">
-                  {formatYen(parseFloat(item.amount) || 0)}
-                </td>
-                <td className="text-center p-0">
-                  <button
-                    type="button"
-                    onClick={() => onRemoveItem(i)}
-                    disabled={invoiceItems.length <= 1}
-                    className="p-1 text-sumi-400 hover:text-beni-600 disabled:opacity-30"
-                    aria-label={`明細${i + 1}を削除`}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        <div className="flex justify-end mb-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-7 text-xs"
-            onClick={onAddItem}
-          >
-            <Plus className="mr-1 h-3 w-3" />
-            行を追加
-          </Button>
-        </div>
-
-        <table className="summary-table">
-          <tbody>
-            <tr>
-              <td className="label">小計</td>
-              <td className="text-right">{formatYen(subtotal)}</td>
-            </tr>
-            <tr>
-              <td className="label">消費税</td>
-              <td className="text-right">{formatYen(tax)}</td>
-            </tr>
-            <tr className="total-row">
-              <td className="label">合計</td>
-              <td className="text-right">{formatYen(total)}</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <div className="notes">
-          <div className="notes-title">備考</div>
-          <textarea
-            className="preview-textarea min-h-[4rem]"
-            value={templateData.notes || ''}
-            onChange={(e) => onTemplateDataChange('notes', e.target.value)}
-            placeholder="請求書に印字される備考"
-            rows={4}
-            aria-label="備考（PDFに出力）"
-          />
-        </div>
-
-        <div className="company-info">
-          <div className="company-name">小峰霊園管理事務所</div>
-          <div>〒XXX-XXXX</div>
-          <div>○○県○○市○○町X-X-X</div>
-          <div>TEL: XXX-XXX-XXXX</div>
-          <div>FAX: XXX-XXX-XXXX</div>
-          <div className="stamp-area" />
+          <div className="signature">
+            <div className="org">宗教法人　長谷寺</div>
+            <div className="org">黒崎小嶺霊園　管理事務所</div>
+            <div className="tel">TEL　093-613-3868</div>
+            <div className="tel">FAX　093-613-3893</div>
+          </div>
         </div>
       </div>
-    </div>
     </div>
   );
 }

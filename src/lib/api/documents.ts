@@ -142,12 +142,57 @@ export interface DownloadUrlResponse {
 
 // PDF生成リクエスト
 export interface GeneratePdfRequest {
-  templateType: 'invoice' | 'postcard';
-  templateData: InvoiceTemplateData | PostcardTemplateData;
+  templateType: 'invoice' | 'postcard' | 'permit' | 'payment-guide';
+  templateData:
+    | InvoiceTemplateData
+    | PostcardTemplateData
+    | PermitTemplateData
+    | PaymentGuideTemplateData;
   documentId?: string;
   name?: string;
   contractPlotId?: string;
   customerId?: string;
+}
+
+// お支払い方法のご案内テンプレートデータ
+export interface PaymentGuideTemplateData {
+  option1?: string;
+  option2?: string;
+  notice1?: string;
+  notice2?: string;
+  notice3?: string;
+  bank1Name?: string;
+  bank1AccountType?: string;
+  bank1AccountNumber?: string;
+  bank2Name?: string;
+  bank2Symbol?: string;
+  bank2Number?: string;
+  orgName?: string;
+  orgNameKana?: string;
+  repName?: string;
+  repNameKana?: string;
+  cemeteryName?: string;
+  tel?: string;
+  fax?: string;
+}
+
+// 許可証テンプレートデータ
+export interface PermitTemplateData {
+  permitNumber?: string;
+  permitType?: string;
+  plotNumber?: string;
+  area?: string;
+  issueYear?: string;
+  issueMonth?: string;
+  issueDay?: string;
+  applicantName?: string;
+  registeredAddress?: string;
+  currentAddress?: string;
+  recipientPostalCode?: string;
+  recipientAddress?: string;
+  recipientAddress2?: string;
+  recipientName?: string;
+  notes?: string;
 }
 
 // 請求書テンプレートデータ
@@ -564,7 +609,12 @@ async function mockRegenerateDocumentPdf(id: string): Promise<ApiResponse<Genera
     };
   }
 
-  if (!doc.templateType || !['invoice', 'postcard'].includes(doc.templateType)) {
+  if (
+    !doc.templateType ||
+    !['invoice', 'postcard', 'permit', 'payment-guide'].includes(
+      doc.templateType
+    )
+  ) {
     return {
       success: false,
       error: {
