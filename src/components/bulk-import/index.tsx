@@ -30,9 +30,9 @@ export default function BulkImportPage() {
         }
       />
 
-      <div className="flex-1 overflow-auto p-3 md:p-6">
-        <div className="max-w-6xl mx-auto">
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as BulkTab)}>
+      <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 md:p-6">
+        <div className="max-w-6xl mx-auto w-full min-w-0">
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as BulkTab)} className="w-full min-w-0">
             <TabsList className="flex h-auto w-full max-w-full overflow-x-auto overflow-y-hidden justify-start sm:inline-flex sm:w-auto sm:justify-center">
               <TabsTrigger value="plots-create">
                 <span className="sm:hidden">区画登録</span>

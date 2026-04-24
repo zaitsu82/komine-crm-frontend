@@ -149,7 +149,7 @@ export function ValidationErrorList({ errors }: ValidationErrorListProps) {
             </p>
             <ul className="space-y-1 mt-1">
               {sheetErrors.slice(0, 50).map((err, idx) => (
-                <li key={idx} className="text-sm text-beni">
+                <li key={idx} className="text-sm text-beni break-words">
                   行{err.row} [{err.field}]: {err.message}
                 </li>
               ))}
@@ -259,13 +259,13 @@ export function SubmitResultCard({
             </h4>
             <ul className="space-y-1 max-h-96 overflow-y-auto">
               {failed.slice(0, 100).map((f, idx) => (
-                <li key={idx} className="text-sm text-beni">
+                <li key={idx} className="text-sm text-beni break-words">
                   行{f.row + 1}
                   {f.plotNumber ? `（${f.plotNumber}）` : ''}: {f.error.message}
                   {f.error.details && f.error.details.length > 0 && (
                     <ul className="ml-4 text-xs opacity-80">
                       {f.error.details.map((d, i) => (
-                        <li key={i}>
+                        <li key={i} className="break-words">
                           {d.field ? `[${d.field}] ` : ''}
                           {d.message}
                         </li>
