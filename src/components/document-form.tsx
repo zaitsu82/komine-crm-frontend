@@ -29,8 +29,6 @@ import {
   RefreshCw,
   X,
   Download,
-  Plus,
-  Trash2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { TemplateId } from './document-template-gallery';
@@ -38,6 +36,8 @@ import {
   InvoiceLivePreview,
   PostcardLivePreview,
 } from './document-template-preview';
+import { PermitLivePreview } from './permit-live-preview';
+import { PaymentGuideLivePreview } from './payment-guide-preview';
 import {
   normalizeTextStylePreset,
   type DocumentTextStylePresetId,
@@ -95,52 +95,34 @@ function buildAutoFillData(
     .filter(Boolean)
     .join(' ');
   const today = new Date().toISOString().slice(0, 10);
-  const dueDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-    .toISOString()
-    .slice(0, 10);
 
   const base: Record<string, string> = {};
   let items: InvoiceItem[] = [];
 
   switch (templateType) {
     case 'invoice': {
-      base.invoiceNumber = `INV-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`;
-      base.issueDate = today;
-      base.invoiceDate = today;
-      base.dueDate = dueDate;
       base.customerName = customerName;
       base.customerAddress = customerAddress;
+      base.yearCount = '1';
+      const now = new Date();
+      const year = now.getFullYear();
+      base.nextNoticeDate = `${year}年12月31日`;
+      base.seasonGreeting = getSeasonGreetingByMonth(now.getMonth() + 1);
 
-      items = [];
+      // 推定金額：管理費 + 使用料 + 未収金
+      let amount = 0;
       if (plotDetail.managementFee?.managementFee) {
-        const fee = parseFloat(plotDetail.managementFee.managementFee) || 0;
-        items.push({
-          description: `管理費（${plot.areaName} ${plot.plotNumber}）`,
-          quantity: '1',
-          unitPrice: String(fee),
-          amount: String(fee),
-        });
+        amount += parseFloat(plotDetail.managementFee.managementFee) || 0;
       }
       if (plotDetail.usageFee?.usageFee) {
-        const fee = parseFloat(plotDetail.usageFee.usageFee) || 0;
-        items.push({
-          description: `使用料（${plot.areaName} ${plot.plotNumber}）`,
-          quantity: '1',
-          unitPrice: String(fee),
-          amount: String(fee),
-        });
+        amount += parseFloat(plotDetail.usageFee.usageFee) || 0;
       }
       if (plotDetail.uncollectedAmount > 0) {
-        items.push({
-          description: '未収金',
-          quantity: '1',
-          unitPrice: String(plotDetail.uncollectedAmount),
-          amount: String(plotDetail.uncollectedAmount),
-        });
+        amount += plotDetail.uncollectedAmount;
       }
-      if (items.length === 0) {
-        items.push({ description: '', quantity: '1', unitPrice: '', amount: '0' });
-      }
+      base.amount = amount > 0 ? String(amount) : '';
+
+      items = [];
       break;
     }
     case 'postcard': {
@@ -162,11 +144,21 @@ function buildAutoFillData(
       break;
     }
     case 'permit': {
+      const now = new Date();
       base.permitNumber = plotDetail.permitNumber || '';
-      base.permitDate = plotDetail.permitDate || today;
+      base.permitType = '普通墓地';
+      base.plotNumber = `${plot.areaName} ${plot.plotNumber}`;
+      if (plot.areaSqm) base.area = String(plot.areaSqm);
+      base.issueYear = String(now.getFullYear());
+      base.issueMonth = String(now.getMonth() + 1);
+      base.issueDay = String(now.getDate());
       base.applicantName = customerName;
-      base.permitType = '改葬許可';
-      base.permitContent = '';
+      base.registeredAddress = customer?.address || '';
+      base.currentAddress = customer?.address || '';
+      base.recipientName = customerName ? `${customerName} 様` : '';
+      base.recipientPostalCode = customer?.postalCode || '';
+      base.recipientAddress = customer?.address || '';
+      base.recipientAddress2 = customer?.addressLine2 || '';
       break;
     }
     default:
@@ -177,17 +169,30 @@ function buildAutoFillData(
 }
 
 const TEMPLATE_LABELS: Record<TemplateId, string> = {
-  invoice: '請求書',
+  invoice: '護持費のお知らせ',
   postcard: 'はがき',
   contract: '契約書',
   permit: '許可証',
+  'payment-guide': 'お支払い方法のご案内',
   other: 'その他',
 };
 
-function calcAmount(qty: string, price: string): string {
-  const q = parseFloat(qty) || 0;
-  const p = parseFloat(price) || 0;
-  return String(Math.round(q * p));
+function getSeasonGreetingByMonth(month: number): string {
+  const table: Record<number, string> = {
+    1: '厳寒の候',
+    2: '晩冬の候',
+    3: '早春の候',
+    4: '春暖の候',
+    5: '新緑の候',
+    6: '初夏の候',
+    7: '盛夏の候',
+    8: '残暑の候',
+    9: '初秋の候',
+    10: '秋涼の候',
+    11: '晩秋の候',
+    12: '師走の候',
+  };
+  return table[month] ?? '時下';
 }
 
 export function DocumentForm({
@@ -229,7 +234,10 @@ export function DocumentForm({
     contractPlotId: '',
     customerId: initialCustomerId || '',
     templateType:
-      templateId === 'invoice' || templateId === 'postcard'
+      templateId === 'invoice' ||
+      templateId === 'postcard' ||
+      templateId === 'permit' ||
+      templateId === 'payment-guide'
         ? templateId
         : '',
   });
@@ -302,12 +310,19 @@ export function DocumentForm({
       ? `_${customerName}_${plotNumber}`
       : '';
 
+    // payment-guide は DB 上は 'other' カテゴリに分類
+    const docType: DocumentType =
+      templateId === 'payment-guide' ? 'other' : (templateId as DocumentType);
+
     setFormData((prev) => ({
       ...prev,
       name: `${TEMPLATE_LABELS[templateId]}${nameSuffix}_${today}`,
-      type: templateId as DocumentType,
+      type: docType,
       templateType:
-        templateId === 'invoice' || templateId === 'postcard'
+        templateId === 'invoice' ||
+        templateId === 'postcard' ||
+        templateId === 'permit' ||
+        templateId === 'payment-guide'
           ? templateId
           : '',
       contractPlotId: plotDetail?.id || prev.contractPlotId,
@@ -337,37 +352,7 @@ export function DocumentForm({
     templateData.textStylePreset
   );
 
-  // --- Invoice items ---
-  const handleItemChange = (
-    index: number,
-    field: keyof InvoiceItem,
-    value: string
-  ) => {
-    setInvoiceItems((prev) => {
-      const next = [...prev];
-      next[index] = { ...next[index], [field]: value };
-      if (field === 'quantity' || field === 'unitPrice') {
-        next[index].amount = calcAmount(
-          field === 'quantity' ? value : next[index].quantity,
-          field === 'unitPrice' ? value : next[index].unitPrice
-        );
-      }
-      return next;
-    });
-  };
-
-  const addItem = () => {
-    setInvoiceItems((prev) => [
-      ...prev,
-      { description: '', quantity: '1', unitPrice: '', amount: '0' },
-    ]);
-  };
-
-  const removeItem = (index: number) => {
-    if (invoiceItems.length <= 1) return;
-    setInvoiceItems((prev) => prev.filter((_, i) => i !== index));
-  };
-
+  // 旧請求書互換：既存データ（items あり）を保存するための集計のみ保持
   const subtotal = invoiceItems.reduce(
     (sum, item) => sum + (parseFloat(item.amount) || 0),
     0
@@ -390,15 +375,26 @@ export function DocumentForm({
   const buildTemplateDataPayload = (): Record<string, unknown> => {
     const payload: Record<string, unknown> = { ...templateData };
     if (formData.templateType === 'invoice') {
-      payload.items = invoiceItems.map((it) => ({
-        description: it.description,
-        quantity: parseFloat(it.quantity) || 0,
-        unitPrice: parseFloat(it.unitPrice) || 0,
-        amount: parseFloat(it.amount) || 0,
-      }));
-      payload.subtotal = subtotal;
-      payload.tax = tax;
-      payload.total = total;
+      // 護持費のお知らせレイアウトに対応するため、金額は amount（数値）として送信
+      const amountRaw = String(templateData.amount ?? '').trim();
+      const amountNum = parseFloat(amountRaw);
+      if (Number.isFinite(amountNum)) {
+        payload.amount = amountNum;
+      } else {
+        delete payload.amount;
+      }
+      // 旧請求書互換：items があれば送るが、無ければ送らない
+      if (invoiceItems.some((it) => it.description.trim() !== '')) {
+        payload.items = invoiceItems.map((it) => ({
+          description: it.description,
+          quantity: parseFloat(it.quantity) || 0,
+          unitPrice: parseFloat(it.unitPrice) || 0,
+          amount: parseFloat(it.amount) || 0,
+        }));
+        payload.subtotal = subtotal;
+        payload.tax = tax;
+        payload.total = total;
+      }
     }
     if (freeText.trim()) {
       payload.freeText = freeText;
@@ -463,7 +459,11 @@ export function DocumentForm({
       const tPayload = buildTemplateDataPayload();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = await generate({
-        templateType: formData.templateType as 'invoice' | 'postcard',
+        templateType: formData.templateType as
+          | 'invoice'
+          | 'postcard'
+          | 'permit'
+          | 'payment-guide',
         templateData: tPayload as any,
         documentId: documentId,
         name: formData.name || undefined,
@@ -486,13 +486,20 @@ export function DocumentForm({
   const showPostcardFields =
     templateType === 'postcard' || formData.type === 'postcard';
   const showContractFields = formData.type === 'contract';
-  const showPermitFields = formData.type === 'permit';
-  const showPdfTemplatePreview = showInvoiceFields || showPostcardFields;
+  const isPermitTemplate =
+    templateType === 'permit' || formData.type === 'permit';
+  const isPaymentGuideTemplate = templateType === 'payment-guide';
+  const showPermitFields = isPermitTemplate;
+  const showPdfTemplatePreview =
+    showInvoiceFields ||
+    showPostcardFields ||
+    isPermitTemplate ||
+    isPaymentGuideTemplate;
 
   if (isEditMode && isLoadingDetail) {
     return (
       <div className="flex items-center justify-center h-64">
-        <RefreshCw className="h-8 w-8 animate-spin text-matsu-600" />
+        <RefreshCw className="h-8 w-8 animate-spin text-matsu" />
       </div>
     );
   }
@@ -500,27 +507,28 @@ export function DocumentForm({
   return (
     <div className="space-y-6">
       {/* ヘッダー */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-4 min-w-0">
           <Button variant="ghost" onClick={onBack}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             戻る
           </Button>
-          <h2 className="text-2xl font-bold text-sumi-900">
+          <h3 className="font-mincho text-lg md:text-xl font-semibold text-sumi truncate">
             {isEditMode
               ? '書類編集'
               : templateId
                 ? `${TEMPLATE_LABELS[templateId]}を作成`
                 : '新規書類作成'}
-          </h2>
+          </h3>
         </div>
-        {(showInvoiceFields || showPostcardFields) && (
+        {showPdfTemplatePreview && (
           <Button
             type="button"
             variant="outline"
+            size="sm"
             onClick={handleGeneratePdf}
             disabled={isGeneratingPdf}
-            className="border-blue-300 text-blue-700 hover:bg-blue-50"
+            className="border-ai/40 text-ai hover:bg-ai/5"
           >
             {isGeneratingPdf ? (
               <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
@@ -546,31 +554,42 @@ export function DocumentForm({
           {showPdfTemplatePreview && (
             <aside className="order-first xl:order-none space-y-3 xl:sticky xl:top-4 xl:self-start min-w-0">
               <div>
-                <h3 className="text-base font-semibold text-sumi-900">
+                <h3 className="font-mincho text-base font-semibold text-sumi">
                   プレビューで編集
                 </h3>
-                <p className="text-xs text-sumi-500 mt-1 leading-relaxed">
-                  下の「テキストの種」で書体バランスを変えられます。本文はプレビュー内を直接編集してください。右のフォームとも同期します。
+                <p className="text-xs text-hai mt-1 leading-relaxed">
+                  {isPermitTemplate
+                    ? '許可証テンプレートPDF上に、印字される位置の入力欄を重ねています。各ページタブで切り替えられます。'
+                    : isPaymentGuideTemplate
+                      ? '振込先や代表者名など、変更があれば直接編集できます。大半の文面は既定のままで問題ありません。'
+                      : '下の「テキストの種」で書体バランスを変えられます。本文はプレビュー内を直接編集してください。右のフォームとも同期します。'}
                 </p>
               </div>
-              <div className="rounded-xl border border-sumi-200 bg-kinari-50/90 p-3 max-h-[min(90vh,58rem)] overflow-auto shadow-inner">
+              <div className="rounded-elegant-lg border border-gin bg-kinari-50/90 p-3 max-h-[min(90vh,58rem)] overflow-auto shadow-inner">
                 {showInvoiceFields && (
                   <InvoiceLivePreview
                     templateData={templateData}
                     onTemplateDataChange={handleTemplateDataChange}
                     textStylePreset={textStylePreset}
                     onTextStyleChange={handleTextStyleChange}
-                    invoiceItems={invoiceItems}
-                    onItemChange={handleItemChange}
-                    onAddItem={addItem}
-                    onRemoveItem={removeItem}
-                    subtotal={subtotal}
-                    tax={tax}
-                    total={total}
                   />
                 )}
                 {showPostcardFields && (
                   <PostcardLivePreview
+                    templateData={templateData}
+                    onTemplateDataChange={handleTemplateDataChange}
+                    textStylePreset={textStylePreset}
+                    onTextStyleChange={handleTextStyleChange}
+                  />
+                )}
+                {isPermitTemplate && (
+                  <PermitLivePreview
+                    templateData={templateData}
+                    onTemplateDataChange={handleTemplateDataChange}
+                  />
+                )}
+                {isPaymentGuideTemplate && (
+                  <PaymentGuideLivePreview
                     templateData={templateData}
                     onTemplateDataChange={handleTemplateDataChange}
                     textStylePreset={textStylePreset}
@@ -583,11 +602,13 @@ export function DocumentForm({
 
           <div className="min-w-0 space-y-6 order-last xl:order-none">
         {/* 基本情報 */}
-        <div className="bg-white rounded-lg border border-sumi-200 p-6">
-          <h3 className="text-lg font-semibold text-sumi-900 mb-4 flex items-center">
-            <FileText className="mr-2 h-5 w-5 text-matsu-600" />
-            基本情報
-          </h3>
+        <section className="bg-white rounded-elegant-lg border border-gin p-4 md:p-6">
+          <header className="mb-4 flex items-start gap-2 pl-3 border-l-4 border-l-matsu">
+            <FileText className="mt-0.5 h-5 w-5 text-matsu" />
+            <h3 className="font-mincho text-base md:text-lg font-semibold text-sumi">
+              基本情報
+            </h3>
+          </header>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="name">書類名 *</Label>
@@ -648,188 +669,112 @@ export function DocumentForm({
               />
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* ===== 請求書テンプレート ===== */}
+        {/* ===== 護持費のお知らせ（旧「請求書」テンプレート） ===== */}
         {showInvoiceFields && (
-          <div className="bg-white rounded-lg border border-blue-200 p-6">
-            <h3 className="text-lg font-semibold text-blue-800 mb-4">
-              請求書情報
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div className="space-y-2">
-                <Label>請求書番号</Label>
-                <Input
-                  value={templateData.invoiceNumber || ''}
-                  onChange={(e) =>
-                    handleTemplateDataChange('invoiceNumber', e.target.value)
-                  }
-                  placeholder="INV-2026-0001"
-                />
+          <section className="bg-white rounded-elegant-lg border border-gin p-4 md:p-6">
+            <header className="mb-4 flex items-start gap-2 pl-3 border-l-4 border-l-ai">
+              <FileText className="mt-0.5 h-5 w-5 text-ai" />
+              <div>
+                <h3 className="font-mincho text-base md:text-lg font-semibold text-sumi">
+                  護持費のお知らせ
+                </h3>
+                <p className="text-xs text-hai mt-0.5">
+                  左のプレビュー内で直接編集できます。下の入力とも同期します。
+                </p>
               </div>
+            </header>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
               <div className="space-y-2">
-                <Label>請求日</Label>
-                <Input
-                  type="date"
-                  value={templateData.invoiceDate || templateData.issueDate || ''}
-                  onChange={(e) => {
-                    handleTemplateDataChange('issueDate', e.target.value);
-                    handleTemplateDataChange('invoiceDate', e.target.value);
-                  }}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>支払期限</Label>
-                <Input
-                  type="date"
-                  value={templateData.dueDate || ''}
-                  onChange={(e) =>
-                    handleTemplateDataChange('dueDate', e.target.value)
-                  }
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              <div className="space-y-2">
-                <Label>顧客名</Label>
+                <Label>宛名（上部・本文中 共通）</Label>
                 <Input
                   value={templateData.customerName || ''}
                   onChange={(e) =>
                     handleTemplateDataChange('customerName', e.target.value)
                   }
-                  placeholder="田中 太郎"
+                  placeholder="丸山 千代美"
                 />
               </div>
               <div className="space-y-2">
-                <Label>顧客住所</Label>
+                <Label>更新年数（◯年分）</Label>
                 <Input
-                  value={templateData.customerAddress || ''}
+                  type="number"
+                  min="0"
+                  value={templateData.yearCount || ''}
                   onChange={(e) =>
-                    handleTemplateDataChange('customerAddress', e.target.value)
+                    handleTemplateDataChange('yearCount', e.target.value)
                   }
-                  placeholder="東京都○○区..."
+                  placeholder="1"
                 />
               </div>
-            </div>
-
-            {/* 明細行 */}
-            <div className="mb-4">
-              <div className="flex items-center justify-between mb-3">
-                <Label className="text-base font-semibold">明細</Label>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={addItem}
-                >
-                  <Plus className="mr-1 h-3 w-3" />
-                  行追加
-                </Button>
+              <div className="space-y-2">
+                <Label>お支払金額（円）</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={templateData.amount || ''}
+                  onChange={(e) =>
+                    handleTemplateDataChange('amount', e.target.value)
+                  }
+                  placeholder="10000"
+                />
               </div>
-              <div className="border rounded-lg overflow-hidden">
-                <table className="w-full text-sm">
-                  <thead className="bg-sumi-50">
-                    <tr>
-                      <th className="px-3 py-2 text-left font-medium w-[40%]">
-                        品目・内容
-                      </th>
-                      <th className="px-3 py-2 text-right font-medium w-[15%]">
-                        数量
-                      </th>
-                      <th className="px-3 py-2 text-right font-medium w-[20%]">
-                        単価
-                      </th>
-                      <th className="px-3 py-2 text-right font-medium w-[20%]">
-                        金額
-                      </th>
-                      <th className="px-3 py-2 w-[5%]"></th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-sumi-100">
-                    {invoiceItems.map((item, i) => (
-                      <tr key={i} className="group">
-                        <td className="px-2 py-1">
-                          <Input
-                            value={item.description}
-                            onChange={(e) =>
-                              handleItemChange(i, 'description', e.target.value)
-                            }
-                            placeholder="管理費（年額）"
-                            className="border-0 shadow-none focus-visible:ring-1 h-9"
-                          />
-                        </td>
-                        <td className="px-2 py-1">
-                          <Input
-                            type="number"
-                            min="0"
-                            value={item.quantity}
-                            onChange={(e) =>
-                              handleItemChange(i, 'quantity', e.target.value)
-                            }
-                            className="border-0 shadow-none focus-visible:ring-1 h-9 text-right"
-                          />
-                        </td>
-                        <td className="px-2 py-1">
-                          <Input
-                            type="number"
-                            min="0"
-                            value={item.unitPrice}
-                            onChange={(e) =>
-                              handleItemChange(i, 'unitPrice', e.target.value)
-                            }
-                            placeholder="10000"
-                            className="border-0 shadow-none focus-visible:ring-1 h-9 text-right"
-                          />
-                        </td>
-                        <td className="px-2 py-1 text-right font-medium text-sumi-700 pr-3">
-                          {Number(item.amount).toLocaleString()}円
-                        </td>
-                        <td className="px-1 py-1">
-                          <button
-                            type="button"
-                            onClick={() => removeItem(i)}
-                            className="text-sumi-300 hover:text-beni-500 opacity-0 group-hover:opacity-100 transition-opacity p-1"
-                            disabled={invoiceItems.length <= 1}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="space-y-2">
+                <Label>次回お預かり日</Label>
+                <Input
+                  value={templateData.nextNoticeDate || ''}
+                  onChange={(e) =>
+                    handleTemplateDataChange('nextNoticeDate', e.target.value)
+                  }
+                  placeholder="2026年12月31日"
+                />
               </div>
-              {/* 合計 */}
-              <div className="flex justify-end mt-3">
-                <div className="w-72 space-y-1 text-sm">
-                  <div className="flex justify-between px-3 py-1">
-                    <span className="text-sumi-500">小計</span>
-                    <span>{subtotal.toLocaleString()}円</span>
-                  </div>
-                  <div className="flex justify-between px-3 py-1">
-                    <span className="text-sumi-500">消費税（10%）</span>
-                    <span>{tax.toLocaleString()}円</span>
-                  </div>
-                  <div className="flex justify-between px-3 py-2 bg-blue-50 rounded font-bold text-blue-800 text-base">
-                    <span>合計</span>
-                    <span>{total.toLocaleString()}円</span>
-                  </div>
-                </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label>時候の挨拶（例: 早春の候）</Label>
+                <Input
+                  list="season-greeting-presets-form"
+                  value={templateData.seasonGreeting || ''}
+                  onChange={(e) =>
+                    handleTemplateDataChange('seasonGreeting', e.target.value)
+                  }
+                  placeholder="早春の候"
+                />
+                <datalist id="season-greeting-presets-form">
+                  <option value="厳寒の候" />
+                  <option value="晩冬の候" />
+                  <option value="早春の候" />
+                  <option value="春暖の候" />
+                  <option value="陽春の候" />
+                  <option value="新緑の候" />
+                  <option value="初夏の候" />
+                  <option value="梅雨の候" />
+                  <option value="盛夏の候" />
+                  <option value="残暑の候" />
+                  <option value="初秋の候" />
+                  <option value="秋涼の候" />
+                  <option value="晩秋の候" />
+                  <option value="師走の候" />
+                </datalist>
+                <p className="text-xs text-hai">
+                  未入力の場合は現在の月に応じた挨拶が自動で使われます。
+                </p>
               </div>
             </div>
-          </div>
+          </section>
         )}
 
         {/* ===== はがきテンプレート ===== */}
         {showPostcardFields && (
-          <div className="bg-white rounded-lg border border-green-200 p-6">
-            <h3 className="text-lg font-semibold text-green-800 mb-4">
-              はがき情報
-            </h3>
+          <section className="bg-white rounded-elegant-lg border border-gin p-4 md:p-6">
+            <header className="mb-4 flex items-start gap-2 pl-3 border-l-4 border-l-matsu">
+              <h3 className="font-mincho text-base md:text-lg font-semibold text-sumi">
+                はがき情報
+              </h3>
+            </header>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
-                <h4 className="font-medium text-sumi-700 border-b pb-1">
+                <h4 className="font-medium text-sumi border-b border-gin pb-1">
                   宛先
                 </h4>
                 <div className="space-y-2">
@@ -856,7 +801,7 @@ export function DocumentForm({
                       )
                     }
                     placeholder="東京都○○区..."
-                    className="w-full min-h-[60px] px-3 py-2 border border-sumi-200 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
+                    className="w-full min-h-[60px] px-3 py-2 border border-gin rounded-md focus:outline-none focus:ring-2 focus:ring-matsu text-sm"
                   />
                 </div>
                 <div className="space-y-2">
@@ -872,7 +817,7 @@ export function DocumentForm({
               </div>
 
               <div className="space-y-4">
-                <h4 className="font-medium text-sumi-700 border-b pb-1">
+                <h4 className="font-medium text-sumi border-b border-gin pb-1">
                   差出人
                 </h4>
                 <div className="space-y-2">
@@ -896,7 +841,7 @@ export function DocumentForm({
                       handleTemplateDataChange('senderAddress', e.target.value)
                     }
                     placeholder="○○県○○市..."
-                    className="w-full min-h-[60px] px-3 py-2 border border-sumi-200 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
+                    className="w-full min-h-[60px] px-3 py-2 border border-gin rounded-md focus:outline-none focus:ring-2 focus:ring-matsu text-sm"
                   />
                 </div>
                 <div className="space-y-2">
@@ -920,18 +865,20 @@ export function DocumentForm({
                   handleTemplateDataChange('message', e.target.value)
                 }
                 placeholder="拝啓 時下ますますご清栄のこととお慶び申し上げます..."
-                className="w-full min-h-[120px] px-3 py-2 border border-sumi-200 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
+                className="w-full min-h-[120px] px-3 py-2 border border-gin rounded-md focus:outline-none focus:ring-2 focus:ring-matsu text-sm"
               />
             </div>
-          </div>
+          </section>
         )}
 
         {/* ===== 契約書テンプレート ===== */}
         {showContractFields && (
-          <div className="bg-white rounded-lg border border-amber-200 p-6">
-            <h3 className="text-lg font-semibold text-amber-800 mb-4">
-              契約書情報
-            </h3>
+          <section className="bg-white rounded-elegant-lg border border-gin p-4 md:p-6">
+            <header className="mb-4 flex items-start gap-2 pl-3 border-l-4 border-l-kohaku">
+              <h3 className="font-mincho text-base md:text-lg font-semibold text-sumi">
+                契約書情報
+              </h3>
+            </header>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div className="space-y-2">
                 <Label>契約番号</Label>
@@ -982,107 +929,249 @@ export function DocumentForm({
                   handleTemplateDataChange('terms', e.target.value)
                 }
                 placeholder="契約条件を入力..."
-                className="w-full min-h-[150px] px-3 py-2 border border-sumi-200 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm"
+                className="w-full min-h-[150px] px-3 py-2 border border-gin rounded-md focus:outline-none focus:ring-2 focus:ring-kohaku text-sm"
               />
             </div>
-          </div>
+          </section>
         )}
 
         {/* ===== 許可証テンプレート ===== */}
         {showPermitFields && (
-          <div className="bg-white rounded-lg border border-purple-200 p-6">
-            <h3 className="text-lg font-semibold text-purple-800 mb-4">
-              許可証情報
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div className="space-y-2">
-                <Label>許可番号</Label>
-                <Input
-                  value={templateData.permitNumber || ''}
-                  onChange={(e) =>
-                    handleTemplateDataChange('permitNumber', e.target.value)
-                  }
-                  placeholder="PER-2026-0001"
-                />
+          <section className="bg-white rounded-elegant-lg border border-gin p-4 md:p-6">
+            <header className="mb-4 flex items-start gap-2 pl-3 border-l-4 border-l-cha">
+              <div>
+                <h3 className="font-mincho text-base md:text-lg font-semibold text-sumi">
+                  許可証情報
+                </h3>
+                <p className="text-xs text-hai mt-0.5">
+                  左のプレビュー上の位置に、下記の値がそのまま印字されます。
+                </p>
               </div>
-              <div className="space-y-2">
-                <Label>許可日</Label>
-                <Input
-                  type="date"
-                  value={templateData.permitDate || ''}
-                  onChange={(e) =>
-                    handleTemplateDataChange('permitDate', e.target.value)
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>申請者名</Label>
-                <Input
-                  value={templateData.applicantName || ''}
-                  onChange={(e) =>
-                    handleTemplateDataChange('applicantName', e.target.value)
-                  }
-                  placeholder="田中 太郎"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>許可種別</Label>
-                <Input
-                  value={templateData.permitType || ''}
-                  onChange={(e) =>
-                    handleTemplateDataChange('permitType', e.target.value)
-                  }
-                  placeholder="改葬許可"
-                />
+            </header>
+
+            {/* 許可証書（1枚目） */}
+            <div className="mb-5">
+              <h4 className="text-sm font-semibold text-sumi border-b border-gin pb-1 mb-3">
+                許可証書
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>許可番号（第○号）</Label>
+                  <Input
+                    value={templateData.permitNumber || ''}
+                    onChange={(e) =>
+                      handleTemplateDataChange('permitNumber', e.target.value)
+                    }
+                    placeholder="12345"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>種別</Label>
+                  <Input
+                    value={templateData.permitType || ''}
+                    onChange={(e) =>
+                      handleTemplateDataChange('permitType', e.target.value)
+                    }
+                    placeholder="普通墓地"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>区画番号</Label>
+                  <Input
+                    value={templateData.plotNumber || ''}
+                    onChange={(e) =>
+                      handleTemplateDataChange('plotNumber', e.target.value)
+                    }
+                    placeholder="A-56"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>面積（㎡）</Label>
+                  <Input
+                    value={templateData.area || ''}
+                    onChange={(e) =>
+                      handleTemplateDataChange('area', e.target.value)
+                    }
+                    placeholder="4.5"
+                  />
+                </div>
+                <div className="grid grid-cols-3 gap-2 md:col-span-2">
+                  <div className="space-y-2">
+                    <Label>発行年</Label>
+                    <Input
+                      value={templateData.issueYear || ''}
+                      onChange={(e) =>
+                        handleTemplateDataChange('issueYear', e.target.value)
+                      }
+                      placeholder="2026"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>月</Label>
+                    <Input
+                      value={templateData.issueMonth || ''}
+                      onChange={(e) =>
+                        handleTemplateDataChange('issueMonth', e.target.value)
+                      }
+                      placeholder="4"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>日</Label>
+                    <Input
+                      value={templateData.issueDay || ''}
+                      onChange={(e) =>
+                        handleTemplateDataChange('issueDay', e.target.value)
+                      }
+                      placeholder="23"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label>使用者名（殿）</Label>
+                  <Input
+                    value={templateData.applicantName || ''}
+                    onChange={(e) =>
+                      handleTemplateDataChange('applicantName', e.target.value)
+                    }
+                    placeholder="丸山 千代美"
+                  />
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label>本籍</Label>
+                  <Input
+                    value={templateData.registeredAddress || ''}
+                    onChange={(e) =>
+                      handleTemplateDataChange(
+                        'registeredAddress',
+                        e.target.value
+                      )
+                    }
+                    placeholder="福岡県北九州市八幡西区小嶺..."
+                  />
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label>現住所</Label>
+                  <Input
+                    value={templateData.currentAddress || ''}
+                    onChange={(e) =>
+                      handleTemplateDataChange(
+                        'currentAddress',
+                        e.target.value
+                      )
+                    }
+                    placeholder="福岡県北九州市八幡西区..."
+                  />
+                </div>
               </div>
             </div>
-            <div className="space-y-2">
-              <Label>許可内容</Label>
-              <textarea
-                value={templateData.permitContent || ''}
-                onChange={(e) =>
-                  handleTemplateDataChange('permitContent', e.target.value)
-                }
-                placeholder="許可内容を入力..."
-                className="w-full min-h-[120px] px-3 py-2 border border-sumi-200 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
-              />
+
+            {/* 封筒（2・4枚目） */}
+            <div>
+              <h4 className="text-sm font-semibold text-sumi border-b border-gin pb-1 mb-3">
+                封筒（宛先）
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>郵便番号</Label>
+                  <Input
+                    value={templateData.recipientPostalCode || ''}
+                    onChange={(e) =>
+                      handleTemplateDataChange(
+                        'recipientPostalCode',
+                        e.target.value
+                      )
+                    }
+                    placeholder="807-0081"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>宛名</Label>
+                  <Input
+                    value={templateData.recipientName || ''}
+                    onChange={(e) =>
+                      handleTemplateDataChange(
+                        'recipientName',
+                        e.target.value
+                      )
+                    }
+                    placeholder="丸山 千代美 様"
+                  />
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label>宛先住所（1行目）</Label>
+                  <Input
+                    value={templateData.recipientAddress || ''}
+                    onChange={(e) =>
+                      handleTemplateDataChange(
+                        'recipientAddress',
+                        e.target.value
+                      )
+                    }
+                    placeholder="福岡県北九州市八幡西区..."
+                  />
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label>宛先住所（2行目・任意）</Label>
+                  <Input
+                    value={templateData.recipientAddress2 || ''}
+                    onChange={(e) =>
+                      handleTemplateDataChange(
+                        'recipientAddress2',
+                        e.target.value
+                      )
+                    }
+                    placeholder="マンション名・号室など"
+                  />
+                </div>
+              </div>
             </div>
-          </div>
+          </section>
         )}
 
         {/* ===== 自由テキスト編集エリア ===== */}
-        <div className="bg-white rounded-lg border border-sumi-200 p-6">
-          <h3 className="text-lg font-semibold text-sumi-900 mb-2">
-            自由記入欄
-          </h3>
-          <p className="text-sm text-sumi-500 mb-3">
-            手作業で追記・修正したい内容を自由に入力できます。書類に添付メモとして保存されます。
-          </p>
+        <section className="bg-white rounded-elegant-lg border border-gin p-4 md:p-6">
+          <header className="mb-3 flex items-start gap-2 pl-3 border-l-4 border-l-sumi">
+            <div>
+              <h3 className="font-mincho text-base md:text-lg font-semibold text-sumi">
+                自由記入欄
+              </h3>
+              <p className="text-xs text-hai mt-0.5">
+                手作業で追記・修正したい内容を自由に入力できます。書類に添付メモとして保存されます。
+              </p>
+            </div>
+          </header>
           <textarea
             value={freeText}
             onChange={(e) => setFreeText(e.target.value)}
             placeholder="追加の備考、修正内容、特記事項などを自由に入力..."
-            className="w-full min-h-[150px] px-3 py-2 border border-sumi-200 rounded-md focus:outline-none focus:ring-2 focus:ring-matsu-500 text-sm font-mono leading-relaxed"
+            className="w-full min-h-[150px] px-3 py-2 border border-gin rounded-md focus:outline-none focus:ring-2 focus:ring-matsu text-sm font-mono leading-relaxed"
           />
-        </div>
+        </section>
 
         {/* 備考 */}
-        <div className="bg-white rounded-lg border border-sumi-200 p-6">
-          <h3 className="text-lg font-semibold text-sumi-900 mb-4">備考</h3>
+        <section className="bg-white rounded-elegant-lg border border-gin p-4 md:p-6">
+          <header className="mb-3 flex items-start gap-2 pl-3 border-l-4 border-l-sumi">
+            <h3 className="font-mincho text-base md:text-lg font-semibold text-sumi">
+              備考
+            </h3>
+          </header>
           <textarea
             value={formData.notes}
             onChange={(e) => handleInputChange('notes', e.target.value)}
             placeholder="管理用メモ（書類には出力されません）"
-            className="w-full min-h-[80px] px-3 py-2 border border-sumi-200 rounded-md focus:outline-none focus:ring-2 focus:ring-matsu-500 text-sm"
+            className="w-full min-h-[80px] px-3 py-2 border border-gin rounded-md focus:outline-none focus:ring-2 focus:ring-matsu text-sm"
           />
-        </div>
+        </section>
 
         {/* ファイルアップロード */}
-        <div className="bg-white rounded-lg border border-sumi-200 p-6">
-          <h3 className="text-lg font-semibold text-sumi-900 mb-4 flex items-center">
-            <Upload className="mr-2 h-5 w-5 text-matsu-600" />
-            ファイル添付
-          </h3>
+        <section className="bg-white rounded-elegant-lg border border-gin p-4 md:p-6">
+          <header className="mb-4 flex items-start gap-2 pl-3 border-l-4 border-l-matsu">
+            <Upload className="mt-0.5 h-5 w-5 text-matsu" />
+            <h3 className="font-mincho text-base md:text-lg font-semibold text-sumi">
+              ファイル添付
+            </h3>
+          </header>
           <div className="space-y-4">
             <input
               type="file"
@@ -1091,7 +1180,7 @@ export function DocumentForm({
               accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif"
               className="hidden"
             />
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 flex-wrap">
               <Button
                 type="button"
                 variant="outline"
@@ -1101,43 +1190,43 @@ export function DocumentForm({
                 ファイルを選択
               </Button>
               {selectedFile && (
-                <div className="flex items-center gap-2 px-3 py-2 bg-kinari-50 rounded-md">
-                  <FileText className="h-4 w-4 text-matsu-600" />
-                  <span className="text-sm">{selectedFile.name}</span>
-                  <span className="text-xs text-sumi-500">
+                <div className="flex items-center gap-2 px-3 py-2 bg-kinari-50 rounded-md border border-gin">
+                  <FileText className="h-4 w-4 text-matsu" />
+                  <span className="text-sm text-sumi">{selectedFile.name}</span>
+                  <span className="text-xs text-hai">
                     ({(selectedFile.size / 1024).toFixed(1)} KB)
                   </span>
                   <button
                     type="button"
                     onClick={() => setSelectedFile(null)}
-                    className="text-sumi-400 hover:text-sumi-600"
+                    className="text-hai hover:text-sumi"
                   >
                     <X className="h-4 w-4" />
                   </button>
                 </div>
               )}
             </div>
-            <p className="text-sm text-sumi-500">
+            <p className="text-xs text-hai">
               対応形式: PDF, Word, Excel, 画像 (最大10MB)
             </p>
           </div>
-        </div>
+        </section>
 
         {/* エラー */}
         {mutationError && (
-          <div className="p-4 bg-beni-50 text-beni-700 rounded-lg">
+          <div className="p-4 bg-beni-50 border border-beni-200 text-beni rounded-lg">
             {mutationError}
           </div>
         )}
 
         {/* 送信ボタン */}
-        <div className="flex justify-end gap-4">
+        <div className="flex justify-end gap-3">
           <Button type="button" variant="outline" onClick={onBack}>
             キャンセル
           </Button>
           <Button
             type="submit"
-            className="bg-matsu-600 hover:bg-matsu-700"
+            className="bg-matsu hover:bg-matsu-dark text-white"
             disabled={isMutating}
           >
             {isMutating ? (

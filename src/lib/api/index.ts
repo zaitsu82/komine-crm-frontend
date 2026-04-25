@@ -138,6 +138,7 @@ export {
   deleteDocument,
   uploadDocumentFile,
   getDocumentDownloadUrl,
+  regenerateDocumentPdf,
   generatePdf,
   downloadPdfFromBase64,
   DOCUMENT_TYPE_LABELS,

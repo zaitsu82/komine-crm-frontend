@@ -142,12 +142,57 @@ export interface DownloadUrlResponse {
 
 // PDF生成リクエスト
 export interface GeneratePdfRequest {
-  templateType: 'invoice' | 'postcard';
-  templateData: InvoiceTemplateData | PostcardTemplateData;
+  templateType: 'invoice' | 'postcard' | 'permit' | 'payment-guide';
+  templateData:
+    | InvoiceTemplateData
+    | PostcardTemplateData
+    | PermitTemplateData
+    | PaymentGuideTemplateData;
   documentId?: string;
   name?: string;
   contractPlotId?: string;
   customerId?: string;
+}
+
+// お支払い方法のご案内テンプレートデータ
+export interface PaymentGuideTemplateData {
+  option1?: string;
+  option2?: string;
+  notice1?: string;
+  notice2?: string;
+  notice3?: string;
+  bank1Name?: string;
+  bank1AccountType?: string;
+  bank1AccountNumber?: string;
+  bank2Name?: string;
+  bank2Symbol?: string;
+  bank2Number?: string;
+  orgName?: string;
+  orgNameKana?: string;
+  repName?: string;
+  repNameKana?: string;
+  cemeteryName?: string;
+  tel?: string;
+  fax?: string;
+}
+
+// 許可証テンプレートデータ
+export interface PermitTemplateData {
+  permitNumber?: string;
+  permitType?: string;
+  plotNumber?: string;
+  area?: string;
+  issueYear?: string;
+  issueMonth?: string;
+  issueDay?: string;
+  applicantName?: string;
+  registeredAddress?: string;
+  currentAddress?: string;
+  recipientPostalCode?: string;
+  recipientAddress?: string;
+  recipientAddress2?: string;
+  recipientName?: string;
+  notes?: string;
 }
 
 // 請求書テンプレートデータ
@@ -187,6 +232,8 @@ export interface GeneratePdfResponse {
   pdf: string; // Base64エンコードされたPDF
   mimeType: string;
   fileSize: number;
+  /** 再生成APIなどでクライアント保存用に返す場合あり */
+  fileName?: string;
 }
 
 // =============================================================================
@@ -548,6 +595,52 @@ async function mockGeneratePdf(
   };
 }
 
+async function mockRegenerateDocumentPdf(id: string): Promise<ApiResponse<GeneratePdfResponse>> {
+  await new Promise((resolve) => setTimeout(resolve, 300));
+
+  const doc = MOCK_DOCUMENTS.find((d) => d.id === id);
+  if (!doc) {
+    return {
+      success: false,
+      error: {
+        code: 'NOT_FOUND',
+        message: '書類が見つかりません',
+      },
+    };
+  }
+
+  if (
+    !doc.templateType ||
+    !['invoice', 'postcard', 'permit', 'payment-guide'].includes(
+      doc.templateType
+    )
+  ) {
+    return {
+      success: false,
+      error: {
+        code: 'NO_TEMPLATE_DATA',
+        message: 'テンプレートデータが保存されていないため、再生成できません',
+      },
+    };
+  }
+
+  const mockPdf = 'JVBERi0xLjQKJeLjz9MKMSAwIG9iago8PAovVHlwZSAvQ2F0YWxvZwovUGFnZXMgMiAwIFIKPj4KZW5kb2Jq';
+  const baseName =
+    (doc.name || 'document').replace(/[/\\?%*:|"<>]/g, '_').trim() || 'document';
+  const fileName = baseName.toLowerCase().endsWith('.pdf') ? baseName : `${baseName}.pdf`;
+
+  return {
+    success: true,
+    data: {
+      documentId: id,
+      pdf: mockPdf,
+      mimeType: 'application/pdf',
+      fileSize: mockPdf.length,
+      fileName,
+    },
+  };
+}
+
 // =============================================================================
 // API関数
 // =============================================================================
@@ -694,6 +787,19 @@ export async function generatePdf(
   }
 
   return apiPost<GeneratePdfResponse>('/documents/generate-pdf', data);
+}
+
+/**
+ * 保存済みテンプレートデータからPDFを再生成（ダウンロード用）
+ */
+export async function regenerateDocumentPdf(
+  id: string
+): Promise<ApiResponse<GeneratePdfResponse>> {
+  if (shouldUseMockData()) {
+    return mockRegenerateDocumentPdf(id);
+  }
+
+  return apiPost<GeneratePdfResponse>(`/documents/${id}/regenerate-pdf`);
 }
 
 /**
