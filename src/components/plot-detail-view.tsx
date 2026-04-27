@@ -766,7 +766,9 @@ export default function PlotDetailView({ plotId, onEdit, onBack, onDelete }: Plo
         <TabsList
           className={cn(
             // モバイル: フルwidthで横スクロール、スナップ付き
-            'flex w-full overflow-x-auto overflow-y-hidden snap-x snap-mandatory scrollbar-thin h-auto gap-1',
+            // justify-start で base の justify-center を打ち消す
+            // (overflow時に中央寄せだと左端が見切れてスクロール不可になるため)
+            'flex w-full justify-start overflow-x-auto overflow-y-hidden snap-x snap-mandatory scrollbar-thin h-auto gap-1',
             // sm以上: グリッドレイアウトに戻す
             'sm:grid sm:grid-cols-3 lg:grid-cols-6 sm:overflow-visible sm:snap-none'
           )}
