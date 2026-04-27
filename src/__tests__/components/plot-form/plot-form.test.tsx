@@ -1,5 +1,6 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import { ViewModeField, ViewModeSelect, ViewModeTextarea } from '@/components/plot-form/ViewModeField';
 import { HistoryTab } from '@/components/plot-form/HistoryTab';
@@ -10,6 +11,14 @@ import {
   PhysicalPlotStatus,
   ContractStatus,
 } from '@komine/types';
+
+// toast はテスト中サイレントにする
+jest.mock('@/lib/toast', () => ({
+  showWarning: jest.fn(),
+  showSuccess: jest.fn(),
+  showError: jest.fn(),
+  showInfo: jest.fn(),
+}));
 
 // ===== Mocks =====
 
@@ -502,5 +511,152 @@ describe('PlotForm', () => {
     );
 
     expect(container.querySelector('form')).toBeInTheDocument();
+  });
+
+  // ===== バリデーション・プレビューフロー =====
+
+  it('新規モードで未入力のまま送信するとバリデーションエラーリストが表示される', async () => {
+    const user = userEvent.setup();
+    const onSave = jest.fn();
+    render(<PlotForm onSave={onSave} onCancel={jest.fn()} />);
+
+    await user.click(screen.getByRole('button', { name: '登録' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('入力エラーがあります')).toBeInTheDocument();
+    });
+
+    // 必須エラー（区画番号は必須です）がエラーリストに含まれる
+    expect(screen.getByText(/区画番号: 区画番号は必須です/)).toBeInTheDocument();
+    // onSave は呼ばれない
+    expect(onSave).not.toHaveBeenCalled();
+  });
+
+  it('バリデーションエラーがあるタブにエラーバッジ（!）が表示される', async () => {
+    const user = userEvent.setup();
+    render(<PlotForm onSave={jest.fn()} onCancel={jest.fn()} />);
+
+    await user.click(screen.getByRole('button', { name: '登録' }));
+
+    await waitFor(() => {
+      // tabsWithErrors が反映されてエラーバッジ「!」が複数表示される
+      const badges = screen.getAllByText('!');
+      expect(badges.length).toBeGreaterThan(0);
+    });
+  });
+
+  it('編集モードでは plotDetail から初期値が反映される', () => {
+    const detail = makePlotDetail();
+    render(<PlotForm plotDetail={detail} onSave={jest.fn()} onCancel={jest.fn()} />);
+
+    // 区画番号が初期値として入力されている
+    const plotNumberInput = screen.getByDisplayValue('A-001');
+    expect(plotNumberInput).toBeInTheDocument();
+    // 契約者氏名が初期値として入力されている
+    expect(screen.getByDisplayValue('田中太郎')).toBeInTheDocument();
+  });
+
+  it('plotDetail が後から変わると reset でフォーム値が更新される', () => {
+    const detail1 = makePlotDetail({
+      physicalPlot: {
+        id: 'pp-1',
+        plotNumber: 'A-001',
+        areaName: '第1期',
+        areaSqm: 3.6,
+        status: PhysicalPlotStatus.SoldOut,
+        notes: null,
+      },
+    });
+    const { rerender } = render(
+      <PlotForm plotDetail={detail1} onSave={jest.fn()} onCancel={jest.fn()} />
+    );
+    expect(screen.getByDisplayValue('A-001')).toBeInTheDocument();
+
+    const detail2 = makePlotDetail({
+      physicalPlot: {
+        id: 'pp-2',
+        plotNumber: 'B-200',
+        areaName: '第2期',
+        areaSqm: 1.8,
+        status: PhysicalPlotStatus.SoldOut,
+        notes: null,
+      },
+    });
+    rerender(
+      <PlotForm plotDetail={detail2} onSave={jest.fn()} onCancel={jest.fn()} />
+    );
+
+    expect(screen.getByDisplayValue('B-200')).toBeInTheDocument();
+    expect(screen.queryByDisplayValue('A-001')).not.toBeInTheDocument();
+  });
+
+  it('編集モードで送信すると差分プレビュー（PreviewDialog）が表示される', async () => {
+    const user = userEvent.setup();
+    const onSave = jest.fn();
+    const detail = makePlotDetail();
+    render(<PlotForm plotDetail={detail} onSave={onSave} onCancel={jest.fn()} />);
+
+    // 区画番号を変更
+    const plotNumberInput = screen.getByDisplayValue('A-001');
+    await user.clear(plotNumberInput);
+    await user.type(plotNumberInput, 'A-002');
+
+    // 更新ボタンクリック
+    await user.click(screen.getByRole('button', { name: '更新' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('更新内容の確認')).toBeInTheDocument();
+    });
+    expect(screen.getByText('以下の項目が変更されます')).toBeInTheDocument();
+    // この時点では onSave はまだ呼ばれない（確認ダイアログ表示中）
+    expect(onSave).not.toHaveBeenCalled();
+  });
+
+  it('プレビューで「確認して更新」をクリックすると onSave が呼ばれる', async () => {
+    const user = userEvent.setup();
+    const onSave = jest.fn();
+    const detail = makePlotDetail();
+    render(<PlotForm plotDetail={detail} onSave={onSave} onCancel={jest.fn()} />);
+
+    const plotNumberInput = screen.getByDisplayValue('A-001');
+    await user.clear(plotNumberInput);
+    await user.type(plotNumberInput, 'A-002');
+
+    await user.click(screen.getByRole('button', { name: '更新' }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: '確認して更新' })).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole('button', { name: '確認して更新' }));
+
+    await waitFor(() => {
+      expect(onSave).toHaveBeenCalledTimes(1);
+    });
+    // onSave に渡されたデータには変更後の値が含まれる
+    expect(onSave.mock.calls[0][0].physicalPlot.plotNumber).toBe('A-002');
+  });
+
+  it('プレビューで「戻る」をクリックするとダイアログが閉じて onSave は呼ばれない', async () => {
+    const user = userEvent.setup();
+    const onSave = jest.fn();
+    const detail = makePlotDetail();
+    render(<PlotForm plotDetail={detail} onSave={onSave} onCancel={jest.fn()} />);
+
+    const plotNumberInput = screen.getByDisplayValue('A-001');
+    await user.clear(plotNumberInput);
+    await user.type(plotNumberInput, 'A-002');
+    await user.click(screen.getByRole('button', { name: '更新' }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: '戻る' })).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole('button', { name: '戻る' }));
+
+    await waitFor(() => {
+      expect(screen.queryByText('更新内容の確認')).not.toBeInTheDocument();
+    });
+    expect(onSave).not.toHaveBeenCalled();
   });
 });
