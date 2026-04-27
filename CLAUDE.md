@@ -201,6 +201,25 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
 
 UI改修時は必ずレスポンシブデザインに対応すること。最小サポート端末は **iPhone SE（375px幅）**。
 
+### PC専用画面（DesktopOnlyGate 適用）
+
+操作系の以下7画面は **画面幅 768px 未満では PC 推奨ガード画面に置き換える**（`DesktopOnlyGate` コンポーネントでラップ）。スマホ閲覧ニーズが薄く、375px で UI が破綻するため。
+
+| Route | 用途 |
+|---|---|
+| `/plots/new` | 区画新規作成 |
+| `/plots/[id]/edit` | 区画編集 |
+| `/plots/[id]/documents/create` | 書類作成 |
+| `/plots/[id]/documents` | 書類履歴（区画コンテキスト） |
+| `/documents` | 書類発行・一覧 |
+| `/bulk-import` | 区画一括登録（CSV） |
+| `/masters` | マスタ管理 |
+| `/staff` | スタッフ管理 |
+| `/yucho` | ゆうちょ連携（CSV出力） |
+
+これ以外（`/plots`, `/plots/[id]`, `/collective-burials`, `/plot-availability`, `/profile`, `/login` 等）はモバイル対応必須。
+
+
 ### ブレークポイント（Tailwind CSS）
 
 | プレフィックス | 幅 | 用途 |

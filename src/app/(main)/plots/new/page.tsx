@@ -8,6 +8,7 @@ import { PlotFormData, plotFormDataToCreateRequest } from '@/lib/validations/plo
 import { showError, showApiSuccess, showApiError } from '@/lib/toast';
 import PlotForm from '@/components/plot-form';
 import PageHeader from '@/components/page-header';
+import { DesktopOnlyGate } from '@/components/desktop-only-gate';
 
 export default function NewPlotPage() {
   const router = useRouter();
@@ -36,7 +37,7 @@ export default function NewPlotPage() {
   };
 
   return (
-    <>
+    <DesktopOnlyGate description="区画の新規登録は多項目フォームのため、画面幅 768px 以上のPCでの利用をお願いします。">
       <PageHeader
         title="新規区画登録"
         theme="kohaku"
@@ -58,6 +59,6 @@ export default function NewPlotPage() {
           isLoading={isLoading}
         />
       </div>
-    </>
+    </DesktopOnlyGate>
   );
 }

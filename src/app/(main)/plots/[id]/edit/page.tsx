@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { updatePlot } from '@/lib/api/plots';
@@ -8,6 +9,7 @@ import { PlotFormData, plotFormDataToUpdateRequest } from '@/lib/validations/plo
 import { showError, showApiSuccess, showApiError } from '@/lib/toast';
 import PlotForm from '@/components/plot-form';
 import PageHeader from '@/components/page-header';
+import { DesktopOnlyGate } from '@/components/desktop-only-gate';
 import { usePlotDetail } from '@/hooks/usePlots';
 
 export default function EditPlotPage() {
@@ -41,7 +43,7 @@ export default function EditPlotPage() {
   };
 
   return (
-    <>
+    <DesktopOnlyGate description="区画情報の編集は多項目フォームのため、画面幅 768px 以上のPCでの利用をお願いします。">
       <PageHeader
         title="区画情報編集"
         theme="kohaku"
@@ -52,6 +54,23 @@ export default function EditPlotPage() {
         }
       />
       <div className="flex-1 p-3 md:p-6 overflow-auto">
+        {/* パンくずナビゲーション */}
+        <nav className="flex items-center gap-1.5 text-sm text-hai mb-3" aria-label="パンくず">
+          <Link href="/plots" className="hover:text-matsu transition-colors">
+            台帳
+          </Link>
+          <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+          <Link href={`/plots/${plotId}`} className="hover:text-matsu transition-colors truncate">
+            {plotDetail?.physicalPlot?.plotNumber || '区画詳細'}
+          </Link>
+          <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+          <span className="text-sumi font-medium">編集</span>
+        </nav>
+
         <div className="mb-4 flex justify-end">
           <Button size="sm" variant="outline" onClick={handleCancel} className="cursor-pointer">
             キャンセル
@@ -70,6 +89,6 @@ export default function EditPlotPage() {
           />
         )}
       </div>
-    </>
+    </DesktopOnlyGate>
   );
 }

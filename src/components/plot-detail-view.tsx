@@ -651,20 +651,21 @@ export default function PlotDetailView({ plotId, onEdit, onBack, onDelete }: Plo
           )}
         </div>
         <div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
-          <Link href={`/plots/${plotId}/documents/create`}>
+          {/* 書類作成・履歴は PC 専用画面に遷移するためモバイルでは非表示 */}
+          <Link href={`/plots/${plotId}/documents/create`} className="hidden sm:inline-flex">
             <Button variant="outline" size="sm" className="gap-1.5">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
               </svg>
-              <span className="hidden sm:inline">書類作成</span>
+              <span>書類作成</span>
             </Button>
           </Link>
-          <Link href={`/plots/${plotId}/documents`}>
+          <Link href={`/plots/${plotId}/documents`} className="hidden sm:inline-flex">
             <Button variant="outline" size="sm" className="gap-1.5">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span className="hidden sm:inline">書類履歴</span>
+              <span>書類履歴</span>
             </Button>
           </Link>
           {onEdit && (
@@ -766,7 +767,9 @@ export default function PlotDetailView({ plotId, onEdit, onBack, onDelete }: Plo
         <TabsList
           className={cn(
             // モバイル: フルwidthで横スクロール、スナップ付き
-            'flex w-full overflow-x-auto overflow-y-hidden snap-x snap-mandatory scrollbar-thin h-auto gap-1',
+            // justify-start で base の justify-center を打ち消す
+            // (overflow時に中央寄せだと左端が見切れてスクロール不可になるため)
+            'flex w-full justify-start overflow-x-auto overflow-y-hidden snap-x snap-mandatory scrollbar-thin h-auto gap-1',
             // sm以上: グリッドレイアウトに戻す
             'sm:grid sm:grid-cols-3 lg:grid-cols-6 sm:overflow-visible sm:snap-none'
           )}

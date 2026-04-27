@@ -640,7 +640,7 @@ export default function PlotRegistry({
         )}
 
         {/* 区画一覧テーブル */}
-        <div className="bg-white rounded-elegant-lg border border-gin shadow-elegant overflow-hidden flex-1">
+        <div className="bg-white rounded-elegant-lg border border-gin shadow-elegant overflow-hidden flex-1 min-w-0">
           <div className="overflow-auto h-full">
             <table className="w-full divide-y divide-gin text-sm table-fixed">
               {/* 状態 / 区画No / エリア / 契約者 / 住所 / 電話 / 取扱 / 許可番号 / 備考(flex) / [埋葬者] / 契約日 / 入金 / 管理料 / 次請求 */}
