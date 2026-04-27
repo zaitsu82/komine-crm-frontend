@@ -50,8 +50,8 @@ export function DesktopOnlyGate({ children, description }: DesktopOnlyGateProps)
         <Link href="/plots" className={buttonVariants({ variant: 'default' })}>
           区画一覧へ
         </Link>
-        <Link href="/documents" className={buttonVariants({ variant: 'outline' })}>
-          書類一覧へ
+        <Link href="/collective-burials" className={buttonVariants({ variant: 'outline' })}>
+          合祀管理へ
         </Link>
       </div>
     </div>
