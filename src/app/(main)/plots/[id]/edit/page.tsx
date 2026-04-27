@@ -8,6 +8,7 @@ import { PlotFormData, plotFormDataToUpdateRequest } from '@/lib/validations/plo
 import { showError, showApiSuccess, showApiError } from '@/lib/toast';
 import PlotForm from '@/components/plot-form';
 import PageHeader from '@/components/page-header';
+import { DesktopOnlyGate } from '@/components/desktop-only-gate';
 import { usePlotDetail } from '@/hooks/usePlots';
 
 export default function EditPlotPage() {
@@ -41,7 +42,7 @@ export default function EditPlotPage() {
   };
 
   return (
-    <>
+    <DesktopOnlyGate description="区画情報の編集は多項目フォームのため、画面幅 768px 以上のPCでの利用をお願いします。">
       <PageHeader
         title="区画情報編集"
         theme="kohaku"
@@ -70,6 +71,6 @@ export default function EditPlotPage() {
           />
         )}
       </div>
-    </>
+    </DesktopOnlyGate>
   );
 }

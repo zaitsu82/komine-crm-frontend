@@ -3,6 +3,7 @@
 import { useParams, useRouter } from 'next/navigation';
 import { usePlotDetail } from '@/hooks/usePlots';
 import { DocumentManagement } from '@/components/document-management';
+import { DesktopOnlyGate } from '@/components/desktop-only-gate';
 
 export default function PlotDocumentCreatePage() {
   const params = useParams();
@@ -15,12 +16,14 @@ export default function PlotDocumentCreatePage() {
   const { plot } = usePlotDetail(plotId);
 
   return (
-    <DocumentManagement
-      customerId={plotId}
-      customerName={plot?.roles?.[0]?.customer?.name}
-      plotDetail={plot || undefined}
-      initialMode="templates"
-      onBack={() => router.push(`/plots/${plotId}`)}
-    />
+    <DesktopOnlyGate description="書類作成はテンプレート選択・フィールド入力・PDFプレビューを伴うため、画面幅 768px 以上のPCでの利用をお願いします。">
+      <DocumentManagement
+        customerId={plotId}
+        customerName={plot?.roles?.[0]?.customer?.name}
+        plotDetail={plot || undefined}
+        initialMode="templates"
+        onBack={() => router.push(`/plots/${plotId}`)}
+      />
+    </DesktopOnlyGate>
   );
 }
