@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Monitor } from 'lucide-react';
-import { buttonVariants } from '@/components/ui/button';
+import { useRouter } from 'next/navigation';
+import { ArrowLeft, Monitor } from 'lucide-react';
+import { Button, buttonVariants } from '@/components/ui/button';
 
 const DESKTOP_BREAKPOINT = 768;
 
@@ -16,7 +17,9 @@ interface DesktopOnlyGateProps {
 }
 
 export function DesktopOnlyGate({ children, description }: DesktopOnlyGateProps) {
+  const router = useRouter();
   const [isDesktop, setIsDesktop] = useState<boolean | null>(null);
+  const [canGoBack, setCanGoBack] = useState(false);
 
   useEffect(() => {
     const mql = window.matchMedia(`(min-width: ${DESKTOP_BREAKPOINT}px)`);
@@ -24,6 +27,12 @@ export function DesktopOnlyGate({ children, description }: DesktopOnlyGateProps)
     update();
     mql.addEventListener('change', update);
     return () => mql.removeEventListener('change', update);
+  }, []);
+
+  useEffect(() => {
+    // 直前ページがある場合のみ「戻る」ボタンを表示
+    // (history.length は SPA 内遷移を含む。1 はこのページが入口=戻れない)
+    setCanGoBack(window.history.length > 1);
   }, []);
 
   if (isDesktop === null) return null;
@@ -47,7 +56,16 @@ export function DesktopOnlyGate({ children, description }: DesktopOnlyGateProps)
         </p>
       </div>
       <div className="flex flex-col gap-2 w-full max-w-xs">
-        <Link href="/plots" className={buttonVariants({ variant: 'default' })}>
+        {canGoBack && (
+          <Button variant="default" onClick={() => router.back()} className="gap-1.5">
+            <ArrowLeft className="h-4 w-4" />
+            前のページに戻る
+          </Button>
+        )}
+        <Link
+          href="/plots"
+          className={buttonVariants({ variant: canGoBack ? 'outline' : 'default' })}
+        >
           区画一覧へ
         </Link>
         <Link href="/collective-burials" className={buttonVariants({ variant: 'outline' })}>
