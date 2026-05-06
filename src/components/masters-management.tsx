@@ -50,7 +50,6 @@ const MASTER_TYPES: MasterTypeConfig[] = [
   { key: 'tax-type', label: '税タイプ', dataKey: 'taxType' },
   { key: 'calc-type', label: '計算タイプ', dataKey: 'calcType' },
   { key: 'billing-type', label: '請求タイプ', dataKey: 'billingType' },
-  { key: 'account-type', label: '口座タイプ', dataKey: 'accountType' },
   { key: 'recipient-type', label: '受取人タイプ', dataKey: 'recipientType' },
   { key: 'construction-type', label: '工事タイプ', dataKey: 'constructionType' },
   { key: 'section-name', label: '区画名', dataKey: 'sectionName' },
@@ -93,7 +92,7 @@ export default function MastersManagement() {
     fetchData();
   }, [fetchData]);
 
-  const currentItems = mastersData ? (mastersData[selectedType.dataKey] as MasterItem[]) : [];
+  const currentItems = (mastersData?.[selectedType.dataKey] as MasterItem[] | undefined) ?? [];
 
   const isSectionName = selectedType.key === 'section-name';
 
@@ -219,7 +218,8 @@ export default function MastersManagement() {
                 </SelectTrigger>
                 <SelectContent>
                   {MASTER_TYPES.map((type) => {
-                    const count = mastersData ? (mastersData[type.dataKey] as MasterItem[]).length : 0;
+                    const items = mastersData?.[type.dataKey] as MasterItem[] | undefined;
+                    const count = items?.length ?? 0;
                     return (
                       <SelectItem key={type.key} value={type.key}>
                         {type.label}（{count}件）
@@ -236,7 +236,8 @@ export default function MastersManagement() {
               className="hidden md:flex md:flex-col md:w-48 md:flex-shrink-0 md:gap-1 md:sticky md:top-0 md:self-start"
             >
               {MASTER_TYPES.map((type) => {
-                const count = mastersData ? (mastersData[type.dataKey] as MasterItem[]).length : 0;
+                const items = mastersData?.[type.dataKey] as MasterItem[] | undefined;
+                const count = items?.length ?? 0;
                 const isActive = selectedType.key === type.key;
                 return (
                   <button
