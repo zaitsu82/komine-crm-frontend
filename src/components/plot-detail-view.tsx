@@ -19,8 +19,6 @@ import {
   ContractRole,
   AddressType,
   DmSetting,
-  BillingType,
-  AccountType,
 } from '@komine/types';
 import { usePlotDetail } from '@/hooks/usePlots';
 import { Button } from '@/components/ui/button';
@@ -54,7 +52,6 @@ const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
   [PaymentStatus.PartialPaid]: '一部入金',
   [PaymentStatus.Overdue]: '滞納',
   [PaymentStatus.Refunded]: '返金済',
-  [PaymentStatus.Cancelled]: 'キャンセル',
 };
 
 const PAYMENT_STATUS_VARIANTS: Record<PaymentStatus, StatusBadgeProps['variant']> = {
@@ -63,27 +60,18 @@ const PAYMENT_STATUS_VARIANTS: Record<PaymentStatus, StatusBadgeProps['variant']
   [PaymentStatus.PartialPaid]: 'partial',
   [PaymentStatus.Overdue]: 'overdue',
   [PaymentStatus.Refunded]: 'refunded',
-  [PaymentStatus.Cancelled]: 'cancelled',
 };
 
 const CONTRACT_STATUS_LABELS: Record<ContractStatus, string> = {
-  [ContractStatus.Draft]: '下書き',
-  [ContractStatus.Reserved]: '予約済',
+  [ContractStatus.Vacant]: '空き',
   [ContractStatus.Active]: '有効',
-  [ContractStatus.Suspended]: '一時停止',
   [ContractStatus.Terminated]: '終了',
-  [ContractStatus.Cancelled]: '解約',
-  [ContractStatus.Transferred]: '継承済',
 };
 
 const CONTRACT_STATUS_VARIANTS: Record<ContractStatus, StatusBadgeProps['variant']> = {
-  [ContractStatus.Draft]: 'neutral',
-  [ContractStatus.Reserved]: 'info',
+  [ContractStatus.Vacant]: 'neutral',
   [ContractStatus.Active]: 'active',
-  [ContractStatus.Suspended]: 'warning',
   [ContractStatus.Terminated]: 'neutral',
-  [ContractStatus.Cancelled]: 'cancelled',
-  [ContractStatus.Transferred]: 'info',
 };
 
 const PHYSICAL_STATUS_LABELS: Record<PhysicalPlotStatus, string> = {
@@ -119,18 +107,6 @@ const DM_SETTING_LABELS: Record<DmSetting, string> = {
   [DmSetting.Allow]: '送付する',
   [DmSetting.Deny]: '送付しない',
   [DmSetting.Limited]: '制限付き',
-};
-
-const BILLING_TYPE_LABELS: Record<BillingType, string> = {
-  [BillingType.Individual]: '個人',
-  [BillingType.Corporate]: '法人',
-  [BillingType.BankTransfer]: '銀行振込',
-};
-
-const ACCOUNT_TYPE_LABELS: Record<AccountType, string> = {
-  [AccountType.Ordinary]: '普通預金',
-  [AccountType.Current]: '当座預金',
-  [AccountType.Savings]: '貯蓄預金',
 };
 
 // ===== ヘルパー関数 =====
@@ -285,17 +261,11 @@ function BasicInfoTab({ plot }: { plot: PlotDetailResponse }) {
         </Section>
       )}
 
-      {/* 請求情報 */}
-      {customer?.billingInfo && (
-        <Section title="請求情報">
-          <InfoField label="請求種別" value={customer.billingInfo.billingType ? BILLING_TYPE_LABELS[customer.billingInfo.billingType as BillingType] : null} />
-          <InfoField label="機関名称" value={customer.billingInfo.bankName} />
-          <InfoField label="支店名称" value={customer.billingInfo.branchName} />
-          <InfoField label="口座科目" value={customer.billingInfo.accountType ? ACCOUNT_TYPE_LABELS[customer.billingInfo.accountType as AccountType] : null} />
-          <InfoField label="記号番号" value={customer.billingInfo.accountNumber} />
-          <InfoField label="口座名義" value={customer.billingInfo.accountHolder} />
-        </Section>
-      )}
+      {/*
+        請求情報（BillingInfo）セクションは Phase 2 移行で廃止。
+        Phase 3 で Billing/Payment エンティティとして再設計予定。
+        Refs: zaitsu82/komine-crm-backend#106
+      */}
     </div>
   );
 }

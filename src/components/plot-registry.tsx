@@ -103,7 +103,6 @@ const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
   [PaymentStatus.PartialPaid]: '一部入金',
   [PaymentStatus.Overdue]: '滞納',
   [PaymentStatus.Refunded]: '返金済',
-  [PaymentStatus.Cancelled]: 'キャンセル',
 };
 
 const PAYMENT_STATUS_VARIANTS: Record<PaymentStatus, StatusBadgeProps['variant']> = {
@@ -112,7 +111,6 @@ const PAYMENT_STATUS_VARIANTS: Record<PaymentStatus, StatusBadgeProps['variant']
   [PaymentStatus.PartialPaid]: 'partial',
   [PaymentStatus.Overdue]: 'overdue',
   [PaymentStatus.Refunded]: 'refunded',
-  [PaymentStatus.Cancelled]: 'cancelled',
 };
 
 const PLOT_STATUS_LABELS: Record<PhysicalPlotStatus, string> = {

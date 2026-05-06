@@ -72,7 +72,6 @@ function makePlotDetail(overrides: Partial<PlotDetailResponse> = {}): PlotDetail
           registeredAddress: null,
           notes: null,
           workInfo: null,
-          billingInfo: null,
         },
       },
     ],
@@ -148,8 +147,7 @@ describe('getPrimaryCustomer', () => {
             registeredAddress: null,
             notes: null,
             workInfo: null,
-            billingInfo: null,
-          },
+            },
         },
         {
           id: 'role-con',
@@ -172,8 +170,7 @@ describe('getPrimaryCustomer', () => {
             registeredAddress: null,
             notes: null,
             workInfo: null,
-            billingInfo: null,
-          },
+            },
         },
       ],
     });
@@ -206,8 +203,7 @@ describe('getPrimaryCustomer', () => {
             registeredAddress: null,
             notes: null,
             workInfo: null,
-            billingInfo: null,
-          },
+            },
         },
       ],
     });

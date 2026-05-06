@@ -33,7 +33,6 @@ export interface AllMastersData {
   taxType: TaxTypeMasterItem[];
   calcType: MasterItem[];
   billingType: MasterItem[];
-  accountType: MasterItem[];
   recipientType: MasterItem[];
   constructionType: MasterItem[];
   sectionName: SectionNameMasterItem[];
@@ -64,10 +63,6 @@ const mockMasterData: AllMastersData = {
     { id: 1, code: 'YEARLY', name: '年次請求', description: '年1回の請求', sortOrder: 1, isActive: true },
     { id: 2, code: 'MONTHLY', name: '月次請求', description: '月1回の請求', sortOrder: 2, isActive: true },
     { id: 3, code: 'ONETIME', name: '一括請求', description: '契約時のみ', sortOrder: 3, isActive: true },
-  ],
-  accountType: [
-    { id: 1, code: 'ORDINARY', name: '普通預金', description: null, sortOrder: 1, isActive: true },
-    { id: 2, code: 'SAVINGS', name: '当座預金', description: null, sortOrder: 2, isActive: true },
   ],
   recipientType: [
     { id: 1, code: 'CONTRACTOR', name: '契約者', description: '契約者本人', sortOrder: 1, isActive: true },
@@ -161,16 +156,6 @@ export async function getBillingTypes(): Promise<ApiResponse<MasterItem[]>> {
 }
 
 /**
- * 口座タイプマスタ取得
- */
-export async function getAccountTypes(): Promise<ApiResponse<MasterItem[]>> {
-  if (shouldUseMockData()) {
-    return { success: true, data: mockMasterData.accountType };
-  }
-  return apiGet<MasterItem[]>('/masters/account-type');
-}
-
-/**
  * 受取人タイプマスタ取得
  */
 export async function getRecipientTypes(): Promise<ApiResponse<MasterItem[]>> {
@@ -207,7 +192,6 @@ export type MasterType =
   | 'tax-type'
   | 'calc-type'
   | 'billing-type'
-  | 'account-type'
   | 'recipient-type'
   | 'construction-type'
   | 'section-name';

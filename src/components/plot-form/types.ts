@@ -8,7 +8,6 @@ export interface MasterData {
   taxTypes: TaxTypeMasterItem[];
   billingTypes: MasterItem[];
   paymentMethods: MasterItem[];
-  accountTypes: MasterItem[];
   sectionNames: SectionNameMasterItem[];
   isLoading: boolean;
 }

@@ -174,7 +174,6 @@ export function BasicInfoTab({
             <SelectItem value={PaymentStatus.Paid}>支払済</SelectItem>
             <SelectItem value={PaymentStatus.Overdue}>延滞</SelectItem>
             <SelectItem value={PaymentStatus.Refunded}>返金済</SelectItem>
-            <SelectItem value={PaymentStatus.Cancelled}>キャンセル</SelectItem>
           </ViewModeSelect>
 
           <ViewModeField

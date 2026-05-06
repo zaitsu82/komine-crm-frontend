@@ -4,7 +4,6 @@ import {
   saleContractSchema,
   customerSchema,
   workInfoSchema,
-  billingInfoSchema,
   gravestoneInfoSchema,
   familyContactSchema,
   buriedPersonSchema,
@@ -28,8 +27,6 @@ import {
   Gender,
   DmSetting,
   AddressType,
-  BillingType,
-  AccountType,
   PhysicalPlotStatus,
   ContractStatus,
 } from '@komine/types';
@@ -82,7 +79,6 @@ function validPlotFormData(): PlotFormData {
     saleContract: validSaleContract(),
     customer: validCustomer(),
     workInfo: null,
-    billingInfo: null,
     usageFee: null,
     managementFee: null,
     gravestoneInfo: null,
@@ -149,7 +145,6 @@ function makePlotDetail(overrides: Partial<PlotDetailResponse> = {}): PlotDetail
           registeredAddress: null,
           notes: null,
           workInfo: null,
-          billingInfo: null,
         },
       },
     ],
@@ -299,9 +294,11 @@ describe('plot-form.ts - Zodスキーマバリデーション', () => {
       expect(result.success).toBe(true);
     });
 
-    it('contractDateが空の場合エラー', () => {
-      const result = saleContractSchema.safeParse({ ...validSaleContract(), contractDate: '' });
-      expect(result.success).toBe(false);
+    it('contractDateは省略可能（Phase 2: nullable 化）', () => {
+      const { contractDate: _, ...withoutContractDate } = validSaleContract();
+      void _;
+      const result = saleContractSchema.safeParse(withoutContractDate);
+      expect(result.success).toBe(true);
     });
 
     it('priceが負の場合エラー', () => {
@@ -348,41 +345,9 @@ describe('plot-form.ts - Zodスキーマバリデーション', () => {
     });
   });
 
-  describe('billingInfoSchema', () => {
-    const validBilling = {
-      billingType: BillingType.Individual,
-      bankName: 'みずほ銀行',
-      branchName: '新宿支店',
-      accountType: AccountType.Ordinary,
-      accountNumber: '1234567',
-      accountHolder: '田中太郎',
-    };
-
-    it('有効なデータでパスする', () => {
-      const result = billingInfoSchema.safeParse(validBilling);
-      expect(result.success).toBe(true);
-    });
-
-    it('bankNameが空の場合エラー', () => {
-      const result = billingInfoSchema.safeParse({ ...validBilling, bankName: '' });
-      expect(result.success).toBe(false);
-    });
-
-    it('branchNameが空の場合エラー', () => {
-      const result = billingInfoSchema.safeParse({ ...validBilling, branchName: '' });
-      expect(result.success).toBe(false);
-    });
-
-    it('accountNumberが空の場合エラー', () => {
-      const result = billingInfoSchema.safeParse({ ...validBilling, accountNumber: '' });
-      expect(result.success).toBe(false);
-    });
-
-    it('accountHolderが空の場合エラー', () => {
-      const result = billingInfoSchema.safeParse({ ...validBilling, accountHolder: '' });
-      expect(result.success).toBe(false);
-    });
-  });
+  // billingInfoSchema は Phase 2 移行で廃止。
+  // Phase 3 で Billing/Payment エンティティとして再設計予定。
+  // Refs: zaitsu82/komine-crm-backend#106
 
   describe('familyContactSchema', () => {
     const validContact = {
@@ -529,7 +494,6 @@ describe('plot-form.ts - Zodスキーマバリデーション', () => {
     it('optionalセクションはnullを許容', () => {
       const data = validPlotFormData();
       data.workInfo = null;
-      data.billingInfo = null;
       data.usageFee = null;
       data.managementFee = null;
       data.gravestoneInfo = null;
@@ -664,7 +628,6 @@ describe('plot-form.ts - デフォルト値', () => {
 
   it('defaultPlotFormDataの構造', () => {
     expect(defaultPlotFormData.workInfo).toBeNull();
-    expect(defaultPlotFormData.billingInfo).toBeNull();
     expect(defaultPlotFormData.usageFee).toBeNull();
     expect(defaultPlotFormData.managementFee).toBeNull();
     expect(defaultPlotFormData.gravestoneInfo).toBeNull();
@@ -736,21 +699,8 @@ describe('plotFormDataToCreateRequest', () => {
     expect(request.workInfo!.notes).toBeUndefined(); // null → undefined
   });
 
-  it('billingInfoが存在する場合正しくマッピングする', () => {
-    const formData = validPlotFormData();
-    formData.billingInfo = {
-      billingType: BillingType.Individual,
-      bankName: 'みずほ銀行',
-      branchName: '新宿支店',
-      accountType: AccountType.Ordinary,
-      accountNumber: '1234567',
-      accountHolder: '田中太郎',
-    };
-    const request = plotFormDataToCreateRequest(formData);
-
-    expect(request.billingInfo).toBeDefined();
-    expect(request.billingInfo!.bankName).toBe('みずほ銀行');
-  });
+  // billingInfo マッピングテストは Phase 2 移行で廃止。
+  // Phase 3 で Billing/Payment エンティティとして再実装予定。
 
   it('familyContactsの配列マッピング', () => {
     const formData = validPlotFormData();
@@ -1038,7 +988,6 @@ describe('plotDetailToFormData', () => {
             registeredAddress: null,
             notes: null,
             workInfo: null,
-            billingInfo: null,
           },
         },
         {
@@ -1062,7 +1011,6 @@ describe('plotDetailToFormData', () => {
             registeredAddress: null,
             notes: null,
             workInfo: null,
-            billingInfo: null,
           },
         },
       ],
@@ -1097,7 +1045,6 @@ describe('plotDetailToFormData', () => {
             registeredAddress: null,
             notes: null,
             workInfo: null,
-            billingInfo: null,
           },
         },
       ],
@@ -1202,7 +1149,6 @@ describe('plotDetailToFormData', () => {
               addressType: AddressType.Work,
               notes: 'メモ',
             },
-            billingInfo: null,
           },
         },
       ],
@@ -1216,55 +1162,8 @@ describe('plotDetailToFormData', () => {
     expect(formData.workInfo!.notes).toBe('メモ');
   });
 
-  it('billingInfoがnullの場合nullを返す', () => {
-    const detail = makePlotDetail();
-    const formData = plotDetailToFormData(detail);
-
-    expect(formData.billingInfo).toBeNull();
-  });
-
-  it('billingInfoが存在する場合正しくマッピングする', () => {
-    const detail = makePlotDetail({
-      roles: [
-        {
-          id: 'role-1',
-          role: ContractRole.Contractor,
-          roleStartDate: null,
-          roleEndDate: null,
-          notes: null,
-          customer: {
-            id: 'cust-1',
-            name: '田中太郎',
-            nameKana: 'タナカタロウ',
-            gender: null,
-            birthDate: null,
-            phoneNumber: '09012345678',
-            faxNumber: null,
-            email: null,
-            postalCode: '1234567',
-            address: '東京都新宿区',
-            addressLine2: null,
-            registeredAddress: null,
-            notes: null,
-            workInfo: null,
-            billingInfo: {
-              billingType: BillingType.Corporate,
-              bankName: 'みずほ銀行',
-              branchName: '新宿支店',
-              accountType: AccountType.Ordinary,
-              accountNumber: '1234567',
-              accountHolder: '田中太郎',
-            },
-          },
-        },
-      ],
-    });
-    const formData = plotDetailToFormData(detail);
-
-    expect(formData.billingInfo).toBeDefined();
-    expect(formData.billingInfo!.billingType).toBe(BillingType.Corporate);
-    expect(formData.billingInfo!.bankName).toBe('みずほ銀行');
-  });
+  // billingInfo マッピングテストは Phase 2 移行で廃止。
+  // Phase 3 で Billing/Payment エンティティとして再実装予定。
 
   it('usageFeeが存在する場合正しくマッピングする', () => {
     const detail = makePlotDetail({

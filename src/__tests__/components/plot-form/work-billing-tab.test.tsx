@@ -18,7 +18,7 @@ jest.mock('@/components/ui/select', () => ({
 }));
 
 describe('WorkBillingTab', () => {
-  it('勤務先情報・請求情報のセクションヘッダーを表示する', () => {
+  it('勤務先情報のセクションヘッダーを表示する', () => {
     render(
       <TabHost>
         {(h) => <WorkBillingTab {...h} masterData={emptyMasterData} />}
@@ -26,17 +26,17 @@ describe('WorkBillingTab', () => {
     );
 
     expect(screen.getByText('勤務先情報')).toBeInTheDocument();
-    expect(screen.getByText('請求情報')).toBeInTheDocument();
+    // 請求情報セクションは Phase 2 で廃止
   });
 
-  it('初期状態では「追加」ボタンが2つ表示される', () => {
+  it('初期状態では勤務先の「追加」ボタンが表示される', () => {
     render(
       <TabHost>
         {(h) => <WorkBillingTab {...h} masterData={emptyMasterData} />}
       </TabHost>
     );
 
-    expect(screen.getAllByRole('button', { name: '追加' })).toHaveLength(2);
+    expect(screen.getAllByRole('button', { name: '追加' })).toHaveLength(1);
   });
 
   it('勤務先情報の「追加」ボタンクリックで入力欄が表示される', async () => {
@@ -54,21 +54,7 @@ describe('WorkBillingTab', () => {
     expect(screen.getByPlaceholderText('カイシャメイ')).toBeInTheDocument();
   });
 
-  it('請求情報の「追加」ボタンクリックで銀行関連入力欄が表示される', async () => {
-    const user = userEvent.setup();
-    render(
-      <TabHost>
-        {(h) => <WorkBillingTab {...h} masterData={emptyMasterData} />}
-      </TabHost>
-    );
-
-    const addButtons = screen.getAllByRole('button', { name: '追加' });
-    await user.click(addButtons[1]);
-
-    expect(screen.getByPlaceholderText('○○銀行')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('△△支店')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('1234567')).toBeInTheDocument();
-  });
+  // 請求情報（BillingInfo）の「追加」ボタンテストは Phase 2 で廃止。
 
   it('勤務先名称フィールドに入力できる', async () => {
     const user = userEvent.setup();
@@ -100,31 +86,7 @@ describe('WorkBillingTab', () => {
     expect(screen.queryByPlaceholderText('会社名')).not.toBeInTheDocument();
   });
 
-  it('errors propsで請求情報エラーメッセージが表示される', async () => {
-    const user = userEvent.setup();
-    function ErrorHost() {
-      return (
-        <TabHost>
-          {(h) => (
-            <WorkBillingTab
-              {...h}
-              errors={
-                {
-                  billingInfo: { bankName: { message: '銀行名は必須です', type: 'required' } },
-                } as typeof h.errors
-              }
-              masterData={emptyMasterData}
-            />
-          )}
-        </TabHost>
-      );
-    }
-    render(<ErrorHost />);
-
-    // 請求情報セクションを開く
-    const addButtons = screen.getAllByRole('button', { name: '追加' });
-    await user.click(addButtons[1]);
-
-    expect(screen.getByText('銀行名は必須です')).toBeInTheDocument();
-  });
+  // 請求情報（BillingInfo）セクションは Phase 2 移行で廃止。
+  // Phase 3 で Billing/Payment エンティティとして再設計予定。
+  // Refs: zaitsu82/komine-crm-backend#106
 });
