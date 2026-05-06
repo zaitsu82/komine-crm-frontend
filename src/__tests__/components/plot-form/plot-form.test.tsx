@@ -112,7 +112,6 @@ function makePlotDetail(overrides: Partial<PlotDetailResponse> = {}): PlotDetail
           registeredAddress: null,
           notes: null,
           workInfo: null,
-          billingInfo: null,
         },
       },
     ],
@@ -457,7 +456,7 @@ describe('PlotForm', () => {
     );
 
     expect(screen.getByText('区画・契約情報')).toBeInTheDocument();
-    expect(screen.getByText('勤務先・請求')).toBeInTheDocument();
+    expect(screen.getByText('勤務先')).toBeInTheDocument();
     expect(screen.getByText('連絡先/家族')).toBeInTheDocument();
     expect(screen.getByText('埋葬情報')).toBeInTheDocument();
   });
@@ -500,8 +499,8 @@ describe('PlotForm', () => {
       <PlotForm onSave={jest.fn()} onCancel={jest.fn()} />
     );
 
-    // 勤務先・請求タブをクリック
-    fireEvent.click(screen.getByText('勤務先・請求'));
+    // 勤務先タブをクリック
+    fireEvent.click(screen.getByText('勤務先'));
     // タブがアクティブになる（Radixの内部動作に依存しないため、エラーがないことを確認）
   });
 

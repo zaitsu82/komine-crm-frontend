@@ -31,7 +31,6 @@ export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProp
     taxTypes,
     billingTypes,
     paymentMethods,
-    accountTypes,
     sectionNames,
     isLoading: isMasterLoading,
   } = useMasters();
@@ -41,7 +40,6 @@ export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProp
     taxTypes,
     billingTypes,
     paymentMethods,
-    accountTypes,
     sectionNames,
     isLoading: isMasterLoading,
   };
@@ -128,8 +126,8 @@ export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProp
       sections: ['usageFee', 'managementFee'],
     },
     'work-billing': {
-      label: '勤務先・請求',
-      sections: ['workInfo', 'billingInfo'],
+      label: '勤務先',
+      sections: ['workInfo'],
     },
     'contacts': {
       label: '連絡先/家族',
@@ -191,13 +189,6 @@ export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProp
     'workInfo.dmSetting': 'DM送信設定',
     'workInfo.addressType': '宛先区分',
     'workInfo.notes': '備考',
-    // 請求情報
-    'billingInfo.billingType': '請求区分',
-    'billingInfo.bankName': '金融機関名',
-    'billingInfo.branchName': '支店名',
-    'billingInfo.accountType': '口座種別',
-    'billingInfo.accountNumber': '口座番号',
-    'billingInfo.accountHolder': '口座名義',
     // 使用料
     'usageFee.calculationType': '計算区分',
     'usageFee.taxType': '税区分',

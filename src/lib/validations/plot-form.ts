@@ -9,11 +9,10 @@
 
 import {
   ContractRole,
+  ContractStatus,
   PaymentStatus,
   DmSetting,
   AddressType,
-  BillingType,
-  AccountType,
 } from '@komine/types';
 import type { CreatePlotRequest, UpdatePlotRequest, PlotDetailResponse } from '@komine/types';
 
@@ -25,7 +24,6 @@ export {
   saleContractSchema,
   customerSchema,
   workInfoSchema,
-  billingInfoSchema,
   usageFeeSchema,
   managementFeeSchema,
   gravestoneInfoSchema,
@@ -44,7 +42,6 @@ export type {
   SaleContractFormData,
   CustomerSectionFormData,
   WorkInfoFormData,
-  BillingInfoFormData,
   UsageFeeFormData,
   ManagementFeeFormData,
   GravestoneInfoFormData,
@@ -82,6 +79,7 @@ export const defaultContractPlot: ContractPlotFormData = {
 export const defaultSaleContract: SaleContractFormData = {
   contractDate: new Date().toISOString().split('T')[0],
   price: 0,
+  contractStatus: ContractStatus.Active,
   paymentStatus: PaymentStatus.Unpaid,
   reservationDate: '',
   acceptanceNumber: '',
@@ -116,7 +114,6 @@ export const defaultPlotFormData: PlotFormData = {
   saleContract: defaultSaleContract,
   customer: defaultCustomer,
   workInfo: null,
-  billingInfo: null,
   usageFee: null,
   managementFee: null,
   gravestoneInfo: null,
@@ -182,16 +179,6 @@ export function plotFormDataToCreateRequest(formData: PlotFormData): CreatePlotR
         dmSetting: formData.workInfo.dmSetting,
         addressType: formData.workInfo.addressType,
         notes: formData.workInfo.notes || undefined,
-      }
-      : undefined,
-    billingInfo: formData.billingInfo
-      ? {
-        billingType: formData.billingInfo.billingType,
-        bankName: formData.billingInfo.bankName,
-        branchName: formData.billingInfo.branchName,
-        accountType: formData.billingInfo.accountType,
-        accountNumber: formData.billingInfo.accountNumber,
-        accountHolder: formData.billingInfo.accountHolder,
       }
       : undefined,
     usageFee: formData.usageFee
@@ -367,7 +354,6 @@ export function plotFormDataToUpdateRequest(formData: PlotUpdateFormData): Updat
 
   // オプショナルセクション
   request.workInfo = formData.workInfo;
-  request.billingInfo = formData.billingInfo;
   request.usageFee = formData.usageFee;
   request.managementFee = formData.managementFee;
   request.gravestoneInfo = formData.gravestoneInfo;
@@ -490,6 +476,7 @@ export function plotDetailToFormData(detail: PlotDetailResponse): PlotFormData {
     saleContract: {
       contractDate: toDateOnly(detail.contractDate),
       price: detail.price,
+      contractStatus: detail.contractStatus ?? ContractStatus.Active,
       paymentStatus: detail.paymentStatus,
       reservationDate: toDateOnly(detail.reservationDate),
       acceptanceNumber: detail.acceptanceNumber || '',
@@ -526,16 +513,6 @@ export function plotDetailToFormData(detail: PlotDetailResponse): PlotFormData {
         dmSetting: customer.workInfo.dmSetting || DmSetting.Allow,
         addressType: customer.workInfo.addressType || AddressType.Home,
         notes: customer.workInfo.notes || null,
-      }
-      : null,
-    billingInfo: customer?.billingInfo
-      ? {
-        billingType: customer.billingInfo.billingType || BillingType.Individual,
-        bankName: customer.billingInfo.bankName || '',
-        branchName: customer.billingInfo.branchName || '',
-        accountType: customer.billingInfo.accountType || AccountType.Ordinary,
-        accountNumber: customer.billingInfo.accountNumber || '',
-        accountHolder: customer.billingInfo.accountHolder || '',
       }
       : null,
     usageFee: detail.usageFee

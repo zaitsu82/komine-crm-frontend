@@ -118,17 +118,6 @@ const sectionConfigs: SectionConfig[] = [
     ],
   },
   {
-    title: '請求情報',
-    fields: [
-      { key: 'billingInfo.billingType', label: '請求区分' },
-      { key: 'billingInfo.bankName', label: '金融機関名' },
-      { key: 'billingInfo.branchName', label: '支店名' },
-      { key: 'billingInfo.accountType', label: '口座種別' },
-      { key: 'billingInfo.accountNumber', label: '口座番号' },
-      { key: 'billingInfo.accountHolder', label: '口座名義' },
-    ],
-  },
-  {
     title: '墓石情報',
     fields: [
       { key: 'gravestoneInfo.gravestoneBase', label: '墓石台' },

@@ -8,7 +8,6 @@ import {
   getTaxTypes,
   getCalcTypes,
   getBillingTypes,
-  getAccountTypes,
   getRecipientTypes,
   getConstructionTypes,
   getSectionNames,
@@ -147,7 +146,6 @@ export function useMasters(options?: { skipCache?: boolean }) {
   const taxTypes = state.data?.taxType || [];
   const calcTypes = state.data?.calcType || [];
   const billingTypes = state.data?.billingType || [];
-  const accountTypes = state.data?.accountType || [];
   const recipientTypes = state.data?.recipientType || [];
   const constructionTypes = state.data?.constructionType || [];
   const sectionNames = state.data?.sectionName || [];
@@ -165,7 +163,6 @@ export function useMasters(options?: { skipCache?: boolean }) {
     taxTypes,
     calcTypes,
     billingTypes,
-    accountTypes,
     recipientTypes,
     constructionTypes,
     sectionNames,
@@ -220,7 +217,6 @@ export const usePaymentMethods = () => useMasterData<MasterItem>(getPaymentMetho
 export const useTaxTypes = () => useMasterData<TaxTypeMasterItem>(getTaxTypes);
 export const useCalcTypes = () => useMasterData<MasterItem>(getCalcTypes);
 export const useBillingTypes = () => useMasterData<MasterItem>(getBillingTypes);
-export const useAccountTypes = () => useMasterData<MasterItem>(getAccountTypes);
 export const useRecipientTypes = () => useMasterData<MasterItem>(getRecipientTypes);
 export const useConstructionTypes = () => useMasterData<MasterItem>(getConstructionTypes);
 export const useSectionNames = () => useMasterData<SectionNameMasterItem>(getSectionNames);

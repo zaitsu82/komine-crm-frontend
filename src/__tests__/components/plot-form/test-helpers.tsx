@@ -13,7 +13,6 @@ export const emptyMasterData: MasterData = {
   taxTypes: [],
   billingTypes: [],
   paymentMethods: [],
-  accountTypes: [],
   sectionNames: [],
   isLoading: false,
 };

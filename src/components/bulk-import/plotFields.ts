@@ -48,7 +48,6 @@ export interface FieldDef {
  * - SaleContract（顧客役割は簡易的に1つ、複数は別対応）
  * - Customer（契約者）
  * - WorkInfo
- * - BillingInfo
  * - UsageFee
  * - ManagementFee
  * - GravestoneInfo
@@ -339,50 +338,8 @@ export const MAIN_SHEET_FIELDS: FieldDef[] = [
   },
 
   // ===== BillingInfo（請求） =====
-  {
-    path: 'billingInfo.billingType',
-    label: '請求方法',
-    type: 'string',
-    maxLength: 50,
-    description: '振込 / 口座振替 等',
-    columnWidth: 12,
-  },
-  {
-    path: 'billingInfo.bankName',
-    label: '金融機関名',
-    type: 'string',
-    maxLength: 100,
-    columnWidth: 18,
-  },
-  {
-    path: 'billingInfo.branchName',
-    label: '支店名',
-    type: 'string',
-    maxLength: 100,
-    columnWidth: 15,
-  },
-  {
-    path: 'billingInfo.accountType',
-    label: '口座種別',
-    type: 'string',
-    maxLength: 50,
-    description: '普通 / 当座 等',
-    columnWidth: 10,
-  },
-  {
-    path: 'billingInfo.accountNumber',
-    label: '口座番号',
-    type: 'string',
-    maxLength: 20,
-    columnWidth: 12,
-  },
-  {
-    path: 'billingInfo.accountHolder',
-    label: '口座名義',
-    type: 'string',
-    maxLength: 100,
-    columnWidth: 18,
-  },
+  // Phase 2 移行で廃止。Phase 3 で Billing/Payment エンティティとして再設計予定。
+  // Refs: zaitsu82/komine-crm-backend#106
 
   // ===== UsageFee（使用料） =====
   {

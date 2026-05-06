@@ -60,7 +60,6 @@ export {
   getTaxTypes,
   getCalcTypes,
   getBillingTypes,
-  getAccountTypes,
   getRecipientTypes,
   getConstructionTypes,
   getSectionNames,

@@ -25,7 +25,6 @@ export {
   useTaxTypes,
   useCalcTypes,
   useBillingTypes,
-  useAccountTypes,
   useRecipientTypes,
   useConstructionTypes,
   findMasterByCode,

@@ -15,8 +15,6 @@ export {
   ContractRole,
   AddressType,
   DmSetting,
-  BillingType,
-  AccountType,
   BillingStatus,
   StaffRole,
   DocumentType as SharedDocumentType,
@@ -215,14 +213,6 @@ export interface ApiPlotDetail {
       addressType: string | null;
       notes: string | null;
     } | null;
-    billingInfo: {
-      billingType: string | null;
-      bankName: string | null;
-      branchName: string | null;
-      accountType: string | null;
-      accountNumber: string | null;
-      accountHolder: string | null;
-    } | null;
   };
 
   roles: Array<{
@@ -253,14 +243,6 @@ export interface ApiPlotDetail {
         dmSetting: string | null;
         addressType: string | null;
         notes: string | null;
-      } | null;
-      billingInfo: {
-        billingType: string | null;
-        bankName: string | null;
-        branchName: string | null;
-        accountType: string | null;
-        accountNumber: string | null;
-        accountHolder: string | null;
       } | null;
     };
   }>;
