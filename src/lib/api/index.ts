@@ -173,6 +173,26 @@ export type {
   YuchoExportParams,
 } from './yucho';
 
+// 請求 (Billing) APIのエクスポート
+export {
+  getBillings,
+  getBillingById,
+  createBilling,
+  updateBilling,
+  deleteBilling,
+  BILLING_CATEGORY_LABELS,
+  BILLING_RECORD_STATUS_LABELS,
+} from './billings';
+
+// 入金 (Payment) APIのエクスポート
+export {
+  getPayments,
+  getPaymentById,
+  createPayment,
+  updatePayment,
+  deletePayment,
+} from './payments';
+
 // 区画在庫管理APIのエクスポート
 export {
   getInventorySummary,

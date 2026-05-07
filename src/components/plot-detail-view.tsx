@@ -34,6 +34,8 @@ import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HistoryTab } from '@/components/plot-form/HistoryTab';
 import { useAuth } from '@/contexts/auth-context';
+import BillingManagement from '@/components/billing';
+import PaymentManagement from '@/components/payment';
 
 // ===== 型定義 =====
 
@@ -741,7 +743,7 @@ export default function PlotDetailView({ plotId, onEdit, onBack, onDelete }: Plo
             // (overflow時に中央寄せだと左端が見切れてスクロール不可になるため)
             'flex w-full justify-start overflow-x-auto overflow-y-hidden snap-x snap-mandatory scrollbar-thin h-auto gap-1',
             // sm以上: グリッドレイアウトに戻す
-            'sm:grid sm:grid-cols-3 lg:grid-cols-6 sm:overflow-visible sm:snap-none'
+            'sm:grid sm:grid-cols-4 lg:grid-cols-8 sm:overflow-visible sm:snap-none'
           )}
         >
           <TabsTrigger value="basic" className="shrink-0 sm:shrink snap-start px-3 sm:px-2 py-2 text-xs sm:text-sm whitespace-nowrap data-[state=active]:bg-matsu data-[state=active]:text-white">
@@ -758,6 +760,12 @@ export default function PlotDetailView({ plotId, onEdit, onBack, onDelete }: Plo
           </TabsTrigger>
           <TabsTrigger value="construction" className="shrink-0 sm:shrink snap-start px-3 sm:px-2 py-2 text-xs sm:text-sm whitespace-nowrap data-[state=active]:bg-matsu data-[state=active]:text-white">
             工事情報
+          </TabsTrigger>
+          <TabsTrigger value="billing" className="shrink-0 sm:shrink snap-start px-3 sm:px-2 py-2 text-xs sm:text-sm whitespace-nowrap data-[state=active]:bg-matsu data-[state=active]:text-white">
+            請求
+          </TabsTrigger>
+          <TabsTrigger value="payment" className="shrink-0 sm:shrink snap-start px-3 sm:px-2 py-2 text-xs sm:text-sm whitespace-nowrap data-[state=active]:bg-matsu data-[state=active]:text-white">
+            入金
           </TabsTrigger>
           <TabsTrigger value="history" className="shrink-0 sm:shrink snap-start px-3 sm:px-2 py-2 text-xs sm:text-sm whitespace-nowrap data-[state=active]:bg-matsu data-[state=active]:text-white">
             履歴情報
@@ -782,6 +790,32 @@ export default function PlotDetailView({ plotId, onEdit, onBack, onDelete }: Plo
 
         <TabsContent value="construction" className="mt-4 md:mt-6">
           <ConstructionInfoTab plot={plot} />
+        </TabsContent>
+
+        <TabsContent value="billing" className="mt-4 md:mt-6">
+          <div className="bg-white border border-gin rounded-elegant-lg overflow-hidden">
+            <BillingManagement
+              contractPlotId={plot.id}
+              customerId={
+                plot.roles.find((r) => r.role === ContractRole.Contractor)?.customer.id ??
+                plot.roles[0]?.customer.id
+              }
+              showHeader={false}
+            />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="payment" className="mt-4 md:mt-6">
+          <div className="bg-white border border-gin rounded-elegant-lg overflow-hidden">
+            <PaymentManagement
+              contractPlotId={plot.id}
+              customerId={
+                plot.roles.find((r) => r.role === ContractRole.Contractor)?.customer.id ??
+                plot.roles[0]?.customer.id
+              }
+              showHeader={false}
+            />
+          </div>
         </TabsContent>
 
         <TabsContent value="history" className="mt-4 md:mt-6">
