@@ -372,14 +372,14 @@ describe('plot-form.ts - Zodスキーマバリデーション', () => {
       expect(result.success).toBe(false);
     });
 
-    it('addressが空の場合エラー', () => {
+    it('addressは空でも許容される（レガシーDBで41%欠損のため nullable 化）', () => {
       const result = familyContactSchema.safeParse({ ...validContact, address: '' });
-      expect(result.success).toBe(false);
+      expect(result.success).toBe(true);
     });
 
-    it('phoneNumberが空の場合エラー', () => {
+    it('phoneNumberは空でも許容される（レガシーDBで3%欠損のため nullable 化）', () => {
       const result = familyContactSchema.safeParse({ ...validContact, phoneNumber: '' });
-      expect(result.success).toBe(false);
+      expect(result.success).toBe(true);
     });
 
     it('emergencyContactFlagのデフォルト値はfalse', () => {
