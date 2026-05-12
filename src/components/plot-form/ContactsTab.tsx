@@ -197,9 +197,7 @@ export function ContactsTab({
 
                 {/* Address */}
                 <div className="col-span-2">
-                  <Label htmlFor={`familyContacts.${index}.address`}>
-                    住所 <span className="text-beni">*</span>
-                  </Label>
+                  <Label htmlFor={`familyContacts.${index}.address`}>住所</Label>
                   <Input
                     id={`familyContacts.${index}.address`}
                     {...register(`familyContacts.${index}.address`)}
@@ -214,9 +212,7 @@ export function ContactsTab({
 
                 {/* Phone Number */}
                 <div>
-                  <Label htmlFor={`familyContacts.${index}.phoneNumber`}>
-                    電話番号 <span className="text-beni">*</span>
-                  </Label>
+                  <Label htmlFor={`familyContacts.${index}.phoneNumber`}>電話番号</Label>
                   <Input
                     id={`familyContacts.${index}.phoneNumber`}
                     {...register(`familyContacts.${index}.phoneNumber`)}
