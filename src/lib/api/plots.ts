@@ -16,6 +16,8 @@ import {
   ContractRole,
   BulkCreatePlotsResponse,
   BulkUpdatePlotsResponse,
+  RestoreContractRequest,
+  RestoreContractResponse,
 } from '@komine/types';
 import { apiGet, apiPost, apiPut, apiDelete, shouldUseMockData } from './client';
 import { ApiResponse } from './types';
@@ -509,6 +511,29 @@ export async function deletePlot(id: string): Promise<ApiResponse<void>> {
   }
 
   return apiDelete<void>(`/plots/${id}`);
+}
+
+/**
+ * 契約復活（terminated → active、誤操作リカバリ用）
+ * reason は履歴に記録される
+ */
+export async function restoreContract(
+  id: string,
+  request: RestoreContractRequest
+): Promise<ApiResponse<RestoreContractResponse>> {
+  if (shouldUseMockData()) {
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    return {
+      success: true,
+      data: {
+        message: '契約区画を復活しました',
+        id,
+        contractStatus: ContractStatus.Active,
+      },
+    };
+  }
+
+  return apiPost<RestoreContractResponse>(`/plots/${id}/restore`, request);
 }
 
 // ===== ヘルパー関数 =====

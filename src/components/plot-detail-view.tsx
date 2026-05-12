@@ -44,6 +44,7 @@ interface PlotDetailViewProps {
   onEdit?: () => void;
   onBack?: () => void;
   onDelete?: (plotCode: string, customerName: string) => void;
+  onRestore?: (plotCode: string, customerName: string) => void;
 }
 
 // ===== ステータスラベル =====
@@ -541,7 +542,7 @@ function ConstructionInfoTab({ plot }: { plot: PlotDetailResponse }) {
 
 // ===== メインコンポーネント =====
 
-export default function PlotDetailView({ plotId, onEdit, onBack, onDelete }: PlotDetailViewProps) {
+export default function PlotDetailView({ plotId, onEdit, onBack, onDelete, onRestore }: PlotDetailViewProps) {
   const { user } = useAuth();
   const { plot, isLoading, error, refresh } = usePlotDetail(plotId);
 
@@ -640,6 +641,36 @@ export default function PlotDetailView({ plotId, onEdit, onBack, onDelete }: Plo
               <span>書類履歴</span>
             </Button>
           </Link>
+          {/* terminated 状態のみ「契約を復活」ボタンを表示（誤操作リカバリ用） */}
+          {plot.contractStatus === ContractStatus.Terminated && onRestore && (
+            <Button
+              onClick={() =>
+                onRestore(
+                  plot.physicalPlot.plotNumber,
+                  primaryCustomer?.name || plot.physicalPlot.plotNumber
+                )
+              }
+              variant="outline"
+              size="sm"
+              className="gap-1.5 border-matsu text-matsu hover:bg-matsu-50"
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
+              </svg>
+              <span>契約を復活</span>
+            </Button>
+          )}
           {onEdit && (
             <Button onClick={onEdit} className="bg-matsu hover:bg-matsu-dark text-white" size="sm">
               編集
