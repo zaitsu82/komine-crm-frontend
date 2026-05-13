@@ -48,9 +48,9 @@ describe('BasicInfoTab', () => {
       </TabHost>
     );
 
-    // 区画番号、契約面積、契約日、金額、氏名、氏名カナ、郵便番号、住所、電話番号 が必須
+    // 区画番号、契約面積、契約日、金額、氏名、氏名カナ、郵便番号、住所 が必須（電話番号は nullable）
     const asterisks = screen.getAllByText('*');
-    expect(asterisks.length).toBeGreaterThanOrEqual(8);
+    expect(asterisks.length).toBeGreaterThanOrEqual(7);
   });
 
   it('区画番号フィールドに入力できる', async () => {
