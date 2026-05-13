@@ -1,21 +1,19 @@
 'use client';
 
 /**
- * 許可証テンプレートのライブプレビュー。
- * 各ページ（許可証書 / 封筒表 / 裏面 / 大型封筒）を画像背景として表示し、
- * 事前定義したフィールド座標に入力ボックスを重ねる。
+ * 許可証 / 封筒書 / 封筒台テンプレートのライブプレビュー。
+ * `pages` で渡されたページ定義（@komine/types と同一）に沿って背景画像と入力欄を表示する。
  */
 
 import { useState, useMemo } from 'react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
-import {
-  PERMIT_PAGE_LAYOUTS,
-  type PermitField,
-  type PermitPageLayout,
-} from './permit-field-layouts';
+import type { PermitField, PermitPage } from '@komine/types';
+import { PERMIT_CERTIFICATE_PAGES } from '@komine/types';
 
 interface PermitLivePreviewProps {
+  /** 省略時は許可証（1ページ） */
+  pages?: readonly PermitPage[];
   templateData: Record<string, string>;
   onTemplateDataChange: (key: string, value: string) => void;
 }
@@ -28,22 +26,16 @@ function PermitFieldOverlay({
   scalePxPerPt,
 }: {
   field: PermitField;
-  page: PermitPageLayout;
+  page: PermitPage;
   value: string;
   onChange: (value: string) => void;
   scalePxPerPt: number;
 }) {
-  // pdf-lib 座標は左下原点。プレビュー画像は左上原点なので y を反転。
   const scale = scalePxPerPt;
   const widthPx = (field.widthPt ?? 100) * scale;
   const heightPx = (field.heightPt ?? field.fontSize * 1.5) * scale;
   const fontPx = field.fontSize * scale;
 
-  // 各 direction ごとに位置の起点を計算
-  // field.x, field.y は：
-  //   - horizontal : 左下
-  //   - vertical   : 1文字目の中心 x、1文字目の上端 y
-  //   - rotated    : 回転前テキストの左端(x) と 回転後テキストの縦位置基準(y)
   let leftPx: number;
   let topPx: number;
 
@@ -55,7 +47,6 @@ function PermitFieldOverlay({
     topPx = (page.heightPt - field.y) * scale;
   } else {
     leftPx = field.x * scale;
-    // horizontal: field.y はベースライン付近。y + fontSize が上端。
     topPx = (page.heightPt - field.y - field.fontSize) * scale;
   }
 
@@ -67,9 +58,10 @@ function PermitFieldOverlay({
     height: `${heightPx}px`,
     fontSize: `${fontPx}px`,
     fontWeight: field.bold ? 700 : 400,
-    lineHeight: field.direction === 'vertical'
-      ? `${(field.lineHeight ?? field.fontSize * 1.3) * scale}px`
-      : `${heightPx}px`,
+    lineHeight:
+      field.direction === 'vertical'
+        ? `${(field.lineHeight ?? field.fontSize * 1.3) * scale}px`
+        : `${heightPx}px`,
     textAlign:
       field.direction === 'horizontal' ? (field.align ?? 'left') : 'center',
   };
@@ -80,7 +72,6 @@ function PermitFieldOverlay({
   if (field.direction === 'vertical') {
     return (
       <div style={commonStyle} className="flex flex-col items-center justify-start gap-0">
-        {/* ラベルバッジ */}
         <span
           className="pointer-events-none absolute -top-4 left-1/2 -translate-x-1/2 text-[10px] font-sans text-matsu-dark bg-white px-1 rounded border border-gin whitespace-nowrap"
           aria-hidden
@@ -121,7 +112,6 @@ function PermitFieldOverlay({
     );
   }
 
-  // horizontal
   return (
     <div style={commonStyle}>
       <span
@@ -148,11 +138,10 @@ function PermitPagePreview({
   templateData,
   onTemplateDataChange,
 }: {
-  page: PermitPageLayout;
+  page: PermitPage;
   templateData: Record<string, string>;
   onTemplateDataChange: (key: string, value: string) => void;
 }) {
-  // 表示幅に合わせて縮尺（最大 720px 相当）
   const MAX_WIDTH_PX = 720;
   const scalePxPerPt = Math.min(MAX_WIDTH_PX / page.widthPt, 1.667);
   const renderWidth = page.widthPt * scalePxPerPt;
@@ -204,21 +193,18 @@ function PermitPagePreview({
 }
 
 export function PermitLivePreview({
+  pages: pagesProp,
   templateData,
   onTemplateDataChange,
 }: PermitLivePreviewProps) {
-  const enabledPages = useMemo(
-    () => PERMIT_PAGE_LAYOUTS.filter((p) => p.enabled),
-    []
-  );
+  const pages = pagesProp ?? PERMIT_CERTIFICATE_PAGES;
+  const enabledPages = useMemo(() => pages.filter((p) => p.enabled), [pages]);
 
-  // 表示中のページ
   const [activeIndex, setActiveIndex] = useState(0);
   const activePage = enabledPages[activeIndex] ?? enabledPages[0];
 
   return (
     <div className="space-y-3">
-      {/* ページタブ */}
       <div className="flex flex-wrap gap-1 border-b border-gin pb-1">
         {enabledPages.map((p, i) => {
           const isActive = i === activeIndex;
@@ -253,11 +239,13 @@ export function PermitLivePreview({
       </p>
 
       <div className="rounded-lg border border-gin bg-shiro p-3 max-h-[min(82vh,60rem)] overflow-auto">
-        <PermitPagePreview
-          page={activePage}
-          templateData={templateData}
-          onTemplateDataChange={onTemplateDataChange}
-        />
+        {activePage && (
+          <PermitPagePreview
+            page={activePage}
+            templateData={templateData}
+            onTemplateDataChange={onTemplateDataChange}
+          />
+        )}
       </div>
     </div>
   );

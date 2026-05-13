@@ -32,6 +32,8 @@ const TEMPLATE_LABELS: Record<TemplateId, string> = {
   postcard: 'はがき',
   contract: '契約書',
   permit: '許可証（永代使用）',
+  'envelope-letter': '封筒書',
+  'envelope-base': '封筒台',
   'payment-guide': 'お支払い方法のご案内',
   other: 'その他',
 };
