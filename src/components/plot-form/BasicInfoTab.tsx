@@ -327,7 +327,6 @@ export function BasicInfoTab({
           <ViewModeField
             label="電話番号"
             viewMode={viewMode}
-            required
             register={register('customer.phoneNumber')}
             error={errors.customer?.phoneNumber?.message}
             placeholder="09012345678（ハイフンなし10-11桁）"

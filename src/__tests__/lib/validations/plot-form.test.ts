@@ -253,6 +253,16 @@ describe('plot-form.ts - Zodスキーマバリデーション', () => {
       expect(result.success).toBe(false);
     });
 
+    it('phoneNumberはnullを許容（レガシー欠損データ対応）', () => {
+      const result = customerSchema.safeParse({ ...validCustomer(), phoneNumber: null });
+      expect(result.success).toBe(true);
+    });
+
+    it('phoneNumberは空文字を許容', () => {
+      const result = customerSchema.safeParse({ ...validCustomer(), phoneNumber: '' });
+      expect(result.success).toBe(true);
+    });
+
     it('emailは空文字を許容', () => {
       const result = customerSchema.safeParse({ ...validCustomer(), email: '' });
       expect(result.success).toBe(true);
