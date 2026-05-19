@@ -454,15 +454,21 @@ function BurialInfoTab({ plot }: { plot: PlotDetailResponse }) {
       )}
 
       {/* 墓石情報 */}
-      {plot.gravestoneInfo && (
+      {(plot.gravestoneInfo || plot.graveKind != null || plot.graveKubun != null) && (
         <Section title="墓石情報">
-          <InfoField label="墓石基礎" value={plot.gravestoneInfo.gravestoneBase} />
-          <InfoField label="外柵位置" value={plot.gravestoneInfo.enclosurePosition} />
-          <InfoField label="石材店" value={plot.gravestoneInfo.gravestoneDealer} />
-          <InfoField label="墓石種類" value={plot.gravestoneInfo.gravestoneType} />
-          <InfoField label="周辺面積" value={plot.gravestoneInfo.surroundingArea} />
-          <InfoField label="建立期限" value={formatDate(plot.gravestoneInfo.establishmentDeadline)} />
-          <InfoField label="建立日" value={formatDate(plot.gravestoneInfo.establishmentDate)} />
+          <InfoField label="墓石形状" value={plot.graveKind?.toString()} />
+          <InfoField label="基地タイプ" value={plot.graveKubun?.toString()} />
+          <InfoField label="墓石基礎" value={plot.gravestoneInfo?.gravestoneBase} />
+          <InfoField label="外柵位置" value={plot.gravestoneInfo?.enclosurePosition} />
+          <InfoField label="石材店" value={plot.gravestoneInfo?.gravestoneDealer} />
+          <InfoField label="墓石種類" value={plot.gravestoneInfo?.gravestoneType} />
+          <InfoField label="周辺面積" value={plot.gravestoneInfo?.surroundingArea} />
+          <InfoField label="墓石代" value={formatPrice(plot.gravestoneInfo?.gravestoneCost)} />
+          <InfoField label="方位" value={plot.gravestoneInfo?.directionId?.toString()} />
+          <InfoField label="位置" value={plot.gravestoneInfo?.positionId?.toString()} />
+          <InfoField label="墓誌" value={plot.gravestoneInfo?.gravestoneInscription} />
+          <InfoField label="建立期限" value={formatDate(plot.gravestoneInfo?.establishmentDeadline)} />
+          <InfoField label="建立日" value={formatDate(plot.gravestoneInfo?.establishmentDate)} />
         </Section>
       )}
     </div>
