@@ -120,11 +120,48 @@ export function WorkBillingTab({
         )}
       </div>
 
-      {/*
-        請求情報（BillingInfo）セクションは Phase 2 移行で廃止。
-        Phase 3 で Billing/Payment エンティティとして再設計予定。
-        Refs: zaitsu82/komine-crm-backend#106
-      */}
+      {/* Section 2: 請求情報（契約者の振込先口座、ゆうちょ自動払込 CSV 用） */}
+      <div className="border rounded-lg p-4">
+        <h3 className="text-sm font-semibold text-sumi mb-3">請求情報</h3>
+        <div className="grid grid-cols-2 gap-4">
+          <ViewModeField
+            label="機関名称"
+            register={register('customer.bankName')}
+            error={errors.customer?.bankName?.message}
+            placeholder="○○銀行"
+          />
+          <ViewModeField
+            label="支店名称"
+            register={register('customer.branchName')}
+            error={errors.customer?.branchName?.message}
+            placeholder="本店 / 支店名"
+          />
+          <ViewModeSelect
+            label="口座科目"
+            value={watch('customer.accountType') || ''}
+            onValueChange={(v) => setValue('customer.accountType', v)}
+            placeholder="選択..."
+          >
+            <SelectItem value="ordinary">普通</SelectItem>
+            <SelectItem value="current">当座</SelectItem>
+            <SelectItem value="savings">貯蓄</SelectItem>
+          </ViewModeSelect>
+          <ViewModeField
+            label="記号番号"
+            register={register('customer.accountNumber')}
+            error={errors.customer?.accountNumber?.message}
+            placeholder="口座番号 / ゆうちょ記号番号"
+          />
+          <div className="col-span-2">
+            <ViewModeField
+              label="口座名義"
+              register={register('customer.accountHolder')}
+              error={errors.customer?.accountHolder?.message}
+              placeholder="ヤマダ タロウ"
+            />
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

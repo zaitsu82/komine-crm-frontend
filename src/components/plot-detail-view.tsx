@@ -112,6 +112,12 @@ const DM_SETTING_LABELS: Record<DmSetting, string> = {
   [DmSetting.Limited]: '制限付き',
 };
 
+const ACCOUNT_TYPE_LABELS: Record<string, string> = {
+  ordinary: '普通',
+  current: '当座',
+  savings: '貯蓄',
+};
+
 // ===== ヘルパー関数 =====
 
 function formatDate(dateStr: string | null | undefined): string {
@@ -280,11 +286,22 @@ function BasicInfoTab({ plot }: { plot: PlotDetailResponse }) {
         </Section>
       )}
 
-      {/*
-        請求情報（BillingInfo）セクションは Phase 2 移行で廃止。
-        Phase 3 で Billing/Payment エンティティとして再設計予定。
-        Refs: zaitsu82/komine-crm-backend#106
-      */}
+      {/* 請求情報（契約者の振込先口座、ゆうちょ自動払込 CSV 用） */}
+      {primaryCustomer && (
+        primaryCustomer.bankName ||
+        primaryCustomer.branchName ||
+        primaryCustomer.accountType ||
+        primaryCustomer.accountNumber ||
+        primaryCustomer.accountHolder
+      ) && (
+        <Section title="請求情報">
+          <InfoField label="機関名称" value={primaryCustomer.bankName} />
+          <InfoField label="支店名称" value={primaryCustomer.branchName} />
+          <InfoField label="口座科目" value={primaryCustomer.accountType ? (ACCOUNT_TYPE_LABELS[primaryCustomer.accountType] ?? primaryCustomer.accountType) : null} />
+          <InfoField label="記号番号" value={primaryCustomer.accountNumber} />
+          <InfoField label="口座名義" value={primaryCustomer.accountHolder} />
+        </Section>
+      )}
     </div>
   );
 }
