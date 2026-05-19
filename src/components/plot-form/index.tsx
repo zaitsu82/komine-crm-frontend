@@ -178,6 +178,12 @@ export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProp
     'customer.phoneNumber': '電話番号',
     'customer.faxNumber': 'FAX',
     'customer.email': 'メール',
+    // 振込先情報（請求情報 section）
+    'customer.bankName': '機関名称',
+    'customer.branchName': '支店名称',
+    'customer.accountType': '口座科目',
+    'customer.accountNumber': '記号番号',
+    'customer.accountHolder': '口座名義',
     'customer.role': '役割',
     'customer.notes': '備考',
     // 勤務先
