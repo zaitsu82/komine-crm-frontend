@@ -149,6 +149,7 @@ export function useMasters(options?: { skipCache?: boolean }) {
   const recipientTypes = state.data?.recipientType || [];
   const constructionTypes = state.data?.constructionType || [];
   const sectionNames = state.data?.sectionName || [];
+  const relationships = state.data?.relationship || [];
 
   return {
     // 状態
@@ -166,6 +167,7 @@ export function useMasters(options?: { skipCache?: boolean }) {
     recipientTypes,
     constructionTypes,
     sectionNames,
+    relationships,
 
     // アクション
     refresh,

@@ -36,6 +36,7 @@ export interface AllMastersData {
   recipientType: MasterItem[];
   constructionType: MasterItem[];
   sectionName: SectionNameMasterItem[];
+  relationship: MasterItem[];
 }
 
 // モックデータ
@@ -86,6 +87,20 @@ const mockMasterData: AllMastersData = {
     { id: 8, code: '3T-JURIN', name: '樹林', period: '第3期樹林部', description: null, sortOrder: 28, isActive: true },
     { id: 9, code: '4-RURIAN_TERRACE', name: 'るり庵テラス', period: '第4期', description: null, sortOrder: 30, isActive: true },
     { id: 10, code: '4-IKOI', name: '憩', period: '第4期', description: null, sortOrder: 37, isActive: true },
+  ],
+  relationship: [
+    { id: 1, code: 'SELF', name: '本人', description: null, sortOrder: 1, isActive: true },
+    { id: 2, code: 'SPOUSE', name: '配偶者', description: null, sortOrder: 2, isActive: true },
+    { id: 3, code: 'FATHER', name: '父', description: null, sortOrder: 3, isActive: true },
+    { id: 4, code: 'MOTHER', name: '母', description: null, sortOrder: 4, isActive: true },
+    { id: 5, code: 'SON', name: '長男', description: null, sortOrder: 5, isActive: true },
+    { id: 6, code: 'DAUGHTER', name: '長女', description: null, sortOrder: 6, isActive: true },
+    { id: 7, code: 'BROTHER', name: '兄弟', description: null, sortOrder: 7, isActive: true },
+    { id: 8, code: 'SISTER', name: '姉妹', description: null, sortOrder: 8, isActive: true },
+    { id: 9, code: 'GRANDFATHER', name: '祖父', description: null, sortOrder: 9, isActive: true },
+    { id: 10, code: 'GRANDMOTHER', name: '祖母', description: null, sortOrder: 10, isActive: true },
+    { id: 11, code: 'GRANDCHILD', name: '孫', description: null, sortOrder: 11, isActive: true },
+    { id: 12, code: 'OTHER', name: 'その他', description: null, sortOrder: 99, isActive: true },
   ],
 };
 
@@ -185,6 +200,16 @@ export async function getSectionNames(): Promise<ApiResponse<SectionNameMasterIt
   return apiGet<SectionNameMasterItem[]>('/masters/section-name');
 }
 
+/**
+ * 続柄マスタ取得
+ */
+export async function getRelationships(): Promise<ApiResponse<MasterItem[]>> {
+  if (shouldUseMockData()) {
+    return { success: true, data: mockMasterData.relationship };
+  }
+  return apiGet<MasterItem[]>('/masters/relationship');
+}
+
 // CRUD用の型定義
 export type MasterType =
   | 'cemetery-type'
@@ -194,7 +219,8 @@ export type MasterType =
   | 'billing-type'
   | 'recipient-type'
   | 'construction-type'
-  | 'section-name';
+  | 'section-name'
+  | 'relationship';
 
 export interface CreateMasterRequest {
   code?: string;

@@ -19,7 +19,9 @@ export function BurialInfoTab({
   buriedPersonFields,
   addBuriedPerson,
   removeBuriedPerson,
+  masterData,
 }: BurialInfoTabProps) {
+  const relationships = masterData?.relationships ?? [];
   const [expandedBurialId, setExpandedBurialId] = useState<string | null>(null);
 
   const collectiveBurial = watch('collectiveBurial');
@@ -223,16 +225,34 @@ export function BurialInfoTab({
                     )}
                   </div>
 
-                  {/* Relationship */}
+                  {/* Relationship — RelationshipMaster select with legacy fallback */}
                   <div>
-                    <Label htmlFor={`buriedPersons.${index}.relationship`}>続柄</Label>
-                    <Input
-                      id={`buriedPersons.${index}.relationship`}
-                      {...register(`buriedPersons.${index}.relationship`)}
-                      className={
-                        errors.buriedPersons?.[index]?.relationship ? 'border-beni' : ''
-                      }
-                    />
+                    {(() => {
+                      const currentValue = watch(`buriedPersons.${index}.relationship`) || '';
+                      const hasLegacyValue =
+                        currentValue && !relationships.some((r) => r.name === currentValue);
+                      return (
+                        <ViewModeSelect
+                          label="続柄"
+                          value={currentValue}
+                          onValueChange={(v) =>
+                            setValue(`buriedPersons.${index}.relationship`, v)
+                          }
+                          placeholder="選択..."
+                        >
+                          {relationships.map((r) => (
+                            <SelectItem key={r.id} value={r.name}>
+                              {r.name}
+                            </SelectItem>
+                          ))}
+                          {hasLegacyValue && (
+                            <SelectItem key="legacy" value={currentValue}>
+                              {currentValue}（既存値）
+                            </SelectItem>
+                          )}
+                        </ViewModeSelect>
+                      );
+                    })()}
                     {errors.buriedPersons?.[index]?.relationship && (
                       <p className="text-sm text-beni mt-1">
                         {errors.buriedPersons[index]?.relationship?.message}

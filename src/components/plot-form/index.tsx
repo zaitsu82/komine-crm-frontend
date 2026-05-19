@@ -32,6 +32,7 @@ export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProp
     billingTypes,
     paymentMethods,
     sectionNames,
+    relationships,
     isLoading: isMasterLoading,
   } = useMasters();
 
@@ -41,6 +42,7 @@ export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProp
     billingTypes,
     paymentMethods,
     sectionNames,
+    relationships,
     isLoading: isMasterLoading,
   };
 
