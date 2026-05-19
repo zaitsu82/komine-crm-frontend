@@ -19,7 +19,9 @@ export function ContactsTab({
   removeFamilyContact,
   expandedContactId,
   setExpandedContactId,
+  masterData,
 }: ContactsTabProps) {
+  const relationships = masterData?.relationships ?? [];
   const addressTypeLabels: Record<AddressType, string> = {
     [AddressType.Home]: '自宅',
     [AddressType.Work]: '勤務先',
@@ -140,18 +142,33 @@ export function ContactsTab({
                   )}
                 </div>
 
-                {/* Relationship */}
+                {/* Relationship — RelationshipMaster select with legacy fallback */}
                 <div>
-                  <Label htmlFor={`familyContacts.${index}.relationship`}>
-                    続柄 <span className="text-beni">*</span>
-                  </Label>
-                  <Input
-                    id={`familyContacts.${index}.relationship`}
-                    {...register(`familyContacts.${index}.relationship`)}
-                    className={
-                      errors.familyContacts?.[index]?.relationship ? 'border-beni' : ''
-                    }
-                  />
+                  {(() => {
+                    const currentValue = watch(`familyContacts.${index}.relationship`) || '';
+                    const hasLegacyValue =
+                      currentValue && !relationships.some((r) => r.name === currentValue);
+                    return (
+                      <ViewModeSelect
+                        label="続柄"
+                        required
+                        value={currentValue}
+                        onValueChange={(v) => setValue(`familyContacts.${index}.relationship`, v)}
+                        placeholder="選択..."
+                      >
+                        {relationships.map((r) => (
+                          <SelectItem key={r.id} value={r.name}>
+                            {r.name}
+                          </SelectItem>
+                        ))}
+                        {hasLegacyValue && (
+                          <SelectItem key="legacy" value={currentValue}>
+                            {currentValue}（既存値）
+                          </SelectItem>
+                        )}
+                      </ViewModeSelect>
+                    );
+                  })()}
                   {errors.familyContacts?.[index]?.relationship && (
                     <p className="text-sm text-beni mt-1">
                       {errors.familyContacts[index]?.relationship?.message}

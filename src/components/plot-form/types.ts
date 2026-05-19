@@ -9,6 +9,7 @@ export interface MasterData {
   billingTypes: MasterItem[];
   paymentMethods: MasterItem[];
   sectionNames: SectionNameMasterItem[];
+  relationships: MasterItem[];
   isLoading: boolean;
 }
 

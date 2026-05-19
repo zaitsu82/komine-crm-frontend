@@ -14,6 +14,7 @@ export const emptyMasterData: MasterData = {
   billingTypes: [],
   paymentMethods: [],
   sectionNames: [],
+  relationships: [],
   isLoading: false,
 };
 
