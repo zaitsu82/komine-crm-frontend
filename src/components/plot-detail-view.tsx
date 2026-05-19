@@ -247,7 +247,7 @@ function BasicInfoTab({ plot }: { plot: PlotDetailResponse }) {
       <Section title="契約情報">
         <InfoField label="契約日" value={formatDate(plot.contractDate)} />
         <InfoField label="契約金額" value={formatPrice(plot.price)} />
-        <InfoField label="契約状態" value={CONTRACT_STATUS_LABELS[plot.contractStatus as ContractStatus]} />
+        <InfoField label="利用申込" value={CONTRACT_STATUS_LABELS[plot.contractStatus as ContractStatus]} />
         <InfoField label="入金状態" value={PAYMENT_STATUS_LABELS[plot.paymentStatus as PaymentStatus]} />
         <InfoField label="予約日" value={formatDate(plot.reservationDate)} />
         <InfoField label="受付番号" value={plot.acceptanceNumber} />
@@ -255,7 +255,7 @@ function BasicInfoTab({ plot }: { plot: PlotDetailResponse }) {
         <InfoField label="担当者" value={plot.staffInCharge} />
         <InfoField label="取扱" value={plot.agentName} />
         <InfoField label="許可日" value={formatDate(plot.permitDate)} />
-        <InfoField label="許可番号" value={plot.permitNumber} />
+        <InfoField label="平成書番号" value={plot.permitNumber} />
         <InfoField label="開始日" value={formatDate(plot.startDate)} />
         <InfoField label="契約備考" value={plot.contractNotes} />
       </Section>
@@ -302,7 +302,7 @@ function FeeInfoTab({ plot }: { plot: PlotDetailResponse }) {
           <InfoField label="面積" value={plot.usageFee.area} />
           <InfoField label="単価" value={plot.usageFee.unitPrice} />
           <InfoField label="使用料" value={plot.usageFee.usageFee} />
-          <InfoField label="支払方法" value={plot.usageFee.paymentMethod} />
+          <InfoField label="送付方法" value={plot.usageFee.paymentMethod} />
         </Section>
       )}
 
@@ -317,8 +317,8 @@ function FeeInfoTab({ plot }: { plot: PlotDetailResponse }) {
           <InfoField label="請求月" value={plot.managementFee.billingMonth?.toString()} />
           <InfoField label="管理料" value={plot.managementFee.managementFee} />
           <InfoField label="単価" value={plot.managementFee.unitPrice} />
-          <InfoField label="最終請求月" value={plot.managementFee.lastBillingMonth} />
-          <InfoField label="支払方法" value={plot.managementFee.paymentMethod} />
+          <InfoField label="終納請求年月" value={plot.managementFee.lastBillingMonth} />
+          <InfoField label="送付方法" value={plot.managementFee.paymentMethod} />
         </Section>
       )}
 
@@ -422,9 +422,9 @@ function BurialInfoTab({ plot }: { plot: PlotDetailResponse }) {
                 <InfoField label="戒名" value={person.posthumousName} />
                 <InfoField label="性別" value={person.gender ? GENDER_LABELS[person.gender as Gender] : null} />
                 <InfoField label="生年月日" value={formatDate(person.birthDate)} />
-                <InfoField label="死亡日" value={formatDate(person.deathDate)} />
+                <InfoField label="命日" value={formatDate(person.deathDate)} />
                 <InfoField label="享年" value={person.age?.toString()} />
-                <InfoField label="納骨日" value={formatDate(person.burialDate)} />
+                <InfoField label="埋葬日" value={formatDate(person.burialDate)} />
                 <InfoField label="届出日" value={formatDate(person.reportDate)} />
                 <InfoField label="続柄" value={person.relationship} />
                 <InfoField label="宗派" value={person.religion} />
@@ -482,13 +482,13 @@ function ConstructionInfoTab({ plot }: { plot: PlotDetailResponse }) {
           plot.constructionInfos.map((record, idx) => (
             <div key={record.id || idx} className={`col-span-full ${idx > 0 ? 'border-t border-gin pt-4' : ''}`}>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <InfoField label="施工業者" value={record.contractor} />
+                <InfoField label="業者名" value={record.contractor} />
                 <InfoField label="監督者" value={record.supervisor} />
                 <InfoField label="工事種別" value={record.constructionType} />
                 <InfoField label="工事内容" value={record.constructionContent} />
                 <InfoField label="進捗" value={record.progress} />
-                <InfoField label="開始日" value={formatDate(record.startDate)} />
-                <InfoField label="完了日" value={formatDate(record.completionDate)} />
+                <InfoField label="工事開始日" value={formatDate(record.startDate)} />
+                <InfoField label="工事終了日" value={formatDate(record.completionDate)} />
                 <InfoField label="終了予定日" value={formatDate(record.scheduledEndDate)} />
                 <InfoField label="申請日" value={formatDate(record.applicationDate)} />
                 <InfoField label="許可番号" value={record.permitNumber} />

@@ -33,10 +33,10 @@ export function ConstructionInfoTab({
 
       {/* Header Row */}
       <div className="grid grid-cols-4 gap-4 p-3 bg-kinari border rounded-md text-sm font-semibold">
-        <div>施工業者</div>
+        <div>業者名</div>
         <div>工事種別</div>
         <div>進捗</div>
-        <div>開始日</div>
+        <div>工事開始日</div>
       </div>
 
       {/* Construction Info Rows */}
@@ -93,7 +93,7 @@ export function ConstructionInfoTab({
                       />
                     </div>
                     <div>
-                      <Label htmlFor={`constructionInfos.${index}.contractor`}>施工業者</Label>
+                      <Label htmlFor={`constructionInfos.${index}.contractor`}>業者名</Label>
                       <Input
                         id={`constructionInfos.${index}.contractor`}
                         {...register(`constructionInfos.${index}.contractor`)}
@@ -128,7 +128,7 @@ export function ConstructionInfoTab({
                   <h4 className="text-sm font-medium text-sumi mb-3">日程</h4>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     <div>
-                      <Label htmlFor={`constructionInfos.${index}.startDate`}>開始日</Label>
+                      <Label htmlFor={`constructionInfos.${index}.startDate`}>工事開始日</Label>
                       <Input
                         id={`constructionInfos.${index}.startDate`}
                         type="date"
@@ -136,7 +136,7 @@ export function ConstructionInfoTab({
                       />
                     </div>
                     <div>
-                      <Label htmlFor={`constructionInfos.${index}.completionDate`}>完了日</Label>
+                      <Label htmlFor={`constructionInfos.${index}.completionDate`}>工事終了日</Label>
                       <Input
                         id={`constructionInfos.${index}.completionDate`}
                         type="date"

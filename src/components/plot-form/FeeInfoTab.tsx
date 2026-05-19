@@ -155,7 +155,7 @@ export function FeeInfoTab({
             />
 
             <ViewModeSelect
-              label="支払方法"
+              label="送付方法"
               value={watch('usageFee.paymentMethod') || ''}
               onValueChange={(v) => setValue('usageFee.paymentMethod', v)}
               viewMode={viewMode}
@@ -277,7 +277,7 @@ export function FeeInfoTab({
             />
 
             <ViewModeField
-              label="最終請求月"
+              label="終納請求年月"
               viewMode={viewMode}
               register={register('managementFee.lastBillingMonth')}
               error={errors.managementFee?.lastBillingMonth?.message}
@@ -285,7 +285,7 @@ export function FeeInfoTab({
             />
 
             <ViewModeSelect
-              label="支払方法"
+              label="送付方法"
               value={watch('managementFee.paymentMethod') || ''}
               onValueChange={(v) => setValue('managementFee.paymentMethod', v)}
               viewMode={viewMode}

@@ -40,7 +40,7 @@ describe('ConstructionInfoTab', () => {
     render(<ConstructionInfoTabHost />);
 
     expect(screen.getByText('工事情報')).toBeInTheDocument();
-    expect(screen.getByText('施工業者')).toBeInTheDocument();
+    expect(screen.getByText('業者名')).toBeInTheDocument();
     expect(screen.getByText('工事種別')).toBeInTheDocument();
     expect(screen.getByText('進捗')).toBeInTheDocument();
   });
@@ -85,14 +85,14 @@ describe('ConstructionInfoTab', () => {
     expect(screen.getByText('入金情報')).toBeInTheDocument();
   });
 
-  it('展開された行の施工業者フィールドに入力できる', async () => {
+  it('展開された行の業者名フィールドに入力できる', async () => {
     const user = userEvent.setup();
     render(<ConstructionInfoTabHost />);
 
     await user.click(screen.getByRole('button', { name: /工事を追加/ }));
     await user.click(screen.getByText('未入力'));
 
-    const contractorInput = screen.getByLabelText('施工業者');
+    const contractorInput = screen.getByLabelText('業者名');
     await user.type(contractorInput, '○○建設');
     expect(contractorInput).toHaveValue('○○建設');
   });
