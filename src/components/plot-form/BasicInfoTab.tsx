@@ -201,7 +201,7 @@ export function BasicInfoTab({
           />
 
           <ViewModeField
-            label="許可番号"
+            label="平成書番号"
             viewMode={viewMode}
             register={register('saleContract.permitNumber')}
             error={errors.saleContract?.permitNumber?.message}

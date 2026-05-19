@@ -54,7 +54,7 @@ const sectionConfigs: SectionConfig[] = [
       { key: 'saleContract.acceptanceNumber', label: '受付番号' },
       { key: 'saleContract.acceptanceDate', label: '受付日', format: formatDate },
       { key: 'saleContract.permitDate', label: '許可日', format: formatDate },
-      { key: 'saleContract.permitNumber', label: '許可番号' },
+      { key: 'saleContract.permitNumber', label: '平成書番号' },
       { key: 'saleContract.startDate', label: '使用開始日', format: formatDate },
       { key: 'saleContract.staffInCharge', label: '担当者' },
       { key: 'saleContract.agentName', label: '取扱' },
@@ -89,7 +89,7 @@ const sectionConfigs: SectionConfig[] = [
       { key: 'usageFee.usageFee', label: '使用料', format: formatNumber },
       { key: 'usageFee.area', label: '面積', format: formatNumber },
       { key: 'usageFee.unitPrice', label: '単価', format: formatNumber },
-      { key: 'usageFee.paymentMethod', label: '支払方法' },
+      { key: 'usageFee.paymentMethod', label: '送付方法' },
     ],
   },
   {
@@ -103,8 +103,8 @@ const sectionConfigs: SectionConfig[] = [
       { key: 'managementFee.billingMonth', label: '請求月' },
       { key: 'managementFee.managementFee', label: '管理料', format: formatNumber },
       { key: 'managementFee.unitPrice', label: '単価', format: formatNumber },
-      { key: 'managementFee.lastBillingMonth', label: '最終請求月' },
-      { key: 'managementFee.paymentMethod', label: '支払方法' },
+      { key: 'managementFee.lastBillingMonth', label: '終納請求年月' },
+      { key: 'managementFee.paymentMethod', label: '送付方法' },
     ],
   },
   {
@@ -201,9 +201,9 @@ export function buildPlotPreviewSections(data: PlotFormData): PreviewSection[] {
       const ci = data.constructionInfos[i];
       const items = [
         { label: '工事種別', value: ci.constructionType || '' },
-        { label: '施工業者', value: ci.contractor || '' },
-        { label: '開始日', value: ci.startDate || '' },
-        { label: '完了日', value: ci.completionDate || '' },
+        { label: '業者名', value: ci.contractor || '' },
+        { label: '工事開始日', value: ci.startDate || '' },
+        { label: '工事終了日', value: ci.completionDate || '' },
         { label: '工事内容', value: ci.constructionContent || '' },
       ].filter((item) => item.value !== '');
       if (items.length > 0) {
@@ -295,9 +295,9 @@ const buriedPersonFieldDefs: ArrayFieldDef[] = [
 
 const constructionInfoFieldDefs: ArrayFieldDef[] = [
   { key: 'constructionType', label: '工事種別' },
-  { key: 'contractor', label: '施工業者' },
-  { key: 'startDate', label: '開始日' },
-  { key: 'completionDate', label: '完了日' },
+  { key: 'contractor', label: '業者名' },
+  { key: 'startDate', label: '工事開始日' },
+  { key: 'completionDate', label: '工事終了日' },
   { key: 'constructionContent', label: '工事内容' },
   { key: 'supervisor', label: '監督者' },
   { key: 'permitNumber', label: '許可番号' },
