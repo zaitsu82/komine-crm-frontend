@@ -198,9 +198,38 @@ function Section({
 
 // ===== タブコンポーネント =====
 
+type PlotRole = PlotDetailResponse['roles'][number];
+
+function CustomerInfoSection({ role, title }: { role: PlotRole; title: string }) {
+  const customer = role.customer;
+  return (
+    <Section title={title}>
+      <InfoField label="氏名" value={customer.name} />
+      <InfoField label="ふりがな" value={customer.nameKana} />
+      <InfoField label="性別" value={customer.gender ? GENDER_LABELS[customer.gender as Gender] : null} />
+      <InfoField label="生年月日" value={formatDate(customer.birthDate)} />
+      <InfoField label="電話番号" value={customer.phoneNumber} />
+      <InfoField label="FAX" value={customer.faxNumber} />
+      <InfoField label="メール" value={customer.email} />
+      <InfoField label="郵便番号" value={customer.postalCode} />
+      <InfoField label="住所" value={customer.address} />
+      <InfoField label="住所2" value={customer.addressLine2} />
+      <InfoField label="本籍地" value={customer.registeredAddress} />
+      <InfoField label="役割開始日" value={formatDate(role.roleStartDate)} />
+      <InfoField label="役割終了日" value={formatDate(role.roleEndDate)} />
+      <InfoField label="備考" value={customer.notes} />
+    </Section>
+  );
+}
+
 function BasicInfoTab({ plot }: { plot: PlotDetailResponse }) {
-  const primaryRole = plot.roles.find(r => r.role === ContractRole.Contractor) || plot.roles[0];
-  const customer = primaryRole?.customer;
+  const contractorRole = plot.roles.find(r => r.role === ContractRole.Contractor);
+  const applicantRole = plot.roles.find(r => r.role === ContractRole.Applicant);
+  const primaryRole = contractorRole ?? plot.roles[0];
+  const primaryCustomer = primaryRole?.customer;
+
+  const showApplicantSection =
+    !!applicantRole && (!primaryRole || applicantRole.customer.id !== primaryRole.customer.id);
 
   return (
     <div className="space-y-4">
@@ -231,36 +260,23 @@ function BasicInfoTab({ plot }: { plot: PlotDetailResponse }) {
         <InfoField label="契約備考" value={plot.contractNotes} />
       </Section>
 
-      {/* 顧客情報（主たる契約者） */}
-      {customer && (
-        <Section title="契約者情報">
-          <InfoField label="氏名" value={customer.name} />
-          <InfoField label="ふりがな" value={customer.nameKana} />
-          <InfoField label="性別" value={customer.gender ? GENDER_LABELS[customer.gender as Gender] : null} />
-          <InfoField label="生年月日" value={formatDate(customer.birthDate)} />
-          <InfoField label="電話番号" value={customer.phoneNumber} />
-          <InfoField label="FAX" value={customer.faxNumber} />
-          <InfoField label="メール" value={customer.email} />
-          <InfoField label="郵便番号" value={customer.postalCode} />
-          <InfoField label="住所" value={customer.address} />
-          <InfoField label="住所2" value={customer.addressLine2} />
-          <InfoField label="本籍地" value={customer.registeredAddress} />
-          <InfoField label="役割" value={primaryRole?.role ? CONTRACT_ROLE_LABELS[primaryRole.role as ContractRole] : null} />
-          <InfoField label="備考" value={customer.notes} />
-        </Section>
-      )}
+      {/* 契約者情報 */}
+      {primaryRole && <CustomerInfoSection role={primaryRole} title="契約者情報" />}
 
-      {/* 勤務先情報 */}
-      {customer?.workInfo && (
+      {/* 申込者情報（契約者と別人の場合のみ表示） */}
+      {showApplicantSection && <CustomerInfoSection role={applicantRole} title="申込者情報" />}
+
+      {/* 勤務先情報（契約者） */}
+      {primaryCustomer?.workInfo && (
         <Section title="勤務先情報">
-          <InfoField label="勤務先名称" value={customer.workInfo.companyName} />
-          <InfoField label="勤務先かな" value={customer.workInfo.companyNameKana} />
-          <InfoField label="勤務先郵便番号" value={customer.workInfo.workPostalCode} />
-          <InfoField label="勤務先住所" value={customer.workInfo.workAddress} />
-          <InfoField label="勤務先電話番号" value={customer.workInfo.workPhoneNumber} />
-          <InfoField label="DM設定" value={customer.workInfo.dmSetting ? DM_SETTING_LABELS[customer.workInfo.dmSetting as DmSetting] : null} />
-          <InfoField label="宛先区分" value={customer.workInfo.addressType ? ADDRESS_TYPE_LABELS[customer.workInfo.addressType as AddressType] : null} />
-          <InfoField label="備考" value={customer.workInfo.notes} />
+          <InfoField label="勤務先名称" value={primaryCustomer.workInfo.companyName} />
+          <InfoField label="勤務先かな" value={primaryCustomer.workInfo.companyNameKana} />
+          <InfoField label="勤務先郵便番号" value={primaryCustomer.workInfo.workPostalCode} />
+          <InfoField label="勤務先住所" value={primaryCustomer.workInfo.workAddress} />
+          <InfoField label="勤務先電話番号" value={primaryCustomer.workInfo.workPhoneNumber} />
+          <InfoField label="DM設定" value={primaryCustomer.workInfo.dmSetting ? DM_SETTING_LABELS[primaryCustomer.workInfo.dmSetting as DmSetting] : null} />
+          <InfoField label="宛先区分" value={primaryCustomer.workInfo.addressType ? ADDRESS_TYPE_LABELS[primaryCustomer.workInfo.addressType as AddressType] : null} />
+          <InfoField label="備考" value={primaryCustomer.workInfo.notes} />
         </Section>
       )}
 
