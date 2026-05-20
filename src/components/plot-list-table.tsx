@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { StatusBadge, type StatusBadgeProps } from '@/components/ui/status-badge';
+import { Switch } from '@/components/ui/switch';
 import { EmptyState } from '@/components/ui/empty-state';
 import { cn } from '@/lib/utils';
 
@@ -89,6 +90,8 @@ export default function PlotListTable({
   // ローカルソート状態（クライアントサイド）
   const [sortKey, setSortKey] = useState<SortKey>('customerName');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
+  // 埋葬者名を一覧に併記表示するかのトグル（旧画面「埋葬者を含む」相当）
+  const [showBuriedPersons, setShowBuriedPersons] = useState(false);
 
   // usePlotsフックを使用（サーバーサイド検索）
   const {
@@ -300,6 +303,20 @@ export default function PlotListTable({
               </Button>
             </div>
           </div>
+          {/* 表示オプション */}
+          <div className="mt-3 pt-3 border-t border-gin flex items-center gap-2">
+            <Switch
+              id="toggle-include-buried-persons"
+              checked={showBuriedPersons}
+              onCheckedChange={setShowBuriedPersons}
+            />
+            <label
+              htmlFor="toggle-include-buried-persons"
+              className="text-sm text-sumi cursor-pointer select-none"
+            >
+              埋葬者を含む
+            </label>
+          </div>
         </div>
       )}
 
@@ -453,6 +470,12 @@ export default function PlotListTable({
                           <div className="text-xs md:text-sm text-hai">
                             {plot.customerNameKana || ''}
                           </div>
+                          {showBuriedPersons && plot.buriedPersonNames.length > 0 && (
+                            <div className="mt-1 text-xs text-hai whitespace-normal max-w-[260px]">
+                              <span className="text-cha font-medium">埋葬者:</span>{' '}
+                              {plot.buriedPersonNames.join('、')}
+                            </div>
+                          )}
                           {/* モバイル専用: エリアと未集金額を補足表示 */}
                           <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-hai sm:hidden">
                             {plot.areaName && <span>{plot.areaName}</span>}
