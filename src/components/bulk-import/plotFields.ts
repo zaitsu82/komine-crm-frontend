@@ -263,6 +263,14 @@ export const MAIN_SHEET_FIELDS: FieldDef[] = [
     columnWidth: 25,
   },
   {
+    path: 'customer.registeredPostalCode',
+    label: '本籍郵便番号',
+    type: 'string',
+    maxLength: 7,
+    columnWidth: 10,
+    example: '1234567',
+  },
+  {
     path: 'customer.registeredAddress',
     label: '本籍地',
     type: 'string',

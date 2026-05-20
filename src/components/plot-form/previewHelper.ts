@@ -71,6 +71,7 @@ const sectionConfigs: SectionConfig[] = [
       { key: 'customer.postalCode', label: '郵便番号' },
       { key: 'customer.address', label: '住所' },
       { key: 'customer.addressLine2', label: '住所2' },
+      { key: 'customer.registeredPostalCode', label: '本籍郵便番号' },
       { key: 'customer.registeredAddress', label: '本籍地' },
       { key: 'customer.phoneNumber', label: '電話番号' },
       { key: 'customer.faxNumber', label: 'FAX' },

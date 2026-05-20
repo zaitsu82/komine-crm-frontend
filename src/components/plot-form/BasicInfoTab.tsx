@@ -314,6 +314,14 @@ export function BasicInfoTab({
             />
           </div>
 
+          <ViewModeField
+            label="本籍郵便番号"
+            viewMode={viewMode}
+            register={register('customer.registeredPostalCode')}
+            error={errors.customer?.registeredPostalCode?.message}
+            placeholder="1234567（ハイフンなし7桁）"
+          />
+
           <div className="col-span-3">
             <ViewModeField
               label="本籍地"

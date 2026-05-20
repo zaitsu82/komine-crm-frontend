@@ -176,6 +176,7 @@ export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProp
     'customer.postalCode': '郵便番号',
     'customer.address': '住所',
     'customer.addressLine2': '住所2',
+    'customer.registeredPostalCode': '本籍郵便番号',
     'customer.registeredAddress': '本籍地',
     'customer.phoneNumber': '電話番号',
     'customer.faxNumber': 'FAX',
