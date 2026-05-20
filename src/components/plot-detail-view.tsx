@@ -248,6 +248,7 @@ function CustomerInfoSection({ role, title }: { role: PlotRole; title: string })
       <InfoField label="郵便番号" value={customer.postalCode} />
       <InfoField label="住所" value={customer.address} />
       <InfoField label="住所2" value={customer.addressLine2} />
+      <InfoField label="本籍郵便番号" value={customer.registeredPostalCode} />
       <InfoField label="本籍地" value={customer.registeredAddress} />
       <InfoField label="役割開始日" value={formatDate(role.roleStartDate)} />
       <InfoField label="役割終了日" value={formatDate(role.roleEndDate)} />
