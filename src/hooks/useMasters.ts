@@ -11,6 +11,7 @@ import {
   getRecipientTypes,
   getConstructionTypes,
   getSectionNames,
+  getContractors,
   MasterItem,
   TaxTypeMasterItem,
   SectionNameMasterItem,
@@ -150,6 +151,7 @@ export function useMasters(options?: { skipCache?: boolean }) {
   const constructionTypes = state.data?.constructionType || [];
   const sectionNames = state.data?.sectionName || [];
   const relationships = state.data?.relationship || [];
+  const contractors = state.data?.contractor || [];
 
   return {
     // 状態
@@ -168,6 +170,7 @@ export function useMasters(options?: { skipCache?: boolean }) {
     constructionTypes,
     sectionNames,
     relationships,
+    contractors,
 
     // アクション
     refresh,
@@ -222,6 +225,7 @@ export const useBillingTypes = () => useMasterData<MasterItem>(getBillingTypes);
 export const useRecipientTypes = () => useMasterData<MasterItem>(getRecipientTypes);
 export const useConstructionTypes = () => useMasterData<MasterItem>(getConstructionTypes);
 export const useSectionNames = () => useMasterData<SectionNameMasterItem>(getSectionNames);
+export const useContractors = () => useMasterData<MasterItem>(getContractors);
 
 /**
  * マスタデータからコードで値を検索するユーティリティ

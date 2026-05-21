@@ -37,6 +37,7 @@ export interface AllMastersData {
   constructionType: MasterItem[];
   sectionName: SectionNameMasterItem[];
   relationship: MasterItem[];
+  contractor: MasterItem[];
 }
 
 // モックデータ
@@ -101,6 +102,13 @@ const mockMasterData: AllMastersData = {
     { id: 10, code: 'GRANDMOTHER', name: '祖母', description: null, sortOrder: 10, isActive: true },
     { id: 11, code: 'GRANDCHILD', name: '孫', description: null, sortOrder: 11, isActive: true },
     { id: 12, code: 'OTHER', name: 'その他', description: null, sortOrder: 99, isActive: true },
+  ],
+  contractor: [
+    { id: 1, code: 'placeholder-1', name: '小嶺石材', description: null, sortOrder: 1, isActive: true },
+    { id: 2, code: 'placeholder-2', name: '小嶺霊園工事部', description: null, sortOrder: 2, isActive: true },
+    { id: 3, code: 'placeholder-3', name: '提携業者A', description: null, sortOrder: 3, isActive: true },
+    { id: 4, code: 'placeholder-4', name: '提携業者B', description: null, sortOrder: 4, isActive: true },
+    { id: 5, code: 'placeholder-99', name: 'その他', description: null, sortOrder: 99, isActive: true },
   ],
 };
 
@@ -210,6 +218,16 @@ export async function getRelationships(): Promise<ApiResponse<MasterItem[]>> {
   return apiGet<MasterItem[]>('/masters/relationship');
 }
 
+/**
+ * 工事業者マスタ取得
+ */
+export async function getContractors(): Promise<ApiResponse<MasterItem[]>> {
+  if (shouldUseMockData()) {
+    return { success: true, data: mockMasterData.contractor };
+  }
+  return apiGet<MasterItem[]>('/masters/contractor');
+}
+
 // CRUD用の型定義
 export type MasterType =
   | 'cemetery-type'
@@ -220,7 +238,8 @@ export type MasterType =
   | 'recipient-type'
   | 'construction-type'
   | 'section-name'
-  | 'relationship';
+  | 'relationship'
+  | 'contractor';
 
 export interface CreateMasterRequest {
   code?: string;

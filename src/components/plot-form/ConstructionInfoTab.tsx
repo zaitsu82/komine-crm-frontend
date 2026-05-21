@@ -2,19 +2,30 @@
 
 import { useState } from 'react';
 import { ConstructionInfoTabProps, getDefaultConstructionInfo } from './types';
+import { ViewModeSelect } from './ViewModeField';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { SelectItem } from '@/components/ui/select';
 import { ChevronDown, ChevronUp, Trash2, Plus } from 'lucide-react';
 
 export function ConstructionInfoTab({
   register,
   watch,
+  setValue,
   constructionInfoFields,
   addConstructionInfo,
   removeConstructionInfo,
+  masterData,
 }: ConstructionInfoTabProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const contractors = masterData?.contractors ?? [];
+
+  const getContractorLabel = (value: string | null | undefined): string => {
+    if (!value) return '未入力';
+    const master = contractors.find((c) => c.code === value);
+    return master ? master.name : value;
+  };
 
   return (
     <div className="space-y-4">
@@ -50,7 +61,7 @@ export function ConstructionInfoTab({
             >
               <div className="grid grid-cols-4 gap-4 flex-1 text-sm">
                 <span className="font-medium">
-                  {watch(`constructionInfos.${index}.contractor`) || '未入力'}
+                  {getContractorLabel(watch(`constructionInfos.${index}.contractor`))}
                 </span>
                 <span>{watch(`constructionInfos.${index}.constructionType`) || '-'}</span>
                 <span>{watch(`constructionInfos.${index}.progress`) || '-'}</span>
@@ -93,11 +104,32 @@ export function ConstructionInfoTab({
                       />
                     </div>
                     <div>
-                      <Label htmlFor={`constructionInfos.${index}.contractor`}>業者名</Label>
-                      <Input
-                        id={`constructionInfos.${index}.contractor`}
-                        {...register(`constructionInfos.${index}.contractor`)}
-                      />
+                      {(() => {
+                        const currentValue = watch(`constructionInfos.${index}.contractor`) || '';
+                        const hasLegacyValue =
+                          currentValue && !contractors.some((c) => c.code === currentValue);
+                        return (
+                          <ViewModeSelect
+                            label="業者名"
+                            value={currentValue}
+                            onValueChange={(v) =>
+                              setValue(`constructionInfos.${index}.contractor`, v)
+                            }
+                            placeholder="選択..."
+                          >
+                            {contractors.map((c) => (
+                              <SelectItem key={c.id} value={c.code}>
+                                {c.name}
+                              </SelectItem>
+                            ))}
+                            {hasLegacyValue && (
+                              <SelectItem key="legacy" value={currentValue}>
+                                {currentValue}（既存値）
+                              </SelectItem>
+                            )}
+                          </ViewModeSelect>
+                        );
+                      })()}
                     </div>
                     <div>
                       <Label htmlFor={`constructionInfos.${index}.supervisor`}>監督者</Label>

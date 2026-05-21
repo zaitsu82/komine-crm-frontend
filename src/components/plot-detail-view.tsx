@@ -526,7 +526,18 @@ function HistoryInfoTab({ plot }: { plot: PlotDetailResponse }) {
   return <HistoryTab plotDetail={plot} />;
 }
 
-function ConstructionInfoTab({ plot }: { plot: PlotDetailResponse }) {
+function ConstructionInfoTab({
+  plot,
+  contractors,
+}: {
+  plot: PlotDetailResponse;
+  contractors: MasterItem[];
+}) {
+  const resolveContractor = (value: string | null | undefined): string | null => {
+    if (!value) return null;
+    const master = contractors.find((c) => c.code === value);
+    return master ? master.name : value;
+  };
   return (
     <div className="space-y-4">
       <Section title="工事記録">
@@ -534,7 +545,7 @@ function ConstructionInfoTab({ plot }: { plot: PlotDetailResponse }) {
           plot.constructionInfos.map((record, idx) => (
             <div key={record.id || idx} className={`col-span-full ${idx > 0 ? 'border-t border-gin pt-4' : ''}`}>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <InfoField label="業者名" value={record.contractor} />
+                <InfoField label="業者名" value={resolveContractor(record.contractor)} />
                 <InfoField label="監督者" value={record.supervisor} />
                 <InfoField label="工事種別" value={record.constructionType} />
                 <InfoField label="工事内容" value={record.constructionContent} />
@@ -613,7 +624,7 @@ function ConstructionInfoTab({ plot }: { plot: PlotDetailResponse }) {
 export default function PlotDetailView({ plotId, onEdit, onBack, onDelete, onRestore }: PlotDetailViewProps) {
   const { user } = useAuth();
   const { plot, isLoading, error, refresh } = usePlotDetail(plotId);
-  const { calcTypes, taxTypes, billingTypes, paymentMethods } = useMasters();
+  const { calcTypes, taxTypes, billingTypes, paymentMethods, contractors } = useMasters();
   const feeMasters: FeeMasters = { calcTypes, taxTypes, billingTypes, paymentMethods };
 
   if (isLoading) {
@@ -890,7 +901,7 @@ export default function PlotDetailView({ plotId, onEdit, onBack, onDelete, onRes
         </TabsContent>
 
         <TabsContent value="construction" className="mt-4 md:mt-6">
-          <ConstructionInfoTab plot={plot} />
+          <ConstructionInfoTab plot={plot} contractors={contractors} />
         </TabsContent>
 
         <TabsContent value="billing" className="mt-4 md:mt-6">

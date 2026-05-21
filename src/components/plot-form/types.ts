@@ -10,6 +10,7 @@ export interface MasterData {
   paymentMethods: MasterItem[];
   sectionNames: SectionNameMasterItem[];
   relationships: MasterItem[];
+  contractors: MasterItem[];
   isLoading: boolean;
 }
 

@@ -1,5 +1,20 @@
 import type { PlotFormData } from '@/lib/validations/plot-form';
 import type { PreviewSection, PreviewDiffSection, PreviewDiffItem } from '@/components/shared/dialogs';
+import type { MasterItem } from '@/lib/api';
+
+export interface PreviewMasterContext {
+  contractors?: MasterItem[];
+}
+
+function resolveContractorLabel(
+  value: string | null | undefined,
+  contractors: MasterItem[] | undefined,
+): string {
+  if (!value) return '';
+  if (!contractors || contractors.length === 0) return value;
+  const master = contractors.find((c) => c.code === value);
+  return master ? master.name : value;
+}
 
 type SectionConfig = {
   title: string;
@@ -147,7 +162,10 @@ function formatFieldValue(value: unknown, format?: (v: unknown) => string): stri
 /**
  * 新規登録時のプレビューセクションを生成
  */
-export function buildPlotPreviewSections(data: PlotFormData): PreviewSection[] {
+export function buildPlotPreviewSections(
+  data: PlotFormData,
+  masterContext?: PreviewMasterContext,
+): PreviewSection[] {
   const sections: PreviewSection[] = [];
 
   for (const config of sectionConfigs) {
@@ -202,7 +220,7 @@ export function buildPlotPreviewSections(data: PlotFormData): PreviewSection[] {
       const ci = data.constructionInfos[i];
       const items = [
         { label: '工事種別', value: ci.constructionType || '' },
-        { label: '業者名', value: ci.contractor || '' },
+        { label: '業者名', value: resolveContractorLabel(ci.contractor, masterContext?.contractors) },
         { label: '工事開始日', value: ci.startDate || '' },
         { label: '工事終了日', value: ci.completionDate || '' },
         { label: '工事内容', value: ci.constructionContent || '' },
@@ -220,6 +238,7 @@ export function buildPlotPreviewSections(data: PlotFormData): PreviewSection[] {
 interface ArrayFieldDef {
   key: string;
   label: string;
+  format?: (v: unknown) => string;
 }
 
 function buildArrayDiffSections(
@@ -233,6 +252,9 @@ function buildArrayDiffSections(
   const currLen = currentArr?.length || 0;
   const maxLen = Math.max(origLen, currLen);
 
+  const fmt = (f: ArrayFieldDef, v: unknown): string =>
+    f.format ? f.format(v) : String(v ?? '');
+
   for (let i = 0; i < maxLen; i++) {
     const orig = originalArr?.[i];
     const curr = currentArr?.[i];
@@ -241,7 +263,7 @@ function buildArrayDiffSections(
     if (!orig && curr) {
       // 新規追加
       for (const f of fields) {
-        const val = String(curr[f.key] ?? '');
+        const val = fmt(f, curr[f.key]);
         if (val) {
           items.push({ label: f.label, before: '', after: val });
         }
@@ -252,7 +274,7 @@ function buildArrayDiffSections(
     } else if (orig && !curr) {
       // 削除
       for (const f of fields) {
-        const val = String(orig[f.key] ?? '');
+        const val = fmt(f, orig[f.key]);
         if (val) {
           items.push({ label: f.label, before: val, after: '' });
         }
@@ -263,8 +285,8 @@ function buildArrayDiffSections(
     } else if (orig && curr) {
       // 既存の変更
       for (const f of fields) {
-        const before = String(orig[f.key] ?? '');
-        const after = String(curr[f.key] ?? '');
+        const before = fmt(f, orig[f.key]);
+        const after = fmt(f, curr[f.key]);
         if (before !== after) {
           items.push({ label: f.label, before, after });
         }
@@ -294,9 +316,15 @@ const buriedPersonFieldDefs: ArrayFieldDef[] = [
   { key: 'gender', label: '性別' },
 ];
 
-const constructionInfoFieldDefs: ArrayFieldDef[] = [
+const buildConstructionInfoFieldDefs = (
+  contractors: MasterItem[] | undefined,
+): ArrayFieldDef[] => [
   { key: 'constructionType', label: '工事種別' },
-  { key: 'contractor', label: '業者名' },
+  {
+    key: 'contractor',
+    label: '業者名',
+    format: (v) => resolveContractorLabel(v as string | null | undefined, contractors),
+  },
   { key: 'startDate', label: '工事開始日' },
   { key: 'completionDate', label: '工事終了日' },
   { key: 'constructionContent', label: '工事内容' },
@@ -310,7 +338,8 @@ const constructionInfoFieldDefs: ArrayFieldDef[] = [
  */
 export function buildPlotDiffSections(
   original: PlotFormData,
-  current: PlotFormData
+  current: PlotFormData,
+  masterContext?: PreviewMasterContext,
 ): PreviewDiffSection[] {
   const sections: PreviewDiffSection[] = [];
 
@@ -347,7 +376,7 @@ export function buildPlotDiffSections(
     '工事情報',
     original.constructionInfos as unknown as Record<string, unknown>[],
     current.constructionInfos as unknown as Record<string, unknown>[],
-    constructionInfoFieldDefs,
+    buildConstructionInfoFieldDefs(masterContext?.contractors),
   ));
 
   return sections;
