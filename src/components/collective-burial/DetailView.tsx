@@ -17,6 +17,12 @@ import {
 } from '@/lib/api';
 import { useCollectiveBurialMutations } from '@/hooks/useCollectiveBurials';
 import { formatDateWithEra } from '@/lib/utils';
+import {
+  calculateElapsedYears,
+  calculateScheduledCollectiveBurialDate,
+  inferValidityPeriodYears,
+  isJurinArea,
+} from '@/lib/collective-burial-rules';
 
 interface CollectiveBurialDetailViewProps {
   data: CollectiveBurialDetail;
@@ -52,6 +58,29 @@ export default function CollectiveBurialDetailView({
   // 上限到達率の計算
   const capacityPercentage = Math.round((data.currentBurialCount / data.burialCapacity) * 100);
   const isCapacityReached = data.currentBurialCount >= data.burialCapacity;
+
+  // 合祀予定日: DB 値優先、無ければ「上限到達日 or 最新埋葬日 + 有効年数」で自動計算
+  const latestBurialDate = data.buriedPersons
+    .map(bp => bp.burialDate)
+    .filter((d): d is string => d !== null)
+    .sort()
+    .at(-1) || null;
+  const scheduledBase = data.capacityReachedDate ?? latestBurialDate;
+  const scheduledDateFallback = calculateScheduledCollectiveBurialDate(
+    scheduledBase,
+    data.validityPeriodYears,
+  );
+  const scheduledDate = data.billingScheduledDate
+    ? new Date(data.billingScheduledDate)
+    : scheduledDateFallback;
+  const isFallbackScheduled = !data.billingScheduledDate && scheduledDateFallback !== null;
+
+  // 業務ルール基準 (区域名 + 契約日 から推定)
+  const inferredRule = inferValidityPeriodYears(data.areaName, data.contractDate);
+  const ruleBasis = isJurinArea(data.areaName)
+    ? `${data.areaName} は樹林墓部のため、契約日が 2023-04-01 以降 → 13 年 / それ以前 → 15 年`
+    : `${data.areaName} は通常区画のため 33 年`;
+  const ruleMismatch = data.validityPeriodYears !== inferredRule;
 
   return (
     <div className="h-full flex flex-col bg-shiro">
@@ -233,6 +262,29 @@ export default function CollectiveBurialDetailView({
                     </div>
                   </div>
                 )}
+
+                {/* 合祀予定日（自動計算ルール） */}
+                <div className="mt-6 p-4 bg-kinari rounded-lg border border-gin">
+                  <Label className="text-sm text-hai mb-2 block">合祀予定日（自動計算）</Label>
+                  {scheduledDate ? (
+                    <p className="text-lg font-semibold text-sumi">
+                      {formatDateWithEra(scheduledDate)}
+                      {isFallbackScheduled && (
+                        <span className="ml-2 text-xs text-hai font-normal">
+                          ※ 請求予定日未設定のため埋葬日 + 有効年数で自動算出
+                        </span>
+                      )}
+                    </p>
+                  ) : (
+                    <p className="text-sm text-hai">埋葬日が未設定のため算出できません</p>
+                  )}
+                  <p className="text-xs text-hai mt-2">{ruleBasis}（推定 {inferredRule} 年）</p>
+                  {ruleMismatch && (
+                    <p className="text-xs text-kohaku-dark mt-1">
+                      ⚠ 登録値 {data.validityPeriodYears} 年 と業務ルール推定値 {inferredRule} 年 が一致しません。区域分類または契約日をご確認ください。
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -253,24 +305,32 @@ export default function CollectiveBurialDetailView({
                         <th className="text-left p-4 text-sm font-semibold text-sumi">続柄</th>
                         <th className="text-left p-4 text-sm font-semibold text-sumi">死亡日</th>
                         <th className="text-left p-4 text-sm font-semibold text-sumi">埋葬日</th>
+                        <th className="text-center p-4 text-sm font-semibold text-sumi">経過年数</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {data.buriedPersons.map((person) => (
-                        <tr key={person.id} className="border-b border-gin last:border-b-0 hover:bg-kinari transition-colors">
-                          <td className="p-4">
-                            <p className="font-semibold text-sumi">{person.name}</p>
-                            {person.nameKana && <p className="text-sm text-hai">（{person.nameKana}）</p>}
-                          </td>
-                          <td className="p-4 text-sumi">{person.relationship || '-'}</td>
-                          <td className="p-4 text-sumi">
-                            {person.deathDate ? formatDateWithEra(new Date(person.deathDate)) : '-'}
-                          </td>
-                          <td className="p-4 text-sumi">
-                            {person.burialDate ? formatDateWithEra(new Date(person.burialDate)) : '-'}
-                          </td>
-                        </tr>
-                      ))}
+                      {data.buriedPersons.map((person) => {
+                        // 経過年数: 命日 優先、無ければ埋葬日から
+                        const elapsedYears = calculateElapsedYears(person.deathDate ?? person.burialDate);
+                        return (
+                          <tr key={person.id} className="border-b border-gin last:border-b-0 hover:bg-kinari transition-colors">
+                            <td className="p-4">
+                              <p className="font-semibold text-sumi">{person.name}</p>
+                              {person.nameKana && <p className="text-sm text-hai">（{person.nameKana}）</p>}
+                            </td>
+                            <td className="p-4 text-sumi">{person.relationship || '-'}</td>
+                            <td className="p-4 text-sumi">
+                              {person.deathDate ? formatDateWithEra(new Date(person.deathDate)) : '-'}
+                            </td>
+                            <td className="p-4 text-sumi">
+                              {person.burialDate ? formatDateWithEra(new Date(person.burialDate)) : '-'}
+                            </td>
+                            <td className="p-4 text-center text-sumi">
+                              {elapsedYears !== null ? `${elapsedYears}年` : '-'}
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -339,14 +399,24 @@ export default function CollectiveBurialDetailView({
                   </div>
                 </div>
 
-                {data.billingScheduledDate && (
+                {data.billingScheduledDate ? (
                   <div className="mt-6">
                     <Label className="text-sm text-hai">請求予定日</Label>
                     <p className="text-lg font-semibold text-sumi mt-1">
                       {formatDateWithEra(new Date(data.billingScheduledDate))}
                     </p>
                   </div>
-                )}
+                ) : scheduledDateFallback ? (
+                  <div className="mt-6">
+                    <Label className="text-sm text-hai">請求予定日（自動計算）</Label>
+                    <p className="text-lg font-semibold text-sumi mt-1">
+                      {formatDateWithEra(scheduledDateFallback)}
+                      <span className="ml-2 text-xs text-hai font-normal">
+                        ※ 埋葬日 + 有効年数 ({data.validityPeriodYears} 年) で算出
+                      </span>
+                    </p>
+                  </div>
+                ) : null}
               </div>
             </div>
 

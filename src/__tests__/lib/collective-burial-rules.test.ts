@@ -1,0 +1,111 @@
+import {
+  isJurinArea,
+  inferValidityPeriodYears,
+  calculateElapsedYears,
+  calculateScheduledCollectiveBurialDate,
+  JURIN_RULE_TRANSITION_DATE,
+} from '@/lib/collective-burial-rules';
+
+describe('collective-burial-rules', () => {
+  describe('isJurinArea', () => {
+    it('区域名に「樹林」を含めば true', () => {
+      expect(isJurinArea('第3期樹林部')).toBe(true);
+      expect(isJurinArea('樹林墓部')).toBe(true);
+    });
+
+    it('「樹林」を含まない / null / 空文字は false', () => {
+      expect(isJurinArea('第1期A')).toBe(false);
+      expect(isJurinArea('第2期')).toBe(false);
+      expect(isJurinArea(null)).toBe(false);
+      expect(isJurinArea('')).toBe(false);
+    });
+  });
+
+  describe('inferValidityPeriodYears', () => {
+    it('樹林墓部 + 2023-04-01 以降 → 13 年', () => {
+      expect(inferValidityPeriodYears('第3期樹林部', '2023-04-01')).toBe(13);
+      expect(inferValidityPeriodYears('第3期樹林部', '2024-06-15')).toBe(13);
+    });
+
+    it('樹林墓部 + 2023-04-01 より前 → 15 年 (旧ルール)', () => {
+      expect(inferValidityPeriodYears('第3期樹林部', '2023-03-31')).toBe(15);
+      expect(inferValidityPeriodYears('第3期樹林部', '2020-01-01')).toBe(15);
+    });
+
+    it('非樹林部 → 33 年 (契約日に関わらず)', () => {
+      expect(inferValidityPeriodYears('第1期A', '2020-01-01')).toBe(33);
+      expect(inferValidityPeriodYears('第2期', '2024-06-15')).toBe(33);
+      expect(inferValidityPeriodYears('第4期', null)).toBe(33);
+    });
+
+    it('契約日省略時は樹林部 → 新ルール 13 年扱い', () => {
+      expect(inferValidityPeriodYears('第3期樹林部')).toBe(13);
+    });
+
+    it('areaName が null / undefined は 33 年', () => {
+      expect(inferValidityPeriodYears(null)).toBe(33);
+      expect(inferValidityPeriodYears(undefined)).toBe(33);
+    });
+  });
+
+  describe('calculateElapsedYears', () => {
+    it('単純な年差 (相当日経過後)', () => {
+      const ref = new Date(2026, 5, 1); // 2026-06-01
+      expect(calculateElapsedYears('2020-01-15', ref)).toBe(6);
+    });
+
+    it('相当日前は -1 年', () => {
+      const ref = new Date(2026, 5, 1); // 2026-06-01
+      // 2020-08-01 はまだ「相当日」(8月1日) を迎えていない → 5 年
+      expect(calculateElapsedYears('2020-08-01', ref)).toBe(5);
+    });
+
+    it('相当日当日は完了扱い', () => {
+      const ref = new Date(2026, 5, 1); // 2026-06-01
+      expect(calculateElapsedYears('2020-06-01', ref)).toBe(6);
+    });
+
+    it('未来日は null', () => {
+      const ref = new Date(2026, 5, 1);
+      expect(calculateElapsedYears('2030-01-01', ref)).toBe(null);
+    });
+
+    it('null / undefined / 無効文字列は null', () => {
+      expect(calculateElapsedYears(null)).toBe(null);
+      expect(calculateElapsedYears(undefined)).toBe(null);
+      expect(calculateElapsedYears('not-a-date')).toBe(null);
+    });
+
+    it('Date インスタンスも受け付ける', () => {
+      const ref = new Date(2026, 5, 1);
+      expect(calculateElapsedYears(new Date(2020, 0, 15), ref)).toBe(6);
+    });
+  });
+
+  describe('calculateScheduledCollectiveBurialDate', () => {
+    it('基準日 + N 年', () => {
+      const result = calculateScheduledCollectiveBurialDate('2020-03-15', 13);
+      expect(result?.getFullYear()).toBe(2033);
+      expect(result?.getMonth()).toBe(2); // 3月
+      expect(result?.getDate()).toBe(15);
+    });
+
+    it('33 年ルール', () => {
+      const result = calculateScheduledCollectiveBurialDate('2000-01-01', 33);
+      expect(result?.getFullYear()).toBe(2033);
+    });
+
+    it('基準日が null → null', () => {
+      expect(calculateScheduledCollectiveBurialDate(null, 13)).toBe(null);
+      expect(calculateScheduledCollectiveBurialDate(undefined, 33)).toBe(null);
+    });
+  });
+
+  describe('JURIN_RULE_TRANSITION_DATE', () => {
+    it('2023-04-01 である', () => {
+      expect(JURIN_RULE_TRANSITION_DATE.getFullYear()).toBe(2023);
+      expect(JURIN_RULE_TRANSITION_DATE.getMonth()).toBe(3); // 4月
+      expect(JURIN_RULE_TRANSITION_DATE.getDate()).toBe(1);
+    });
+  });
+});
