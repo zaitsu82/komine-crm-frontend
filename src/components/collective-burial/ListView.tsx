@@ -21,6 +21,10 @@ import {
   BILLING_STATUS_LABELS,
   BILLING_STATUS_COLORS,
 } from '@/lib/api';
+import {
+  calculateElapsedYears,
+  calculateScheduledCollectiveBurialDate,
+} from '@/lib/collective-burial-rules';
 import PageHeader from '@/components/page-header';
 
 interface CollectiveBurialListViewProps {
@@ -174,10 +178,11 @@ export default function CollectiveBurialListView({
       <div className="flex-1 overflow-auto bg-gradient-warm">
         {/* 凡例 + アクションボタン */}
         <div className="flex items-center px-3 md:px-6 py-2 md:py-3 border-b border-gin bg-kinari">
-          <div className="flex-1 flex flex-wrap gap-2 md:gap-4 text-sm">
+          <div className="flex-1 flex flex-wrap items-center gap-2 md:gap-4 text-sm">
             <span className="px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">請求前</span>
             <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">請求済</span>
             <span className="px-2 py-0.5 bg-green-100 text-green-800 rounded-full text-xs font-medium">支払済</span>
+            <span className="text-xs text-hai">合祀年「*」= 埋葬日 + 有効年数の自動計算</span>
           </div>
           <div className="flex-shrink-0 flex items-center space-x-2">
             <Button onClick={resetFilters} variant="outline" size="sm" className="h-8 text-xs">
@@ -469,6 +474,7 @@ export default function CollectiveBurialListView({
                             <th className="text-left px-2 md:px-4 py-3 text-sm font-semibold text-sumi" style={{ width: '100px' }}>区画番号</th>
                             <th className="text-center px-2 md:px-4 py-3 text-sm font-semibold text-sumi hidden md:table-cell" style={{ width: '80px' }}>契約年</th>
                             <th className="text-center px-2 md:px-4 py-3 text-sm font-semibold text-sumi hidden md:table-cell" style={{ width: '100px' }}>納骨日</th>
+                            <th className="text-center px-2 md:px-4 py-3 text-sm font-semibold text-sumi hidden md:table-cell" style={{ width: '80px' }}>経過年数</th>
                             <th className="text-center px-2 md:px-4 py-3 text-sm font-semibold text-sumi hidden lg:table-cell" style={{ width: '80px' }}>合祀年</th>
                             <th className="text-center px-2 md:px-4 py-3 text-sm font-semibold text-sumi hidden lg:table-cell" style={{ width: '80px' }}>埋葬上限</th>
                             <th className="text-right px-2 md:px-4 py-3 text-sm font-semibold text-sumi hidden sm:table-cell" style={{ width: '100px' }}>請求金額</th>
@@ -485,10 +491,22 @@ export default function CollectiveBurialListView({
                               .sort()
                               .at(-1) || null;
 
-                            // 合祀年（請求予定日の年）
-                            const collectiveBurialYear = record.billingScheduledDate
-                              ? new Date(record.billingScheduledDate).getFullYear()
+                            // 経過年数（最新埋葬日から今日まで）
+                            const elapsedYears = calculateElapsedYears(latestBurialDate);
+
+                            // 合祀年: billingScheduledDate 優先、無ければ
+                            // 上限到達日 or 最新埋葬日 + validityPeriodYears で client-side fallback 計算
+                            const fallbackScheduled = calculateScheduledCollectiveBurialDate(
+                              record.capacityReachedDate ?? latestBurialDate,
+                              record.validityPeriodYears,
+                            );
+                            const scheduledDate = record.billingScheduledDate
+                              ? new Date(record.billingScheduledDate)
+                              : fallbackScheduled;
+                            const collectiveBurialYear = scheduledDate
+                              ? scheduledDate.getFullYear()
                               : null;
+                            const isFallbackScheduled = !record.billingScheduledDate && scheduledDate !== null;
 
                             // 契約年
                             const contractYear = record.contractDate
@@ -519,8 +537,18 @@ export default function CollectiveBurialListView({
                                 <td className="px-2 md:px-4 py-3 text-center text-sm text-hai hidden md:table-cell">
                                   {formatDate(latestBurialDate)}
                                 </td>
+                                <td className="px-2 md:px-4 py-3 text-center text-sm text-sumi hidden md:table-cell">
+                                  {elapsedYears !== null ? `${elapsedYears}年` : '-'}
+                                </td>
                                 <td className="px-2 md:px-4 py-3 text-center text-sm text-sumi hidden lg:table-cell">
-                                  {collectiveBurialYear ? `${collectiveBurialYear}年` : '-'}
+                                  {collectiveBurialYear ? (
+                                    <span className={isFallbackScheduled ? 'text-hai italic' : ''} title={isFallbackScheduled ? '埋葬日 + 有効年数の自動計算（請求予定日未設定）' : undefined}>
+                                      {collectiveBurialYear}年
+                                      {isFallbackScheduled && (
+                                        <span className="ml-0.5 text-xs">*</span>
+                                      )}
+                                    </span>
+                                  ) : '-'}
                                 </td>
                                 <td className="px-2 md:px-4 py-3 text-center text-sm text-sumi hidden lg:table-cell">
                                   {record.burialCapacity}
