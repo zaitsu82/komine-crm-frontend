@@ -33,6 +33,7 @@ export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProp
     paymentMethods,
     sectionNames,
     relationships,
+    contractors,
     isLoading: isMasterLoading,
   } = useMasters();
 
@@ -43,6 +44,7 @@ export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProp
     paymentMethods,
     sectionNames,
     relationships,
+    contractors,
     isLoading: isMasterLoading,
   };
 
@@ -447,8 +449,8 @@ export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProp
           onConfirm={handleConfirmSubmit}
           title={isEditing ? '更新内容の確認' : '登録内容の確認'}
           description={isEditing ? '以下の項目が変更されます' : '以下の内容で登録します'}
-          sections={!isEditing ? buildPlotPreviewSections(previewData) : undefined}
-          diffSections={isEditing && initialFormData ? buildPlotDiffSections(initialFormData, previewData) : undefined}
+          sections={!isEditing ? buildPlotPreviewSections(previewData, { contractors }) : undefined}
+          diffSections={isEditing && initialFormData ? buildPlotDiffSections(initialFormData, previewData, { contractors }) : undefined}
           confirmText={isEditing ? '確認して更新' : '確認して登録'}
           isLoading={isLoading}
           size="xl"
