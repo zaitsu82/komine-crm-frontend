@@ -12,8 +12,10 @@ import { PlotListItem, PaymentStatus, PhysicalPlotStatus } from '@komine/types';
 import {
   getPlots,
   getPlotDisplayStatus,
+  getGraveClassifications,
 } from '@/lib/api/plots';
 import type { PlotSearchParams } from '@/lib/api/plots';
+import type { GraveClassificationsResponse } from '@komine/types';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { cn, truncateAddressToCity } from '@/lib/utils';
@@ -160,6 +162,14 @@ export default function PlotRegistry({
   const [filterStatus, setFilterStatus] = useState<PhysicalPlotStatus | undefined>(undefined);
   const [filterPaymentStatus, setFilterPaymentStatus] = useState<PaymentStatus | undefined>(undefined);
   const [filterAreaName, setFilterAreaName] = useState('');
+  const [filterGraveKind, setFilterGraveKind] = useState<number | undefined>(undefined);
+  const [filterGraveKubun, setFilterGraveKubun] = useState<number | undefined>(undefined);
+  const [filterGraveType, setFilterGraveType] = useState<number | undefined>(undefined);
+  const [graveClassifications, setGraveClassifications] = useState<GraveClassificationsResponse>({
+    graveKinds: [],
+    graveKubuns: [],
+    graveTypes: [],
+  });
   const [showBuriedPersons, setShowBuriedPersons] = useState(false);
   const [isFilterExpanded, setIsFilterExpanded] = useState(false);
   const [isAiueoExpanded, setIsAiueoExpanded] = useState(false);
@@ -170,6 +180,20 @@ export default function PlotRegistry({
 
   useEffect(() => {
     setSearchHistory(loadSearchHistory());
+  }, []);
+
+  // 区画区分 distinct 値（マスタ化されるまでの暫定 select 候補）
+  useEffect(() => {
+    let cancelled = false;
+    getGraveClassifications().then((res) => {
+      if (cancelled) return;
+      if (res.success) {
+        setGraveClassifications(res.data);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // サーバーサイドページネーション
@@ -208,6 +232,15 @@ export default function PlotRegistry({
       if (filterAreaName.trim()) {
         params.areaName = filterAreaName.trim();
       }
+      if (filterGraveKind !== undefined) {
+        params.graveKind = filterGraveKind;
+      }
+      if (filterGraveKubun !== undefined) {
+        params.graveKubun = filterGraveKubun;
+      }
+      if (filterGraveType !== undefined) {
+        params.graveType = filterGraveType;
+      }
 
       // サーバー対応ソートキーのみ送信
       const serverSortKey = SERVER_SORT_MAP[sortKey];
@@ -229,7 +262,7 @@ export default function PlotRegistry({
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, itemsPerPage, searchQuery, activeTab, sortKey, sortOrder, filterStatus, filterPaymentStatus, filterAreaName]);
+  }, [currentPage, itemsPerPage, searchQuery, activeTab, sortKey, sortOrder, filterStatus, filterPaymentStatus, filterAreaName, filterGraveKind, filterGraveKubun, filterGraveType]);
 
   useEffect(() => {
     fetchPlots();
@@ -292,7 +325,13 @@ export default function PlotRegistry({
   };
 
   // フィルタ変更ハンドラ
-  const hasActiveFilters = filterStatus !== undefined || filterPaymentStatus !== undefined || filterAreaName.trim() !== '';
+  const hasActiveFilters =
+    filterStatus !== undefined ||
+    filterPaymentStatus !== undefined ||
+    filterAreaName.trim() !== '' ||
+    filterGraveKind !== undefined ||
+    filterGraveKubun !== undefined ||
+    filterGraveType !== undefined;
 
   const handleFilterStatusChange = (value: string) => {
     setFilterStatus(value === 'all' ? undefined : value as PhysicalPlotStatus);
@@ -309,10 +348,28 @@ export default function PlotRegistry({
     setCurrentPage(1);
   };
 
+  const handleFilterGraveKindChange = (value: string) => {
+    setFilterGraveKind(value === 'all' ? undefined : Number(value));
+    setCurrentPage(1);
+  };
+
+  const handleFilterGraveKubunChange = (value: string) => {
+    setFilterGraveKubun(value === 'all' ? undefined : Number(value));
+    setCurrentPage(1);
+  };
+
+  const handleFilterGraveTypeChange = (value: string) => {
+    setFilterGraveType(value === 'all' ? undefined : Number(value));
+    setCurrentPage(1);
+  };
+
   const handleClearFilters = () => {
     setFilterStatus(undefined);
     setFilterPaymentStatus(undefined);
     setFilterAreaName('');
+    setFilterGraveKind(undefined);
+    setFilterGraveKubun(undefined);
+    setFilterGraveType(undefined);
     setCurrentPage(1);
   };
 
@@ -502,7 +559,14 @@ export default function PlotRegistry({
             フィルター
             {hasActiveFilters && (
               <span className="inline-flex items-center justify-center w-4 h-4 bg-ai text-white text-[10px] font-bold rounded-full">
-                {[filterStatus, filterPaymentStatus, filterAreaName.trim() || undefined].filter(Boolean).length}
+                {[
+                  filterStatus,
+                  filterPaymentStatus,
+                  filterAreaName.trim() || undefined,
+                  filterGraveKind,
+                  filterGraveKubun,
+                  filterGraveType,
+                ].filter((v) => v !== undefined && v !== '').length}
               </span>
             )}
             {isFilterExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
@@ -590,6 +654,57 @@ export default function PlotRegistry({
                 onChange={(e) => handleFilterAreaNameChange(e.target.value)}
                 className="w-full sm:w-28 h-9 text-sm"
               />
+            </div>
+            <div className="flex items-center gap-1 sm:gap-2">
+              <span className="text-xs sm:text-sm text-hai whitespace-nowrap">形状:</span>
+              <Select
+                value={filterGraveKind === undefined ? 'all' : String(filterGraveKind)}
+                onValueChange={handleFilterGraveKindChange}
+              >
+                <SelectTrigger className="w-full sm:w-20 h-9 text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">全て</SelectItem>
+                  {graveClassifications.graveKinds.map((v) => (
+                    <SelectItem key={v} value={String(v)}>{v}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center gap-1 sm:gap-2">
+              <span className="text-xs sm:text-sm text-hai whitespace-nowrap">基地:</span>
+              <Select
+                value={filterGraveKubun === undefined ? 'all' : String(filterGraveKubun)}
+                onValueChange={handleFilterGraveKubunChange}
+              >
+                <SelectTrigger className="w-full sm:w-20 h-9 text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">全て</SelectItem>
+                  {graveClassifications.graveKubuns.map((v) => (
+                    <SelectItem key={v} value={String(v)}>{v}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center gap-1 sm:gap-2">
+              <span className="text-xs sm:text-sm text-hai whitespace-nowrap">区分:</span>
+              <Select
+                value={filterGraveType === undefined ? 'all' : String(filterGraveType)}
+                onValueChange={handleFilterGraveTypeChange}
+              >
+                <SelectTrigger className="w-full sm:w-20 h-9 text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">全て</SelectItem>
+                  {graveClassifications.graveTypes.map((v) => (
+                    <SelectItem key={v} value={String(v)}>{v}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <label className="md:hidden items-center gap-1.5 text-xs sm:text-sm text-hai cursor-pointer col-span-2 select-none flex">
               <input
