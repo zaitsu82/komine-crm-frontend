@@ -28,7 +28,7 @@ jest.mock('@/components/ui/select', () => ({
 }));
 
 describe('BasicInfoTab', () => {
-  it('物理区画情報・契約区画情報・販売契約情報・契約者情報の4セクションを表示する', () => {
+  it('物理区画情報・契約区画情報・販売契約情報・契約者情報・申込者情報の5セクションを表示する', () => {
     render(
       <TabHost>
         {(h) => <BasicInfoTab {...h} masterData={emptyMasterData} />}
@@ -39,6 +39,77 @@ describe('BasicInfoTab', () => {
     expect(screen.getByText('契約区画情報')).toBeInTheDocument();
     expect(screen.getByText('販売契約情報')).toBeInTheDocument();
     expect(screen.getByText('契約者情報')).toBeInTheDocument();
+    expect(screen.getByText(/申込者情報/)).toBeInTheDocument();
+  });
+
+  it('デフォルトでは申込者 section は折りたたまれていて「申込者を追加」ボタンがある', () => {
+    render(
+      <TabHost>
+        {(h) => <BasicInfoTab {...h} masterData={emptyMasterData} />}
+      </TabHost>
+    );
+
+    expect(screen.getByRole('button', { name: '申込者を追加' })).toBeInTheDocument();
+    // 入力フィールドは未表示
+    expect(screen.queryByPlaceholderText('山田 花子')).not.toBeInTheDocument();
+  });
+
+  it('「申込者を追加」を押すと氏名・カナ等の入力フィールドが現れる', async () => {
+    const user = userEvent.setup();
+    render(
+      <TabHost>
+        {(h) => <BasicInfoTab {...h} masterData={emptyMasterData} />}
+      </TabHost>
+    );
+
+    await user.click(screen.getByRole('button', { name: '申込者を追加' }));
+
+    expect(screen.getByPlaceholderText('山田 花子')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('ヤマダ ハナコ')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '申込者を削除' })).toBeInTheDocument();
+  });
+
+  it('「申込者を削除」を押すと申込者フィールドが消え、再度「追加」ボタンが表示される', async () => {
+    const user = userEvent.setup();
+    render(
+      <TabHost defaultValues={{
+        applicant: {
+          name: '山田花子',
+          nameKana: 'ヤマダハナコ',
+          birthDate: null,
+          gender: null,
+          postalCode: null,
+          address: null,
+          addressLine2: null,
+          registeredPostalCode: null,
+          registeredAddress: null,
+          phoneNumber: null,
+          faxNumber: null,
+          email: null,
+          notes: null,
+        },
+      }}>
+        {(h) => <BasicInfoTab {...h} masterData={emptyMasterData} />}
+      </TabHost>
+    );
+
+    expect(screen.getByPlaceholderText('山田 花子')).toHaveValue('山田花子');
+
+    await user.click(screen.getByRole('button', { name: '申込者を削除' }));
+
+    expect(screen.queryByPlaceholderText('山田 花子')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '申込者を追加' })).toBeInTheDocument();
+  });
+
+  it('viewMode の場合、追加・削除ボタンは表示されず、未入力時は「契約者と同一」テキストが出る', () => {
+    render(
+      <TabHost>
+        {(h) => <BasicInfoTab {...h} masterData={emptyMasterData} viewMode={true} />}
+      </TabHost>
+    );
+
+    expect(screen.queryByRole('button', { name: '申込者を追加' })).not.toBeInTheDocument();
+    expect(screen.getByText('申込者は契約者と同一です。')).toBeInTheDocument();
   });
 
   it('必須項目に*マークが表示される', () => {
