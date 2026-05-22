@@ -18,6 +18,7 @@ import {
   BulkUpdatePlotsResponse,
   RestoreContractRequest,
   RestoreContractResponse,
+  GraveClassificationsResponse,
 } from '@komine/types';
 import { apiGet, apiPost, apiPut, apiDelete, shouldUseMockData } from './client';
 import { ApiResponse } from './types';
@@ -51,6 +52,9 @@ export interface PlotSearchParams {
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
   nameKanaPrefix?: string;
+  graveKind?: number;
+  graveKubun?: number;
+  graveType?: number;
 }
 
 /**
@@ -422,6 +426,9 @@ export async function getPlots(
     sortBy: params.sortBy,
     sortOrder: params.sortOrder,
     nameKanaPrefix: params.nameKanaPrefix,
+    graveKind: params.graveKind,
+    graveKubun: params.graveKubun,
+    graveType: params.graveType,
   });
 
   if (!response.success) {
@@ -464,6 +471,22 @@ export async function getAllPlots(
   }
 
   return { success: true, data: allItems };
+}
+
+/**
+ * 区画区分 distinct 値取得（フィルタ select 用）
+ * master 化されるまでの暫定 API
+ */
+export async function getGraveClassifications(): Promise<
+  ApiResponse<GraveClassificationsResponse>
+> {
+  if (shouldUseMockData()) {
+    return {
+      success: true,
+      data: { graveKinds: [], graveKubuns: [], graveTypes: [] },
+    };
+  }
+  return apiGet<GraveClassificationsResponse>('/plots/grave-classifications');
 }
 
 /**
