@@ -6,7 +6,9 @@ import { ViewModeField, ViewModeSelect } from './ViewModeField';
 import { SelectItem } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { useMemo } from 'react';
-import { Gender, ContractRole, PaymentStatus } from '@komine/types';
+import { Button } from '@/components/ui/button';
+import { Gender, PaymentStatus } from '@komine/types';
+import { defaultApplicant } from '@/lib/validations/plot-form';
 
 export function BasicInfoTab({
   register,
@@ -357,19 +359,173 @@ export function BasicInfoTab({
             placeholder="example@example.com"
           />
 
-          <ViewModeSelect
-            label="役割"
-            value={watch('customer.role') || ''}
-            onValueChange={(v) => setValue('customer.role', v as ContractRole)}
-            viewMode={viewMode}
-            placeholder="選択..."
-          >
-            <SelectItem value={ContractRole.Contractor}>契約者</SelectItem>
-            <SelectItem value={ContractRole.Applicant}>申込者</SelectItem>
-          </ViewModeSelect>
         </div>
       </div>
 
+      {/* Section 5: 申込者情報（任意 — 契約者と異なる場合のみ入力） */}
+      <ApplicantSection
+        register={register}
+        watch={watch}
+        setValue={setValue}
+        errors={errors}
+        viewMode={viewMode}
+      />
+
+    </div>
+  );
+}
+
+function ApplicantSection({
+  register,
+  watch,
+  setValue,
+  errors,
+  viewMode,
+}: Pick<PlotTabBaseProps, 'register' | 'watch' | 'setValue' | 'errors' | 'viewMode'>) {
+  const applicant = watch('applicant');
+  const hasApplicant = applicant !== null && applicant !== undefined;
+
+  const handleAdd = () => setValue('applicant', { ...defaultApplicant });
+  const handleRemove = () => setValue('applicant', null);
+
+  return (
+    <div className="border rounded-lg p-4">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-semibold text-sumi">
+          申込者情報
+          <span className="ml-2 text-xs font-normal text-hai">（契約者と異なる場合のみ入力）</span>
+        </h3>
+        {!viewMode && (
+          hasApplicant ? (
+            <Button type="button" variant="outline" size="sm" onClick={handleRemove}>
+              申込者を削除
+            </Button>
+          ) : (
+            <Button type="button" variant="outline" size="sm" onClick={handleAdd}>
+              申込者を追加
+            </Button>
+          )
+        )}
+      </div>
+
+      {!hasApplicant ? (
+        <p className="text-sm text-hai">
+          {viewMode
+            ? '申込者は契約者と同一です。'
+            : '契約者と異なる申込者がいる場合は「申込者を追加」をクリック。'}
+        </p>
+      ) : (
+        <div className="grid grid-cols-3 gap-4">
+          <ViewModeField
+            label="氏名"
+            viewMode={viewMode}
+            required
+            register={register('applicant.name')}
+            error={errors.applicant?.name?.message}
+            placeholder="山田 花子"
+          />
+
+          <ViewModeField
+            label="氏名カナ"
+            viewMode={viewMode}
+            required
+            register={register('applicant.nameKana')}
+            error={errors.applicant?.nameKana?.message}
+            placeholder="ヤマダ ハナコ"
+          />
+
+          <ViewModeField
+            label="生年月日"
+            viewMode={viewMode}
+            type="date"
+            register={register('applicant.birthDate')}
+            error={errors.applicant?.birthDate?.message}
+          />
+
+          <ViewModeSelect
+            label="性別"
+            value={watch('applicant.gender') || ''}
+            onValueChange={(v) => setValue('applicant.gender', v as Gender)}
+            viewMode={viewMode}
+            placeholder="選択..."
+          >
+            <SelectItem value={Gender.Male}>男性</SelectItem>
+            <SelectItem value={Gender.Female}>女性</SelectItem>
+            <SelectItem value={Gender.NotAnswered}>未回答</SelectItem>
+          </ViewModeSelect>
+
+          <ViewModeField
+            label="郵便番号"
+            viewMode={viewMode}
+            register={register('applicant.postalCode')}
+            error={errors.applicant?.postalCode?.message}
+            placeholder="1234567（ハイフンなし7桁）"
+          />
+
+          <div className="col-span-3">
+            <ViewModeField
+              label="住所"
+              viewMode={viewMode}
+              register={register('applicant.address')}
+              error={errors.applicant?.address?.message}
+              placeholder="東京都渋谷区..."
+            />
+          </div>
+
+          <div className="col-span-3">
+            <ViewModeField
+              label="住所2"
+              viewMode={viewMode}
+              register={register('applicant.addressLine2')}
+              error={errors.applicant?.addressLine2?.message}
+              placeholder="マンション名・部屋番号等"
+            />
+          </div>
+
+          <ViewModeField
+            label="本籍郵便番号"
+            viewMode={viewMode}
+            register={register('applicant.registeredPostalCode')}
+            error={errors.applicant?.registeredPostalCode?.message}
+            placeholder="1234567（ハイフンなし7桁）"
+          />
+
+          <div className="col-span-3">
+            <ViewModeField
+              label="本籍地"
+              viewMode={viewMode}
+              register={register('applicant.registeredAddress')}
+              error={errors.applicant?.registeredAddress?.message}
+              placeholder="東京都..."
+            />
+          </div>
+
+          <ViewModeField
+            label="電話番号"
+            viewMode={viewMode}
+            register={register('applicant.phoneNumber')}
+            error={errors.applicant?.phoneNumber?.message}
+            placeholder="09012345678"
+          />
+
+          <ViewModeField
+            label="FAX"
+            viewMode={viewMode}
+            register={register('applicant.faxNumber')}
+            error={errors.applicant?.faxNumber?.message}
+            placeholder="0312345678"
+          />
+
+          <ViewModeField
+            label="メール"
+            viewMode={viewMode}
+            type="email"
+            register={register('applicant.email')}
+            error={errors.applicant?.email?.message}
+            placeholder="example@example.com"
+          />
+        </div>
+      )}
     </div>
   );
 }

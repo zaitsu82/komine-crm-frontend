@@ -23,6 +23,7 @@ export {
   contractPlotSchema,
   saleContractSchema,
   customerSchema,
+  applicantSchema,
   workInfoSchema,
   usageFeeSchema,
   managementFeeSchema,
@@ -41,6 +42,7 @@ export type {
   ContractPlotFormData,
   SaleContractFormData,
   CustomerSectionFormData,
+  ApplicantSectionFormData,
   WorkInfoFormData,
   UsageFeeFormData,
   ManagementFeeFormData,
@@ -58,6 +60,7 @@ import type {
   ContractPlotFormData,
   SaleContractFormData,
   CustomerSectionFormData,
+  ApplicantSectionFormData,
   PlotFormData,
   PlotUpdateFormData,
 } from '@komine/types/validations';
@@ -114,11 +117,28 @@ export const defaultCustomer: CustomerSectionFormData = {
   role: ContractRole.Contractor,
 };
 
+export const defaultApplicant: ApplicantSectionFormData = {
+  name: '',
+  nameKana: '',
+  birthDate: null,
+  gender: null,
+  postalCode: null,
+  address: null,
+  addressLine2: null,
+  registeredPostalCode: null,
+  registeredAddress: null,
+  phoneNumber: null,
+  faxNumber: null,
+  email: null,
+  notes: null,
+};
+
 export const defaultPlotFormData: PlotFormData = {
   physicalPlot: defaultPhysicalPlot,
   contractPlot: defaultContractPlot,
   saleContract: defaultSaleContract,
   customer: defaultCustomer,
+  applicant: null,
   workInfo: null,
   usageFee: null,
   managementFee: null,
@@ -181,6 +201,23 @@ export function plotFormDataToCreateRequest(formData: PlotFormData): CreatePlotR
       notes: formData.customer.notes || undefined,
       role: formData.customer.role,
     },
+    applicant: formData.applicant && formData.applicant.name
+      ? {
+        name: formData.applicant.name,
+        nameKana: formData.applicant.nameKana,
+        birthDate: formData.applicant.birthDate || undefined,
+        gender: formData.applicant.gender || undefined,
+        postalCode: formData.applicant.postalCode || undefined,
+        address: formData.applicant.address || undefined,
+        addressLine2: formData.applicant.addressLine2 || undefined,
+        registeredPostalCode: formData.applicant.registeredPostalCode || undefined,
+        registeredAddress: formData.applicant.registeredAddress || undefined,
+        phoneNumber: formData.applicant.phoneNumber || undefined,
+        faxNumber: formData.applicant.faxNumber || undefined,
+        email: formData.applicant.email || undefined,
+        notes: formData.applicant.notes || undefined,
+      }
+      : undefined,
     workInfo: formData.workInfo
       ? {
         companyName: formData.workInfo.companyName,
@@ -370,6 +407,29 @@ export function plotFormDataToUpdateRequest(formData: PlotUpdateFormData): Updat
     };
   }
 
+  // 申込者: 名前ありで送信、name 空 or applicant=null → null（既存解除）、undefined → 変更なし
+  if (formData.applicant !== undefined) {
+    if (formData.applicant && formData.applicant.name) {
+      request.applicant = {
+        name: formData.applicant.name,
+        nameKana: formData.applicant.nameKana,
+        birthDate: formData.applicant.birthDate || undefined,
+        gender: formData.applicant.gender || undefined,
+        postalCode: formData.applicant.postalCode || undefined,
+        address: formData.applicant.address || undefined,
+        addressLine2: formData.applicant.addressLine2 || undefined,
+        registeredPostalCode: formData.applicant.registeredPostalCode || undefined,
+        registeredAddress: formData.applicant.registeredAddress || undefined,
+        phoneNumber: formData.applicant.phoneNumber || undefined,
+        faxNumber: formData.applicant.faxNumber || undefined,
+        email: formData.applicant.email || undefined,
+        notes: formData.applicant.notes || undefined,
+      };
+    } else {
+      request.applicant = null;
+    }
+  }
+
   // オプショナルセクション
   request.workInfo = formData.workInfo;
   request.usageFee = formData.usageFee;
@@ -479,6 +539,12 @@ export function plotDetailToFormData(detail: PlotDetailResponse): PlotFormData {
   // Primary contractor を取得（最初の Contractor ロール、なければ最初のロール）
   const primaryRole = detail.roles.find((r) => r.role === ContractRole.Contractor) || detail.roles[0];
   const customer = primaryRole?.customer;
+  // 申込者（契約者と別人の場合のみ採用。同一人物のときは contractor 1 件として扱う）
+  const applicantRole = detail.roles.find((r) => r.role === ContractRole.Applicant);
+  const applicantCustomer =
+    applicantRole && applicantRole.customer.id !== primaryRole?.customer.id
+      ? applicantRole.customer
+      : null;
 
   return {
     physicalPlot: {
@@ -527,6 +593,23 @@ export function plotDetailToFormData(detail: PlotDetailResponse): PlotFormData {
       notes: customer?.notes || null,
       role: primaryRole?.role || ContractRole.Contractor,
     },
+    applicant: applicantCustomer
+      ? {
+        name: applicantCustomer.name,
+        nameKana: applicantCustomer.nameKana || '',
+        birthDate: toDateOnly(applicantCustomer.birthDate) || null,
+        gender: applicantCustomer.gender || null,
+        postalCode: applicantCustomer.postalCode || null,
+        address: applicantCustomer.address || null,
+        addressLine2: applicantCustomer.addressLine2 || null,
+        registeredPostalCode: applicantCustomer.registeredPostalCode || null,
+        registeredAddress: applicantCustomer.registeredAddress || null,
+        phoneNumber: applicantCustomer.phoneNumber || null,
+        faxNumber: applicantCustomer.faxNumber || null,
+        email: applicantCustomer.email || null,
+        notes: applicantCustomer.notes || null,
+      }
+      : null,
     workInfo: customer?.workInfo
       ? {
         companyName: customer.workInfo.companyName || '',

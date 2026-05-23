@@ -29,11 +29,6 @@ const formatGender = (v: unknown) => {
   if (v === 'OTHER') return 'その他';
   return '';
 };
-const formatRole = (v: unknown) => {
-  if (v === 'APPLICANT') return '申込者';
-  if (v === 'CONTRACTOR') return '契約者';
-  return String(v ?? '');
-};
 const formatPaymentStatus = (v: unknown) => {
   const map: Record<string, string> = {
     Unpaid: '未払い', PartialPaid: '一部支払い済み', Paid: '支払い済み',
@@ -91,8 +86,25 @@ const sectionConfigs: SectionConfig[] = [
       { key: 'customer.phoneNumber', label: '電話番号' },
       { key: 'customer.faxNumber', label: 'FAX' },
       { key: 'customer.email', label: 'メール' },
-      { key: 'customer.role', label: '役割', format: formatRole },
       { key: 'customer.notes', label: '備考' },
+    ],
+  },
+  {
+    title: '申込者情報',
+    fields: [
+      { key: 'applicant.name', label: '氏名' },
+      { key: 'applicant.nameKana', label: '氏名カナ' },
+      { key: 'applicant.birthDate', label: '生年月日', format: formatDate },
+      { key: 'applicant.gender', label: '性別', format: formatGender },
+      { key: 'applicant.postalCode', label: '郵便番号' },
+      { key: 'applicant.address', label: '住所' },
+      { key: 'applicant.addressLine2', label: '住所2' },
+      { key: 'applicant.registeredPostalCode', label: '本籍郵便番号' },
+      { key: 'applicant.registeredAddress', label: '本籍地' },
+      { key: 'applicant.phoneNumber', label: '電話番号' },
+      { key: 'applicant.faxNumber', label: 'FAX' },
+      { key: 'applicant.email', label: 'メール' },
+      { key: 'applicant.notes', label: '備考' },
     ],
   },
   {
