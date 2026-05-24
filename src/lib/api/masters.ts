@@ -52,19 +52,21 @@ const mockMasterData: AllMastersData = {
     { id: 2, code: 'BANK_TRANSFER', name: '銀行振込', description: '銀行口座への振込', sortOrder: 2, isActive: true },
     { id: 3, code: 'ACCOUNT_TRANSFER', name: '口座振替', description: '自動口座振替', sortOrder: 3, isActive: true },
   ],
+  // 税区分: 旧システム(sykbnn KBNNO=2027)準拠の内税/外税。backend seedMasters.ts と一致。
   taxType: [
-    { id: 1, code: 'TAX_10', name: '消費税10%', description: '標準税率', sortOrder: 1, isActive: true, taxRate: '0.10' },
-    { id: 2, code: 'TAX_8', name: '消費税8%', description: '軽減税率', sortOrder: 2, isActive: true, taxRate: '0.08' },
-    { id: 3, code: 'TAX_FREE', name: '非課税', description: '非課税取引', sortOrder: 3, isActive: true, taxRate: '0' },
+    { id: 1, code: 'INCLUSIVE', name: '内税', description: '税込み', sortOrder: 1, isActive: true, taxRate: null },
+    { id: 2, code: 'EXCLUSIVE', name: '外税', description: '税抜き', sortOrder: 2, isActive: true, taxRate: null },
   ],
+  // 計算区分: 旧 sykbnn KBNNO=2026 準拠。
   calcType: [
-    { id: 1, code: 'AREA', name: '面積単価', description: '面積に基づく計算', sortOrder: 1, isActive: true },
-    { id: 2, code: 'FIXED', name: '一律料金', description: '固定料金', sortOrder: 2, isActive: true },
+    { id: 1, code: 'AREA', name: '面積×単価', description: '面積×単価で計算', sortOrder: 1, isActive: true },
+    { id: 2, code: 'FIXED', name: '任意設定', description: '金額を任意設定', sortOrder: 2, isActive: true },
   ],
+  // 請求区分: 旧 sykbnn KBNNO=2028 準拠。
   billingType: [
-    { id: 1, code: 'YEARLY', name: '年次請求', description: '年1回の請求', sortOrder: 1, isActive: true },
-    { id: 2, code: 'MONTHLY', name: '月次請求', description: '月1回の請求', sortOrder: 2, isActive: true },
-    { id: 3, code: 'ONETIME', name: '一括請求', description: '契約時のみ', sortOrder: 3, isActive: true },
+    { id: 1, code: 'NONE', name: 'なし', description: '請求なし', sortOrder: 1, isActive: true },
+    { id: 2, code: 'PRESENT', name: 'あり', description: '請求あり', sortOrder: 2, isActive: true },
+    { id: 3, code: 'PERPETUAL', name: '永代', description: '永代', sortOrder: 3, isActive: true },
   ],
   recipientType: [
     { id: 1, code: 'CONTRACTOR', name: '契約者', description: '契約者本人', sortOrder: 1, isActive: true },
