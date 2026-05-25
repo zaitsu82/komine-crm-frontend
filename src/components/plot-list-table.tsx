@@ -8,7 +8,7 @@
  */
 
 import { useMemo, useState, type KeyboardEvent } from 'react';
-import { PlotListItem, PaymentStatus } from '@komine/types';
+import { PlotListItem, PaymentStatus, BillingRecordStatus } from '@komine/types';
 import { usePlots } from '@/hooks/usePlots';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -65,6 +65,56 @@ const PAYMENT_STATUS_VARIANTS: Record<PaymentStatus, StatusBadgeProps['variant']
   [PaymentStatus.Overdue]: 'overdue',
   [PaymentStatus.Refunded]: 'refunded',
 };
+
+// ===== 請求状況サマリ（B10: 年度別請求 status の集約列）=====
+
+const BILLING_STATUS_LABELS: Record<BillingRecordStatus, string> = {
+  [BillingRecordStatus.Pending]: '請求前',
+  [BillingRecordStatus.Billed]: '請求済',
+  [BillingRecordStatus.PartialPaid]: '一部入金',
+  [BillingRecordStatus.Paid]: '完納',
+  [BillingRecordStatus.Overdue]: '延滞',
+  [BillingRecordStatus.Terminated]: '解約',
+  [BillingRecordStatus.WrittenOff]: '貸倒',
+};
+
+const BILLING_STATUS_VARIANTS: Record<BillingRecordStatus, StatusBadgeProps['variant']> = {
+  [BillingRecordStatus.Pending]: 'neutral',
+  [BillingRecordStatus.Billed]: 'unpaid',
+  [BillingRecordStatus.PartialPaid]: 'partial',
+  [BillingRecordStatus.Paid]: 'paid',
+  [BillingRecordStatus.Overdue]: 'overdue',
+  [BillingRecordStatus.Terminated]: 'cancelled',
+  [BillingRecordStatus.WrittenOff]: 'cancelled',
+};
+
+/**
+ * 請求状況サマリのバッジ群。
+ * 最新年度の status バッジ ＋ 未納年数バッジを表示する。Billing が無ければ「—」。
+ */
+export function BillingSummaryBadges({ summary }: { summary: PlotListItem['billingSummary'] }) {
+  if (!summary?.hasBilling) {
+    return <span className="text-sm text-hai">—</span>;
+  }
+  return (
+    <div className="flex flex-wrap items-center gap-1">
+      {summary.latestYear !== null && summary.latestYearStatus && (
+        <StatusBadge
+          variant={BILLING_STATUS_VARIANTS[summary.latestYearStatus]}
+          size="sm"
+          withSymbol
+        >
+          {summary.latestYear}年 {BILLING_STATUS_LABELS[summary.latestYearStatus]}
+        </StatusBadge>
+      )}
+      {summary.unpaidYearCount > 0 && (
+        <StatusBadge variant="overdue" size="sm" withSymbol>
+          未納{summary.unpaidYearCount}年
+        </StatusBadge>
+      )}
+    </div>
+  );
+}
 
 // ===== ヘルパー関数 =====
 
@@ -417,6 +467,9 @@ export default function PlotListTable({
                     {renderSortIndicator('paymentStatus')}
                   </div>
                 </th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-sumi hidden md:table-cell">
+                  請求状況
+                </th>
                 <th
                   className={cn(
                     'px-4 py-3 text-right text-sm font-semibold text-sumi cursor-pointer transition-colors duration-200 hover:bg-cha-50 hidden sm:table-cell',
@@ -434,7 +487,7 @@ export default function PlotListTable({
             <tbody className="divide-y divide-gin">
               {isLoading ? (
                 <tr>
-                  <td colSpan={11} className="px-6 py-8 text-center text-sm text-hai">
+                  <td colSpan={12} className="px-6 py-8 text-center text-sm text-hai">
                     <div className="flex items-center justify-center">
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-matsu mr-2"></div>
                       データを読み込み中...
@@ -443,7 +496,7 @@ export default function PlotListTable({
                 </tr>
               ) : error ? (
                 <tr>
-                  <td colSpan={11} className="px-6 py-8 text-center text-sm text-beni">
+                  <td colSpan={12} className="px-6 py-8 text-center text-sm text-beni">
                     エラーが発生しました: {error}
                   </td>
                 </tr>
@@ -484,6 +537,11 @@ export default function PlotListTable({
                                 未収 {(plot.uncollectedAmount ?? 0).toLocaleString()}円
                               </span>
                             )}
+                            {plot.billingSummary?.unpaidYearCount > 0 && (
+                              <span className="text-beni font-medium">
+                                未納{plot.billingSummary.unpaidYearCount}年
+                              </span>
+                            )}
                           </div>
                         </div>
                       </td>
@@ -521,6 +579,9 @@ export default function PlotListTable({
                           </StatusBadge>
                         )}
                       </td>
+                      <td className="px-4 py-3 text-sm hidden md:table-cell">
+                        <BillingSummaryBadges summary={plot.billingSummary} />
+                      </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-right hidden sm:table-cell">
                         <span className={cn(
                           'font-medium tabular-nums',
@@ -534,7 +595,7 @@ export default function PlotListTable({
                 })
               ) : (
                 <tr>
-                  <td colSpan={11} className="px-4 md:px-6 py-6">
+                  <td colSpan={12} className="px-4 md:px-6 py-6">
                     <EmptyState
                       container="plain"
                       icon={
