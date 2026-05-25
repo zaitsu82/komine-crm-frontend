@@ -19,6 +19,7 @@ import {
   RestoreContractRequest,
   RestoreContractResponse,
   GraveClassificationsResponse,
+  BillingRecordStatus,
 } from '@komine/types';
 import { apiGet, apiPost, apiPut, apiDelete, shouldUseMockData } from './client';
 import { ApiResponse } from './types';
@@ -104,6 +105,12 @@ const mockPlots: PlotListItem[] = [
     nextBillingDate: '2025-04-01',
     managementFee: '5000',
     uncollectedAmount: 0,
+    billingSummary: {
+      hasBilling: true,
+      latestYear: 2024,
+      latestYearStatus: BillingRecordStatus.Paid,
+      unpaidYearCount: 0,
+    },
     createdAt: '2020-04-01T00:00:00Z',
     updatedAt: '2024-01-15T10:30:00Z',
   },
@@ -137,6 +144,12 @@ const mockPlots: PlotListItem[] = [
     nextBillingDate: '2025-08-15',
     managementFee: '3000',
     uncollectedAmount: 0,
+    billingSummary: {
+      hasBilling: true,
+      latestYear: 2024,
+      latestYearStatus: BillingRecordStatus.Overdue,
+      unpaidYearCount: 2,
+    },
     createdAt: '2022-08-15T00:00:00Z',
     updatedAt: '2024-02-20T14:45:00Z',
   },
