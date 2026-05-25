@@ -31,9 +31,15 @@ interface TabHostProps {
   defaultValues?: Partial<PlotFormData>;
   arrayName?: 'familyContacts' | 'buriedPersons' | 'constructionInfos';
   children: (handles: FormHandles & {
-    arrayFields?: ReturnType<typeof useFieldArray>['fields'];
-    arrayAppend?: ReturnType<typeof useFieldArray>['append'];
-    arrayRemove?: ReturnType<typeof useFieldArray>['remove'];
+    // useFieldArray is wired generically here, so the element shape is a union
+    // across familyContacts/buriedPersons/constructionInfos. Consumers narrow it
+    // when passing to a specific tab prop, so a permissive array type is used.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    arrayFields?: any[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    arrayAppend?: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    arrayRemove?: any;
     handleSubmit: ReturnType<typeof useForm<PlotFormData>>['handleSubmit'];
   }) => React.ReactNode;
 }
