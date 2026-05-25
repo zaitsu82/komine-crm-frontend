@@ -42,10 +42,39 @@ import {
   normalizeTextStylePreset,
   type DocumentTextStylePresetId,
 } from './document-text-style-presets';
-import { PlotDetailResponse, ContractRole } from '@komine/types';
+import {
+  PlotDetailResponse,
+  ContractRole,
+  PERMIT_CERTIFICATE_PAGES,
+  ENVELOPE_LETTER_PAGES,
+  ENVELOPE_BASE_PAGES,
+} from '@komine/types';
 
-type DocumentType = 'invoice' | 'postcard' | 'contract' | 'permit' | 'other';
+type DocumentType =
+  | 'invoice'
+  | 'postcard'
+  | 'contract'
+  | 'permit'
+  | 'envelope_letter'
+  | 'envelope_base'
+  | 'other';
 type DocumentStatus = 'draft' | 'generated' | 'sent' | 'archived';
+
+const PDF_TEMPLATE_IDS = new Set<string>([
+  'invoice',
+  'postcard',
+  'permit',
+  'payment-guide',
+  'envelope-letter',
+  'envelope-base',
+]);
+
+function templateIdToDocumentType(id: TemplateId): DocumentType {
+  if (id === 'payment-guide') return 'other';
+  if (id === 'envelope-letter') return 'envelope_letter';
+  if (id === 'envelope-base') return 'envelope_base';
+  return id as DocumentType;
+}
 
 interface InvoiceItem {
   description: string;
@@ -155,6 +184,10 @@ function buildAutoFillData(
       base.applicantName = customerName;
       base.registeredAddress = customer?.address || '';
       base.currentAddress = customer?.address || '';
+      break;
+    }
+    case 'envelope-letter':
+    case 'envelope-base': {
       base.recipientName = customerName ? `${customerName} 様` : '';
       base.recipientPostalCode = customer?.postalCode || '';
       base.recipientAddress = customer?.address || '';
@@ -173,6 +206,8 @@ const TEMPLATE_LABELS: Record<TemplateId, string> = {
   postcard: 'はがき',
   contract: '契約書',
   permit: '許可証',
+  'envelope-letter': '封筒書',
+  'envelope-base': '封筒台',
   'payment-guide': 'お支払い方法のご案内',
   other: 'その他',
 };
@@ -227,19 +262,14 @@ export function DocumentForm({
     templateType: string;
   }>({
     name: '',
-    type: (templateId as DocumentType) || 'invoice',
+    type: templateId ? templateIdToDocumentType(templateId) : 'invoice',
     status: 'draft',
     description: '',
     notes: '',
     contractPlotId: '',
     customerId: initialCustomerId || '',
     templateType:
-      templateId === 'invoice' ||
-      templateId === 'postcard' ||
-      templateId === 'permit' ||
-      templateId === 'payment-guide'
-        ? templateId
-        : '',
+      templateId && PDF_TEMPLATE_IDS.has(templateId) ? templateId : '',
   });
 
   const [templateData, setTemplateData] = useState<Record<string, string>>({});
@@ -310,21 +340,15 @@ export function DocumentForm({
       ? `_${customerName}_${plotNumber}`
       : '';
 
-    // payment-guide は DB 上は 'other' カテゴリに分類
-    const docType: DocumentType =
-      templateId === 'payment-guide' ? 'other' : (templateId as DocumentType);
+    const docType: DocumentType = templateId
+      ? templateIdToDocumentType(templateId)
+      : 'invoice';
 
     setFormData((prev) => ({
       ...prev,
       name: `${TEMPLATE_LABELS[templateId]}${nameSuffix}_${today}`,
       type: docType,
-      templateType:
-        templateId === 'invoice' ||
-        templateId === 'postcard' ||
-        templateId === 'permit' ||
-        templateId === 'payment-guide'
-          ? templateId
-          : '',
+      templateType: PDF_TEMPLATE_IDS.has(templateId) ? templateId : '',
       contractPlotId: plotDetail?.id || prev.contractPlotId,
     }));
 
@@ -457,13 +481,15 @@ export function DocumentForm({
     setIsGeneratingPdf(true);
     try {
       const tPayload = buildTemplateDataPayload();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = await generate({
         templateType: formData.templateType as
           | 'invoice'
           | 'postcard'
           | 'permit'
+          | 'envelope-letter'
+          | 'envelope-base'
           | 'payment-guide',
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         templateData: tPayload as any,
         documentId: documentId,
         name: formData.name || undefined,
@@ -488,12 +514,21 @@ export function DocumentForm({
   const showContractFields = formData.type === 'contract';
   const isPermitTemplate =
     templateType === 'permit' || formData.type === 'permit';
+  const isEnvelopeLetterTemplate =
+    templateType === 'envelope-letter' ||
+    formData.type === 'envelope_letter';
+  const isEnvelopeBaseTemplate =
+    templateType === 'envelope-base' || formData.type === 'envelope_base';
   const isPaymentGuideTemplate = templateType === 'payment-guide';
-  const showPermitFields = isPermitTemplate;
+  const showPermitCertificateForm = isPermitTemplate;
+  const showEnvelopeRecipientForm =
+    isEnvelopeLetterTemplate || isEnvelopeBaseTemplate;
+  const showPermitStyleLivePreview =
+    isPermitTemplate || isEnvelopeLetterTemplate || isEnvelopeBaseTemplate;
   const showPdfTemplatePreview =
     showInvoiceFields ||
     showPostcardFields ||
-    isPermitTemplate ||
+    showPermitStyleLivePreview ||
     isPaymentGuideTemplate;
 
   if (isEditMode && isLoadingDetail) {
@@ -559,10 +594,14 @@ export function DocumentForm({
                 </h3>
                 <p className="text-xs text-hai mt-1 leading-relaxed">
                   {isPermitTemplate
-                    ? '許可証テンプレートPDF上に、印字される位置の入力欄を重ねています。各ページタブで切り替えられます。'
-                    : isPaymentGuideTemplate
-                      ? '振込先や代表者名など、変更があれば直接編集できます。大半の文面は既定のままで問題ありません。'
-                      : '下の「テキストの種」で書体バランスを変えられます。本文はプレビュー内を直接編集してください。右のフォームとも同期します。'}
+                    ? '許可証（1枚）テンプレート上に印字位置の入力欄を表示しています。'
+                    : isEnvelopeLetterTemplate
+                      ? '封筒書は表面・裏面の2ページです。タブで切り替えてください。'
+                      : isEnvelopeBaseTemplate
+                        ? '封筒台（大型封筒）1枚のテンプレートです。'
+                        : isPaymentGuideTemplate
+                          ? '振込先や代表者名など、変更があれば直接編集できます。大半の文面は既定のままで問題ありません。'
+                          : '下の「テキストの種」で書体バランスを変えられます。本文はプレビュー内を直接編集してください。右のフォームとも同期します。'}
                 </p>
               </div>
               <div className="rounded-elegant-lg border border-gin bg-kinari-50/90 p-3 max-h-[min(90vh,58rem)] overflow-auto shadow-inner">
@@ -582,8 +621,15 @@ export function DocumentForm({
                     onTextStyleChange={handleTextStyleChange}
                   />
                 )}
-                {isPermitTemplate && (
+                {showPermitStyleLivePreview && (
                   <PermitLivePreview
+                    pages={
+                      isPermitTemplate
+                        ? PERMIT_CERTIFICATE_PAGES
+                        : isEnvelopeLetterTemplate
+                          ? ENVELOPE_LETTER_PAGES
+                          : ENVELOPE_BASE_PAGES
+                    }
                     templateData={templateData}
                     onTemplateDataChange={handleTemplateDataChange}
                   />
@@ -693,7 +739,7 @@ export function DocumentForm({
                   onChange={(e) =>
                     handleTemplateDataChange('customerName', e.target.value)
                   }
-                  placeholder="丸山 千代美"
+                  placeholder="【デモ】小峰 太郎"
                 />
               </div>
               <div className="space-y-2">
@@ -935,8 +981,8 @@ export function DocumentForm({
           </section>
         )}
 
-        {/* ===== 許可証テンプレート ===== */}
-        {showPermitFields && (
+        {/* ===== 許可証テンプレート（許可証書のみ） ===== */}
+        {showPermitCertificateForm && (
           <section className="bg-white rounded-elegant-lg border border-gin p-4 md:p-6">
             <header className="mb-4 flex items-start gap-2 pl-3 border-l-4 border-l-cha">
               <div>
@@ -949,7 +995,6 @@ export function DocumentForm({
               </div>
             </header>
 
-            {/* 許可証書（1枚目） */}
             <div className="mb-5">
               <h4 className="text-sm font-semibold text-sumi border-b border-gin pb-1 mb-3">
                 許可証書
@@ -1034,7 +1079,7 @@ export function DocumentForm({
                     onChange={(e) =>
                       handleTemplateDataChange('applicantName', e.target.value)
                     }
-                    placeholder="丸山 千代美"
+                    placeholder="【デモ】小峰 太郎"
                   />
                 </div>
                 <div className="space-y-2 md:col-span-2">
@@ -1047,7 +1092,7 @@ export function DocumentForm({
                         e.target.value
                       )
                     }
-                    placeholder="福岡県北九州市八幡西区小嶺..."
+                    placeholder="デモ県デモ市 小峰霊園サンプル参考地1-2-3（架空）"
                   />
                 </div>
                 <div className="space-y-2 md:col-span-2">
@@ -1060,70 +1105,79 @@ export function DocumentForm({
                         e.target.value
                       )
                     }
-                    placeholder="福岡県北九州市八幡西区..."
+                    placeholder="デモ県デモ市 小峰霊園サンプル…（架空）"
                   />
                 </div>
               </div>
             </div>
+          </section>
+        )}
 
-            {/* 封筒（2・4枚目） */}
-            <div>
-              <h4 className="text-sm font-semibold text-sumi border-b border-gin pb-1 mb-3">
-                封筒（宛先）
-              </h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>郵便番号</Label>
-                  <Input
-                    value={templateData.recipientPostalCode || ''}
-                    onChange={(e) =>
-                      handleTemplateDataChange(
-                        'recipientPostalCode',
-                        e.target.value
-                      )
-                    }
-                    placeholder="807-0081"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>宛名</Label>
-                  <Input
-                    value={templateData.recipientName || ''}
-                    onChange={(e) =>
-                      handleTemplateDataChange(
-                        'recipientName',
-                        e.target.value
-                      )
-                    }
-                    placeholder="丸山 千代美 様"
-                  />
-                </div>
-                <div className="space-y-2 md:col-span-2">
-                  <Label>宛先住所（1行目）</Label>
-                  <Input
-                    value={templateData.recipientAddress || ''}
-                    onChange={(e) =>
-                      handleTemplateDataChange(
-                        'recipientAddress',
-                        e.target.value
-                      )
-                    }
-                    placeholder="福岡県北九州市八幡西区..."
-                  />
-                </div>
-                <div className="space-y-2 md:col-span-2">
-                  <Label>宛先住所（2行目・任意）</Label>
-                  <Input
-                    value={templateData.recipientAddress2 || ''}
-                    onChange={(e) =>
-                      handleTemplateDataChange(
-                        'recipientAddress2',
-                        e.target.value
-                      )
-                    }
-                    placeholder="マンション名・号室など"
-                  />
-                </div>
+        {/* ===== 封筒書・封筒台（宛先） ===== */}
+        {showEnvelopeRecipientForm && (
+          <section className="bg-white rounded-elegant-lg border border-gin p-4 md:p-6">
+            <header className="mb-4 flex items-start gap-2 pl-3 border-l-4 border-l-cha">
+              <div>
+                <h3 className="font-mincho text-base md:text-lg font-semibold text-sumi">
+                  {isEnvelopeLetterTemplate ? '封筒書（宛先）' : '封筒台（宛先）'}
+                </h3>
+                <p className="text-xs text-hai mt-0.5">
+                  プレビュー上の宛先欄に印字されます。
+                </p>
+              </div>
+            </header>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>郵便番号</Label>
+                <Input
+                  value={templateData.recipientPostalCode || ''}
+                  onChange={(e) =>
+                    handleTemplateDataChange(
+                      'recipientPostalCode',
+                      e.target.value
+                    )
+                  }
+                  placeholder="100-0001"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>宛名</Label>
+                <Input
+                  value={templateData.recipientName || ''}
+                  onChange={(e) =>
+                    handleTemplateDataChange(
+                      'recipientName',
+                      e.target.value
+                    )
+                  }
+                  placeholder="【デモ】小峰 太郎 様"
+                />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label>宛先住所（1行目）</Label>
+                <Input
+                  value={templateData.recipientAddress || ''}
+                  onChange={(e) =>
+                    handleTemplateDataChange(
+                      'recipientAddress',
+                      e.target.value
+                    )
+                  }
+                  placeholder="デモ県デモ市 小峰霊園サンプル…（架空）"
+                />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label>宛先住所（2行目・任意）</Label>
+                <Input
+                  value={templateData.recipientAddress2 || ''}
+                  onChange={(e) =>
+                    handleTemplateDataChange(
+                      'recipientAddress2',
+                      e.target.value
+                    )
+                  }
+                  placeholder="マンション名・号室など"
+                />
               </div>
             </div>
           </section>

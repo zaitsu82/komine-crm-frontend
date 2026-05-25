@@ -10,6 +10,8 @@ import {
   Plus,
   History,
   Landmark,
+  Files,
+  LayoutTemplate,
 } from 'lucide-react';
 
 export type TemplateId =
@@ -17,6 +19,8 @@ export type TemplateId =
   | 'postcard'
   | 'contract'
   | 'permit'
+  | 'envelope-letter'
+  | 'envelope-base'
   | 'payment-guide'
   | 'other';
 
@@ -113,8 +117,26 @@ const TEMPLATES: TemplateOption[] = [
     id: 'permit',
     label: '許可証',
     description:
-      '永代使用許可証書と送付用封筒のテンプレートPDFに、必要項目を印字して作成します。',
+      '永代使用許可証書（1枚）のテンプレートPDFに必要項目を印字して作成します。',
     icon: <FileBadge className="h-7 w-7" />,
+    theme: 'cha',
+    hasTemplate: true,
+  },
+  {
+    id: 'envelope-letter',
+    label: '封筒書',
+    description:
+      '送付用封筒の表面・裏面（2枚）のテンプレートに宛先等を印字して作成します。',
+    icon: <Files className="h-7 w-7" />,
+    theme: 'cha',
+    hasTemplate: true,
+  },
+  {
+    id: 'envelope-base',
+    label: '封筒台',
+    description:
+      '大型封筒用のテンプレート（1枚）に宛先を印字して作成します。',
+    icon: <LayoutTemplate className="h-7 w-7" />,
     theme: 'cha',
     hasTemplate: true,
   },

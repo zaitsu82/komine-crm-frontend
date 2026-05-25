@@ -10,7 +10,14 @@ import { apiGet, apiPost, apiPut, apiDelete, shouldUseMockData, API_CONFIG } fro
 // =============================================================================
 
 // 書類タイプ
-export type DocumentType = 'invoice' | 'postcard' | 'contract' | 'permit' | 'other';
+export type DocumentType =
+  | 'invoice'
+  | 'postcard'
+  | 'contract'
+  | 'permit'
+  | 'envelope_letter'
+  | 'envelope_base'
+  | 'other';
 
 // 書類ステータス
 export type DocumentStatus = 'draft' | 'generated' | 'sent' | 'archived';
@@ -142,7 +149,13 @@ export interface DownloadUrlResponse {
 
 // PDF生成リクエスト
 export interface GeneratePdfRequest {
-  templateType: 'invoice' | 'postcard' | 'permit' | 'payment-guide';
+  templateType:
+    | 'invoice'
+    | 'postcard'
+    | 'permit'
+    | 'envelope-letter'
+    | 'envelope-base'
+    | 'payment-guide';
   templateData:
     | InvoiceTemplateData
     | PostcardTemplateData
@@ -245,6 +258,8 @@ export const DOCUMENT_TYPE_LABELS: Record<DocumentType, string> = {
   postcard: 'はがき',
   contract: '契約書',
   permit: '許可証',
+  envelope_letter: '封筒書',
+  envelope_base: '封筒台',
   other: 'その他',
 };
 
