@@ -54,41 +54,53 @@ export default function PlotAvailabilityManagement() {
   const sectionsHook = usePlotInventorySections();
   const areasHook = usePlotInventoryAreas();
 
+  // useCallback 済みで安定した setter 群を取り出す。フックの戻り値オブジェクト自体は
+  // 毎レンダー新しい参照になるため、effect の依存にはこの安定 setter を使う。
+  const { setPeriod: setSectionsPeriod, setStatus: setSectionsStatus, setSearch: setSectionsSearch } =
+    sectionsHook;
+  const { setPeriod: setAreasPeriod, setSearch: setAreasSearch } = areasHook;
+
   // 期の変更をセクション・面積フックに反映
   useEffect(() => {
     if (selectedPeriod === 'all') {
-      sectionsHook.setPeriod(undefined);
-      areasHook.setPeriod(undefined);
+      setSectionsPeriod(undefined);
+      setAreasPeriod(undefined);
     } else {
-      sectionsHook.setPeriod(selectedPeriod);
-      areasHook.setPeriod(selectedPeriod);
+      setSectionsPeriod(selectedPeriod);
+      setAreasPeriod(selectedPeriod);
     }
-  }, [selectedPeriod]);
+  }, [selectedPeriod, setSectionsPeriod, setAreasPeriod]);
 
   // 表示モード変更時のステータスフィルタ
   useEffect(() => {
     if (viewMode === 'available') {
-      sectionsHook.setStatus('available');
+      setSectionsStatus('available');
     } else if (viewMode === 'soldout') {
-      sectionsHook.setStatus('sold_out');
+      setSectionsStatus('sold_out');
     } else {
-      sectionsHook.setStatus(undefined);
+      setSectionsStatus(undefined);
     }
-  }, [viewMode]);
+  }, [viewMode, setSectionsStatus]);
 
   // 検索クエリの反映
   useEffect(() => {
-    sectionsHook.setSearch(searchQuery);
-    areasHook.setSearch(searchQuery);
-  }, [searchQuery]);
+    setSectionsSearch(searchQuery);
+    setAreasSearch(searchQuery);
+  }, [searchQuery, setSectionsSearch, setAreasSearch]);
 
   // ソートの反映
+  // setSort は params.sortBy/sortOrder の変化で再生成されるため依存に含めない。
+  // 常に明示的な引数で呼ぶので stale closure にはならず、sortKey/sortOrder の変化時のみ
+  // 実行すれば十分（含めると同一ソートで余分な再フェッチが発生する）。
   useEffect(() => {
     sectionsHook.setSort(sortKey, sortOrder);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortKey, sortOrder]);
 
+  // 面積別ソートの反映（setSort を依存に含めない理由は上記と同じ）
   useEffect(() => {
     areasHook.setSort(areaSortKey, sortOrder);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [areaSortKey, sortOrder]);
 
   // 全体サマリー（デフォルト値付き）
