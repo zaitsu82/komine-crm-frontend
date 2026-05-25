@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { PlotTabBaseProps } from './types';
-import { ViewModeField, ViewModeSelect } from './ViewModeField';
+import { ViewModeField, ViewModeSelect, ViewModeTextarea } from './ViewModeField';
 import { SelectItem } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { useMemo } from 'react';
@@ -113,6 +113,15 @@ export function BasicInfoTab({
             register={register('physicalPlot.areaSqm')}
             error={errors.physicalPlot?.areaSqm?.message}
             placeholder="3.6"
+          />
+        </div>
+        <div className="mt-4">
+          <ViewModeTextarea
+            label="備考"
+            viewMode={viewMode}
+            value={watch('physicalPlot.notes') || ''}
+            register={register('physicalPlot.notes')}
+            placeholder="物理区画に関するメモ"
           />
         </div>
       </div>
@@ -241,6 +250,16 @@ export function BasicInfoTab({
             error={errors.saleContract?.agentName?.message}
             placeholder="販売代理店名"
           />
+
+          <div className="col-span-3">
+            <ViewModeTextarea
+              label="契約備考"
+              viewMode={viewMode}
+              value={watch('saleContract.notes') || ''}
+              register={register('saleContract.notes')}
+              placeholder="契約に関するメモ"
+            />
+          </div>
         </div>
       </div>
 
@@ -359,6 +378,15 @@ export function BasicInfoTab({
             placeholder="example@example.com"
           />
 
+          <div className="col-span-3">
+            <ViewModeTextarea
+              label="備考"
+              viewMode={viewMode}
+              value={watch('customer.notes') || ''}
+              register={register('customer.notes')}
+              placeholder="契約者に関するメモ"
+            />
+          </div>
         </div>
       </div>
 

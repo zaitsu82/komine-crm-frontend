@@ -192,4 +192,44 @@ describe('BasicInfoTab', () => {
     // 区画 (areaName) は watch() から表示する独自実装
     expect(screen.getByText('第1期')).toBeInTheDocument();
   });
+
+  it('物理区画備考・契約備考・契約者備考の3つの備考入力欄を表示する（#145）', () => {
+    render(
+      <TabHost>
+        {(h) => <BasicInfoTab {...h} masterData={emptyMasterData} />}
+      </TabHost>
+    );
+
+    expect(screen.getByText('契約備考')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('物理区画に関するメモ')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('契約に関するメモ')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('契約者に関するメモ')).toBeInTheDocument();
+  });
+
+  it('契約備考に入力できる（#145）', async () => {
+    const user = userEvent.setup();
+    render(
+      <TabHost>
+        {(h) => <BasicInfoTab {...h} masterData={emptyMasterData} />}
+      </TabHost>
+    );
+
+    const notesInput = screen.getByPlaceholderText('契約に関するメモ');
+    await user.type(notesInput, '2026年度分は分割払い');
+    expect(notesInput).toHaveValue('2026年度分は分割払い');
+  });
+
+  it('viewMode=trueの場合、契約備考の値が表示用ボックスに表示される（#145）', () => {
+    render(
+      <TabHost defaultValues={{
+        saleContract: { notes: '解約予定あり' } as never,
+      }}>
+        {(h) => <BasicInfoTab {...h} masterData={emptyMasterData} viewMode={true} />}
+      </TabHost>
+    );
+
+    // viewMode では入力欄ではなく値が表示される
+    expect(screen.queryByPlaceholderText('契約に関するメモ')).not.toBeInTheDocument();
+    expect(screen.getByText('解約予定あり')).toBeInTheDocument();
+  });
 });
