@@ -1,98 +1,104 @@
-# Komine Cemetery CRM - Customer Management MVP
+# 小嶺霊園CRM — フロントエンド（komine-crm-frontend）
 
-このプロジェクトは霊園管理システムの顧客管理台帳MVPです。
+霊園・墓地の**区画管理**を中核とする CRM のフロントエンド。区画（plots）・合祀（collective-burials）・スタッフ・書類・請求/入金・在庫を扱う。
 
-## 🚀 実装済み機能
+> モノレポ `komine--cemetery-crm` の一部。全体構成・データモデル・API 仕様は ルートの `CLAUDE.md` および `komine-crm-frontend/CLAUDE.md` を参照（**開発ガイドとして最も正確なのは CLAUDE.md**）。
 
-### 顧客管理台帳の中核機能
-- **顧客検索**: 氏名、カナ、顧客コード、電話番号、住所による検索
-- **顧客詳細表示**: 基本情報、住所、連絡先、墓地区画情報
-- **顧客登録**: バリデーション付きフォームで新規顧客登録
-- **顧客編集**: 既存顧客情報の更新機能
-- **タブインターフェース**: 基本情報①、基本情報②、連絡先/家族、埋葬情報、工事情報、履歴情報
-- **和暦対応**: 昭和・平成・令和の年号表示
+## 技術スタック
 
-### UIの特徴
-- **左サイドメニュー**: 台帳問合せ、契約訂正、予約入力など12機能
-- **既存システムとの整合性**: 提供された画像の構造に基づいたデザイン
-- **高齢者対応**: 大きめのフォント、明確な境界線、わかりやすいボタン
+- **Next.js 15.5**（App Router）/ **React 19**
+- **TypeScript**
+- **Tailwind CSS** + **shadcn/ui**（Radix ベース）
+- **React Hook Form** + **Zod**（フォーム・バリデーション）
+- **Supabase Auth**（JWT、`src/contexts/auth-context.tsx`）
+- **@komine/types**（バックエンドと共有する型。`file:../packages/types` 依存）
+- テスト: **Jest**（ユニット）/ **Playwright**（E2E）
 
-## 🛠️ 技術スタック
+バックエンドは別リポジトリ（Express + Prisma + PostgreSQL, port 4000）。フロントは REST（Bearer JWT）で連携する。
 
-- **Next.js 14**: App Routerを使用
-- **TypeScript**: 型安全な開発
-- **Tailwind CSS**: レスポンシブデザイン
-- **React Hook Form**: フォーム管理
-- **Zod**: スキーマバリデーション
-- **shadcn/ui**: アクセシブルなUIコンポーネント
-- **Radix UI**: 基盤となるHeadlessコンポーネント
-
-## 📱 開発サーバー
+## セットアップ
 
 ```bash
-yarn dev
+# 1. 共有型パッケージをビルド（初回・型変更時に必要）
+cd ../packages/types && npm install && npm run build
+
+# 2. フロントエンドの依存をインストール
+cd ../../komine-crm-frontend && npm install
+
+# 3. 環境変数を設定（.env.local を作成。下記「環境変数」参照）
 ```
 
-ブラウザで http://localhost:3000 を開いてアプリケーションを確認してください。
+`@komine/types` は `node_modules/@komine/types` → `../../packages/types` のシンボリックリンクで解決される。型を変更したら `packages/types` で `npm run build` を実行すれば、リンク経由で即反映される。
 
-## 📋 サンプルデータ
+### 環境変数（`.env.local`）
 
-現在は3名の顧客データをモックで用意しています：
-- 吉永 修 (A-56)
-- 田中 太郎 (B-12) 
-- 山田 花子 (C-33)
+| 変数 | 説明 | 既定 |
+|------|------|------|
+| `NEXT_PUBLIC_API_URL` | バックエンド URL | `http://localhost:4000` |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase プロジェクト URL | — |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key | — |
 
-検索機能で「吉永」「田中」「A-56」等で検索可能です。
+API 未接続時はモックデータにフォールバックする（`src/lib/api/client.ts` の `shouldUseMockData`）。
 
-## 🔍 主要コンポーネント
+## 開発コマンド
 
-- `customer-management.tsx`: メイン管理画面
-- `customer-search.tsx`: 顧客検索機能
-- `customer-form.tsx`: 顧客登録・編集フォーム
-- `types/customer.ts`: 顧客データ型定義
-- `lib/data.ts`: モックデータとCRUD操作
-- `lib/validations.ts`: Zodバリデーションスキーマ
+```bash
+npm run dev            # 開発サーバー（http://localhost:3000）
+npm run build          # 本番ビルド（next.config.ts は ignoreBuildErrors: true）
+npm start              # 本番サーバー起動
+npm run lint           # ESLint
+npm test               # Jest ユニットテスト
+npm run test:watch     # Jest watch
+npm run test:e2e       # Playwright E2E
+npm run test:e2e:ui    # Playwright UI モード
+```
 
-## 📝 操作手順
+## 画面構成（App Router）
 
-### 顧客検索・表示
-1. 左メニューから「台帳問合せ」をクリック
-2. 検索窓に氏名・カナ・顧客コード等を入力して「検索」
-3. 検索結果から顧客をクリックして詳細表示
+| パス | 画面 | 説明 |
+|------|------|------|
+| `/` | ログイン | Supabase Auth |
+| `/plots` | 台帳問い合わせ | 区画一覧（検索・ページネーション） |
+| `/plots/[id]` | 区画詳細 | 関連データを含む区画詳細・編集 |
+| `/collective-burials` | 合祀管理 | 合祀の管理 |
+| `/staff` | スタッフ管理 | スタッフ一覧 |
+| `/dashboard` | ダッシュボード | 概況 |
 
-### 新規顧客登録
-1. 検索画面で「新規登録」ボタンをクリック
-2. または左メニューから「契約前入力」をクリック
-3. 必要事項を入力して「登録」ボタン
+## 主要な実装パターン
 
-### 顧客情報編集
-1. 顧客詳細表示画面で「編集」ボタンをクリック
-2. 情報を修正して「更新」ボタン
+- **API クライアント**: `src/lib/api/`（`plots.ts` が中心。`@komine/types` を使用、モック切替対応）
+- **マスタ**: `src/hooks/useMasters.ts`（全マスタをキャッシュ取得）/ `src/lib/api/masters.ts`
+- **区画フォーム**: `src/components/plot-form/`（BasicInfo / WorkBilling / Contacts / BurialInfo / History の多タブ）
+- **データ取得フック**: `useAsyncData`（単発）/ `useAsyncList`（ページング）
+- **UI コンポーネント**: `src/components/ui/`（shadcn/ui）
+- **認証**: `src/contexts/auth-context.tsx`（Supabase）
 
-## 📝 今後の開発予定
+## レスポンシブ方針
 
-1. **データベース接続**: Supabaseとの接続実装
-2. **削除機能**: 顧客情報の削除機能
-3. **印刷機能**: 各種帳票の印刷機能
-4. **認証**: ユーザー認証システム
-5. **バックアップ**: データバックアップ機能
-6. **履歴管理**: 操作履歴の記録・表示
+モバイルファースト。最小サポートは **iPhone SE（375px幅）**。`sm:`/`md:`/`lg:` で段階的に拡張する。詳細は `CLAUDE.md` の「レスポンシブデザイン」セクション参照。
 
-## 🎨 デザイン参考
+## ディレクトリ概要
 
-`/images/` フォルダ内の既存システム画像を参考にUIを設計しています。特に：
-- 左サイドメニューの構造
-- タブインターフェースのレイアウト
-- フォーム項目の配置
-- 色使いとボタンデザイン
+```
+src/
+├── app/              # App Router（ルーティング・ページ）
+├── components/       # 画面・フォーム・UI コンポーネント
+│   ├── plot-form/    # 区画の多タブフォーム
+│   └── ui/           # shadcn/ui
+├── contexts/         # 認証等の React Context
+├── hooks/            # データ取得・マスタ等のフック
+├── lib/
+│   ├── api/          # バックエンド API クライアント（@komine/types 使用）
+│   └── validations/  # Zod スキーマ
+└── types/            # フロント固有の型・定数
+```
 
-## 🚀 次のステップ
+## 関連リポジトリ
 
-MVPが完成しました！チームでレビューして、以下の点について議論できます：
+| Repo | URL |
+|------|-----|
+| Backend | https://github.com/zaitsu82/komine-crm-backend |
+| Types | https://github.com/zaitsu82/komine-types |
+| Docs | https://github.com/zaitsu82/komine-docs |
 
-1. **UI/UX**: デザインの改善点
-2. **機能**: 追加したい機能や修正点
-3. **データ構造**: 顧客データの項目追加・変更
-4. **ワークフロー**: 業務フローとの整合性
-
-ローカル環境で動作確認後、フィードバックをお聞かせください！
+課題管理は各リポジトリの GitHub Issues。
