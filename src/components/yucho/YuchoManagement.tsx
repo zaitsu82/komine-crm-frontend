@@ -88,6 +88,10 @@ export default function YuchoManagement() {
   const collectiveTotal = summary?.byCategory.collective.amount ?? 0;
   const grandTotal = summary?.totalAmount ?? 0;
   const totalCount = summary?.totalCount ?? 0;
+  // 実際にCSV（振替ファイル）へ出力される件数・金額と、口座未登録で除外される件数（#172）
+  const exportableCount = summary?.exportableCount ?? 0;
+  const exportableAmount = summary?.exportableAmount ?? 0;
+  const excludedNoAccountCount = summary?.excludedNoAccountCount ?? 0;
 
   // プレビュー用: バックエンドのCSV出力(全銀協固定長)を取得して表示
   const [previewText, setPreviewText] = useState<string>('');
@@ -122,7 +126,9 @@ export default function YuchoManagement() {
     try {
       const blob = await exportYuchoCsv(buildExportParams());
       downloadBlob(`yucho_${billingYear}.csv`, blob);
-      showSuccess('CSVを出力しました', `${billingYear}年度 ${totalCount}件`);
+      const excludedNote =
+        excludedNoAccountCount > 0 ? `（口座未登録${excludedNoAccountCount}件は除外）` : '';
+      showSuccess('CSVを出力しました', `${billingYear}年度 ${exportableCount}件出力${excludedNote}`);
       setPreviewOpen(false);
     } catch (e) {
       showError('CSV出力に失敗しました', e instanceof Error ? e.message : String(e));
@@ -167,7 +173,7 @@ export default function YuchoManagement() {
                 variant="outline"
                 size="sm"
                 onClick={openPreview}
-                disabled={totalCount === 0 || isLoading}
+                disabled={exportableCount === 0 || isLoading}
               >
                 <FileText className="w-4 h-4 mr-1.5" />
                 プレビュー
@@ -176,7 +182,7 @@ export default function YuchoManagement() {
                 variant="ai"
                 size="sm"
                 onClick={handleDownload}
-                disabled={totalCount === 0 || isLoading || isExporting}
+                disabled={exportableCount === 0 || isLoading || isExporting}
               >
                 {isExporting ? (
                   <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
@@ -202,6 +208,23 @@ export default function YuchoManagement() {
           </div>
         )}
 
+        {/* 口座未登録による除外の警告（#172: 無言除外で請求漏れに気づけない問題への可視化） */}
+        {!isLoading && excludedNoAccountCount > 0 && (
+          <div className="bg-kohaku-50 border border-kohaku-200 rounded-lg p-3 md:p-4 shadow-elegant-sm">
+            <div className="flex items-start gap-2 text-kohaku-dark">
+              <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+              <div className="text-sm">
+                <p className="font-medium">
+                  口座未登録の {excludedNoAccountCount}件 が振替ファイルから除外されます
+                </p>
+                <p className="text-xs mt-0.5">
+                  全{totalCount}件中 {exportableCount}件 を出力します。記号・番号が「—」の対象は口座が未登録のため、別途の請求対応が必要です。
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* サマリー */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <StatCard
@@ -221,7 +244,11 @@ export default function YuchoManagement() {
           <StatCard
             label="総合計"
             value={formatYen(grandTotal)}
-            description={`全${totalCount}件`}
+            description={
+              excludedNoAccountCount > 0
+                ? `全${totalCount}件・出力${exportableCount}件`
+                : `全${totalCount}件`
+            }
             icon={<Landmark className="w-4 h-4" />}
             theme="ai"
           />
@@ -269,7 +296,9 @@ export default function YuchoManagement() {
         isOpen={previewOpen}
         onClose={() => setPreviewOpen(false)}
         title="CSVプレビュー"
-        description={`${billingYear}年度 ゆうちょ自動払込CSV（${totalCount}件 / ${formatYen(grandTotal)}）`}
+        description={`${billingYear}年度 ゆうちょ自動払込CSV（出力${exportableCount}件 / ${formatYen(exportableAmount)}${
+          excludedNoAccountCount > 0 ? ` ・口座未登録${excludedNoAccountCount}件は除外` : ''
+        }）`}
         size="full"
         footer={
           <>
@@ -279,7 +308,7 @@ export default function YuchoManagement() {
             <Button
               variant="ai"
               onClick={handleDownload}
-              disabled={totalCount === 0 || isExporting}
+              disabled={exportableCount === 0 || isExporting}
             >
               {isExporting ? (
                 <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
