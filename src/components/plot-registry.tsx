@@ -7,7 +7,7 @@
  * @komine/types の PlotListItem を直接使用し、Customer型への変換なし。
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, type CSSProperties } from 'react';
 import { PlotListItem, PaymentStatus, PhysicalPlotStatus } from '@komine/types';
 import {
   getPlots,
@@ -19,6 +19,15 @@ import type { GraveClassificationsResponse } from '@komine/types';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { cn, truncateAddressToCity } from '@/lib/utils';
+import {
+  COLUMN_DEFAULT_WIDTHS,
+  clampColumnWidth,
+  loadColumnWidths,
+  saveColumnWidths,
+  isColumnExpanded,
+  type ColumnWidths,
+  type ResizableColumnKey,
+} from '@/lib/plots-column-widths';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { StatusBadge, type StatusBadgeProps } from '@/components/ui/status-badge';
@@ -50,6 +59,37 @@ function saveSearchHistory(history: string[]) {
   } catch {
     // ignore quota/disabled errors
   }
+}
+
+// ===== 列リサイズ用ハンドル（issue #146） =====
+
+interface ColumnResizerProps {
+  columnKey: ResizableColumnKey;
+  onResizeStart: (key: ResizableColumnKey, startX: number, startWidth: number) => void;
+}
+
+/**
+ * ヘッダー右端のドラッグハンドル。十分な幅（8px）を確保し、
+ * クリックがソート操作に伝播しないよう stopPropagation する。
+ */
+function ColumnResizer({ columnKey, onResizeStart }: ColumnResizerProps) {
+  return (
+    <div
+      role="separator"
+      aria-orientation="vertical"
+      aria-label="列幅を調整"
+      data-testid={`col-resizer-${columnKey}`}
+      className="absolute top-0 right-0 z-20 h-full w-2 cursor-col-resize touch-none select-none hover:bg-white/40"
+      onClick={(e) => e.stopPropagation()}
+      onPointerDown={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const th = e.currentTarget.parentElement;
+        const startWidth = th ? th.getBoundingClientRect().width : COLUMN_DEFAULT_WIDTHS[columnKey] ?? 90;
+        onResizeStart(columnKey, e.clientX, startWidth);
+      }}
+    />
+  );
 }
 
 // ===== 型定義 =====
@@ -181,6 +221,54 @@ export default function PlotRegistry({
   useEffect(() => {
     setSearchHistory(loadSearchHistory());
   }, []);
+
+  // 列幅（issue #146）— localStorage に永続化。SSR ハイドレーション差異を避けるため
+  // 初期値は空でマウント後に読み込む。
+  const [columnWidths, setColumnWidths] = useState<ColumnWidths>({});
+  useEffect(() => {
+    setColumnWidths(loadColumnWidths());
+  }, []);
+
+  // ヘッダー境界のドラッグで列幅を変更し、ドラッグ終了時に保存する
+  const handleColumnResizeStart = useCallback(
+    (key: ResizableColumnKey, startX: number, startWidth: number) => {
+      const handleMove = (e: PointerEvent) => {
+        const next = clampColumnWidth(startWidth + (e.clientX - startX));
+        setColumnWidths((prev) => ({ ...prev, [key]: next }));
+      };
+      const handleUp = () => {
+        window.removeEventListener('pointermove', handleMove);
+        window.removeEventListener('pointerup', handleUp);
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+        setColumnWidths((prev) => {
+          saveColumnWidths(prev);
+          return prev;
+        });
+      };
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+      window.addEventListener('pointermove', handleMove);
+      window.addEventListener('pointerup', handleUp);
+    },
+    []
+  );
+
+  const handleResetColumnWidths = useCallback(() => {
+    setColumnWidths({});
+    saveColumnWidths({});
+  }, []);
+
+  const hasCustomColumnWidths = Object.keys(columnWidths).length > 0;
+
+  // <col> へ適用する幅。未設定列は Tailwind の既定幅クラスにフォールバック。
+  const colStyle = (key: ResizableColumnKey): CSSProperties | undefined => {
+    const width = columnWidths[key];
+    return typeof width === 'number' ? { width } : undefined;
+  };
+  // 展開（全文表示）中の列向けセルクラス。狭い列は truncate を維持。
+  const cellWrapClass = (key: ResizableColumnKey, base: string) =>
+    cn(base, isColumnExpanded(columnWidths, key) ? 'whitespace-normal break-words align-top' : 'truncate');
 
   // 区画区分 distinct 値（マスタ化されるまでの暫定 select 候補）
   useEffect(() => {
@@ -603,7 +691,24 @@ export default function PlotRegistry({
             </button>
           )}
 
-          <label className="hidden md:inline-flex items-center gap-1.5 text-xs sm:text-sm text-hai cursor-pointer select-none ml-auto">
+          {hasCustomColumnWidths && (
+            <button
+              type="button"
+              onClick={handleResetColumnWidths}
+              className="hidden md:inline-flex items-center gap-1 px-2 h-9 rounded-elegant text-xs text-hai hover:bg-kinari transition-colors ml-auto"
+              title="列幅を初期状態に戻す"
+            >
+              <X className="w-3.5 h-3.5" />
+              列幅をリセット
+            </button>
+          )}
+
+          <label
+            className={cn(
+              'hidden md:inline-flex items-center gap-1.5 text-xs sm:text-sm text-hai cursor-pointer select-none',
+              !hasCustomColumnWidths && 'ml-auto'
+            )}
+          >
             <input
               type="checkbox"
               checked={showBuriedPersons}
@@ -759,15 +864,17 @@ export default function PlotRegistry({
               {/* 状態 / 区画No / エリア / 契約者 / 住所 / 電話 / 取扱 / 許可番号 / 備考(flex) / [埋葬者] / 契約日 / 入金 / 管理料 / 次請求 */}
               <colgroup>
                 <col className="w-[40px]" />
-                <col className="w-[68px]" />
-                <col className="w-[52px]" />
-                <col className="w-[110px]" />
-                <col className="hidden md:table-column w-[90px]" />
-                <col className="hidden lg:table-column w-[100px]" />
-                <col className="hidden lg:table-column w-[72px]" />
-                <col className="hidden lg:table-column w-[96px]" />
-                <col className="hidden md:table-column" />
-                {showBuriedPersons && <col className="hidden lg:table-column w-[90px]" />}
+                <col className="w-[68px]" style={colStyle('plotNumber')} />
+                <col className="w-[52px]" style={colStyle('areaName')} />
+                <col className="w-[110px]" style={colStyle('customerName')} />
+                <col className="hidden md:table-column w-[90px]" style={colStyle('address')} />
+                <col className="hidden lg:table-column w-[100px]" style={colStyle('phone')} />
+                <col className="hidden lg:table-column w-[72px]" style={colStyle('agent')} />
+                <col className="hidden lg:table-column w-[96px]" style={colStyle('permitNumber')} />
+                <col className="hidden md:table-column" style={colStyle('notes')} />
+                {showBuriedPersons && (
+                  <col className="hidden lg:table-column w-[90px]" style={colStyle('buriedPersons')} />
+                )}
                 <col className="hidden sm:table-column w-[60px]" />
                 <col className="w-[60px]" />
                 <col className="hidden sm:table-column w-[72px]" />
@@ -790,7 +897,7 @@ export default function PlotRegistry({
                   </th>
                   <th
                     className={cn(
-                      "px-2 py-2 text-left text-xs font-bold text-white cursor-pointer transition-all duration-200",
+                      "relative px-2 py-2 text-left text-xs font-bold text-white cursor-pointer transition-all duration-200",
                       "hover:bg-matsu-light",
                       sortKey === 'plotNumber' && "bg-matsu-dark"
                     )}
@@ -800,10 +907,11 @@ export default function PlotRegistry({
                       <span>区画No</span>
                       <SortIndicator columnKey="plotNumber" />
                     </div>
+                    <ColumnResizer columnKey="plotNumber" onResizeStart={handleColumnResizeStart} />
                   </th>
                   <th
                     className={cn(
-                      "px-2 py-2 text-left text-xs font-bold text-white cursor-pointer transition-all duration-200",
+                      "relative px-2 py-2 text-left text-xs font-bold text-white cursor-pointer transition-all duration-200",
                       "hover:bg-matsu-light",
                       sortKey === 'areaName' && "bg-matsu-dark"
                     )}
@@ -813,10 +921,11 @@ export default function PlotRegistry({
                       <span>エリア</span>
                       <SortIndicator columnKey="areaName" />
                     </div>
+                    <ColumnResizer columnKey="areaName" onResizeStart={handleColumnResizeStart} />
                   </th>
                   <th
                     className={cn(
-                      "px-2 py-2 text-left text-xs font-bold text-white cursor-pointer transition-all duration-200",
+                      "relative px-2 py-2 text-left text-xs font-bold text-white cursor-pointer transition-all duration-200",
                       "hover:bg-matsu-light",
                       sortKey === 'customerName' && "bg-matsu-dark"
                     )}
@@ -826,13 +935,15 @@ export default function PlotRegistry({
                       <span>契約者</span>
                       <SortIndicator columnKey="customerName" />
                     </div>
+                    <ColumnResizer columnKey="customerName" onResizeStart={handleColumnResizeStart} />
                   </th>
-                  <th className="px-2 py-2 text-left text-xs font-bold text-white hidden md:table-cell">
+                  <th className="relative px-2 py-2 text-left text-xs font-bold text-white hidden md:table-cell">
                     <span>住所</span>
+                    <ColumnResizer columnKey="address" onResizeStart={handleColumnResizeStart} />
                   </th>
                   <th
                     className={cn(
-                      "px-2 py-2 text-left text-xs font-bold text-white cursor-pointer transition-all duration-200 hidden lg:table-cell",
+                      "relative px-2 py-2 text-left text-xs font-bold text-white cursor-pointer transition-all duration-200 hidden lg:table-cell",
                       "hover:bg-matsu-light",
                       sortKey === 'phoneNumber' && "bg-matsu-dark"
                     )}
@@ -842,19 +953,24 @@ export default function PlotRegistry({
                       <span>電話</span>
                       <SortIndicator columnKey="phoneNumber" />
                     </div>
+                    <ColumnResizer columnKey="phone" onResizeStart={handleColumnResizeStart} />
                   </th>
-                  <th className="px-2 py-2 text-left text-xs font-bold text-white hidden lg:table-cell">
+                  <th className="relative px-2 py-2 text-left text-xs font-bold text-white hidden lg:table-cell">
                     <span>取扱</span>
+                    <ColumnResizer columnKey="agent" onResizeStart={handleColumnResizeStart} />
                   </th>
-                  <th className="px-2 py-2 text-left text-xs font-bold text-white hidden lg:table-cell">
+                  <th className="relative px-2 py-2 text-left text-xs font-bold text-white hidden lg:table-cell">
                     <span>許可番号</span>
+                    <ColumnResizer columnKey="permitNumber" onResizeStart={handleColumnResizeStart} />
                   </th>
-                  <th className="px-2 py-2 text-left text-xs font-bold text-white hidden md:table-cell">
+                  <th className="relative px-2 py-2 text-left text-xs font-bold text-white hidden md:table-cell">
                     <span>備考</span>
+                    <ColumnResizer columnKey="notes" onResizeStart={handleColumnResizeStart} />
                   </th>
                   {showBuriedPersons && (
-                    <th className="px-2 py-2 text-left text-xs font-bold text-white hidden lg:table-cell">
+                    <th className="relative px-2 py-2 text-left text-xs font-bold text-white hidden lg:table-cell">
                       <span>埋葬者</span>
+                      <ColumnResizer columnKey="buriedPersons" onResizeStart={handleColumnResizeStart} />
                     </th>
                   )}
                   <th
@@ -957,44 +1073,46 @@ export default function PlotRegistry({
                         <td className="px-2 py-2 text-center">
                           {getStatusBadge(plot)}
                         </td>
-                        <td className="px-2 py-2 font-mono text-matsu font-medium text-xs truncate" title={plot.plotNumber}>
+                        <td className={cellWrapClass('plotNumber', 'px-2 py-2 font-mono text-matsu font-medium text-xs')} title={plot.plotNumber}>
                           {plot.plotNumber}
                         </td>
-                        <td className="px-2 py-2 text-xs text-hai truncate" title={plot.areaName || undefined}>
+                        <td className={cellWrapClass('areaName', 'px-2 py-2 text-xs text-hai')} title={plot.areaName || undefined}>
                           {plot.areaName || '-'}
                         </td>
-                        <td className="px-2 py-2">
-                          <div className="truncate">
-                            <div className="font-medium text-sumi text-sm truncate" title={plot.customerName || undefined}>
+                        <td className="px-2 py-2 align-top">
+                          <div className={isColumnExpanded(columnWidths, 'customerName') ? '' : 'truncate'}>
+                            <div className={cellWrapClass('customerName', 'font-medium text-sumi text-sm')} title={plot.customerName || undefined}>
                               {plot.customerName || '-'}
                             </div>
-                            <div className="text-xs text-hai truncate" title={plot.customerNameKana || undefined}>
+                            <div className={cellWrapClass('customerName', 'text-xs text-hai')} title={plot.customerNameKana || undefined}>
                               {plot.customerNameKana || ''}
                             </div>
                           </div>
                         </td>
-                        <td className="px-2 py-2 text-xs text-hai truncate hidden md:table-cell" title={plot.customerAddress || undefined}>
-                          {truncateAddressToCity(plot.customerAddress)}
+                        <td className={cellWrapClass('address', 'px-2 py-2 text-xs text-hai hidden md:table-cell')} title={plot.customerAddress || undefined}>
+                          {isColumnExpanded(columnWidths, 'address')
+                            ? (plot.customerAddress || '-')
+                            : truncateAddressToCity(plot.customerAddress)}
                         </td>
-                        <td className="px-2 py-2 text-xs text-hai truncate hidden lg:table-cell" title={plot.customerPhoneNumber || undefined}>
+                        <td className={cellWrapClass('phone', 'px-2 py-2 text-xs text-hai hidden lg:table-cell')} title={plot.customerPhoneNumber || undefined}>
                           {plot.customerPhoneNumber || '-'}
                         </td>
-                        <td className="px-2 py-2 text-xs text-hai truncate hidden lg:table-cell" title={plot.agentName || undefined}>
+                        <td className={cellWrapClass('agent', 'px-2 py-2 text-xs text-hai hidden lg:table-cell')} title={plot.agentName || undefined}>
                           {plot.agentName || '-'}
                         </td>
-                        <td className="px-2 py-2 text-xs text-hai tabular-nums truncate hidden lg:table-cell" title={plot.permitNumber || undefined}>
+                        <td className={cellWrapClass('permitNumber', 'px-2 py-2 text-xs text-hai tabular-nums hidden lg:table-cell')} title={plot.permitNumber || undefined}>
                           {plot.permitNumber || '-'}
                         </td>
-                        <td className="px-2 py-2 text-xs text-hai hidden md:table-cell">
+                        <td className="px-2 py-2 text-xs text-hai hidden md:table-cell align-top">
                           <div
-                            className="line-clamp-2 break-all"
+                            className={isColumnExpanded(columnWidths, 'notes') ? 'whitespace-normal break-words' : 'line-clamp-2 break-all'}
                             title={[plot.contractNotes, plot.customerNotes].filter(Boolean).join(' / ')}
                           >
                             {[plot.contractNotes, plot.customerNotes].filter(Boolean).join(' / ') || '-'}
                           </div>
                         </td>
                         {showBuriedPersons && (
-                          <td className="px-2 py-2 text-xs text-hai truncate hidden lg:table-cell" title={plot.buriedPersonNames?.join(', ') || undefined}>
+                          <td className={cellWrapClass('buriedPersons', 'px-2 py-2 text-xs text-hai hidden lg:table-cell')} title={plot.buriedPersonNames?.join(', ') || undefined}>
                             {plot.buriedPersonNames && plot.buriedPersonNames.length > 0 ? plot.buriedPersonNames.join(', ') : '-'}
                           </td>
                         )}

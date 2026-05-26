@@ -158,4 +158,48 @@ test.describe('台帳問い合わせ（区画一覧）', () => {
       expect(hasEmptyMessage || rowCount === 0).toBeTruthy();
     }
   });
+
+  // issue #146: 列幅のドラッグ調整と localStorage 保持
+  test('4-8: 列幅をドラッグで広げると幅が変わりリロード後も保持される', async ({ page }) => {
+    // 住所列はデスクトップ幅（md 以上）でのみ表示される
+    await page.setViewportSize({ width: 1280, height: 800 });
+
+    const addressHeader = page.locator('thead th', { hasText: '住所' }).first();
+    const hasAddressHeader = await addressHeader.isVisible({ timeout: 5_000 }).catch(() => false);
+    if (!hasAddressHeader) return; // テーブル未表示環境ではスキップ
+
+    const before = await addressHeader.boundingBox();
+    const resizer = addressHeader.getByTestId('col-resizer-address');
+    await expect(resizer).toBeVisible();
+
+    // ハンドルを右へ 150px ドラッグして列を広げる
+    const box = await resizer.boundingBox();
+    if (!box || !before) return;
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(box.x + 150, box.y + box.height / 2, { steps: 10 });
+    await page.mouse.up();
+    await page.waitForTimeout(300);
+
+    const after = await addressHeader.boundingBox();
+    expect(after && before && after.width).toBeGreaterThan(before.width);
+
+    // localStorage に保存され、リロード後も幅が維持される
+    const stored = await page.evaluate(() => localStorage.getItem('komine:plots:column-widths'));
+    expect(stored).toBeTruthy();
+
+    await page.reload();
+    await expect(addressHeader).toBeVisible({ timeout: 10_000 });
+    const afterReload = await addressHeader.boundingBox();
+    expect(afterReload && before && afterReload.width).toBeGreaterThan(before.width);
+
+    // 「列幅をリセット」で初期状態に戻る
+    const resetButton = page.getByRole('button', { name: '列幅をリセット' });
+    if (await resetButton.isVisible({ timeout: 3_000 }).catch(() => false)) {
+      await resetButton.click();
+      await page.waitForTimeout(300);
+      const reset = await page.evaluate(() => localStorage.getItem('komine:plots:column-widths'));
+      expect(reset === '{}' || reset === null).toBeTruthy();
+    }
+  });
 });
