@@ -152,6 +152,8 @@ export function useMasters(options?: { skipCache?: boolean }) {
   const sectionNames = state.data?.sectionName || [];
   const relationships = state.data?.relationship || [];
   const contractors = state.data?.contractor || [];
+  const directions = state.data?.direction || [];
+  const positions = state.data?.position || [];
 
   return {
     // 状態
@@ -171,6 +173,8 @@ export function useMasters(options?: { skipCache?: boolean }) {
     sectionNames,
     relationships,
     contractors,
+    directions,
+    positions,
 
     // アクション
     refresh,
