@@ -1,0 +1,358 @@
+import type { CSSProperties, ReactNode } from 'react';
+import { PlotListItem, PaymentStatus } from '@komine/types';
+import { cn, truncateAddressToCity } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
+import { StatusBadge } from '@/components/ui/status-badge';
+import {
+  isColumnExpanded,
+  type ColumnWidths,
+  type ResizableColumnKey,
+} from '@/lib/plots-column-widths';
+import { PAYMENT_STATUS_LABELS, PAYMENT_STATUS_VARIANTS } from './constants';
+import { formatContractDate, formatMoneyString, getRowBgColor, getStatusBadge } from './utils';
+import { ColumnResizer } from './ColumnResizer';
+import { SortIndicator } from './SortIndicator';
+import type { SortKey, SortOrder } from './types';
+
+interface PlotTableProps {
+  plots: PlotListItem[];
+  isLoading: boolean;
+  error: string | null;
+  onRetry: () => void;
+  sortKey: SortKey;
+  sortOrder: SortOrder;
+  onSort: (key: SortKey) => void;
+  columnWidths: ColumnWidths;
+  onColumnResizeStart: (key: ResizableColumnKey, startX: number, startWidth: number) => void;
+  showBuriedPersons: boolean;
+  selectedPlotId?: string;
+  onPlotSelect: (plot: PlotListItem) => void;
+  onPlotHover?: (plot: PlotListItem) => void;
+  startIndex: number;
+  emptyState: ReactNode;
+}
+
+/** 区画一覧テーブル（タブレット・PC: md 以上）。 */
+export function PlotTable({
+  plots,
+  isLoading,
+  error,
+  onRetry,
+  sortKey,
+  sortOrder,
+  onSort,
+  columnWidths,
+  onColumnResizeStart,
+  showBuriedPersons,
+  selectedPlotId,
+  onPlotSelect,
+  onPlotHover,
+  startIndex,
+  emptyState,
+}: PlotTableProps) {
+  // <col> へ適用する幅。未設定列は Tailwind の既定幅クラスにフォールバック。
+  const colStyle = (key: ResizableColumnKey): CSSProperties | undefined => {
+    const width = columnWidths[key];
+    return typeof width === 'number' ? { width } : undefined;
+  };
+  // 展開（全文表示）中の列向けセルクラス。狭い列は truncate を維持。
+  const cellWrapClass = (key: ResizableColumnKey, base: string) =>
+    cn(base, isColumnExpanded(columnWidths, key) ? 'whitespace-normal break-words align-top' : 'truncate');
+
+  return (
+    <div className="hidden md:block bg-white rounded-elegant-lg border border-gin shadow-elegant overflow-hidden flex-1 min-w-0">
+      <div className="overflow-auto h-full">
+        <table className="w-full divide-y divide-gin text-sm table-fixed">
+          {/* 状態 / 区画No / エリア / 契約者 / 住所 / 電話 / 取扱 / 許可番号 / 備考(flex) / [埋葬者] / 契約日 / 入金 / 管理料 / 次請求 */}
+          <colgroup>
+            <col className="w-[40px]" />
+            <col className="w-[68px]" style={colStyle('plotNumber')} />
+            <col className="w-[52px]" style={colStyle('areaName')} />
+            <col className="w-[110px]" style={colStyle('customerName')} />
+            <col className="hidden md:table-column w-[90px]" style={colStyle('address')} />
+            <col className="hidden lg:table-column w-[100px]" style={colStyle('phone')} />
+            <col className="hidden lg:table-column w-[72px]" style={colStyle('agent')} />
+            <col className="hidden lg:table-column w-[96px]" style={colStyle('permitNumber')} />
+            <col className="hidden md:table-column" style={colStyle('notes')} />
+            {showBuriedPersons && (
+              <col className="hidden lg:table-column w-[90px]" style={colStyle('buriedPersons')} />
+            )}
+            <col className="hidden sm:table-column w-[60px]" />
+            <col className="w-[60px]" />
+            <col className="hidden sm:table-column w-[72px]" />
+            <col className="hidden md:table-column w-[60px]" />
+          </colgroup>
+          <thead className="bg-gradient-matsu sticky top-0 z-10">
+            <tr>
+              <th
+                className={cn(
+                  "px-2 py-2 text-center text-xs font-bold text-white cursor-pointer transition-all duration-200",
+                  "hover:bg-matsu-light",
+                  sortKey === 'status' && "bg-matsu-dark"
+                )}
+                onClick={() => onSort('status')}
+                title="入金状況"
+              >
+                <div className="flex items-center justify-center">
+                  <span>状態</span>
+                </div>
+              </th>
+              <th
+                className={cn(
+                  "relative px-2 py-2 text-left text-xs font-bold text-white cursor-pointer transition-all duration-200",
+                  "hover:bg-matsu-light",
+                  sortKey === 'plotNumber' && "bg-matsu-dark"
+                )}
+                onClick={() => onSort('plotNumber')}
+              >
+                <div className="flex items-center">
+                  <span>区画No</span>
+                  <SortIndicator columnKey="plotNumber" sortKey={sortKey} sortOrder={sortOrder} />
+                </div>
+                <ColumnResizer columnKey="plotNumber" onResizeStart={onColumnResizeStart} />
+              </th>
+              <th
+                className={cn(
+                  "relative px-2 py-2 text-left text-xs font-bold text-white cursor-pointer transition-all duration-200",
+                  "hover:bg-matsu-light",
+                  sortKey === 'areaName' && "bg-matsu-dark"
+                )}
+                onClick={() => onSort('areaName')}
+              >
+                <div className="flex items-center">
+                  <span>エリア</span>
+                  <SortIndicator columnKey="areaName" sortKey={sortKey} sortOrder={sortOrder} />
+                </div>
+                <ColumnResizer columnKey="areaName" onResizeStart={onColumnResizeStart} />
+              </th>
+              <th
+                className={cn(
+                  "relative px-2 py-2 text-left text-xs font-bold text-white cursor-pointer transition-all duration-200",
+                  "hover:bg-matsu-light",
+                  sortKey === 'customerName' && "bg-matsu-dark"
+                )}
+                onClick={() => onSort('customerName')}
+              >
+                <div className="flex items-center">
+                  <span>契約者</span>
+                  <SortIndicator columnKey="customerName" sortKey={sortKey} sortOrder={sortOrder} />
+                </div>
+                <ColumnResizer columnKey="customerName" onResizeStart={onColumnResizeStart} />
+              </th>
+              <th className="relative px-2 py-2 text-left text-xs font-bold text-white hidden md:table-cell">
+                <span>住所</span>
+                <ColumnResizer columnKey="address" onResizeStart={onColumnResizeStart} />
+              </th>
+              <th
+                className={cn(
+                  "relative px-2 py-2 text-left text-xs font-bold text-white cursor-pointer transition-all duration-200 hidden lg:table-cell",
+                  "hover:bg-matsu-light",
+                  sortKey === 'phoneNumber' && "bg-matsu-dark"
+                )}
+                onClick={() => onSort('phoneNumber')}
+              >
+                <div className="flex items-center">
+                  <span>電話</span>
+                  <SortIndicator columnKey="phoneNumber" sortKey={sortKey} sortOrder={sortOrder} />
+                </div>
+                <ColumnResizer columnKey="phone" onResizeStart={onColumnResizeStart} />
+              </th>
+              <th className="relative px-2 py-2 text-left text-xs font-bold text-white hidden lg:table-cell">
+                <span>取扱</span>
+                <ColumnResizer columnKey="agent" onResizeStart={onColumnResizeStart} />
+              </th>
+              <th className="relative px-2 py-2 text-left text-xs font-bold text-white hidden lg:table-cell">
+                <span>許可番号</span>
+                <ColumnResizer columnKey="permitNumber" onResizeStart={onColumnResizeStart} />
+              </th>
+              <th className="relative px-2 py-2 text-left text-xs font-bold text-white hidden md:table-cell">
+                <span>備考</span>
+                <ColumnResizer columnKey="notes" onResizeStart={onColumnResizeStart} />
+              </th>
+              {showBuriedPersons && (
+                <th className="relative px-2 py-2 text-left text-xs font-bold text-white hidden lg:table-cell">
+                  <span>埋葬者</span>
+                  <ColumnResizer columnKey="buriedPersons" onResizeStart={onColumnResizeStart} />
+                </th>
+              )}
+              <th
+                className={cn(
+                  "px-2 py-2 text-center text-xs font-bold text-white cursor-pointer transition-all duration-200 hidden sm:table-cell",
+                  "hover:bg-matsu-light",
+                  sortKey === 'contractDate' && "bg-matsu-dark"
+                )}
+                onClick={() => onSort('contractDate')}
+              >
+                <div className="flex items-center justify-center">
+                  <span>契約日</span>
+                </div>
+              </th>
+              <th
+                className={cn(
+                  "px-2 py-2 text-center text-xs font-bold text-white cursor-pointer transition-all duration-200",
+                  "hover:bg-matsu-light",
+                  sortKey === 'paymentStatus' && "bg-matsu-dark"
+                )}
+                onClick={() => onSort('paymentStatus')}
+              >
+                <div className="flex items-center justify-center">
+                  <span>入金</span>
+                </div>
+              </th>
+              <th
+                className={cn(
+                  "px-2 py-2 text-center text-xs font-bold text-white cursor-pointer transition-all duration-200 hidden sm:table-cell",
+                  "hover:bg-matsu-light",
+                  sortKey === 'managementFee' && "bg-matsu-dark"
+                )}
+                onClick={() => onSort('managementFee')}
+              >
+                <div className="flex items-center justify-center">
+                  <span>管理料</span>
+                </div>
+              </th>
+              <th className="px-2 py-2 text-left text-xs font-bold text-white hidden md:table-cell">
+                <span>次請求</span>
+              </th>
+            </tr>
+          </thead>
+
+          <tbody className="bg-white divide-y divide-gin">
+            {isLoading ? (
+              <>
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <tr key={i}>
+                    <td className="px-2 py-2.5 text-center"><Skeleton className="h-6 w-6 rounded-full mx-auto" /></td>
+                    <td className="px-2 py-2.5"><Skeleton className="h-4 w-14" /></td>
+                    <td className="px-2 py-2.5"><Skeleton className="h-4 w-10" /></td>
+                    <td className="px-2 py-2.5"><Skeleton className="h-4 w-20" /></td>
+                    <td className="px-2 py-2.5"><Skeleton className="h-4 w-16" /></td>
+                    <td className="px-2 py-2.5"><Skeleton className="h-4 w-20" /></td>
+                    <td className="px-2 py-2.5"><Skeleton className="h-4 w-14" /></td>
+                    <td className="px-2 py-2.5"><Skeleton className="h-4 w-20" /></td>
+                    <td className="px-2 py-2.5"><Skeleton className="h-4 w-full" /></td>
+                    {showBuriedPersons && <td className="px-2 py-2.5"><Skeleton className="h-4 w-16" /></td>}
+                    <td className="px-2 py-2.5"><Skeleton className="h-4 w-12" /></td>
+                    <td className="px-2 py-2.5"><Skeleton className="h-4 w-12" /></td>
+                    <td className="px-2 py-2.5"><Skeleton className="h-4 w-14" /></td>
+                    <td className="px-2 py-2.5"><Skeleton className="h-4 w-12" /></td>
+                  </tr>
+                ))}
+              </>
+            ) : error ? (
+              <tr>
+                <td colSpan={showBuriedPersons ? 14 : 13} className="px-4 py-12 text-center text-beni">
+                  <div className="flex flex-col items-center">
+                    <svg className="w-12 h-12 text-beni mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <p className="text-base font-medium">{error}</p>
+                    <button
+                      onClick={onRetry}
+                      className="mt-2 text-sm text-matsu underline hover:no-underline"
+                    >
+                      再読み込み
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ) : plots.length > 0 ? (
+              plots.map((plot, index) => {
+                const absoluteIndex = startIndex + index;
+                const paymentStatus = plot.paymentStatus as PaymentStatus;
+
+                return (
+                  <tr
+                    key={plot.id}
+                    className={cn(
+                      'cursor-pointer hover:bg-matsu-50 transition-all duration-200',
+                      selectedPlotId === plot.id && 'bg-matsu-100 border-l-4 border-matsu',
+                      getRowBgColor(plot, absoluteIndex)
+                    )}
+                    onClick={() => onPlotSelect(plot)}
+                    onMouseEnter={() => onPlotHover?.(plot)}
+                  >
+                    <td className="px-2 py-2 text-center">
+                      {getStatusBadge(plot)}
+                    </td>
+                    <td className={cellWrapClass('plotNumber', 'px-2 py-2 font-mono text-matsu font-medium text-xs')} title={plot.plotNumber}>
+                      {plot.plotNumber}
+                    </td>
+                    <td className={cellWrapClass('areaName', 'px-2 py-2 text-xs text-hai')} title={plot.areaName || undefined}>
+                      {plot.areaName || '-'}
+                    </td>
+                    <td className="px-2 py-2 align-top">
+                      <div className={isColumnExpanded(columnWidths, 'customerName') ? '' : 'truncate'}>
+                        <div className={cellWrapClass('customerName', 'font-medium text-sumi text-sm')} title={plot.customerName || undefined}>
+                          {plot.customerName || '-'}
+                        </div>
+                        <div className={cellWrapClass('customerName', 'text-xs text-hai')} title={plot.customerNameKana || undefined}>
+                          {plot.customerNameKana || ''}
+                        </div>
+                      </div>
+                    </td>
+                    <td className={cellWrapClass('address', 'px-2 py-2 text-xs text-hai hidden md:table-cell')} title={plot.customerAddress || undefined}>
+                      {isColumnExpanded(columnWidths, 'address')
+                        ? (plot.customerAddress || '-')
+                        : truncateAddressToCity(plot.customerAddress)}
+                    </td>
+                    <td className={cellWrapClass('phone', 'px-2 py-2 text-xs text-hai hidden lg:table-cell')} title={plot.customerPhoneNumber || undefined}>
+                      {plot.customerPhoneNumber || '-'}
+                    </td>
+                    <td className={cellWrapClass('agent', 'px-2 py-2 text-xs text-hai hidden lg:table-cell')} title={plot.agentName || undefined}>
+                      {plot.agentName || '-'}
+                    </td>
+                    <td className={cellWrapClass('permitNumber', 'px-2 py-2 text-xs text-hai tabular-nums hidden lg:table-cell')} title={plot.permitNumber || undefined}>
+                      {plot.permitNumber || '-'}
+                    </td>
+                    <td className="px-2 py-2 text-xs text-hai hidden md:table-cell align-top">
+                      <div
+                        className={isColumnExpanded(columnWidths, 'notes') ? 'whitespace-normal break-words' : 'line-clamp-2 break-all'}
+                        title={[plot.contractNotes, plot.customerNotes].filter(Boolean).join(' / ')}
+                      >
+                        {[plot.contractNotes, plot.customerNotes].filter(Boolean).join(' / ') || '-'}
+                      </div>
+                    </td>
+                    {showBuriedPersons && (
+                      <td className={cellWrapClass('buriedPersons', 'px-2 py-2 text-xs text-hai hidden lg:table-cell')} title={plot.buriedPersonNames?.join(', ') || undefined}>
+                        {plot.buriedPersonNames && plot.buriedPersonNames.length > 0 ? plot.buriedPersonNames.join(', ') : '-'}
+                      </td>
+                    )}
+                    <td className="px-2 py-2 text-xs text-hai text-center hidden sm:table-cell">
+                      {formatContractDate(plot.contractDate)}
+                    </td>
+                    <td className="px-2 py-2 text-xs text-center">
+                      {paymentStatus ? (
+                        <StatusBadge
+                          variant={PAYMENT_STATUS_VARIANTS[paymentStatus]}
+                          size="sm"
+                          withSymbol
+                        >
+                          {PAYMENT_STATUS_LABELS[paymentStatus]}
+                        </StatusBadge>
+                      ) : (
+                        <span className="text-hai">-</span>
+                      )}
+                    </td>
+                    <td className="px-2 py-2 text-xs text-hai text-center hidden sm:table-cell">
+                      {formatMoneyString(plot.managementFee)}
+                    </td>
+                    <td className="px-2 py-2 text-xs text-hai truncate hidden md:table-cell" title={plot.nextBillingDate ? new Date(plot.nextBillingDate).toLocaleDateString('ja-JP', { year: 'numeric', month: 'numeric', day: 'numeric' }) : undefined}>
+                      {plot.nextBillingDate ? new Date(plot.nextBillingDate).toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric' }) : '-'}
+                    </td>
+                  </tr>
+                );
+              })
+            ) : (
+              <tr>
+                <td colSpan={showBuriedPersons ? 14 : 13} className="px-4 md:px-6 py-6">
+                  {emptyState}
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
