@@ -263,8 +263,10 @@ function BasicInfoTab({ plot }: { plot: PlotDetailResponse }) {
   const primaryRole = contractorRole ?? plot.roles[0];
   const primaryCustomer = primaryRole?.customer;
 
-  const showApplicantSection =
-    !!applicantRole && (!primaryRole || applicantRole.customer.id !== primaryRole.customer.id);
+  // 申込者は契約者と同一人物でも基本情報タブに常に表示する（#159, 旧システム準拠）。
+  // 「申込者＝契約者で省略」と「申込者未登録」を区別できるようにするため。
+  const applicantIsSameAsContractor =
+    !!applicantRole && !!primaryRole && applicantRole.customer.id === primaryRole.customer.id;
 
   return (
     <div className="space-y-4">
@@ -298,8 +300,17 @@ function BasicInfoTab({ plot }: { plot: PlotDetailResponse }) {
       {/* 契約者情報 */}
       {primaryRole && <CustomerInfoSection role={primaryRole} title="契約者情報" />}
 
-      {/* 申込者情報（契約者と別人の場合のみ表示） */}
-      {showApplicantSection && <CustomerInfoSection role={applicantRole} title="申込者情報" />}
+      {/* 申込者情報（申込者ロールがあれば同一人物でも常に表示。未登録時は明示する） */}
+      {applicantRole ? (
+        <CustomerInfoSection
+          role={applicantRole}
+          title={applicantIsSameAsContractor ? '申込者情報（契約者に同じ）' : '申込者情報'}
+        />
+      ) : (
+        <Section title="申込者情報">
+          <InfoField label="申込者" value="登録なし" />
+        </Section>
+      )}
 
       {/* 勤務先情報（契約者） */}
       {primaryCustomer?.workInfo && (
