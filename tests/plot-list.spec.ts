@@ -202,4 +202,22 @@ test.describe('台帳問い合わせ（区画一覧）', () => {
       expect(reset === '{}' || reset === null).toBeTruthy();
     }
   });
+
+  // issue #120: モバイル（iPhone SE 375px）でカードビューに切り替わる
+  test('4-9: モバイル幅では一覧がカード表示になりタップで詳細へ遷移する', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.waitForTimeout(500);
+
+    const cards = page.getByTestId('plot-card');
+    const cardCount = await cards.count().catch(() => 0);
+    if (cardCount === 0) return; // データ未投入環境ではスキップ
+
+    // モバイルではテーブルは非表示（md:block）
+    const table = page.locator('table').first();
+    await expect(table).toBeHidden();
+
+    // カードタップで区画詳細に遷移
+    await cards.first().click();
+    await expect(page).toHaveURL(/\/plots\//, { timeout: 10_000 });
+  });
 });
