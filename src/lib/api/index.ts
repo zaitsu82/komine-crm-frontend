@@ -65,6 +65,8 @@ export {
   getSectionNames,
   getRelationships,
   getContractors,
+  getDirections,
+  getPositions,
   createMasterItem,
   updateMasterItem,
   deleteMasterItem,

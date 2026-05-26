@@ -38,6 +38,8 @@ export interface AllMastersData {
   sectionName: SectionNameMasterItem[];
   relationship: MasterItem[];
   contractor: MasterItem[];
+  direction: MasterItem[];
+  position: MasterItem[];
 }
 
 // モックデータ
@@ -111,6 +113,23 @@ const mockMasterData: AllMastersData = {
     { id: 3, code: 'placeholder-3', name: '提携業者A', description: null, sortOrder: 3, isActive: true },
     { id: 4, code: 'placeholder-4', name: '提携業者B', description: null, sortOrder: 4, isActive: true },
     { id: 5, code: 'placeholder-99', name: 'その他', description: null, sortOrder: 99, isActive: true },
+  ],
+  // 方角: 旧 sykbnn KBNNO=2024。code は GravestoneInfo.directionId(int) の文字列。backend と一致。
+  direction: [
+    { id: 1, code: '1', name: '東', description: null, sortOrder: 1, isActive: true },
+    { id: 2, code: '2', name: '西', description: null, sortOrder: 2, isActive: true },
+    { id: 3, code: '3', name: '南', description: null, sortOrder: 3, isActive: true },
+    { id: 4, code: '4', name: '北', description: null, sortOrder: 4, isActive: true },
+    { id: 5, code: '5', name: '北東', description: null, sortOrder: 5, isActive: true },
+    { id: 6, code: '6', name: '南東', description: null, sortOrder: 6, isActive: true },
+    { id: 7, code: '7', name: '北西', description: null, sortOrder: 7, isActive: true },
+    { id: 8, code: '8', name: '南西', description: null, sortOrder: 8, isActive: true },
+  ],
+  // 位置: 旧 sykbnn KBNNO=2025。code は GravestoneInfo.positionId(int) の文字列。backend と一致。
+  position: [
+    { id: 1, code: '1', name: '角', description: null, sortOrder: 1, isActive: true },
+    { id: 2, code: '2', name: '端', description: null, sortOrder: 2, isActive: true },
+    { id: 3, code: '3', name: '中', description: null, sortOrder: 3, isActive: true },
   ],
 };
 
@@ -230,6 +249,26 @@ export async function getContractors(): Promise<ApiResponse<MasterItem[]>> {
   return apiGet<MasterItem[]>('/masters/contractor');
 }
 
+/**
+ * 方角マスタ取得
+ */
+export async function getDirections(): Promise<ApiResponse<MasterItem[]>> {
+  if (shouldUseMockData()) {
+    return { success: true, data: mockMasterData.direction };
+  }
+  return apiGet<MasterItem[]>('/masters/direction');
+}
+
+/**
+ * 位置マスタ取得
+ */
+export async function getPositions(): Promise<ApiResponse<MasterItem[]>> {
+  if (shouldUseMockData()) {
+    return { success: true, data: mockMasterData.position };
+  }
+  return apiGet<MasterItem[]>('/masters/position');
+}
+
 // CRUD用の型定義
 export type MasterType =
   | 'cemetery-type'
@@ -241,7 +280,9 @@ export type MasterType =
   | 'construction-type'
   | 'section-name'
   | 'relationship'
-  | 'contractor';
+  | 'contractor'
+  | 'direction'
+  | 'position';
 
 export interface CreateMasterRequest {
   code?: string;

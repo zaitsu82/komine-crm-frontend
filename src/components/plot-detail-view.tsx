@@ -454,7 +454,15 @@ function ContactsTab({ plot }: { plot: PlotDetailResponse }) {
   );
 }
 
-function BurialInfoTab({ plot }: { plot: PlotDetailResponse }) {
+function BurialInfoTab({
+  plot,
+  directions,
+  positions,
+}: {
+  plot: PlotDetailResponse;
+  directions: MasterItem[];
+  positions: MasterItem[];
+}) {
   return (
     <div className="space-y-4">
       {/* 埋葬者情報 */}
@@ -510,8 +518,8 @@ function BurialInfoTab({ plot }: { plot: PlotDetailResponse }) {
           <InfoField label="墓石種類" value={plot.gravestoneInfo?.gravestoneType} />
           <InfoField label="周辺面積" value={plot.gravestoneInfo?.surroundingArea} />
           <InfoField label="墓石代" value={formatPrice(plot.gravestoneInfo?.gravestoneCost)} />
-          <InfoField label="方位" value={plot.gravestoneInfo?.directionId?.toString()} />
-          <InfoField label="位置" value={plot.gravestoneInfo?.positionId?.toString()} />
+          <InfoField label="方位" value={resolveMasterName(directions, plot.gravestoneInfo?.directionId?.toString())} />
+          <InfoField label="位置" value={resolveMasterName(positions, plot.gravestoneInfo?.positionId?.toString())} />
           <InfoField label="墓誌" value={plot.gravestoneInfo?.gravestoneInscription} />
           <InfoField label="建立期限" value={formatDate(plot.gravestoneInfo?.establishmentDeadline)} />
           <InfoField label="建立日" value={formatDate(plot.gravestoneInfo?.establishmentDate)} />
@@ -624,7 +632,8 @@ function ConstructionInfoTab({
 export default function PlotDetailView({ plotId, onEdit, onBack, onDelete, onRestore }: PlotDetailViewProps) {
   const { user } = useAuth();
   const { plot, isLoading, error, refresh } = usePlotDetail(plotId);
-  const { calcTypes, taxTypes, billingTypes, paymentMethods, contractors } = useMasters();
+  const { calcTypes, taxTypes, billingTypes, paymentMethods, contractors, directions, positions } =
+    useMasters();
   const feeMasters: FeeMasters = { calcTypes, taxTypes, billingTypes, paymentMethods };
 
   if (isLoading) {
@@ -897,7 +906,7 @@ export default function PlotDetailView({ plotId, onEdit, onBack, onDelete, onRes
         </TabsContent>
 
         <TabsContent value="burial" className="mt-4 md:mt-6">
-          <BurialInfoTab plot={plot} />
+          <BurialInfoTab plot={plot} directions={directions} positions={positions} />
         </TabsContent>
 
         <TabsContent value="construction" className="mt-4 md:mt-6">
