@@ -11,7 +11,6 @@ export type ViewType =
   | 'documents'
   | 'document-select'
   | 'document-history'
-  | 'bulk-import'
   | 'profile';
 
 // 対応履歴の型定義
@@ -40,7 +39,7 @@ export interface MenuItemConfig {
   label: string;
   view: ViewType;
   requiredRoles: UserRole[];
-  icon: 'search' | 'archive' | 'grid' | 'file-text' | 'users' | 'settings' | 'upload';
+  icon: 'search' | 'archive' | 'grid' | 'file-text' | 'users' | 'settings';
 }
 
 // メニューグループ定義
@@ -64,7 +63,6 @@ export const MENU_GROUPS: MenuGroupConfig[] = [
     items: [
       { label: 'スタッフ管理', view: 'staff-management', requiredRoles: ['manager', 'admin'], icon: 'users' },
       { label: 'マスタ管理', view: 'masters', requiredRoles: ['admin'], icon: 'settings' },
-      { label: '一括登録', view: 'bulk-import', requiredRoles: ['manager', 'admin'], icon: 'upload' },
     ],
   },
 ];

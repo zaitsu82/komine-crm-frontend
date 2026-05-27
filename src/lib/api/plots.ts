@@ -14,8 +14,6 @@ import {
   PaymentStatus,
   ContractStatus,
   ContractRole,
-  BulkCreatePlotsResponse,
-  BulkUpdatePlotsResponse,
   RestoreContractRequest,
   RestoreContractResponse,
   GraveClassificationsResponse,
@@ -636,46 +634,6 @@ export function sortPlotsByNumber(plots: PlotListItem[]): PlotListItem[] {
     // 数値部分で比較
     return aNum.number - bNum.number;
   });
-}
-
-/**
- * 区画情報の一括登録
- *
- * items は CreatePlotRequest 形式の配列。簡易用途として旧シグネチャ（4項目）にも対応。
- * レスポンスは部分成功許容（issue #76 Phase 1）: failed[] に失敗行の詳細が入る。
- */
-export async function bulkCreatePlots(
-  items: Array<Record<string, unknown>>
-): Promise<ApiResponse<BulkCreatePlotsResponse>> {
-  // 旧シグネチャ（{ plotNumber, areaName, areaSqm?, notes? }）との互換のため、
-  // 平坦な形で渡された場合は physicalPlot にネストする
-  const normalized = items.map((item) => {
-    if ('physicalPlot' in item || 'customer' in item || 'contractPlot' in item) {
-      return item;
-    }
-    return {
-      physicalPlot: {
-        plotNumber: item.plotNumber,
-        areaName: item.areaName,
-        areaSqm: item.areaSqm,
-        notes: item.notes,
-      },
-    };
-  });
-  return apiPost('/plots/bulk', { items: normalized });
-}
-
-/**
- * 区画情報の一括更新（編集）
- *
- * items の各要素は plotNumber を必須とし、その他のフィールドは部分更新。
- * 空欄（undefined）のフィールドは既存値を保持する。
- * レスポンスは部分成功許容（issue #76 Phase 1）。
- */
-export async function bulkUpdatePlots(
-  items: Array<{ plotNumber: string } & Record<string, unknown>>
-): Promise<ApiResponse<BulkUpdatePlotsResponse>> {
-  return apiPut('/plots/bulk', { items });
 }
 
 /**

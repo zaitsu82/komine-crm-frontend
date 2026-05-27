@@ -611,7 +611,7 @@ export default function PlotListTable({
                       description={
                         searchQuery.trim()
                           ? '氏名・区画番号・電話番号の綴りを見直すか、あいうえおタブを切り替えて再検索してください。'
-                          : '条件を変えるか、一括登録から区画を追加してください。'
+                          : '条件を変えるか、区画を新規登録してください。'
                       }
                       action={
                         searchQuery.trim() ? (
