@@ -10,7 +10,7 @@ import {
 } from '@/lib/plots-column-widths';
 import { PAYMENT_STATUS_LABELS, PAYMENT_STATUS_VARIANTS } from './constants';
 import { formatPhoneNumber } from '@/lib/format';
-import { formatContractDate, formatMoneyString, getRowBgColor, getStatusBadge } from './utils';
+import { formatContractDate, formatMoneyString, getRowBgColor } from './utils';
 import { ColumnResizer } from './ColumnResizer';
 import { SortIndicator } from './SortIndicator';
 import type { SortKey, SortOrder } from './types';
@@ -64,9 +64,8 @@ export function PlotTable({
     <div className="hidden md:block bg-white rounded-elegant-lg border border-gin shadow-elegant overflow-hidden flex-1 min-w-0">
       <div className="overflow-auto h-full">
         <table className="w-full divide-y divide-gin text-sm table-fixed">
-          {/* 状態 / 区画No / エリア / 契約者 / 住所 / 電話 / 取扱 / 許可番号 / 備考(flex) / [埋葬者] / 契約日 / 入金 / 管理料 / 次請求 */}
+          {/* 区画No / エリア / 契約者 / 住所 / 電話 / 取扱 / 許可番号 / 備考(flex) / [埋葬者] / 契約日 / 入金 / 管理料 / 次請求 */}
           <colgroup>
-            <col className="w-[40px]" />
             <col className="w-[68px]" style={colStyle('plotNumber')} />
             <col className="w-[52px]" style={colStyle('areaName')} />
             <col className="w-[110px]" style={colStyle('customerName')} />
@@ -82,22 +81,10 @@ export function PlotTable({
             <col className="w-[60px]" />
             <col className="hidden sm:table-column w-[72px]" />
             <col className="hidden md:table-column w-[60px]" />
+            <col className="w-[40px]" />
           </colgroup>
           <thead className="bg-gradient-matsu sticky top-0 z-10">
             <tr>
-              <th
-                className={cn(
-                  "px-2 py-2 text-center text-xs font-bold text-white cursor-pointer transition-all duration-200",
-                  "hover:bg-matsu-light",
-                  sortKey === 'status' && "bg-matsu-dark"
-                )}
-                onClick={() => onSort('status')}
-                title="入金状況"
-              >
-                <div className="flex items-center justify-center">
-                  <span>状態</span>
-                </div>
-              </th>
               <th
                 className={cn(
                   "relative px-2 py-2 text-left text-xs font-bold text-white cursor-pointer transition-all duration-200",
@@ -215,6 +202,10 @@ export function PlotTable({
               <th className="px-2 py-2 text-left text-xs font-bold text-white hidden md:table-cell">
                 <span>次請求</span>
               </th>
+              {/* 詳細遷移アフォーダンス列 (#163) */}
+              <th className="px-2 py-2 text-center text-xs font-bold text-white">
+                <span className="sr-only">詳細</span>
+              </th>
             </tr>
           </thead>
 
@@ -223,7 +214,6 @@ export function PlotTable({
               <>
                 {Array.from({ length: 8 }).map((_, i) => (
                   <tr key={i}>
-                    <td className="px-2 py-2.5 text-center"><Skeleton className="h-6 w-6 rounded-full mx-auto" /></td>
                     <td className="px-2 py-2.5"><Skeleton className="h-4 w-14" /></td>
                     <td className="px-2 py-2.5"><Skeleton className="h-4 w-10" /></td>
                     <td className="px-2 py-2.5"><Skeleton className="h-4 w-20" /></td>
@@ -266,17 +256,25 @@ export function PlotTable({
                   <tr
                     key={plot.id}
                     className={cn(
-                      'cursor-pointer hover:bg-matsu-50 transition-all duration-200',
-                      selectedPlotId === plot.id && 'bg-matsu-100 border-l-4 border-matsu',
+                      'group cursor-pointer transition-all duration-200',
+                      'hover:bg-matsu-50 focus-visible:outline-none focus-visible:bg-matsu-50 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-matsu',
+                      // 選択行は藍(ai)の左ボーダーで強調し、緑のホバーと区別 (#190)
+                      selectedPlotId === plot.id && 'bg-ai-50 border-l-4 border-ai',
                       getRowBgColor(plot, absoluteIndex)
                     )}
                     onClick={() => onPlotSelect(plot)}
                     onMouseEnter={() => onPlotHover?.(plot)}
+                    role="link"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        onPlotSelect(plot);
+                      }
+                    }}
+                    aria-label={`${plot.plotNumber} の詳細を開く`}
                   >
-                    <td className="px-2 py-2 text-center">
-                      {getStatusBadge(plot)}
-                    </td>
-                    <td className={cellWrapClass('plotNumber', 'px-2 py-2 font-mono text-matsu font-medium text-xs')} title={plot.plotNumber}>
+                    <td className={cellWrapClass('plotNumber', 'px-2 py-2 font-mono text-matsu font-medium text-xs underline-offset-2 group-hover:underline')} title={plot.plotNumber}>
                       {plot.plotNumber}
                     </td>
                     <td className={cellWrapClass('areaName', 'px-2 py-2 text-xs text-hai')} title={plot.areaName || undefined}>
@@ -340,6 +338,12 @@ export function PlotTable({
                     </td>
                     <td className="px-2 py-2 text-xs text-hai truncate hidden md:table-cell" title={plot.nextBillingDate ? new Date(plot.nextBillingDate).toLocaleDateString('ja-JP', { year: 'numeric', month: 'numeric', day: 'numeric' }) : undefined}>
                       {plot.nextBillingDate ? new Date(plot.nextBillingDate).toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric' }) : '-'}
+                    </td>
+                    {/* 詳細を開くシェブロン (#163)。行全体クリックでも遷移する */}
+                    <td className="px-2 py-2 text-center text-hai">
+                      <svg className="w-4 h-4 inline-block transition-colors group-hover:text-matsu" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
                     </td>
                   </tr>
                 );
