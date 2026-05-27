@@ -3,6 +3,9 @@ import path from "path";
 
 const nextConfig: NextConfig = {
   transpilePackages: ['@komine/types'],
+  // 画面右下の Next.js Dev Tools / 開発インジケータを非表示にする (#189)。
+  // 本番ビルドでは元々出ないが、非本番ビルド配信時にも管理画面へ出さないため明示的に無効化。
+  devIndicators: false,
   webpack: (config) => {
     // @komine/types がシンボリンク経由で参照される際、
     // zod をフロントエンドの node_modules から解決する
