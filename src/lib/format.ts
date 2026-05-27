@@ -116,3 +116,31 @@ export function formatBillingMonth(
 
   return trimmed;
 }
+
+/**
+ * 日付を「YYYY/MM/DD」（西暦4桁・ゼロ埋め）に統一する。
+ * 2桁年や非ゼロ埋めの表記揺れ（#167）を解消する共通フォーマッタ。
+ * null / 空 / 不正日付は fallback（既定 "-"）。
+ */
+export function formatDate(value: string | Date | null | undefined, fallback: string = DASH): string {
+  if (value === null || value === undefined || value === '') return fallback;
+  const d = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(d.getTime())) return fallback;
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}/${m}/${day}`;
+}
+
+/**
+ * 年月を「YYYY/MM」（西暦4桁・ゼロ埋め）に統一する。
+ * 一覧の契約日など、日を省きたい狭い列向け（2桁年 "06/2" を廃止）。
+ */
+export function formatYearMonth(value: string | Date | null | undefined, fallback: string = DASH): string {
+  if (value === null || value === undefined || value === '') return fallback;
+  const d = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(d.getTime())) return fallback;
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  return `${y}/${m}`;
+}

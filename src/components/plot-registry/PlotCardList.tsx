@@ -4,7 +4,7 @@ import { cn, truncateAddressToCity } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { PAYMENT_STATUS_LABELS, PAYMENT_STATUS_VARIANTS } from './constants';
-import { formatContractDate, getRowBgColor } from './utils';
+import { formatContractDate, getRowBgColor, getSearchHitReason } from './utils';
 
 interface PlotCardListProps {
   plots: PlotListItem[];
@@ -13,6 +13,8 @@ interface PlotCardListProps {
   selectedPlotId?: string;
   onPlotSelect: (plot: PlotListItem) => void;
   emptyState: ReactNode;
+  /** 検索語。氏名以外でヒットしたカードにヒット理由バッジを出すために使用（#162） */
+  searchQuery?: string;
 }
 
 /** 区画一覧カード（モバイル: md 未満）issue #120 */
@@ -23,6 +25,7 @@ export function PlotCardList({
   selectedPlotId,
   onPlotSelect,
   emptyState,
+  searchQuery,
 }: PlotCardListProps) {
   return (
     <div className="md:hidden flex-1 min-w-0 overflow-auto -mx-1 px-1">
@@ -44,6 +47,7 @@ export function PlotCardList({
           {plots.map((plot, index) => {
             const absoluteIndex = startIndex + index;
             const paymentStatus = plot.paymentStatus as PaymentStatus;
+            const hitReason = getSearchHitReason(plot, searchQuery);
             return (
               <li key={plot.id}>
                 <button
@@ -90,6 +94,11 @@ export function PlotCardList({
                       </div>
                       {plot.customerNameKana && (
                         <div className="text-xs text-hai truncate">{plot.customerNameKana}</div>
+                      )}
+                      {hitReason && (
+                        <span className="mt-0.5 inline-block rounded bg-ai-50 text-ai-700 border border-ai-200 px-1 py-px text-[10px] font-medium leading-tight">
+                          {hitReason}
+                        </span>
                       )}
                     </div>
                     <div className="text-xs text-hai whitespace-nowrap tabular-nums">
