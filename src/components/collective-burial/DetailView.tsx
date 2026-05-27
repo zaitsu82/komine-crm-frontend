@@ -6,7 +6,8 @@
  */
 
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -104,6 +105,13 @@ export default function CollectiveBurialDetailView({
             </span>
           </div>
           <div className="flex items-center space-x-3">
+            {/* 台帳詳細への遷移導線（#188）。Button は asChild 未対応のため buttonVariants を適用 */}
+            <Link href={`/plots/${data.contractPlotId}`} className={buttonVariants({ variant: 'outline' })}>
+              <svg className="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              台帳を見る
+            </Link>
             {onClose && (
               <Button onClick={onClose} variant="default" size="default">
                 閉じる
