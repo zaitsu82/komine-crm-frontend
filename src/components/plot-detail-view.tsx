@@ -33,6 +33,13 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { StatusBadge, type StatusBadgeProps } from '@/components/ui/status-badge';
 import { cn } from '@/lib/utils';
+import {
+  formatCurrency,
+  formatNumber,
+  formatPhoneNumber,
+  formatPostalCode,
+  formatBillingMonth,
+} from '@/lib/format';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HistoryTab } from '@/components/plot-form/HistoryTab';
 import { useAuth } from '@/contexts/auth-context';
@@ -137,8 +144,7 @@ function formatDate(dateStr: string | null | undefined): string {
 }
 
 function formatPrice(price: number | null | undefined): string {
-  if (price == null) return '-';
-  return `${price.toLocaleString()} 円`;
+  return formatCurrency(price);
 }
 
 /**
@@ -256,13 +262,13 @@ function CustomerInfoSection({ role, title }: { role: PlotRole; title: string })
       <InfoField label="ふりがな" value={customer.nameKana} />
       <InfoField label="性別" value={customer.gender ? GENDER_LABELS[customer.gender as Gender] : null} />
       <InfoField label="生年月日" value={formatDate(customer.birthDate)} />
-      <InfoField label="電話番号" value={customer.phoneNumber} />
-      <InfoField label="FAX" value={customer.faxNumber} />
+      <InfoField label="電話番号" value={formatPhoneNumber(customer.phoneNumber)} />
+      <InfoField label="FAX" value={formatPhoneNumber(customer.faxNumber)} />
       <InfoField label="メール" value={customer.email} />
-      <InfoField label="郵便番号" value={customer.postalCode} />
+      <InfoField label="郵便番号" value={formatPostalCode(customer.postalCode)} />
       <InfoField label="住所" value={customer.address} />
       <InfoField label="住所2" value={customer.addressLine2} />
-      <InfoField label="本籍郵便番号" value={customer.registeredPostalCode} />
+      <InfoField label="本籍郵便番号" value={formatPostalCode(customer.registeredPostalCode)} />
       <InfoField label="本籍地" value={customer.registeredAddress} />
       <InfoField label="役割開始日" value={formatDate(role.roleStartDate)} />
       <InfoField label="役割終了日" value={formatDate(role.roleEndDate)} />
@@ -331,9 +337,9 @@ function BasicInfoTab({ plot }: { plot: PlotDetailResponse }) {
         <Section title="勤務先情報">
           <InfoField label="勤務先名称" value={primaryCustomer.workInfo.companyName} />
           <InfoField label="勤務先かな" value={primaryCustomer.workInfo.companyNameKana} />
-          <InfoField label="勤務先郵便番号" value={primaryCustomer.workInfo.workPostalCode} />
+          <InfoField label="勤務先郵便番号" value={formatPostalCode(primaryCustomer.workInfo.workPostalCode)} />
           <InfoField label="勤務先住所" value={primaryCustomer.workInfo.workAddress} />
-          <InfoField label="勤務先電話番号" value={primaryCustomer.workInfo.workPhoneNumber} />
+          <InfoField label="勤務先電話番号" value={formatPhoneNumber(primaryCustomer.workInfo.workPhoneNumber)} />
           <InfoField label="DM設定" value={primaryCustomer.workInfo.dmSetting ? DM_SETTING_LABELS[primaryCustomer.workInfo.dmSetting as DmSetting] : null} />
           <InfoField label="宛先区分" value={primaryCustomer.workInfo.addressType ? ADDRESS_TYPE_LABELS[primaryCustomer.workInfo.addressType as AddressType] : null} />
           <InfoField label="備考" value={primaryCustomer.workInfo.notes} />
@@ -371,8 +377,8 @@ function FeeInfoTab({ plot, masters }: { plot: PlotDetailResponse; masters: FeeM
           <InfoField label="請求タイプ" value={resolveMasterName(masters.billingTypes, plot.usageFee.billingType)} />
           <InfoField label="請求年数" value={plot.usageFee.billingYears?.toString()} />
           <InfoField label="面積" value={plot.usageFee.area} />
-          <InfoField label="単価" value={plot.usageFee.unitPrice} />
-          <InfoField label="使用料" value={plot.usageFee.usageFee} />
+          <InfoField label="単価" value={formatCurrency(plot.usageFee.unitPrice)} />
+          <InfoField label="使用料" value={formatCurrency(plot.usageFee.usageFee)} />
           <InfoField label="送付方法" value={resolveMasterName(masters.paymentMethods, plot.usageFee.paymentMethod)} />
         </Section>
       )}
@@ -386,9 +392,9 @@ function FeeInfoTab({ plot, masters }: { plot: PlotDetailResponse; masters: FeeM
           <InfoField label="請求年数" value={plot.managementFee.billingYears?.toString()} />
           <InfoField label="面積" value={plot.managementFee.area} />
           <InfoField label="請求月" value={plot.managementFee.billingMonth?.toString()} />
-          <InfoField label="管理料" value={plot.managementFee.managementFee} />
-          <InfoField label="単価" value={plot.managementFee.unitPrice} />
-          <InfoField label="終納請求年月" value={plot.managementFee.lastBillingMonth} />
+          <InfoField label="管理料" value={formatCurrency(plot.managementFee.managementFee)} />
+          <InfoField label="単価" value={formatCurrency(plot.managementFee.unitPrice)} />
+          <InfoField label="終納請求年月" value={formatBillingMonth(plot.managementFee.lastBillingMonth)} />
           <InfoField label="送付方法" value={resolveMasterName(masters.paymentMethods, plot.managementFee.paymentMethod)} />
         </Section>
       )}
@@ -416,7 +422,7 @@ function ContactsTab({ plot }: { plot: PlotDetailResponse }) {
                 <InfoField label="役割" value={CONTRACT_ROLE_LABELS[role.role as ContractRole]} />
                 <InfoField label="氏名" value={role.customer.name} />
                 <InfoField label="ふりがな" value={role.customer.nameKana} />
-                <InfoField label="電話番号" value={role.customer.phoneNumber} />
+                <InfoField label="電話番号" value={formatPhoneNumber(role.customer.phoneNumber)} />
                 <InfoField label="住所" value={role.customer.address} />
                 <InfoField label="開始日" value={formatDate(role.roleStartDate)} />
                 <InfoField label="終了日" value={formatDate(role.roleEndDate)} />
@@ -440,11 +446,11 @@ function ContactsTab({ plot }: { plot: PlotDetailResponse }) {
                 <InfoField label="ふりがな" value={contact.nameKana} />
                 <InfoField label="続柄" value={contact.relationship} />
                 <InfoField label="生年月日" value={formatDate(contact.birthDate)} />
-                <InfoField label="郵便番号" value={contact.postalCode} />
+                <InfoField label="郵便番号" value={formatPostalCode(contact.postalCode)} />
                 <InfoField label="住所" value={contact.address} />
-                <InfoField label="電話番号" value={contact.phoneNumber} />
-                <InfoField label="電話番号2" value={contact.phoneNumber2} />
-                <InfoField label="FAX" value={contact.faxNumber} />
+                <InfoField label="電話番号" value={formatPhoneNumber(contact.phoneNumber)} />
+                <InfoField label="電話番号2" value={formatPhoneNumber(contact.phoneNumber2)} />
+                <InfoField label="FAX" value={formatPhoneNumber(contact.faxNumber)} />
                 <InfoField label="メール" value={contact.email} />
                 <InfoField label="本籍住所" value={contact.registeredAddress} />
                 <InfoField label="送付先区分" value={contact.mailingType ? ADDRESS_TYPE_LABELS[contact.mailingType as AddressType] : null} />
@@ -458,7 +464,7 @@ function ContactsTab({ plot }: { plot: PlotDetailResponse }) {
                     <InfoField label="勤務先名称" value={contact.workCompanyName} />
                     <InfoField label="勤務先かな" value={contact.workCompanyNameKana} />
                     <InfoField label="勤務先住所" value={contact.workAddress} />
-                    <InfoField label="勤務先電話番号" value={contact.workPhoneNumber} />
+                    <InfoField label="勤務先電話番号" value={formatPhoneNumber(contact.workPhoneNumber)} />
                   </div>
                 </div>
               )}
@@ -842,7 +848,7 @@ export default function PlotDetailView({ plotId, onEdit, onBack, onDelete, onRes
               'mt-1 text-lg md:text-2xl font-semibold tabular-nums',
               (plot.uncollectedAmount ?? 0) > 0 ? 'text-beni' : 'text-sumi'
             )}>
-              {(plot.uncollectedAmount ?? 0).toLocaleString()}
+              {formatNumber(plot.uncollectedAmount ?? 0)}
               <span className="text-xs md:text-sm text-hai ml-1 font-normal">円</span>
             </p>
           </div>
@@ -850,7 +856,7 @@ export default function PlotDetailView({ plotId, onEdit, onBack, onDelete, onRes
           <div className="min-w-0">
             <p className="text-[11px] md:text-xs text-hai">直近請求</p>
             <p className="mt-1 text-sm md:text-base font-semibold text-sumi tabular-nums truncate">
-              {plot.managementFee?.lastBillingMonth || '―'}
+              {formatBillingMonth(plot.managementFee?.lastBillingMonth, '―')}
             </p>
           </div>
           {/* 状態（入金 / 契約 / 区画販売 を区分ラベル付きで分離表示）#165 */}

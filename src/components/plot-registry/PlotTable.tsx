@@ -9,6 +9,7 @@ import {
   type ResizableColumnKey,
 } from '@/lib/plots-column-widths';
 import { PAYMENT_STATUS_LABELS, PAYMENT_STATUS_VARIANTS } from './constants';
+import { formatPhoneNumber } from '@/lib/format';
 import { formatContractDate, formatMoneyString, getRowBgColor } from './utils';
 import { ColumnResizer } from './ColumnResizer';
 import { SortIndicator } from './SortIndicator';
@@ -294,8 +295,8 @@ export function PlotTable({
                         ? (plot.customerAddress || '-')
                         : truncateAddressToCity(plot.customerAddress)}
                     </td>
-                    <td className={cellWrapClass('phone', 'px-2 py-2 text-xs text-hai hidden lg:table-cell')} title={plot.customerPhoneNumber || undefined}>
-                      {plot.customerPhoneNumber || '-'}
+                    <td className={cellWrapClass('phone', 'px-2 py-2 text-xs text-hai hidden lg:table-cell tabular-nums')} title={plot.customerPhoneNumber || undefined}>
+                      {formatPhoneNumber(plot.customerPhoneNumber) || '-'}
                     </td>
                     <td className={cellWrapClass('agent', 'px-2 py-2 text-xs text-hai hidden lg:table-cell')} title={plot.agentName || undefined}>
                       {plot.agentName || '-'}

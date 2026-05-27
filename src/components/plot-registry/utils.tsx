@@ -1,5 +1,6 @@
 import type { PlotListItem } from '@komine/types';
 import { getPlotDisplayStatus } from '@/lib/api/plots';
+import { formatCurrency } from '@/lib/format';
 import { SEARCH_HISTORY_KEY, SEARCH_HISTORY_MAX } from './constants';
 
 // ===== 検索履歴 =====
@@ -39,11 +40,9 @@ export function formatContractDate(dateStr: string | null | undefined): string {
   }
 }
 
+/** @deprecated 共通の {@link formatCurrency} を使用。後方互換のため残置。 */
 export function formatMoneyString(value: string | null | undefined): string {
-  if (!value) return '-';
-  const num = Number(value.replace(/,/g, ''));
-  if (isNaN(num)) return '-';
-  return `${num.toLocaleString()}円`;
+  return formatCurrency(value);
 }
 
 // ===== 行表示ヘルパー（テーブル・モバイルカードで共用） =====
