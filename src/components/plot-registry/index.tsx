@@ -461,6 +461,7 @@ export default function PlotRegistry({
           selectedPlotId={selectedPlotId}
           onPlotSelect={onPlotSelect}
           emptyState={emptyStateEl}
+          searchQuery={searchQuery}
         />
 
         <PlotTable
@@ -479,6 +480,7 @@ export default function PlotRegistry({
           onPlotHover={onPlotHover}
           startIndex={startIndex}
           emptyState={emptyStateEl}
+          searchQuery={searchQuery}
         />
 
         <PlotPagination

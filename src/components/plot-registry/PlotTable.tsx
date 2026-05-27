@@ -9,8 +9,8 @@ import {
   type ResizableColumnKey,
 } from '@/lib/plots-column-widths';
 import { PAYMENT_STATUS_LABELS, PAYMENT_STATUS_VARIANTS } from './constants';
-import { formatPhoneNumber } from '@/lib/format';
-import { formatContractDate, formatMoneyString, getRowBgColor } from './utils';
+import { formatPhoneNumber, formatDate } from '@/lib/format';
+import { formatContractDate, formatMoneyString, getRowBgColor, getSearchHitReason } from './utils';
 import { ColumnResizer } from './ColumnResizer';
 import { SortIndicator } from './SortIndicator';
 import type { SortKey, SortOrder } from './types';
@@ -31,6 +31,8 @@ interface PlotTableProps {
   onPlotHover?: (plot: PlotListItem) => void;
   startIndex: number;
   emptyState: ReactNode;
+  /** 検索語。氏名以外でヒットした行にヒット理由バッジを出すために使用（#162） */
+  searchQuery?: string;
 }
 
 /** 区画一覧テーブル（タブレット・PC: md 以上）。 */
@@ -50,6 +52,7 @@ export function PlotTable({
   onPlotHover,
   startIndex,
   emptyState,
+  searchQuery,
 }: PlotTableProps) {
   // <col> へ適用する幅。未設定列は Tailwind の既定幅クラスにフォールバック。
   const colStyle = (key: ResizableColumnKey): CSSProperties | undefined => {
@@ -77,10 +80,10 @@ export function PlotTable({
             {showBuriedPersons && (
               <col className="hidden lg:table-column w-[90px]" style={colStyle('buriedPersons')} />
             )}
-            <col className="hidden sm:table-column w-[60px]" />
+            <col className="hidden sm:table-column w-[64px]" />
             <col className="w-[60px]" />
             <col className="hidden sm:table-column w-[72px]" />
-            <col className="hidden md:table-column w-[60px]" />
+            <col className="hidden md:table-column w-[82px]" />
             <col className="w-[40px]" />
           </colgroup>
           <thead className="bg-gradient-matsu sticky top-0 z-10">
@@ -251,6 +254,7 @@ export function PlotTable({
               plots.map((plot, index) => {
                 const absoluteIndex = startIndex + index;
                 const paymentStatus = plot.paymentStatus as PaymentStatus;
+                const hitReason = getSearchHitReason(plot, searchQuery);
 
                 return (
                   <tr
@@ -288,6 +292,14 @@ export function PlotTable({
                         <div className={cellWrapClass('customerName', 'text-xs text-hai')} title={plot.customerNameKana || undefined}>
                           {plot.customerNameKana || ''}
                         </div>
+                        {hitReason && (
+                          <span
+                            className="mt-0.5 inline-block rounded bg-ai-50 text-ai-700 border border-ai-200 px-1 py-px text-[10px] font-medium leading-tight"
+                            title={`「${searchQuery}」は契約者名以外で一致しました`}
+                          >
+                            {hitReason}
+                          </span>
+                        )}
                       </div>
                     </td>
                     <td className={cellWrapClass('address', 'px-2 py-2 text-xs text-hai hidden md:table-cell')} title={plot.customerAddress || undefined}>
@@ -336,8 +348,8 @@ export function PlotTable({
                     <td className="px-2 py-2 text-xs text-hai text-center hidden sm:table-cell">
                       {formatMoneyString(plot.managementFee)}
                     </td>
-                    <td className="px-2 py-2 text-xs text-hai truncate hidden md:table-cell" title={plot.nextBillingDate ? new Date(plot.nextBillingDate).toLocaleDateString('ja-JP', { year: 'numeric', month: 'numeric', day: 'numeric' }) : undefined}>
-                      {plot.nextBillingDate ? new Date(plot.nextBillingDate).toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric' }) : '-'}
+                    <td className="px-2 py-2 text-xs text-hai truncate tabular-nums hidden md:table-cell" title={formatDate(plot.nextBillingDate) === '-' ? undefined : formatDate(plot.nextBillingDate)}>
+                      {formatDate(plot.nextBillingDate)}
                     </td>
                     {/* 詳細を開くシェブロン (#163)。行全体クリックでも遷移する */}
                     <td className="px-2 py-2 text-center text-hai">

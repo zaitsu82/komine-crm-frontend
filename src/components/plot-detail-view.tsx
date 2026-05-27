@@ -39,6 +39,7 @@ import {
   formatPhoneNumber,
   formatPostalCode,
   formatBillingMonth,
+  formatDate,
 } from '@/lib/format';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HistoryTab } from '@/components/plot-form/HistoryTab';
@@ -128,20 +129,6 @@ const ACCOUNT_TYPE_LABELS: Record<string, string> = {
 };
 
 // ===== ヘルパー関数 =====
-
-function formatDate(dateStr: string | null | undefined): string {
-  if (!dateStr) return '-';
-  try {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('ja-JP', {
-      year: 'numeric',
-      month: 'numeric',
-      day: 'numeric',
-    });
-  } catch {
-    return '-';
-  }
-}
 
 function formatPrice(price: number | null | undefined): string {
   return formatCurrency(price);

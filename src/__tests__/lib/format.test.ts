@@ -4,6 +4,8 @@ import {
   formatPhoneNumber,
   formatPostalCode,
   formatBillingMonth,
+  formatDate,
+  formatYearMonth,
 } from '@/lib/format';
 
 describe('formatCurrency', () => {
@@ -118,5 +120,36 @@ describe('formatBillingMonth', () => {
 
   it('不正な月は未設定を返す', () => {
     expect(formatBillingMonth('202413')).toBe('未設定');
+  });
+});
+
+describe('formatDate', () => {
+  it('ISO日付文字列を YYYY/MM/DD（ゼロ埋め）にする', () => {
+    expect(formatDate('2006-02-09')).toBe('2006/02/09');
+    expect(formatDate('2024-12-31T00:00:00.000Z')).toBe('2024/12/31');
+  });
+
+  it('Date インスタンスも受け付ける', () => {
+    expect(formatDate(new Date(2006, 1, 9))).toBe('2006/02/09');
+  });
+
+  it('null / 空 / 不正値は fallback を返す', () => {
+    expect(formatDate(null)).toBe('-');
+    expect(formatDate(undefined)).toBe('-');
+    expect(formatDate('')).toBe('-');
+    expect(formatDate('not-a-date')).toBe('-');
+    expect(formatDate(null, '未設定')).toBe('未設定');
+  });
+});
+
+describe('formatYearMonth', () => {
+  it('YYYY/MM（ゼロ埋め）にする', () => {
+    expect(formatYearMonth('2006-02-09')).toBe('2006/02');
+    expect(formatYearMonth(new Date(1991, 4, 15))).toBe('1991/05');
+  });
+
+  it('null / 不正値は fallback を返す', () => {
+    expect(formatYearMonth(null)).toBe('-');
+    expect(formatYearMonth('bad')).toBe('-');
   });
 });
