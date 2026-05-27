@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
+import { formatCurrency } from "./format"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -278,14 +279,9 @@ export function formatPlotNumber(section: string, number: string): string {
 }
 
 /**
- * 価格を日本円形式でフォーマット
- * @param price 価格
- * @returns フォーマット済み価格文字列（例: "¥1,500,000"）
+ * 価格を日本円形式でフォーマット（例: "1,500,000円"）
+ * @deprecated 共通の {@link formatCurrency}（@/lib/format）を使用。後方互換のため残置。
  */
 export function formatPrice(price: number | undefined): string {
-  if (price === undefined) return "未設定";
-  return new Intl.NumberFormat("ja-JP", {
-    style: "currency",
-    currency: "JPY",
-  }).format(price);
+  return formatCurrency(price, "未設定");
 }
