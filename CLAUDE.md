@@ -212,7 +212,6 @@ UI改修時は必ずレスポンシブデザインに対応すること。最小
 | `/plots/[id]/documents/create` | 書類作成 |
 | `/plots/[id]/documents` | 書類履歴（区画コンテキスト） |
 | `/documents` | 書類発行・一覧 |
-| `/bulk-import` | 区画一括登録（CSV） |
 | `/masters` | マスタ管理 |
 | `/staff` | スタッフ管理 |
 | `/yucho` | ゆうちょ連携（CSV出力） |

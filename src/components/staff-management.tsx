@@ -73,12 +73,6 @@ const PERMISSION_MATRIX = [
     ]
   },
   {
-    category: '一括登録', permissions: [
-      { action: '区画の一括登録', viewer: false, operator: false, manager: true, admin: true },
-      { action: 'スタッフの一括登録', viewer: false, operator: false, manager: false, admin: true },
-    ]
-  },
-  {
     category: 'その他', permissions: [
       { action: 'データエクスポート', viewer: false, operator: false, manager: true, admin: true },
       { action: '履歴の復元', viewer: false, operator: false, manager: false, admin: true },

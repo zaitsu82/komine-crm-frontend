@@ -3,7 +3,7 @@ import { UserRole } from '@/types/plot-detail';
 export interface NavItem {
   label: string;
   path: string;
-  icon: 'search' | 'archive' | 'grid' | 'file-text' | 'users' | 'settings' | 'upload' | 'bank';
+  icon: 'search' | 'archive' | 'grid' | 'file-text' | 'users' | 'settings' | 'bank';
   requiredRoles: UserRole[];
 }
 
@@ -28,7 +28,6 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: 'スタッフ管理', path: '/staff', requiredRoles: ['manager', 'admin'], icon: 'users' },
       { label: 'マスタ管理', path: '/masters', requiredRoles: ['admin'], icon: 'settings' },
-      { label: '一括登録・編集', path: '/bulk-import', requiredRoles: ['manager', 'admin'], icon: 'upload' },
     ],
   },
 ];
