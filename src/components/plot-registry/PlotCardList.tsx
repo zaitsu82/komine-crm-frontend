@@ -4,7 +4,7 @@ import { cn, truncateAddressToCity } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { PAYMENT_STATUS_LABELS, PAYMENT_STATUS_VARIANTS } from './constants';
-import { formatContractDate, getRowBgColor, getStatusBadge } from './utils';
+import { formatContractDate, getRowBgColor } from './utils';
 
 interface PlotCardListProps {
   plots: PlotListItem[];
@@ -53,13 +53,13 @@ export function PlotCardList({
                   className={cn(
                     'w-full min-h-[44px] rounded-elegant border border-gin bg-white p-3 text-left shadow-sm transition-colors',
                     'active:bg-matsu-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-matsu',
-                    selectedPlotId === plot.id && 'border-matsu bg-matsu-50 ring-1 ring-matsu',
+                    // 選択は藍(ai)アクセントでホバー(緑)と区別 (#190)
+                    selectedPlotId === plot.id && 'border-ai bg-ai-50 ring-1 ring-ai',
                     getRowBgColor(plot, absoluteIndex)
                   )}
                 >
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 min-w-0">
-                      {getStatusBadge(plot)}
                       <span className="font-mono text-matsu font-semibold text-sm truncate">
                         {plot.plotNumber}
                       </span>
@@ -67,15 +67,21 @@ export function PlotCardList({
                         <span className="text-xs text-hai truncate">{plot.areaName}</span>
                       )}
                     </div>
-                    {paymentStatus && (
-                      <StatusBadge
-                        variant={PAYMENT_STATUS_VARIANTS[paymentStatus]}
-                        size="sm"
-                        withSymbol
-                      >
-                        {PAYMENT_STATUS_LABELS[paymentStatus]}
-                      </StatusBadge>
-                    )}
+                    <div className="flex items-center gap-1 shrink-0">
+                      {paymentStatus && (
+                        <StatusBadge
+                          variant={PAYMENT_STATUS_VARIANTS[paymentStatus]}
+                          size="sm"
+                          withSymbol
+                        >
+                          {PAYMENT_STATUS_LABELS[paymentStatus]}
+                        </StatusBadge>
+                      )}
+                      {/* 詳細を開くシェブロン (#163) */}
+                      <svg className="w-4 h-4 text-hai" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
                   </div>
                   <div className="mt-1.5 flex items-baseline justify-between gap-2">
                     <div className="min-w-0">

@@ -178,6 +178,20 @@ function InfoField({ label, value }: { label: string; value: string | null | und
   );
 }
 
+/** タブの件数バッジ（#180）。アクティブ時の matsu 背景でも見えるよう白チップで表示。 */
+function TabCount({ count }: { count: number }) {
+  return (
+    <span
+      className={cn(
+        'ml-1 inline-flex items-center justify-center rounded-full px-1.5 min-w-[1.125rem] h-4 text-[10px] font-semibold tabular-nums border',
+        count > 0 ? 'bg-white text-matsu border-matsu-200' : 'bg-white/70 text-hai border-gin'
+      )}
+    >
+      {count}
+    </span>
+  );
+}
+
 function Section({
   title,
   children,
@@ -839,28 +853,37 @@ export default function PlotDetailView({ plotId, onEdit, onBack, onDelete, onRes
               {plot.managementFee?.lastBillingMonth || '―'}
             </p>
           </div>
-          {/* 区画状態 */}
+          {/* 状態（入金 / 契約 / 区画販売 を区分ラベル付きで分離表示）#165 */}
           <div className="min-w-0 col-span-2 md:col-span-1">
             <p className="text-[11px] md:text-xs text-hai mb-1.5">状態</p>
-            <div className="flex flex-wrap gap-1.5">
-              <StatusBadge
-                variant={PAYMENT_STATUS_VARIANTS[plot.paymentStatus as PaymentStatus]}
-                withSymbol
-              >
-                {PAYMENT_STATUS_LABELS[plot.paymentStatus as PaymentStatus]}
-              </StatusBadge>
-              <StatusBadge
-                variant={CONTRACT_STATUS_VARIANTS[plot.contractStatus as ContractStatus]}
-                withSymbol
-              >
-                {CONTRACT_STATUS_LABELS[plot.contractStatus as ContractStatus]}
-              </StatusBadge>
-              <StatusBadge
-                variant={PHYSICAL_STATUS_VARIANTS[plot.physicalPlot.status]}
-                withSymbol
-              >
-                {PHYSICAL_STATUS_LABELS[plot.physicalPlot.status]}
-              </StatusBadge>
+            <div className="flex flex-wrap gap-x-3 gap-y-1.5">
+              <span className="inline-flex items-center gap-1">
+                <span className="text-[10px] text-hai">入金</span>
+                <StatusBadge
+                  variant={PAYMENT_STATUS_VARIANTS[plot.paymentStatus as PaymentStatus]}
+                  withSymbol
+                >
+                  {PAYMENT_STATUS_LABELS[plot.paymentStatus as PaymentStatus]}
+                </StatusBadge>
+              </span>
+              <span className="inline-flex items-center gap-1">
+                <span className="text-[10px] text-hai">契約</span>
+                <StatusBadge
+                  variant={CONTRACT_STATUS_VARIANTS[plot.contractStatus as ContractStatus]}
+                  withSymbol
+                >
+                  {CONTRACT_STATUS_LABELS[plot.contractStatus as ContractStatus]}
+                </StatusBadge>
+              </span>
+              <span className="inline-flex items-center gap-1">
+                <span className="text-[10px] text-hai">区画</span>
+                <StatusBadge
+                  variant={PHYSICAL_STATUS_VARIANTS[plot.physicalPlot.status]}
+                  withSymbol
+                >
+                  {PHYSICAL_STATUS_LABELS[plot.physicalPlot.status]}
+                </StatusBadge>
+              </span>
             </div>
           </div>
         </div>
@@ -886,12 +909,15 @@ export default function PlotDetailView({ plotId, onEdit, onBack, onDelete, onRes
           </TabsTrigger>
           <TabsTrigger value="contacts" className="shrink-0 sm:shrink snap-start px-3 sm:px-2 py-2 text-xs sm:text-sm whitespace-nowrap data-[state=active]:bg-matsu data-[state=active]:text-white">
             連絡先
+            <TabCount count={plot.roles.length + (plot.familyContacts?.length ?? 0)} />
           </TabsTrigger>
           <TabsTrigger value="burial" className="shrink-0 sm:shrink snap-start px-3 sm:px-2 py-2 text-xs sm:text-sm whitespace-nowrap data-[state=active]:bg-matsu data-[state=active]:text-white">
             埋葬情報
+            <TabCount count={plot.buriedPersons?.length ?? 0} />
           </TabsTrigger>
           <TabsTrigger value="construction" className="shrink-0 sm:shrink snap-start px-3 sm:px-2 py-2 text-xs sm:text-sm whitespace-nowrap data-[state=active]:bg-matsu data-[state=active]:text-white">
             工事情報
+            <TabCount count={plot.constructionInfos?.length ?? 0} />
           </TabsTrigger>
           <TabsTrigger value="billing" className="shrink-0 sm:shrink snap-start px-3 sm:px-2 py-2 text-xs sm:text-sm whitespace-nowrap data-[state=active]:bg-matsu data-[state=active]:text-white">
             請求
@@ -901,6 +927,7 @@ export default function PlotDetailView({ plotId, onEdit, onBack, onDelete, onRes
           </TabsTrigger>
           <TabsTrigger value="history" className="shrink-0 sm:shrink snap-start px-3 sm:px-2 py-2 text-xs sm:text-sm whitespace-nowrap data-[state=active]:bg-matsu data-[state=active]:text-white">
             履歴情報
+            <TabCount count={plot.histories?.length ?? 0} />
           </TabsTrigger>
         </TabsList>
 

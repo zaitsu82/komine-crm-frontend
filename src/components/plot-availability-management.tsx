@@ -128,6 +128,10 @@ export default function PlotAvailabilityManagement() {
   // ローディング状態
   const isLoading = isSummaryLoading || isPeriodsLoading || sectionsHook.isLoading || areasHook.isLoading;
 
+  // ロード中は確定前の 0 を表示せず "--" を出す（初回ロードの 0件フラッシュ防止 #172）
+  const stat = (value: number, suffix = ''): string =>
+    isLoading ? '--' : `${value.toLocaleString()}${suffix}`;
+
   // 使用率に応じた色を取得
   const getUsageRateColor = (usageRate: number) => {
     if (usageRate >= 95) return 'bg-beni-50 text-beni-dark';
@@ -267,27 +271,27 @@ export default function PlotAvailabilityManagement() {
             >
               <div className="flex-1 flex items-center justify-between gap-2 text-center">
                 <div className="flex-1 min-w-0">
-                  <div className="text-lg md:text-xl font-bold text-matsu tabular-nums">{summary.totalCount}</div>
+                  <div className="text-lg md:text-xl font-bold text-matsu tabular-nums">{stat(summary.totalCount)}</div>
                   <div className="text-[10px] md:text-xs text-hai">総数</div>
                 </div>
                 <div className="w-px h-8 bg-gin" />
                 <div className="flex-1 min-w-0">
-                  <div className="text-lg md:text-xl font-bold text-ai tabular-nums">{summary.usedCount}</div>
+                  <div className="text-lg md:text-xl font-bold text-ai tabular-nums">{stat(summary.usedCount)}</div>
                   <div className="text-[10px] md:text-xs text-hai">使用</div>
                 </div>
                 <div className="w-px h-8 bg-gin" />
                 <div className="flex-1 min-w-0">
-                  <div className="text-lg md:text-xl font-bold text-kohaku tabular-nums">{summary.remainingCount}</div>
+                  <div className="text-lg md:text-xl font-bold text-kohaku tabular-nums">{stat(summary.remainingCount)}</div>
                   <div className="text-[10px] md:text-xs text-hai">残</div>
                 </div>
                 <div className="w-px h-8 bg-gin" />
                 <div className="flex-1 min-w-0">
-                  <div className="text-lg md:text-xl font-bold text-cha tabular-nums">{summary.usageRate}%</div>
+                  <div className="text-lg md:text-xl font-bold text-cha tabular-nums">{stat(summary.usageRate, '%')}</div>
                   <div className="text-[10px] md:text-xs text-hai">使用率</div>
                 </div>
                 <div className="w-px h-8 bg-gin hidden sm:block" />
                 <div className="flex-1 min-w-0 hidden sm:block">
-                  <div className="text-lg md:text-xl font-bold text-sumi tabular-nums">{(summary.remainingCount * 2)}</div>
+                  <div className="text-lg md:text-xl font-bold text-sumi tabular-nums">{stat(summary.remainingCount * 2)}</div>
                   <div className="text-[10px] md:text-xs text-hai">半区画</div>
                 </div>
               </div>

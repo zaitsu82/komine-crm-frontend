@@ -444,6 +444,16 @@ export default function PlotRegistry({
           />
         )}
 
+        {/* 詳細遷移の導線案内 (#163) */}
+        {!isLoading && plots.length > 0 && (
+          <p className="px-3 md:px-6 pt-2 text-xs text-hai flex items-center gap-1">
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            行をクリックすると詳細を開きます
+          </p>
+        )}
+
         <PlotCardList
           plots={plots}
           isLoading={isLoading}
