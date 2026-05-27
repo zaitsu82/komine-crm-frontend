@@ -6,6 +6,7 @@
  */
 
 import { useState, useMemo } from 'react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -47,6 +48,11 @@ export default function CollectiveBurialListView({
 
   // 現在年（毎レンダー取得。日付ハードコードしない）
   const currentYear = new Date().getFullYear();
+
+  // 検索ヒット件数（全件）と、フィルタ適用中かどうか（#174 / #175 / #187）
+  const totalHits = pagination?.totalCount ?? 0;
+  const hasActiveFilter =
+    searchQuery !== '' || billingStatus !== 'all' || selectedYear !== 'all';
 
   // 年の選択肢を生成
   const availableYears = useMemo(() => {
@@ -178,11 +184,14 @@ export default function CollectiveBurialListView({
       <div className="flex-1 overflow-auto bg-gradient-warm">
         {/* 凡例 + アクションボタン */}
         <div className="flex items-center px-3 md:px-6 py-2 md:py-3 border-b border-gin bg-kinari">
-          <div className="flex-1 flex flex-wrap items-center gap-2 md:gap-4 text-sm">
+          <div className="flex-1 flex flex-wrap items-center gap-2 md:gap-3 text-sm">
+            {/* 凡例（クリック不可・色の意味の説明）。請求状況の絞り込みは下の「請求ステータス」で行う */}
+            <span className="text-xs text-hai font-medium shrink-0">凡例:</span>
             <span className="px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">請求前</span>
             <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">請求済</span>
             <span className="px-2 py-0.5 bg-green-100 text-green-800 rounded-full text-xs font-medium">支払済</span>
             <span className="text-xs text-hai">合祀年「*」= 埋葬日 + 有効年数の自動計算</span>
+            <span className="text-xs text-hai">／ 区画番号クリックで台帳詳細へ</span>
           </div>
           <div className="flex-shrink-0 flex items-center space-x-2">
             <Button onClick={resetFilters} variant="outline" size="sm" className="h-8 text-xs">
@@ -269,12 +278,41 @@ export default function CollectiveBurialListView({
           {/* 検索結果サマリー */}
           <div className="mt-2 md:mt-4 flex items-center justify-between pt-2 md:pt-4 border-t border-gin">
             <p className="text-sm text-hai">
-              検索結果: <span className="font-bold text-cha text-lg">{pagination?.totalCount || 0}</span> 件
+              検索結果: <span className="font-bold text-cha text-lg">{totalHits}</span> 件
             </p>
             <Button onClick={refresh} variant="outline" size="sm" className="sm:hidden h-8 text-xs">
               再読み込み
             </Button>
           </div>
+
+          {/* 適用中の条件（検索語・請求状況・請求年は AND で絞り込まれる。#187） */}
+          {hasActiveFilter && (
+            <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs">
+              <span className="text-hai">適用中:</span>
+              {searchQuery && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-cha-50 text-cha-800 border border-cha-200 rounded-full font-medium">
+                  検索「{searchQuery}」
+                </span>
+              )}
+              {billingStatus !== 'all' && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-cha-50 text-cha-800 border border-cha-200 rounded-full font-medium">
+                  請求状況: {BILLING_STATUS_LABELS[billingStatus as BillingStatus]}
+                </span>
+              )}
+              {selectedYear !== 'all' && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-cha-50 text-cha-800 border border-cha-200 rounded-full font-medium">
+                  請求年: {selectedYear}年
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={resetFilters}
+                className="text-cha underline underline-offset-2 hover:text-cha-700"
+              >
+                条件をクリア
+              </button>
+            </div>
+          )}
         </div>
 
         {/* 今年の請求対象者サマリカード */}
@@ -301,7 +339,12 @@ export default function CollectiveBurialListView({
               </div>
             </div>
 
-            {currentYearSummary.totalCount === 0 ? (
+            {isLoading ? (
+              <div className="px-4 md:px-6 py-6 md:py-8 bg-white flex items-center justify-center text-hai text-sm">
+                <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-matsu mr-2" aria-hidden="true" />
+                集計中...
+              </div>
+            ) : currentYearSummary.totalCount === 0 ? (
               <div className="px-4 md:px-6 py-4 md:py-6 bg-white">
                 <EmptyState
                   container="plain"
@@ -312,7 +355,11 @@ export default function CollectiveBurialListView({
                     </svg>
                   }
                   title={`${currentYear}年の請求対象者はいません`}
-                  description="合祀者の登録時に「初回請求年」を設定すると、該当年度にこの一覧へ表示されます。"
+                  description={
+                    hasActiveFilter && totalHits > 0
+                      ? `検索条件に一致する ${totalHits} 件は ${currentYear}年 以外の請求予定です。特定の年を見るには「請求予定年」で絞り込んでください。`
+                      : '合祀者の登録時に「初回請求年」を設定すると、該当年度にこの一覧へ表示されます。'
+                  }
                 />
               </div>
             ) : (
@@ -529,7 +576,15 @@ export default function CollectiveBurialListView({
                                   {record.areaName}
                                 </td>
                                 <td className="px-2 md:px-4 py-3">
-                                  <span className="font-semibold text-sumi">{record.plotNumber}</span>
+                                  {/* 区画番号クリックで台帳詳細へ（行クリックの合祀詳細とは分離）#188 */}
+                                  <Link
+                                    href={`/plots/${record.contractPlotId}`}
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="font-semibold text-matsu hover:text-matsu-700 hover:underline underline-offset-2"
+                                    title="台帳詳細を開く"
+                                  >
+                                    {record.plotNumber}
+                                  </Link>
                                 </td>
                                 <td className="px-2 md:px-4 py-3 text-center text-sm text-sumi hidden md:table-cell">
                                   {contractYear ? `${contractYear}年` : '-'}
@@ -582,8 +637,11 @@ export default function CollectiveBurialListView({
         {/* フッター統計 */}
         {yearlyStats && yearlyStats.length > 0 && (
           <div className="bg-white border-t border-gin px-3 md:px-6 py-3 md:py-4">
-            <div className="flex flex-wrap gap-2 md:gap-4">
-              <span className="text-sm text-hai font-medium">年別統計:</span>
+            <div className="flex flex-wrap items-center gap-2 md:gap-4">
+              <span className="text-sm text-hai font-medium">年別統計（全件）:</span>
+              {hasActiveFilter && (
+                <span className="text-xs text-hai">※ 検索条件は未適用・全期間の合計です</span>
+              )}
               {yearlyStats.slice(0, 5).map(stat => (
                 <span key={stat.year} className="text-xs md:text-sm bg-kinari px-2 md:px-3 py-1 rounded-full border border-gin">
                   <span className="font-semibold text-sumi">{stat.year}年</span>
