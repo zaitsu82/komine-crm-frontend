@@ -7,7 +7,7 @@
  * Phase 2-B: Plot-centric migration
  */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ChevronDown } from 'lucide-react';
 import {
@@ -46,6 +46,8 @@ import { HistoryTab } from '@/components/plot-form/HistoryTab';
 import { useAuth } from '@/contexts/auth-context';
 import BillingManagement from '@/components/billing';
 import PaymentManagement from '@/components/payment';
+import { getBillings } from '@/lib/api/billings';
+import { getPayments } from '@/lib/api/payments';
 
 // ===== 型定義 =====
 
@@ -654,6 +656,34 @@ export default function PlotDetailView({ plotId, onEdit, onBack, onDelete, onRes
     useMasters();
   const feeMasters: FeeMasters = { calcTypes, taxTypes, billingTypes, paymentMethods };
 
+  // #180: 請求・入金タブの件数バッジ用。子コンポーネントが内部 fetch する構造のため
+  // タブを開く前は件数が分からない問題に対し、limit=1 の軽量 fetch で pagination.totalCount
+  // のみ取得する。CRUD 後の自動更新は無し（次の plot リロードで再取得）。
+  const [billingsCount, setBillingsCount] = useState<number | null>(null);
+  const [paymentsCount, setPaymentsCount] = useState<number | null>(null);
+  useEffect(() => {
+    const contractPlotId = plot?.id;
+    if (!contractPlotId) return;
+    let cancelled = false;
+    setBillingsCount(null);
+    setPaymentsCount(null);
+    Promise.all([
+      getBillings({ contractPlotId, page: 1, limit: 1 }),
+      getPayments({ contractPlotId, page: 1, limit: 1 }),
+    ])
+      .then(([b, p]) => {
+        if (cancelled) return;
+        if (b.success) setBillingsCount(b.data.pagination.totalCount);
+        if (p.success) setPaymentsCount(p.data.pagination.totalCount);
+      })
+      .catch(() => {
+        // 件数取得失敗時はバッジ非表示（null のまま）。
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [plot?.id]);
+
   if (isLoading) {
     return (
       <div className="space-y-4 p-4">
@@ -914,9 +944,11 @@ export default function PlotDetailView({ plotId, onEdit, onBack, onDelete, onRes
           </TabsTrigger>
           <TabsTrigger value="billing" className="shrink-0 sm:shrink snap-start px-3 sm:px-2 py-2 text-xs sm:text-sm whitespace-nowrap data-[state=active]:bg-matsu data-[state=active]:text-white">
             請求
+            {billingsCount !== null && <TabCount count={billingsCount} />}
           </TabsTrigger>
           <TabsTrigger value="payment" className="shrink-0 sm:shrink snap-start px-3 sm:px-2 py-2 text-xs sm:text-sm whitespace-nowrap data-[state=active]:bg-matsu data-[state=active]:text-white">
             入金
+            {paymentsCount !== null && <TabCount count={paymentsCount} />}
           </TabsTrigger>
           <TabsTrigger value="history" className="shrink-0 sm:shrink snap-start px-3 sm:px-2 py-2 text-xs sm:text-sm whitespace-nowrap data-[state=active]:bg-matsu data-[state=active]:text-white">
             履歴情報
