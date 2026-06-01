@@ -838,6 +838,11 @@ export default function PlotDetailView({ plotId, onEdit, onBack, onDelete, onRes
               {formatNumber(plot.uncollectedAmount ?? 0)}
               <span className="text-xs md:text-sm text-hai ml-1 font-normal">円</span>
             </p>
+            {/* 未収0 かつ未入金 = まだ請求が起票されていない（#170）。矛盾に見えるため理由を明示。 */}
+            {(plot.uncollectedAmount ?? 0) === 0 &&
+              plot.paymentStatus === PaymentStatus.Unpaid && (
+                <p className="mt-0.5 text-[10px] md:text-xs text-hai">請求未生成</p>
+              )}
           </div>
           {/* 直近請求月（管理料） */}
           <div className="min-w-0">
