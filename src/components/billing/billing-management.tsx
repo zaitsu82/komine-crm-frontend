@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import {
   Billing,
   BillingCategory,
@@ -36,12 +36,15 @@ export interface BillingManagementProps {
   customerId?: string;
   /** ページヘッダを表示するか（埋め込み時は false） */
   showHeader?: boolean;
+  /** 一覧が空のときに表示する文脈付き空状態（#171）。未指定時は既定メッセージ */
+  emptyState?: ReactNode;
 }
 
 export default function BillingManagement({
   contractPlotId,
   customerId,
   showHeader = true,
+  emptyState,
 }: BillingManagementProps) {
   const [items, setItems] = useState<Billing[]>([]);
   const [total, setTotal] = useState(0);
@@ -249,6 +252,7 @@ export default function BillingManagement({
             items={items}
             isLoading={isLoading}
             hidePlotColumns={Boolean(contractPlotId)}
+            emptyState={emptyState}
             onView={(b) => setDetailId(b.id)}
             onEdit={(b) => {
               setEditing(b);
