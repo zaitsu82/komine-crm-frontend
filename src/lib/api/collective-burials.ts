@@ -138,74 +138,55 @@ export interface CollectiveBurialSearchParams {
 // モックデータ
 // ============================================================
 
+// 台帳（plots.ts の mockPlots）と同一区画・同一契約者を指すよう整合させる（#176）。
+// contractPlotId は mockPlots の id と一致させ、合祀一覧 → 台帳詳細への遷移が解決し、
+// plotNumber / 契約者名が両画面で一致するようにする。
 const mockCollectiveBurials: CollectiveBurialListItem[] = [
   {
     id: 'cb-001',
-    contractPlotId: 'cp-001',
+    contractPlotId: 'mock-plot-1', // 台帳: A-001 / 田中太郎
     plotNumber: 'A-001',
     areaName: '第1期',
-    contractDate: '2020-01-15',
-    applicantName: '山田 太郎',
-    applicantNameKana: 'ヤマダ タロウ',
+    contractDate: '2020-04-01',
+    applicantName: '田中太郎',
+    applicantNameKana: 'タナカタロウ',
     burialCapacity: 10,
-    currentBurialCount: 5,
+    currentBurialCount: 3,
     capacityReachedDate: null,
     validityPeriodYears: 33,
-    billingScheduledDate: '2057-01-15',
+    billingScheduledDate: '2053-04-01',
     billingStatus: 'pending',
     billingAmount: 300000,
     notes: null,
     buriedPersons: [
-      { id: 'bp-001', name: '山田 一郎', burialDate: '2020-03-15' },
-      { id: 'bp-002', name: '山田 花子', burialDate: '2022-08-20' },
+      { id: 'bp-001', name: '田中一郎', burialDate: '2020-05-10' },
+      { id: 'bp-002', name: '田中梅', burialDate: '2022-08-20' },
     ],
-    createdAt: '2024-01-15T09:00:00Z',
+    createdAt: '2020-04-01T09:00:00Z',
     updatedAt: '2024-06-20T14:30:00Z',
   },
   {
     id: 'cb-002',
-    contractPlotId: 'cp-002',
+    contractPlotId: 'mock-plot-2', // 台帳: B-015 / 鈴木花子
     plotNumber: 'B-015',
     areaName: '第2期',
-    contractDate: '2021-04-01',
-    applicantName: '佐藤 健一',
-    applicantNameKana: 'サトウ ケンイチ',
+    contractDate: '2022-08-15',
+    applicantName: '鈴木花子',
+    applicantNameKana: 'スズキハナコ',
     burialCapacity: 8,
     currentBurialCount: 8,
-    capacityReachedDate: '2023-11-01',
+    capacityReachedDate: '2024-02-20',
     validityPeriodYears: 13,
-    billingScheduledDate: '2036-11-01',
-    billingStatus: 'pending',
+    billingScheduledDate: '2037-02-20',
+    billingStatus: 'billed',
     billingAmount: 250000,
     notes: '上限到達済み',
     buriedPersons: [
-      { id: 'bp-003', name: '佐藤 次郎', burialDate: '2021-05-10' },
-      { id: 'bp-004', name: '佐藤 美智子', burialDate: '2023-11-01' },
+      { id: 'bp-003', name: '鈴木次郎', burialDate: '2022-09-10' },
+      { id: 'bp-004', name: '鈴木美智子', burialDate: '2024-02-20' },
     ],
-    createdAt: '2021-04-01T10:00:00Z',
-    updatedAt: '2023-11-01T16:00:00Z',
-  },
-  {
-    id: 'cb-003',
-    contractPlotId: 'cp-003',
-    plotNumber: 'C-102',
-    areaName: '第3期',
-    contractDate: '2014-12-01',
-    applicantName: '鈴木 一郎',
-    applicantNameKana: 'スズキ イチロウ',
-    burialCapacity: 6,
-    currentBurialCount: 6,
-    capacityReachedDate: '2020-06-15',
-    validityPeriodYears: 7,
-    billingScheduledDate: '2027-06-15',
-    billingStatus: 'billed',
-    billingAmount: 200000,
-    notes: '請求書送付済み',
-    buriedPersons: [
-      { id: 'bp-005', name: '鈴木 三郎', burialDate: '2018-01-20' },
-    ],
-    createdAt: '2014-12-01T11:00:00Z',
-    updatedAt: '2027-01-10T09:00:00Z',
+    createdAt: '2022-08-15T10:00:00Z',
+    updatedAt: '2024-02-20T16:00:00Z',
   },
 ];
 
@@ -337,7 +318,7 @@ export async function getCollectiveBurialById(
 
     const detail: CollectiveBurialDetail = {
       ...item,
-      contractDate: '2024-01-15',
+      contractDate: item.contractDate,
       applicant: item.applicantName
         ? {
           id: 'cust-001',
