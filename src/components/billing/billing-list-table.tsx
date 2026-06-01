@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { Billing } from '@komine/types';
 import { BILLING_CATEGORY_LABELS, BILLING_RECORD_STATUS_LABELS } from '@/lib/api/billings';
 
@@ -32,6 +33,8 @@ export interface BillingListTableProps {
   onView?: (billing: Billing) => void;
   /** 区画コンテキストで表示するときは true → 区画情報カラムを非表示 */
   hidePlotColumns?: boolean;
+  /** 一覧が空のときに表示するノード（未指定時は既定メッセージ）。#171 で文脈付き説明を差し込む用 */
+  emptyState?: ReactNode;
 }
 
 export function BillingListTable({
@@ -41,6 +44,7 @@ export function BillingListTable({
   onDelete,
   onView,
   hidePlotColumns = false,
+  emptyState,
 }: BillingListTableProps) {
   if (isLoading) {
     return (
@@ -52,6 +56,9 @@ export function BillingListTable({
   }
 
   if (items.length === 0) {
+    if (emptyState) {
+      return <div className="p-4 md:p-6">{emptyState}</div>;
+    }
     return (
       <div className="p-12 text-center text-hai">
         <p className="text-sm">請求データがありません</p>

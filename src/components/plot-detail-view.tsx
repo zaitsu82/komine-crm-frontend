@@ -42,6 +42,7 @@ import {
   formatDate,
 } from '@/lib/format';
 import { Skeleton } from '@/components/ui/skeleton';
+import { EmptyState } from '@/components/ui/empty-state';
 import { HistoryTab } from '@/components/plot-form/HistoryTab';
 import { useAuth } from '@/contexts/auth-context';
 import BillingManagement from '@/components/billing';
@@ -395,6 +396,85 @@ function FeeInfoTab({ plot, masters }: { plot: PlotDetailResponse; masters: FeeM
           </div>
         </Section>
       )}
+    </div>
+  );
+}
+
+/**
+ * 請求タブ（#171）
+ *
+ * paymentStatus / uncollectedAmount は請求レコードからの派生値のため、
+ * 料金（管理料・使用料）設定はあっても請求書が未起票だと
+ * 「未入金・管理料あり」かつ請求一覧が空、という一見矛盾した状態になる。
+ * これはバグではなく「請求未起票」の正常状態なので、
+ * 上部に料金設定サマリーと関係性の説明を、空一覧には理由と次のアクションを示す。
+ */
+function BillingTabPanel({
+  plot,
+  customerId,
+}: {
+  plot: PlotDetailResponse;
+  customerId?: string;
+}) {
+  const hasFeeConfig = Boolean(plot.usageFee || plot.managementFee);
+
+  const emptyState = (
+    <EmptyState
+      icon={
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      }
+      title="発行済みの請求はありません"
+      description={
+        hasFeeConfig
+          ? '料金（管理料・使用料）の設定はありますが、請求（請求書）はまだ起票されていません。設定があっても請求は自動では作成されないため、上の「新規登録」から請求を追加してください。'
+          : '料金設定・請求ともに未登録です。料金情報を登録のうえ、上の「新規登録」から請求を起票してください。'
+      }
+    />
+  );
+
+  return (
+    <div className="space-y-4">
+      {/* 料金設定サマリー：請求レコードとの関係を明示（#171） */}
+      {hasFeeConfig && (
+        <div className="rounded-elegant-lg border border-cha-200 bg-cha-50 p-3 md:p-4">
+          <p className="text-sm font-semibold text-sumi mb-2">料金設定（請求の元）</p>
+          <div className="flex flex-wrap gap-x-6 gap-y-1.5 text-sm text-sumi">
+            {plot.managementFee && (
+              <span>
+                管理料{' '}
+                <span className="font-semibold tabular-nums">
+                  {formatCurrency(plot.managementFee.managementFee)}
+                </span>
+                {plot.managementFee.billingMonth
+                  ? `（毎年${plot.managementFee.billingMonth}月請求）`
+                  : ''}
+              </span>
+            )}
+            {plot.usageFee && (
+              <span>
+                使用料{' '}
+                <span className="font-semibold tabular-nums">
+                  {formatCurrency(plot.usageFee.usageFee)}
+                </span>
+              </span>
+            )}
+          </div>
+          <p className="mt-2 text-xs text-hai">
+            これは料金の「設定」です。実際の請求（請求書）は下の一覧で管理します。設定があっても請求は自動では作成されないため、「未入金」でも請求が無い場合は「新規登録」から起票してください。
+          </p>
+        </div>
+      )}
+
+      <div className="bg-white border border-gin rounded-elegant-lg overflow-hidden">
+        <BillingManagement
+          contractPlotId={plot.id}
+          customerId={customerId}
+          showHeader={false}
+          emptyState={emptyState}
+        />
+      </div>
     </div>
   );
 }
@@ -982,16 +1062,13 @@ export default function PlotDetailView({ plotId, onEdit, onBack, onDelete, onRes
         </TabsContent>
 
         <TabsContent value="billing" className="mt-4 md:mt-6">
-          <div className="bg-white border border-gin rounded-elegant-lg overflow-hidden">
-            <BillingManagement
-              contractPlotId={plot.id}
-              customerId={
-                plot.roles.find((r) => r.role === ContractRole.Contractor)?.customer.id ??
-                plot.roles[0]?.customer.id
-              }
-              showHeader={false}
-            />
-          </div>
+          <BillingTabPanel
+            plot={plot}
+            customerId={
+              plot.roles.find((r) => r.role === ContractRole.Contractor)?.customer.id ??
+              plot.roles[0]?.customer.id
+            }
+          />
         </TabsContent>
 
         <TabsContent value="payment" className="mt-4 md:mt-6">
