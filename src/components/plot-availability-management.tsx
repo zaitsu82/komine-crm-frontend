@@ -13,7 +13,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { StatCard } from '@/components/ui/stat-card';
-import { PlotPeriod, PLOT_SIZE } from '@/types/plot-constants';
+import {
+  PlotPeriod,
+  PLOT_SIZE,
+  LOW_STOCK_THRESHOLD,
+  getAvailabilityStatus,
+  AVAILABILITY_STATUS_LABELS,
+} from '@/types/plot-constants';
 import PageHeader from '@/components/page-header';
 import {
   usePlotInventorySummary,
@@ -267,6 +273,8 @@ export default function PlotAvailabilityManagement() {
               type="button"
               onClick={() => setIsKpiExpanded((v) => !v)}
               aria-expanded={isKpiExpanded}
+              aria-label="区画数・面積・半区画換算の内訳を開閉"
+              title="区画数・面積（㎡）・半区画換算の内訳を開閉します"
               className="w-full p-3 flex items-center gap-2 hover:bg-kinari/40 transition-colors"
             >
               <div className="flex-1 flex items-center justify-between gap-2 text-center">
@@ -290,13 +298,16 @@ export default function PlotAvailabilityManagement() {
                   <div className="text-[10px] md:text-xs text-hai">使用率</div>
                 </div>
                 <div className="w-px h-8 bg-gin hidden sm:block" />
-                <div className="flex-1 min-w-0 hidden sm:block">
+                <div
+                  className="flex-1 min-w-0 hidden sm:block"
+                  title="残区画 × 2（3.6㎡区画を1.8㎡で2分割した場合の販売可能数の最大値）"
+                >
                   <div className="text-lg md:text-xl font-bold text-sumi tabular-nums">{stat(summary.remainingCount * 2)}</div>
-                  <div className="text-[10px] md:text-xs text-hai">半区画</div>
+                  <div className="text-[10px] md:text-xs text-hai">半区画（残×2）</div>
                 </div>
               </div>
               <span className="shrink-0 inline-flex items-center gap-1 text-xs text-hai whitespace-nowrap">
-                <span className="hidden sm:inline">{isKpiExpanded ? '詳細を閉じる' : '詳細を表示'}</span>
+                <span className="hidden sm:inline">{isKpiExpanded ? '内訳を閉じる' : '内訳を表示'}</span>
                 {isKpiExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
               </span>
             </button>
@@ -614,19 +625,22 @@ export default function PlotAvailabilityManagement() {
                             </div>
                           </td>
                           <td className="px-2 md:px-4 py-2 md:py-3 text-sm text-center hidden sm:table-cell">
-                            {item.remainingCount === 0 ? (
-                              <span className="px-2 py-0.5 bg-beni-50 text-beni rounded-full text-xs font-medium">
-                                完売
-                              </span>
-                            ) : item.remainingCount <= 5 ? (
-                              <span className="px-2 py-0.5 bg-kohaku-50 text-kohaku rounded-full text-xs font-medium">
-                                残少
-                              </span>
-                            ) : (
-                              <span className="px-2 py-0.5 bg-matsu-50 text-matsu rounded-full text-xs font-medium">
-                                空有
-                              </span>
-                            )}
+                            {(() => {
+                              const status = getAvailabilityStatus(item.remainingCount);
+                              const styles: Record<typeof status, string> = {
+                                sold_out: 'bg-beni-50 text-beni',
+                                low_stock: 'bg-kohaku-50 text-kohaku',
+                                available: 'bg-matsu-50 text-matsu',
+                              };
+                              return (
+                                <span
+                                  className={cn('px-2 py-0.5 rounded-full text-xs font-medium', styles[status])}
+                                  title={`残${item.remainingCount}区画（${AVAILABILITY_STATUS_LABELS[status]}）— 状況は残数で判定（使用率とは別軸）`}
+                                >
+                                  {AVAILABILITY_STATUS_LABELS[status]}
+                                </span>
+                              );
+                            })()}
                           </td>
                           <td className="px-2 md:px-4 py-2 md:py-3 text-sm text-right text-hai hidden lg:table-cell">
                             {remainingArea.toFixed(1)}
@@ -821,19 +835,22 @@ export default function PlotAvailabilityManagement() {
                             {item.plotType}
                           </td>
                           <td className="px-2 md:px-4 py-2 md:py-3 text-sm text-center hidden sm:table-cell">
-                            {item.remainingCount === 0 ? (
-                              <span className="px-2 py-0.5 bg-beni-50 text-beni rounded-full text-xs font-medium">
-                                完売
-                              </span>
-                            ) : item.remainingCount <= 5 ? (
-                              <span className="px-2 py-0.5 bg-kohaku-50 text-kohaku rounded-full text-xs font-medium">
-                                残少
-                              </span>
-                            ) : (
-                              <span className="px-2 py-0.5 bg-matsu-50 text-matsu rounded-full text-xs font-medium">
-                                空有
-                              </span>
-                            )}
+                            {(() => {
+                              const status = getAvailabilityStatus(item.remainingCount);
+                              const styles: Record<typeof status, string> = {
+                                sold_out: 'bg-beni-50 text-beni',
+                                low_stock: 'bg-kohaku-50 text-kohaku',
+                                available: 'bg-matsu-50 text-matsu',
+                              };
+                              return (
+                                <span
+                                  className={cn('px-2 py-0.5 rounded-full text-xs font-medium', styles[status])}
+                                  title={`残${item.remainingCount}区画（${AVAILABILITY_STATUS_LABELS[status]}）— 状況は残数で判定（使用率とは別軸）`}
+                                >
+                                  {AVAILABILITY_STATUS_LABELS[status]}
+                                </span>
+                              );
+                            })()}
                           </td>
                         </tr>
                       );
@@ -875,25 +892,55 @@ export default function PlotAvailabilityManagement() {
             )}
           </div>
 
-          {/* フッター情報 */}
-          <div className="mt-5 flex justify-between items-center text-sm text-hai bg-white rounded-elegant-lg p-4 border border-gin">
-            <div>
-              ※ 1区画 = 3.6㎡、半区画 = 1.8㎡として計算
+          {/* フッター情報（凡例）— 状況（残数）と使用率（%）は別軸である点を明示（#183） */}
+          <div className="mt-5 text-sm text-hai bg-white rounded-elegant-lg p-4 border border-gin space-y-3">
+            {/* 状況バッジの判定基準（残数の絶対値）*/}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+              <span className="text-xs font-semibold text-sumi shrink-0">状況（残数で判定）</span>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
+                <span className="flex items-center gap-1.5">
+                  <span className="px-2 py-0.5 bg-matsu-50 text-matsu rounded-full text-xs font-medium">空有</span>
+                  残{LOW_STOCK_THRESHOLD + 1}区画以上
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="px-2 py-0.5 bg-kohaku-50 text-kohaku rounded-full text-xs font-medium">残少</span>
+                  残1〜{LOW_STOCK_THRESHOLD}区画
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="px-2 py-0.5 bg-beni-50 text-beni rounded-full text-xs font-medium">完売</span>
+                  残0区画
+                </span>
+              </div>
             </div>
-            <div className="flex items-center space-x-4">
-              <span className="flex items-center">
-                <span className="w-3 h-3 bg-matsu rounded mr-2" /> 60%未満
-              </span>
-              <span className="flex items-center">
-                <span className="w-3 h-3 bg-cha rounded mr-2" /> 60-80%
-              </span>
-              <span className="flex items-center">
-                <span className="w-3 h-3 bg-kohaku rounded mr-2" /> 80-95%
-              </span>
-              <span className="flex items-center">
-                <span className="w-3 h-3 bg-beni rounded mr-2" /> 95%以上
-              </span>
+
+            {/* 使用率バーの色帯（パーセント）*/}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+              <span className="text-xs font-semibold text-sumi shrink-0">使用率バー（%）</span>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
+                <span className="flex items-center">
+                  <span className="w-3 h-3 bg-matsu rounded mr-2" /> 60%未満
+                </span>
+                <span className="flex items-center">
+                  <span className="w-3 h-3 bg-cha rounded mr-2" /> 60-80%
+                </span>
+                <span className="flex items-center">
+                  <span className="w-3 h-3 bg-kohaku rounded mr-2" /> 80-95%
+                </span>
+                <span className="flex items-center">
+                  <span className="w-3 h-3 bg-beni rounded mr-2" /> 95%以上
+                </span>
+              </div>
             </div>
+
+            <p className="text-xs text-hai border-t border-gin pt-2">
+              ※「状況」は残数（区画の絶対数）で判定し、使用率バーの色帯（%）とは別の基準です。
+              使用率が高くても残数が多ければ「空有」になります。
+            </p>
+            <p className="text-xs text-hai">
+              ※ 1区画 = {PLOT_SIZE.FULL}㎡、半区画 = {PLOT_SIZE.HALF}㎡。
+              上部サマリーの「半区画」は <span className="font-medium text-sumi">残区画 × 2</span>
+              （3.6㎡区画を1.8㎡で2分割した場合に販売できる最大数）です。
+            </p>
           </div>
         </div>
       </div>

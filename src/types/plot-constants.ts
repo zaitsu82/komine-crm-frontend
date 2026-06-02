@@ -77,6 +77,41 @@ export function getPlotSizeLabel(areaSqm: number | null | undefined): string | n
   return null;
 }
 
+// ===== 在庫状況ステータス（区画残数管理の「状況」バッジ）=====
+
+/**
+ * 在庫状況ステータス。残数（絶対値）で判定する。
+ * 区画残数管理テーブルの「状況」列で使用。
+ */
+export type AvailabilityStatus = 'sold_out' | 'low_stock' | 'available';
+
+/**
+ * 「残少」とみなす残数の上限（この数「以下」かつ 1 以上が残少）。
+ * 状況バッジの判定ロジックと画面凡例で同じ値を参照し、表示と判定の乖離を防ぐ（#183）。
+ */
+export const LOW_STOCK_THRESHOLD = 5;
+
+export const AVAILABILITY_STATUS_LABELS: Record<AvailabilityStatus, string> = {
+  sold_out: '完売',
+  low_stock: '残少',
+  available: '空有',
+};
+
+/**
+ * 残数から在庫状況ステータスを判定する（#183）。
+ *
+ * 判定軸は「残数の絶対値」であり、テーブルに表示される使用率%（バーの色帯）とは別軸。
+ * 使用率が中程度でも残数が少なければ「残少」になり得るため、画面では両者を別の凡例で示す。
+ * - 残 0        → 完売
+ * - 残 1〜上限   → 残少（上限 = LOW_STOCK_THRESHOLD）
+ * - 残 上限超    → 空有
+ */
+export function getAvailabilityStatus(remainingCount: number): AvailabilityStatus {
+  if (remainingCount <= 0) return 'sold_out';
+  if (remainingCount <= LOW_STOCK_THRESHOLD) return 'low_stock';
+  return 'available';
+}
+
 // ===== 所有区画情報 =====
 
 export interface OwnedPlot {
