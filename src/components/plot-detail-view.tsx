@@ -24,6 +24,7 @@ import { usePlotDetail } from '@/hooks/usePlots';
 import { useMasters } from '@/hooks/useMasters';
 import type { MasterItem, TaxTypeMasterItem } from '@/lib/api/masters';
 import { resolveMasterName, LEGACY_FEE_CODE_MAP } from '@/lib/master-resolve';
+import { getPlotSizeLabel } from '@/types/plot-constants';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -147,11 +148,43 @@ interface FeeMasters {
 
 // ===== サブコンポーネント =====
 
-function InfoField({ label, value }: { label: string; value: string | null | undefined }) {
+function InfoField({
+  label,
+  value,
+  hint,
+}: {
+  label: string;
+  value: string | null | undefined;
+  /** 値の意味を補足する小さなヘルプ文（常時表示・モバイル対応）。#178 */
+  hint?: string;
+}) {
   return (
     <div className="py-2">
       <dt className="text-sm text-hai">{label}</dt>
       <dd className="mt-1 font-semibold text-sumi text-sm">{value || '-'}</dd>
+      {hint && <p className="mt-0.5 text-[11px] text-hai font-normal leading-snug">{hint}</p>}
+    </div>
+  );
+}
+
+/**
+ * 物理区画面積 > 契約面積（分割販売）のとき、面積の意味の違いを注記する（#178）。
+ * 区画情報セクションのグリッド内に全幅で表示する。
+ */
+function PlotAreaSplitNote({
+  physicalAreaSqm,
+  contractAreaSqm,
+}: {
+  physicalAreaSqm: number | null | undefined;
+  contractAreaSqm: number | null | undefined;
+}) {
+  if (physicalAreaSqm == null || contractAreaSqm == null) return null;
+  if (contractAreaSqm >= physicalAreaSqm) return null;
+  const sizeLabel = getPlotSizeLabel(contractAreaSqm);
+  return (
+    <div className="col-span-full mt-1 rounded-elegant border border-cha-200 bg-cha-50 px-3 py-2 text-[11px] md:text-xs text-sumi leading-relaxed">
+      この区画は分割販売です。物理区画 {physicalAreaSqm}㎡ のうち、本契約の取得面積は{' '}
+      {contractAreaSqm}㎡{sizeLabel ? `（${sizeLabel}）` : ''} です。料金は契約・課金面積に基づいて計算されます。
     </div>
   );
 }
@@ -266,10 +299,24 @@ function BasicInfoTab({ plot }: { plot: PlotDetailResponse }) {
       <Section title="区画情報">
         <InfoField label="区画番号" value={plot.physicalPlot.plotNumber} />
         <InfoField label="エリア" value={plot.physicalPlot.areaName} />
-        <InfoField label="面積 (m²)" value={plot.physicalPlot.areaSqm?.toString()} />
-        <InfoField label="契約面積 (m²)" value={plot.contractAreaSqm?.toString()} />
+        <InfoField
+          label="物理区画面積 (㎡)"
+          value={plot.physicalPlot.areaSqm?.toString()}
+          hint="区画全体の面積（分割前）"
+        />
+        <InfoField
+          label="契約面積 (㎡)"
+          value={plot.contractAreaSqm?.toString()}
+          hint={`この契約で取得した面積${
+            getPlotSizeLabel(plot.contractAreaSqm) ? `（${getPlotSizeLabel(plot.contractAreaSqm)}）` : ''
+          }`}
+        />
         <InfoField label="区画状態" value={PHYSICAL_STATUS_LABELS[plot.physicalPlot.status as PhysicalPlotStatus]} />
         <InfoField label="備考" value={plot.locationDescription} />
+        <PlotAreaSplitNote
+          physicalAreaSqm={plot.physicalPlot.areaSqm}
+          contractAreaSqm={plot.contractAreaSqm}
+        />
       </Section>
 
       {/* 契約情報 */}
@@ -348,7 +395,7 @@ function FeeInfoTab({ plot, masters }: { plot: PlotDetailResponse; masters: FeeM
           <InfoField label="税区分" value={resolveMasterName(masters.taxTypes, plot.usageFee.taxType, LEGACY_FEE_CODE_MAP.tax)} />
           <InfoField label="請求タイプ" value={resolveMasterName(masters.billingTypes, plot.usageFee.billingType, LEGACY_FEE_CODE_MAP.billing)} />
           <InfoField label="請求年数" value={plot.usageFee.billingYears?.toString()} />
-          <InfoField label="面積" value={plot.usageFee.area} />
+          <InfoField label="課金面積 (㎡)" value={plot.usageFee.area} hint="料金計算に用いる面積" />
           <InfoField label="単価" value={formatCurrency(plot.usageFee.unitPrice)} />
           <InfoField label="使用料" value={formatCurrency(plot.usageFee.usageFee)} />
           <InfoField label="送付方法" value={resolveMasterName(masters.paymentMethods, plot.usageFee.paymentMethod)} />
@@ -362,7 +409,7 @@ function FeeInfoTab({ plot, masters }: { plot: PlotDetailResponse; masters: FeeM
           <InfoField label="税区分" value={resolveMasterName(masters.taxTypes, plot.managementFee.taxType, LEGACY_FEE_CODE_MAP.tax)} />
           <InfoField label="請求タイプ" value={resolveMasterName(masters.billingTypes, plot.managementFee.billingType, LEGACY_FEE_CODE_MAP.billing)} />
           <InfoField label="請求年数" value={plot.managementFee.billingYears?.toString()} />
-          <InfoField label="面積" value={plot.managementFee.area} />
+          <InfoField label="課金面積 (㎡)" value={plot.managementFee.area} hint="料金計算に用いる面積" />
           <InfoField label="請求月" value={plot.managementFee.billingMonth?.toString()} />
           <InfoField label="管理料" value={formatCurrency(plot.managementFee.managementFee)} />
           <InfoField label="単価" value={formatCurrency(plot.managementFee.unitPrice)} />

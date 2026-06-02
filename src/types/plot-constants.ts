@@ -66,6 +66,17 @@ export const PLOT_SIZE_LABELS: Record<PlotSizeType, string> = {
   half: '半区画（1.8㎡）',
 };
 
+/**
+ * 面積(㎡)から区画サイズの短いラベルを返す（'1区画' / '半区画'）。
+ * 既知サイズ以外（0.9㎡ 等）は null。台帳詳細の面積注記（#178）で使用。
+ */
+export function getPlotSizeLabel(areaSqm: number | null | undefined): string | null {
+  if (areaSqm == null) return null;
+  if (areaSqm === PLOT_SIZE.FULL) return '1区画';
+  if (areaSqm === PLOT_SIZE.HALF) return '半区画';
+  return null;
+}
+
 // ===== 所有区画情報 =====
 
 export interface OwnedPlot {
