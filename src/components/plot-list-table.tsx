@@ -16,6 +16,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { StatusBadge, type StatusBadgeProps } from '@/components/ui/status-badge';
 import { Switch } from '@/components/ui/switch';
 import { EmptyState } from '@/components/ui/empty-state';
+import { LegacyAwareValue, LegacyValueNote } from '@/components/legacy-aware-value';
+import { isLegacyPlotNumber, isLegacyAreaName } from '@/lib/legacy-plot-display';
 import { cn } from '@/lib/utils';
 
 // ===== 型定義 =====
@@ -371,10 +373,13 @@ export default function PlotListTable({
       )}
 
       {/* 件数表示 */}
-      <div className="mx-3 md:mx-6 mt-3 md:mt-4 flex items-center justify-between">
+      <div className="mx-3 md:mx-6 mt-3 md:mt-4 flex flex-col gap-2">
         <p className="text-sm text-hai">
           検索結果: <span className="font-bold text-sumi text-lg">{total}</span> 件
         </p>
+        {plots.some((p) => isLegacyPlotNumber(p.plotNumber) || isLegacyAreaName(p.areaName)) && (
+          <LegacyValueNote />
+        )}
       </div>
 
       {/* テーブル */}
@@ -546,10 +551,10 @@ export default function PlotListTable({
                         </div>
                       </td>
                       <td className="px-2 md:px-4 py-2 md:py-3 whitespace-nowrap text-sm text-sumi hidden sm:table-cell">
-                        {plot.areaName || '-'}
+                        <LegacyAwareValue value={plot.areaName} kind="areaName" />
                       </td>
                       <td className="px-2 md:px-4 py-2 md:py-3 whitespace-nowrap text-sm font-semibold text-sumi tabular-nums">
-                        {plot.plotNumber || '-'}
+                        <LegacyAwareValue value={plot.plotNumber} kind="plotNumber" />
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-sumi hidden sm:table-cell">
                         {contractYear}
