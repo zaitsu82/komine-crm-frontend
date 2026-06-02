@@ -190,7 +190,7 @@ export default function CollectiveBurialListView({
             <span className="px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">請求前</span>
             <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">請求済</span>
             <span className="px-2 py-0.5 bg-green-100 text-green-800 rounded-full text-xs font-medium">支払済</span>
-            <span className="text-xs text-hai">合祀年「*」= 埋葬日 + 有効年数の自動計算</span>
+            <span className="text-xs text-hai">合祀年「*」= 請求予定日が未確定のため、埋葬日＋有効年数で自動計算した見込み年（請求金額も未確定）</span>
             <span className="text-xs text-hai">／ 区画番号クリックで台帳詳細へ</span>
           </div>
           <div className="flex-shrink-0 flex items-center space-x-2">
@@ -509,6 +509,11 @@ export default function CollectiveBurialListView({
                           {group.totalCount} 件
                         </span>
                       </div>
+                      {group.year === 0 && (
+                        <p className="relative mt-1.5 text-xs text-white/85">
+                          請求予定日（確定値）が未設定のグループです。合祀年「*」は埋葬日＋有効年数の見込み値で、請求予定日・請求金額はまだ確定していません。
+                        </p>
+                      )}
                     </div>
 
                     {/* テーブル */}
@@ -597,7 +602,14 @@ export default function CollectiveBurialListView({
                                 </td>
                                 <td className="px-2 md:px-4 py-3 text-center text-sm text-sumi hidden lg:table-cell">
                                   {collectiveBurialYear ? (
-                                    <span className={isFallbackScheduled ? 'text-hai italic' : ''} title={isFallbackScheduled ? '埋葬日 + 有効年数の自動計算（請求予定日未設定）' : undefined}>
+                                    <span
+                                      className={isFallbackScheduled ? 'text-hai italic' : ''}
+                                      title={
+                                        isFallbackScheduled
+                                          ? '請求予定日が未設定のため、埋葬日＋有効年数で自動計算した見込み年（「*」）。請求予定日を設定すると確定値が優先されます。'
+                                          : '請求予定日（確定値）から算出した合祀年'
+                                      }
+                                    >
                                       {collectiveBurialYear}年
                                       {isFallbackScheduled && (
                                         <span className="ml-0.5 text-xs">*</span>
@@ -608,10 +620,21 @@ export default function CollectiveBurialListView({
                                 <td className="px-2 md:px-4 py-3 text-center text-sm text-sumi hidden lg:table-cell">
                                   {record.burialCapacity}
                                 </td>
-                                <td className="px-2 md:px-4 py-3 text-right text-sm text-sumi hidden sm:table-cell">
-                                  {record.billingAmount != null
-                                    ? `¥${record.billingAmount.toLocaleString()}`
-                                    : '-'}
+                                <td className="px-2 md:px-4 py-3 text-right text-sm hidden sm:table-cell">
+                                  {record.billingAmount != null ? (
+                                    <span className="text-sumi">¥{record.billingAmount.toLocaleString()}</span>
+                                  ) : (
+                                    <span
+                                      className="text-hai"
+                                      title={
+                                        record.billingScheduledDate
+                                          ? '請求金額が未入力です（要入力）'
+                                          : '請求予定日が未設定のため、請求金額は未確定です'
+                                      }
+                                    >
+                                      未設定
+                                    </span>
+                                  )}
                                 </td>
                                 <td className="px-2 md:px-4 py-3 text-sm text-hai truncate hidden lg:table-cell">
                                   {record.notes || '-'}
