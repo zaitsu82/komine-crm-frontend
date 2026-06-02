@@ -127,9 +127,16 @@ export default function GlobalSidebar({
                 )}
 
                 {!collapsed && (
-                  <p className="text-xs font-semibold text-hai uppercase tracking-wider mb-2 px-2">
-                    {group.label}
-                  </p>
+                  <div className="mb-2 px-2">
+                    <p className="text-xs font-semibold text-hai uppercase tracking-wider">
+                      {group.label}
+                    </p>
+                    {group.description && (
+                      <p className="text-[10px] text-hai/80 mt-0.5 normal-case tracking-normal leading-snug">
+                        {group.description}
+                      </p>
+                    )}
+                  </div>
                 )}
 
                 <div className="space-y-1">
@@ -145,8 +152,8 @@ export default function GlobalSidebar({
                           ? 'bg-matsu-50 text-matsu border border-matsu-200'
                           : 'text-sumi hover:bg-white hover:text-matsu'
                           }`}
-                        title={item.label}
-                        aria-label={item.label}
+                        title={item.description ? `${item.label} — ${item.description}` : item.label}
+                        aria-label={item.description ? `${item.label}（${item.description}）` : item.label}
                       >
                         <MenuIcon icon={item.icon} className="w-5 h-5" />
                       </Link>
@@ -159,6 +166,7 @@ export default function GlobalSidebar({
                           ? 'bg-matsu-50 text-matsu border-l-[3px] border-matsu shadow-sm font-medium'
                           : 'text-sumi hover:bg-white hover:text-matsu hover:shadow-sm border-l-[3px] border-transparent'
                           }`}
+                        title={item.description ? `${item.label} — ${item.description}` : item.label}
                       >
                         <MenuIcon icon={item.icon} className={`w-5 h-5 flex-shrink-0 ${active ? 'text-matsu' : 'text-hai'}`} />
                         <span>{item.label}</span>
@@ -170,6 +178,22 @@ export default function GlobalSidebar({
             ))}
           </nav>
         </div>
+
+        {/* 業務フローのヘルプ — 主要機能の関係を新規利用者にも伝える（#191） */}
+        {!collapsed && (
+          <div className="border-t border-gin p-4">
+            <p className="text-xs font-semibold text-hai uppercase tracking-wider mb-2">業務の流れ</p>
+            <ol className="space-y-1.5 text-[11px] text-hai leading-snug">
+              <li><span className="text-matsu font-medium">① 台帳問い合わせ</span>：区画ごとに契約・顧客・請求・入金を管理（基点）</li>
+              <li><span className="text-matsu font-medium">② 区画残数管理</span>：空き状況・使用率を把握</li>
+              <li><span className="text-matsu font-medium">③ ゆうちょ連携</span>：管理料の口座振替を出力</li>
+              <li><span className="text-matsu font-medium">④ 合祀管理</span>：契約期間の満了後に合祀・請求</li>
+            </ol>
+            <p className="text-[10px] text-hai/80 mt-2 leading-snug">
+              合祀一覧の区画番号から台帳詳細へ移動できます。
+            </p>
+          </div>
+        )}
       </div>
     </>
   );
