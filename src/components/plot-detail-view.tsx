@@ -25,6 +25,7 @@ import { useMasters } from '@/hooks/useMasters';
 import type { MasterItem, TaxTypeMasterItem } from '@/lib/api/masters';
 import { resolveMasterName, LEGACY_FEE_CODE_MAP } from '@/lib/master-resolve';
 import { getPlotSizeLabel } from '@/types/plot-constants';
+import { isEmptyDisplayValue, EMPTY_LABELS, type EmptyKind } from '@/lib/empty-display';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -152,16 +153,27 @@ function InfoField({
   label,
   value,
   hint,
+  emptyKind = 'unregistered',
 }: {
   label: string;
   value: string | null | undefined;
   /** 値の意味を補足する小さなヘルプ文（常時表示・モバイル対応）。#178 */
   hint?: string;
+  /** 空値の意味（#181）。未入力=unregistered（「未登録」）/ 該当なし=na（「対象外」）。 */
+  emptyKind?: EmptyKind;
 }) {
+  const empty = isEmptyDisplayValue(value);
   return (
     <div className="py-2">
       <dt className="text-sm text-hai">{label}</dt>
-      <dd className="mt-1 font-semibold text-sumi text-sm">{value || '-'}</dd>
+      <dd
+        className={cn(
+          'mt-1 text-sm',
+          empty ? 'font-normal italic text-hai' : 'font-semibold text-sumi'
+        )}
+      >
+        {empty ? EMPTY_LABELS[emptyKind] : value}
+      </dd>
       {hint && <p className="mt-0.5 text-[11px] text-hai font-normal leading-snug">{hint}</p>}
     </div>
   );
@@ -293,6 +305,11 @@ function BasicInfoTab({ plot }: { plot: PlotDetailResponse }) {
   const applicantIsSameAsContractor =
     !!applicantRole && !!primaryRole && applicantRole.customer.id === primaryRole.customer.id;
 
+  // 空き区画は contract_status='vacant' の器契約。契約日・受付等が空でも
+  // 「未登録（入力漏れ）」ではなく「対象外（契約がそもそも無い）」なので区別する（#181）。
+  const isVacant = plot.contractStatus === ContractStatus.Vacant;
+  const contractEmptyKind: EmptyKind = isVacant ? 'na' : 'unregistered';
+
   return (
     <div className="space-y-4">
       {/* 区画情報 */}
@@ -321,18 +338,18 @@ function BasicInfoTab({ plot }: { plot: PlotDetailResponse }) {
 
       {/* 契約情報 */}
       <Section title="契約情報">
-        <InfoField label="契約日" value={formatDate(plot.contractDate)} />
-        <InfoField label="契約金額" value={formatPrice(plot.price)} />
+        <InfoField label="契約日" value={formatDate(plot.contractDate)} emptyKind={contractEmptyKind} />
+        <InfoField label="契約金額" value={formatPrice(plot.price)} emptyKind={contractEmptyKind} />
         <InfoField label="利用申込" value={CONTRACT_STATUS_LABELS[plot.contractStatus as ContractStatus]} />
         <InfoField label="入金状態" value={PAYMENT_STATUS_LABELS[plot.paymentStatus as PaymentStatus]} />
         <InfoField label="予約日" value={formatDate(plot.reservationDate)} />
-        <InfoField label="受付番号" value={plot.acceptanceNumber} />
-        <InfoField label="受付日" value={formatDate(plot.acceptanceDate)} />
+        <InfoField label="受付番号" value={plot.acceptanceNumber} emptyKind={contractEmptyKind} />
+        <InfoField label="受付日" value={formatDate(plot.acceptanceDate)} emptyKind={contractEmptyKind} />
         <InfoField label="担当者" value={plot.staffInCharge} />
         <InfoField label="取扱" value={plot.agentName} />
-        <InfoField label="許可日" value={formatDate(plot.permitDate)} />
-        <InfoField label="平成書番号" value={plot.permitNumber} />
-        <InfoField label="開始日" value={formatDate(plot.startDate)} />
+        <InfoField label="許可日" value={formatDate(plot.permitDate)} emptyKind={contractEmptyKind} />
+        <InfoField label="平成書番号" value={plot.permitNumber} emptyKind={contractEmptyKind} />
+        <InfoField label="開始日" value={formatDate(plot.startDate)} emptyKind={contractEmptyKind} />
         <InfoField label="契約備考" value={plot.contractNotes} />
       </Section>
 
@@ -347,7 +364,7 @@ function BasicInfoTab({ plot }: { plot: PlotDetailResponse }) {
         />
       ) : (
         <Section title="申込者情報">
-          <InfoField label="申込者" value="登録なし" />
+          <InfoField label="申込者" value={null} />
         </Section>
       )}
 
@@ -1025,6 +1042,14 @@ export default function PlotDetailView({ plotId, onEdit, onBack, onDelete, onRes
           </div>
         </div>
       </div>
+
+      {/* 空値表示の凡例（#181）— 「-」が未登録・対象外・取得失敗のどれか分からない問題への対応 */}
+      <p className="mb-3 text-[11px] md:text-xs text-hai leading-relaxed">
+        <span className="font-semibold text-sumi">表示の凡例</span>：
+        <span className="italic">未登録</span>＝未入力の項目／
+        <span className="italic">対象外</span>＝この区画では該当しない項目。
+        該当しない情報はセクションごと非表示になり、取得に失敗した場合はエラー画面を表示します。
+      </p>
 
       {/* タブ — モバイル: 横スクロール / タブレット以上: グリッド */}
       <Tabs defaultValue="basic" className="w-full">
