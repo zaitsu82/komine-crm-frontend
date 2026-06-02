@@ -11,7 +11,7 @@ jest.mock('@/lib/api/client', () => ({
 import MockDataBanner from '@/components/mock-data-banner';
 
 /**
- * #176: デモデータ表示中バナー
+ * #176 / #192: デモデータ表示中バナー
  */
 describe('MockDataBanner', () => {
   afterEach(() => mockShouldUseMockData.mockReset());
@@ -29,5 +29,14 @@ describe('MockDataBanner', () => {
     expect(
       screen.getByText(/実際の台帳・契約・顧客とは紐づいていません/)
     ).toBeInTheDocument();
+  });
+
+  it('「試験環境」バッジで試験/デモ環境であることを明示する（#192）', () => {
+    mockShouldUseMockData.mockReturnValue(true);
+    render(<MockDataBanner />);
+    const badge = screen.getByText('試験環境');
+    expect(badge).toBeInTheDocument();
+    // ツールチップで本番データでない旨を説明
+    expect(badge).toHaveAttribute('title', expect.stringContaining('本番'));
   });
 });
