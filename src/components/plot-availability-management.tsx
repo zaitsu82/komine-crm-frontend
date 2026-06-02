@@ -21,6 +21,8 @@ import {
   AVAILABILITY_STATUS_LABELS,
 } from '@/types/plot-constants';
 import PageHeader from '@/components/page-header';
+import { LegacyAwareValue, LegacyValueNote } from '@/components/legacy-aware-value';
+import { isLegacyPlotNumber, isLegacyAreaName } from '@/lib/legacy-plot-display';
 import {
   usePlotInventorySummary,
   usePlotInventoryPeriods,
@@ -439,7 +441,7 @@ export default function PlotAvailabilityManagement() {
               <Input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={displayMode === 'section' ? "区画名、期で検索..." : "面積、タイプ、期で検索..."}
+                placeholder={displayMode === 'section' ? "区画名・コードで検索…（期マスタ整備中）" : "面積・タイプ・コードで検索…（期マスタ整備中）"}
                 className="flex-1 sm:max-w-md"
               />
               <Button
@@ -586,11 +588,11 @@ export default function PlotAvailabilityManagement() {
                               "px-2 md:px-3 py-0.5 md:py-1 rounded-full text-xs font-medium",
                               periodColors[item.period as keyof typeof periodColors]
                             )}>
-                              {item.period}
+                              <LegacyAwareValue value={item.period} kind="areaName" emptyText="-" />
                             </span>
                           </td>
                           <td className="px-2 md:px-4 py-2 md:py-3 text-xs md:text-sm font-semibold text-sumi">
-                            {item.section}
+                            <LegacyAwareValue value={item.section} kind="plotNumber" emptyText="-" />
                             {item.category && (
                               <span className="ml-1 md:ml-2 text-xs text-hai font-normal">({item.category})</span>
                             )}
@@ -894,6 +896,11 @@ export default function PlotAvailabilityManagement() {
 
           {/* フッター情報（凡例）— 状況（残数）と使用率（%）は別軸である点を明示（#183） */}
           <div className="mt-5 text-sm text-hai bg-white rounded-elegant-lg p-4 border border-gin space-y-3">
+            {/* レガシー移行値が含まれる場合の注記（#182）*/}
+            {(displayData.some((it) => isLegacyPlotNumber(it.section) || isLegacyAreaName(it.period)) ||
+              displayAreaData.some((it) => isLegacyAreaName(it.period))) && (
+              <LegacyValueNote className="border-b border-gin pb-2" />
+            )}
             {/* 状況バッジの判定基準（残数の絶対値）*/}
             <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
               <span className="text-xs font-semibold text-sumi shrink-0">状況（残数で判定）</span>

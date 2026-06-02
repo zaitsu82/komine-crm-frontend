@@ -26,6 +26,8 @@ import type { MasterItem, TaxTypeMasterItem } from '@/lib/api/masters';
 import { resolveMasterName, LEGACY_FEE_CODE_MAP } from '@/lib/master-resolve';
 import { getPlotSizeLabel } from '@/types/plot-constants';
 import { isEmptyDisplayValue, EMPTY_LABELS, type EmptyKind } from '@/lib/empty-display';
+import { LegacyAwareValue, LegacyValueNote } from '@/components/legacy-aware-value';
+import { isLegacyPlotNumber, isLegacyAreaName } from '@/lib/legacy-plot-display';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -314,8 +316,16 @@ function BasicInfoTab({ plot }: { plot: PlotDetailResponse }) {
     <div className="space-y-4">
       {/* 区画情報 */}
       <Section title="区画情報">
-        <InfoField label="区画番号" value={plot.physicalPlot.plotNumber} />
-        <InfoField label="エリア" value={plot.physicalPlot.areaName} />
+        <InfoField
+          label="区画番号"
+          value={plot.physicalPlot.plotNumber}
+          hint={isLegacyPlotNumber(plot.physicalPlot.plotNumber) ? '整備中（レガシー移行値・要確認）' : undefined}
+        />
+        <InfoField
+          label="エリア"
+          value={plot.physicalPlot.areaName}
+          hint={isLegacyAreaName(plot.physicalPlot.areaName) ? '整備中（レガシー移行値・要確認）' : undefined}
+        />
         <InfoField
           label="物理区画面積 (㎡)"
           value={plot.physicalPlot.areaSqm?.toString()}
@@ -870,7 +880,7 @@ export default function PlotDetailView({ plotId, onEdit, onBack, onDelete, onRes
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
         </svg>
         <span className="text-sumi font-medium truncate">
-          {plot.physicalPlot.plotNumber}
+          <LegacyAwareValue value={plot.physicalPlot.plotNumber} kind="plotNumber" />
         </span>
       </nav>
 
@@ -878,8 +888,11 @@ export default function PlotDetailView({ plotId, onEdit, onBack, onDelete, onRes
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4 md:mb-6 bg-white border border-gin rounded-elegant-lg shadow-elegant-sm p-4 md:p-5">
         <div className="min-w-0">
           <h2 className="text-lg md:text-2xl font-bold text-sumi truncate">
-            {plot.physicalPlot.plotNumber} - {plot.physicalPlot.areaName}
+            <LegacyAwareValue value={plot.physicalPlot.plotNumber} kind="plotNumber" /> - <LegacyAwareValue value={plot.physicalPlot.areaName} kind="areaName" />
           </h2>
+          {(isLegacyPlotNumber(plot.physicalPlot.plotNumber) || isLegacyAreaName(plot.physicalPlot.areaName)) && (
+            <LegacyValueNote className="mt-1" />
+          )}
           {primaryCustomer && (
             <p className="text-hai mt-1 text-sm md:text-base truncate">
               契約者: {primaryCustomer.name}
