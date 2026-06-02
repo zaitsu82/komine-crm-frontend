@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { AuthGuard } from '@/components/auth-guard';
 import GlobalSidebar from '@/components/layout/GlobalSidebar';
+import MockDataBanner from '@/components/mock-data-banner';
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -27,6 +28,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         />
 
         <div className={`flex-1 min-w-0 flex flex-col ml-0 ${sidebarWidth} transition-all duration-300`}>
+          <MockDataBanner />
           {children}
         </div>
       </div>
