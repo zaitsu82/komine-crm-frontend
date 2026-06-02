@@ -23,6 +23,7 @@ import {
 import { usePlotDetail } from '@/hooks/usePlots';
 import { useMasters } from '@/hooks/useMasters';
 import type { MasterItem, TaxTypeMasterItem } from '@/lib/api/masters';
+import { resolveMasterName, LEGACY_FEE_CODE_MAP } from '@/lib/master-resolve';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -135,25 +136,6 @@ const ACCOUNT_TYPE_LABELS: Record<string, string> = {
 
 function formatPrice(price: number | null | undefined): string {
   return formatCurrency(price);
-}
-
-/**
- * Master 名解決ヘルパー。
- * legacy migration が int 文字列 ("1" "2" 等) を格納している区分系フィールドと、
- * 新規入力で master code ("AREA" 等) を格納する場合の両方に対応するため、
- * id 一致 → code 一致 → raw 値 の順に試す。
- * master に無い既存値はそのまま表示して欠落を防ぐ。
- */
-function resolveMasterName(
-  masters: ReadonlyArray<MasterItem | TaxTypeMasterItem>,
-  value: string | null | undefined,
-): string | null {
-  if (value == null || value === '') return null;
-  const byId = masters.find((m) => m.id.toString() === value);
-  if (byId) return byId.name;
-  const byCode = masters.find((m) => m.code === value);
-  if (byCode) return byCode.name;
-  return value;
 }
 
 interface FeeMasters {
@@ -362,9 +344,9 @@ function FeeInfoTab({ plot, masters }: { plot: PlotDetailResponse; masters: FeeM
       {/* 使用料 */}
       {plot.usageFee && (
         <Section title="使用料">
-          <InfoField label="計算タイプ" value={resolveMasterName(masters.calcTypes, plot.usageFee.calculationType)} />
-          <InfoField label="税区分" value={resolveMasterName(masters.taxTypes, plot.usageFee.taxType)} />
-          <InfoField label="請求タイプ" value={resolveMasterName(masters.billingTypes, plot.usageFee.billingType)} />
+          <InfoField label="計算タイプ" value={resolveMasterName(masters.calcTypes, plot.usageFee.calculationType, LEGACY_FEE_CODE_MAP.calc)} />
+          <InfoField label="税区分" value={resolveMasterName(masters.taxTypes, plot.usageFee.taxType, LEGACY_FEE_CODE_MAP.tax)} />
+          <InfoField label="請求タイプ" value={resolveMasterName(masters.billingTypes, plot.usageFee.billingType, LEGACY_FEE_CODE_MAP.billing)} />
           <InfoField label="請求年数" value={plot.usageFee.billingYears?.toString()} />
           <InfoField label="面積" value={plot.usageFee.area} />
           <InfoField label="単価" value={formatCurrency(plot.usageFee.unitPrice)} />
@@ -376,9 +358,9 @@ function FeeInfoTab({ plot, masters }: { plot: PlotDetailResponse; masters: FeeM
       {/* 管理料 */}
       {plot.managementFee && (
         <Section title="管理料">
-          <InfoField label="計算タイプ" value={resolveMasterName(masters.calcTypes, plot.managementFee.calculationType)} />
-          <InfoField label="税区分" value={resolveMasterName(masters.taxTypes, plot.managementFee.taxType)} />
-          <InfoField label="請求タイプ" value={resolveMasterName(masters.billingTypes, plot.managementFee.billingType)} />
+          <InfoField label="計算タイプ" value={resolveMasterName(masters.calcTypes, plot.managementFee.calculationType, LEGACY_FEE_CODE_MAP.calc)} />
+          <InfoField label="税区分" value={resolveMasterName(masters.taxTypes, plot.managementFee.taxType, LEGACY_FEE_CODE_MAP.tax)} />
+          <InfoField label="請求タイプ" value={resolveMasterName(masters.billingTypes, plot.managementFee.billingType, LEGACY_FEE_CODE_MAP.billing)} />
           <InfoField label="請求年数" value={plot.managementFee.billingYears?.toString()} />
           <InfoField label="面積" value={plot.managementFee.area} />
           <InfoField label="請求月" value={plot.managementFee.billingMonth?.toString()} />
