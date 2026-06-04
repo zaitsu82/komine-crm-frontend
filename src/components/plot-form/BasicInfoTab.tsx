@@ -1,11 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { PlotTabBaseProps } from './types';
 import { ViewModeField, ViewModeSelect, ViewModeTextarea } from './ViewModeField';
 import { SelectItem } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Gender, PaymentStatus } from '@komine/types';
 import { defaultApplicant } from '@/lib/validations/plot-form';
@@ -32,13 +31,24 @@ export function BasicInfoTab({
   }, [masterData?.sectionNames]);
 
   // 現在のareaNameから所属する期を特定
-  const [selectedPeriod, setSelectedPeriod] = useState<string>(() => {
-    const currentAreaName = watch('physicalPlot.areaName');
-    for (const [period, sections] of Object.entries(sectionsByPeriod)) {
-      if (sections.includes(currentAreaName)) return period;
+  const [selectedPeriod, setSelectedPeriod] = useState<string>('');
+
+  // マスタ（sectionNames）は非同期取得のため、編集画面の初期レンダー時点では
+  // sectionsByPeriod が空で期を導出できない。useState 初期化子はマスタ到着後に
+  // 再実行されないため、マスタ到着後・reset による areaName 後発更新後に
+  // 期を再導出する（#220）。
+  // ユーザーが手動で期を変えたときの areaName クリアは onValueChange 側で行い、
+  // この effect では areaName をクリアしない（自動同期での消失を防ぐ）。
+  const areaName = watch('physicalPlot.areaName');
+  useEffect(() => {
+    if (!areaName) return;
+    const found = Object.entries(sectionsByPeriod).find(([, sections]) =>
+      sections.includes(areaName)
+    )?.[0];
+    if (found) {
+      setSelectedPeriod((prev) => (prev === found ? prev : found));
     }
-    return '';
-  });
+  }, [sectionsByPeriod, areaName]);
 
   return (
     <div className="space-y-6">
