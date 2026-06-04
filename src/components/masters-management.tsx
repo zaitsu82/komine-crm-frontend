@@ -18,6 +18,7 @@ import {
   createMasterItem,
   updateMasterItem,
   deleteMasterItem,
+  shouldUseMockData,
   MasterItem,
   SectionNameMasterItem,
   AllMastersData,
@@ -95,6 +96,10 @@ export default function MastersManagement() {
   const currentItems = (mastersData?.[selectedType.dataKey] as MasterItem[] | undefined) ?? [];
 
   const isSectionName = selectedType.key === 'section-name';
+
+  // モックモードではマスタの書き込みができない（取得系が静的モックを返すため
+  // 反映されない）。ボタンを無効化して MockDataBanner と整合させる（#228）
+  const isMockReadonly = shouldUseMockData();
 
   const handleOpenCreate = () => {
     setEditingItem(null);
@@ -273,7 +278,13 @@ export default function MastersManagement() {
             <div className="flex-1 min-w-0">
               {isAdmin && (
                 <div className="mb-3 flex justify-end">
-                  <Button onClick={handleOpenCreate} size="sm" className="cursor-pointer">
+                  <Button
+                    onClick={handleOpenCreate}
+                    size="sm"
+                    className="cursor-pointer"
+                    disabled={isMockReadonly}
+                    title={isMockReadonly ? 'デモ（試験）環境ではマスタの変更はできません' : undefined}
+                  >
                     <Plus className="w-4 h-4 mr-1" />
                     新規登録
                   </Button>
@@ -333,6 +344,7 @@ export default function MastersManagement() {
                                   variant="outline"
                                   size="sm"
                                   className="text-xs px-2 md:px-3"
+                                  disabled={isMockReadonly}
                                 >
                                   編集
                                 </Button>
@@ -344,6 +356,7 @@ export default function MastersManagement() {
                                   variant="outline"
                                   size="sm"
                                   className="text-beni hover:text-beni-dark hover:bg-beni-50 text-xs px-2 md:px-3"
+                                  disabled={isMockReadonly}
                                 >
                                   削除
                                 </Button>
