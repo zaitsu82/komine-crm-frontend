@@ -10,6 +10,7 @@ import {
   PlotDetailResponse,
   CreatePlotRequest,
   UpdatePlotRequest,
+  CreatePlotResponse,
   PhysicalPlotStatus,
   PaymentStatus,
   ContractStatus,
@@ -322,11 +323,69 @@ async function mockGetPlotById(
 }
 
 /**
+ * PlotDetailResponse → CreatePlotResponse（作成/更新APIのレスポンス形状）変換。
+ * backend の createPlot/updatePlot は PlotDetailResponse ではなく
+ * CreatePlotResponse 形状（primaryCustomer あり・buriedPersons 等なし）を
+ * 返すため、モックも同じ形状に揃える（#217）。
+ */
+function plotDetailToMutationResponse(detail: PlotDetailResponse): CreatePlotResponse {
+  const primaryRole =
+    detail.roles.find((r) => r.role === ContractRole.Contractor) ?? detail.roles[0] ?? null;
+  return {
+    id: detail.id,
+    contractAreaSqm: detail.contractAreaSqm,
+    locationDescription: detail.locationDescription,
+    contractDate: detail.contractDate,
+    price: detail.price,
+    paymentStatus: detail.paymentStatus,
+    reservationDate: detail.reservationDate,
+    acceptanceNumber: detail.acceptanceNumber,
+    permitDate: detail.permitDate,
+    startDate: detail.startDate,
+    agentName: detail.agentName ?? null,
+    notes: detail.contractNotes ?? null,
+    physicalPlot: {
+      id: detail.physicalPlot.id,
+      plotNumber: detail.physicalPlot.plotNumber,
+      areaName: detail.physicalPlot.areaName,
+      areaSqm: detail.physicalPlot.areaSqm,
+      status: detail.physicalPlot.status,
+    },
+    primaryCustomer: primaryRole
+      ? {
+          id: primaryRole.customer.id,
+          name: primaryRole.customer.name,
+          nameKana: primaryRole.customer.nameKana ?? '',
+          phoneNumber: primaryRole.customer.phoneNumber,
+          address: primaryRole.customer.address ?? '',
+          role: primaryRole.role,
+        }
+      : null,
+    roles: detail.roles.map((r) => ({
+      id: r.id,
+      role: r.role,
+      roleStartDate: r.roleStartDate,
+      roleEndDate: r.roleEndDate,
+      notes: r.notes,
+      customer: {
+        id: r.customer.id,
+        name: r.customer.name,
+        nameKana: r.customer.nameKana ?? '',
+        phoneNumber: r.customer.phoneNumber,
+        address: r.customer.address ?? '',
+      },
+    })),
+    createdAt: detail.createdAt,
+    updatedAt: detail.updatedAt,
+  };
+}
+
+/**
  * モック: 区画作成
  */
 async function mockCreatePlot(
   request: CreatePlotRequest
-): Promise<ApiResponse<PlotDetailResponse>> {
+): Promise<ApiResponse<CreatePlotResponse>> {
   await new Promise((resolve) => setTimeout(resolve, 500));
 
   // 簡易的なモック応答
@@ -409,7 +468,7 @@ async function mockCreatePlot(
 
   return {
     success: true,
-    data: detail,
+    data: plotDetailToMutationResponse(detail),
   };
 }
 
@@ -521,30 +580,38 @@ export async function getPlotById(
 
 /**
  * 区画作成
+ *
+ * backend は PlotDetailResponse ではなく CreatePlotResponse 形状
+ * （primaryCustomer あり・buriedPersons/familyContacts 等なし）を返す（#217）。
+ * フル詳細が必要な場合は getPlotById で再取得すること。
  */
 export async function createPlot(
   request: CreatePlotRequest
-): Promise<ApiResponse<PlotDetailResponse>> {
+): Promise<ApiResponse<CreatePlotResponse>> {
   if (shouldUseMockData()) {
     return mockCreatePlot(request);
   }
 
-  return apiPost<PlotDetailResponse>('/plots', request);
+  return apiPost<CreatePlotResponse>('/plots', request);
 }
 
 /**
  * 区画更新
+ *
+ * backend updatePlot のレスポンスも CreatePlotResponse と同形状（#217）。
  */
 export async function updatePlot(
   id: string,
   request: UpdatePlotRequest
-): Promise<ApiResponse<PlotDetailResponse>> {
+): Promise<ApiResponse<CreatePlotResponse>> {
   if (shouldUseMockData()) {
-    // モック実装は簡略化
-    return mockGetPlotById(id);
+    // モック実装は簡略化（詳細を取得して作成/更新レスポンス形状に変換）
+    const detail = await mockGetPlotById(id);
+    if (!detail.success) return detail;
+    return { success: true, data: plotDetailToMutationResponse(detail.data) };
   }
 
-  return apiPut<PlotDetailResponse>(`/plots/${id}`, request);
+  return apiPut<CreatePlotResponse>(`/plots/${id}`, request);
 }
 
 /**

@@ -11,6 +11,7 @@ import {
   PlotDetailResponse,
   CreatePlotRequest,
   UpdatePlotRequest,
+  CreatePlotResponse,
 } from '@komine/types';
 import {
   getPlots,
@@ -339,8 +340,10 @@ export function usePlotDetail(id: string | null): UsePlotDetailReturn {
 // ===== usePlotMutations: 区画変更フック =====
 
 interface UsePlotMutationsReturn {
-  create: (request: CreatePlotRequest) => Promise<PlotDetailResponse | null>;
-  update: (id: string, request: UpdatePlotRequest) => Promise<PlotDetailResponse | null>;
+  // 作成/更新 API は PlotDetailResponse ではなく CreatePlotResponse 形状を返す（#217）。
+  // フル詳細が必要な場合は getPlotById で再取得する（update は内部で再取得済み）。
+  create: (request: CreatePlotRequest) => Promise<CreatePlotResponse | null>;
+  update: (id: string, request: UpdatePlotRequest) => Promise<CreatePlotResponse | null>;
   remove: (id: string) => Promise<boolean>;
   isLoading: boolean;
   error: string | null;
@@ -350,7 +353,7 @@ export function usePlotMutations(): UsePlotMutationsReturn {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const create = useCallback(async (request: CreatePlotRequest): Promise<PlotDetailResponse | null> => {
+  const create = useCallback(async (request: CreatePlotRequest): Promise<CreatePlotResponse | null> => {
     setIsLoading(true);
     setError(null);
 
@@ -373,7 +376,7 @@ export function usePlotMutations(): UsePlotMutationsReturn {
     }
   }, []);
 
-  const update = useCallback(async (id: string, request: UpdatePlotRequest): Promise<PlotDetailResponse | null> => {
+  const update = useCallback(async (id: string, request: UpdatePlotRequest): Promise<CreatePlotResponse | null> => {
     setIsLoading(true);
     setError(null);
 
