@@ -259,21 +259,36 @@ function buildArrayDiffSections(
   currentArr: Record<string, unknown>[] | undefined,
   fields: ArrayFieldDef[],
 ): PreviewDiffSection[] {
+  // 中間削除や並べ替えで original[i] と current[i] が別レコードになるため、
+  // インデックスではなく id で突合する（backend updatePlot の id 突合と同じ基準）。
+  // id を持たない current 要素は新規追加分として扱う（#222）。
   const sections: PreviewDiffSection[] = [];
-  const origLen = originalArr?.length || 0;
-  const currLen = currentArr?.length || 0;
-  const maxLen = Math.max(origLen, currLen);
+  const originals = originalArr ?? [];
+  const currents = currentArr ?? [];
 
   const fmt = (f: ArrayFieldDef, v: unknown): string =>
     f.format ? f.format(v) : String(v ?? '');
 
-  for (let i = 0; i < maxLen; i++) {
-    const orig = originalArr?.[i];
-    const curr = currentArr?.[i];
+  const getId = (item: Record<string, unknown>): string | undefined =>
+    typeof item.id === 'string' && item.id !== '' ? item.id : undefined;
+
+  const origById = new Map<string, Record<string, unknown>>();
+  for (const orig of originals) {
+    const id = getId(orig);
+    if (id) origById.set(id, orig);
+  }
+  const currentIds = new Set(
+    currents.map(getId).filter((id): id is string => !!id),
+  );
+
+  // 追加・変更: current の表示順で連番を振る
+  currents.forEach((curr, i) => {
+    const id = getId(curr);
+    const orig = id ? origById.get(id) : undefined;
     const items: PreviewDiffItem[] = [];
 
-    if (!orig && curr) {
-      // 新規追加
+    if (!orig) {
+      // 新規追加（id 無し、または original に存在しない id）
       for (const f of fields) {
         const val = fmt(f, curr[f.key]);
         if (val) {
@@ -283,19 +298,8 @@ function buildArrayDiffSections(
       if (items.length > 0) {
         sections.push({ title: `${sectionLabel} ${i + 1}（追加）`, items });
       }
-    } else if (orig && !curr) {
-      // 削除
-      for (const f of fields) {
-        const val = fmt(f, orig[f.key]);
-        if (val) {
-          items.push({ label: f.label, before: val, after: '' });
-        }
-      }
-      if (items.length > 0) {
-        sections.push({ title: `${sectionLabel} ${i + 1}（削除）`, items });
-      }
-    } else if (orig && curr) {
-      // 既存の変更
+    } else {
+      // 既存の変更（同一 id 同士でフィールド比較）
       for (const f of fields) {
         const before = fmt(f, orig[f.key]);
         const after = fmt(f, curr[f.key]);
@@ -307,7 +311,25 @@ function buildArrayDiffSections(
         sections.push({ title: `${sectionLabel} ${i + 1}`, items });
       }
     }
-  }
+  });
+
+  // 削除: current に id が残っていない original（編集前の表示順で連番）
+  // ※ original はサーバ取得データのため id を持つ前提。id 無しの original は
+  //   突合不能なので削除判定の対象外とする
+  originals.forEach((orig, i) => {
+    const id = getId(orig);
+    if (!id || currentIds.has(id)) return;
+    const items: PreviewDiffItem[] = [];
+    for (const f of fields) {
+      const val = fmt(f, orig[f.key]);
+      if (val) {
+        items.push({ label: f.label, before: val, after: '' });
+      }
+    }
+    if (items.length > 0) {
+      sections.push({ title: `${sectionLabel} ${i + 1}（削除）`, items });
+    }
+  });
 
   return sections;
 }
