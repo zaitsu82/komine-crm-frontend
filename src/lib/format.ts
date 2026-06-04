@@ -117,13 +117,45 @@ export function formatBillingMonth(
   return trimmed;
 }
 
+/** date-only 文字列（YYYY-MM-DD）の形式判定 */
+const DATE_ONLY_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
+
+/**
+ * date-only 文字列（YYYY-MM-DD）から年月日を TZ 非依存で抽出する。
+ * `new Date('YYYY-MM-DD')` は UTC 00:00 としてパースされるため、
+ * ローカル getter で組み立てると負オフセット TZ では前日になる（#218）。
+ * 実在しない日付（2024-02-31 等）は null。
+ */
+function parseDateOnly(value: string): { y: number; m: number; d: number } | null {
+  const match = value.match(DATE_ONLY_RE);
+  if (!match) return null;
+  const y = Number(match[1]);
+  const m = Number(match[2]);
+  const d = Number(match[3]);
+  // UTC で往復させて実在日付か検証（TZ の影響を受けない）
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== m - 1 || dt.getUTCDate() !== d) {
+    return null;
+  }
+  return { y, m, d };
+}
+
 /**
  * 日付を「YYYY/MM/DD」（西暦4桁・ゼロ埋め）に統一する。
  * 2桁年や非ゼロ埋めの表記揺れ（#167）を解消する共通フォーマッタ。
+ * date-only 文字列は Date を経由せず整形し、TZ による前日ズレを防ぐ（#218）。
  * null / 空 / 不正日付は fallback（既定 "-"）。
  */
 export function formatDate(value: string | Date | null | undefined, fallback: string = DASH): string {
   if (value === null || value === undefined || value === '') return fallback;
+  if (typeof value === 'string' && DATE_ONLY_RE.test(value)) {
+    const dateOnly = parseDateOnly(value);
+    // date-only 形式で実在しない日付（2024-02-31 等）は legacy パーサの
+    // 繰り上がり（→ 2024/03/02）に流さず fallback
+    if (dateOnly === null) return fallback;
+    return `${dateOnly.y}/${String(dateOnly.m).padStart(2, '0')}/${String(dateOnly.d).padStart(2, '0')}`;
+  }
+  // datetime 文字列・Date インスタンスは時刻成分が意味を持つため従来どおりローカルTZで整形
   const d = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(d.getTime())) return fallback;
   const y = d.getFullYear();
@@ -135,9 +167,15 @@ export function formatDate(value: string | Date | null | undefined, fallback: st
 /**
  * 年月を「YYYY/MM」（西暦4桁・ゼロ埋め）に統一する。
  * 一覧の契約日など、日を省きたい狭い列向け（2桁年 "06/2" を廃止）。
+ * date-only 文字列は Date を経由せず整形し、TZ による前日ズレを防ぐ（#218）。
  */
 export function formatYearMonth(value: string | Date | null | undefined, fallback: string = DASH): string {
   if (value === null || value === undefined || value === '') return fallback;
+  if (typeof value === 'string' && DATE_ONLY_RE.test(value)) {
+    const dateOnly = parseDateOnly(value);
+    if (dateOnly === null) return fallback;
+    return `${dateOnly.y}/${String(dateOnly.m).padStart(2, '0')}`;
+  }
   const d = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(d.getTime())) return fallback;
   const y = d.getFullYear();
