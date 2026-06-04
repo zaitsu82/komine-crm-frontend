@@ -13,6 +13,8 @@ import {
   UpdateBillingRequest,
   ListBillingsQuery,
   DeleteBillingResponse,
+  BillingSummaryQuery,
+  BillingSummaryResponse,
   BillingCategory,
   BillingRecordStatus,
 } from '@komine/types';
@@ -43,6 +45,25 @@ export function getBillings(
   query?: ListBillingsQuery
 ): Promise<ApiResponse<BillingsListResponse>> {
   return apiGet<BillingsListResponse>(BASE, queryToParams(query));
+}
+
+/**
+ * 請求サマリー集計取得（フィルタ一致の全件集計）
+ *
+ * 一覧はページネーションされるため、StatCard の合計をページ分の reduce で
+ * 出すと誤読される（#225）。サーバ集計の本 API を使うこと。
+ */
+export function getBillingSummary(
+  query?: BillingSummaryQuery
+): Promise<ApiResponse<BillingSummaryResponse>> {
+  return apiGet<BillingSummaryResponse>(`${BASE}/summary`, {
+    contractPlotId: query?.contractPlotId,
+    customerId: query?.customerId,
+    category: query?.category,
+    status: query?.status,
+    billingDateFrom: query?.billingDateFrom,
+    billingDateTo: query?.billingDateTo,
+  });
 }
 
 export function getBillingById(id: string): Promise<ApiResponse<BillingDetailResponse>> {

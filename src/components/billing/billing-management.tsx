@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import {
   Billing,
   BillingCategory,
@@ -8,9 +8,12 @@ import {
   CreateBillingRequest,
   UpdateBillingRequest,
   ListBillingsQuery,
+  BillingSummaryQuery,
+  BillingSummaryResponse,
 } from '@komine/types';
 import {
   getBillings,
+  getBillingSummary,
   createBilling as apiCreate,
   updateBilling as apiUpdate,
   deleteBilling as apiDelete,
@@ -94,13 +97,35 @@ export default function BillingManagement({
     fetchList();
   }, [fetchList]);
 
-  const stats = useMemo(() => {
-    const totalAmount = items.reduce((s, b) => s + b.amount, 0);
-    const paidAmount = items.reduce((s, b) => s + b.paidAmount, 0);
-    const unpaidAmount = totalAmount - paidAmount;
-    const overdueCount = items.filter((b) => b.status === 'overdue').length;
-    return { totalAmount, paidAmount, unpaidAmount, overdueCount };
-  }, [items]);
+  // 上部 StatCard（請求総額/入金済/未入金/延滞件数）はサーバ全件集計を使う。
+  // items はページ分（PAGE_SIZE=50件）しか無く、reduce で出すと50件超で
+  // ページごとに数値が変わり全件総額と誤読される（#225）
+  const [summary, setSummary] = useState<BillingSummaryResponse | null>(null);
+  // 世代カウンタ: フィルタ連続変更時の古いレスポンス上書きを防ぐ（#231）
+  const summaryGenRef = useRef(0);
+
+  const fetchSummary = useCallback(async () => {
+    const myGen = ++summaryGenRef.current;
+    const query: BillingSummaryQuery = {
+      contractPlotId,
+      category: categoryFilter === 'all' ? undefined : categoryFilter,
+      status: statusFilter === 'all' ? undefined : statusFilter,
+    };
+    try {
+      const res = await getBillingSummary(query);
+      if (myGen !== summaryGenRef.current) return;
+      if (res.success) {
+        setSummary(res.data);
+      }
+      // 失敗時は前回値を保持（エラー表示は一覧側に任せる）
+    } catch {
+      // サマリーは補助情報のため握りつぶす（一覧側のエラー表示に任せる）
+    }
+  }, [contractPlotId, categoryFilter, statusFilter]);
+
+  useEffect(() => {
+    fetchSummary();
+  }, [fetchSummary]);
 
   const handleSubmit = async (data: CreateBillingRequest | UpdateBillingRequest) => {
     setIsSaving(true);
@@ -110,7 +135,7 @@ export default function BillingManagement({
         if (res.success) {
           showSuccess('請求を更新しました');
           setShowFormDialog(false);
-          await fetchList();
+          await Promise.all([fetchList(), fetchSummary()]);
         } else {
           showApiError('請求の更新', res.error?.message, res.error?.details);
         }
@@ -119,7 +144,7 @@ export default function BillingManagement({
         if (res.success) {
           showSuccess('請求を登録しました');
           setShowFormDialog(false);
-          await fetchList();
+          await Promise.all([fetchList(), fetchSummary()]);
         } else {
           showApiError('請求の登録', res.error?.message, res.error?.details);
         }
@@ -140,7 +165,7 @@ export default function BillingManagement({
         showSuccess('請求を削除しました');
         setShowDeleteConfirm(false);
         setDeletingTarget(null);
-        await fetchList();
+        await Promise.all([fetchList(), fetchSummary()]);
       } else {
         showApiError('請求の削除', res.error?.message, res.error?.details);
       }
@@ -186,10 +211,11 @@ export default function BillingManagement({
 
         {showHeader && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 px-3 md:px-6 py-4">
-            <StatCard label="請求総額" value={formatYen(stats.totalAmount)} theme="sumi" />
-            <StatCard label="入金済" value={formatYen(stats.paidAmount)} theme="matsu" />
-            <StatCard label="未入金" value={formatYen(stats.unpaidAmount)} theme="kohaku" />
-            <StatCard label="延滞件数" value={stats.overdueCount} theme="beni" />
+            {/* サーバ全件集計（#225）。取得前は '--' を表示し、ページ分の合計は出さない */}
+            <StatCard label="請求総額" value={summary ? formatYen(summary.totalAmount) : '--'} theme="sumi" />
+            <StatCard label="入金済" value={summary ? formatYen(summary.paidAmount) : '--'} theme="matsu" />
+            <StatCard label="未入金" value={summary ? formatYen(summary.unpaidAmount) : '--'} theme="kohaku" />
+            <StatCard label="延滞件数" value={summary ? summary.overdueCount : '--'} theme="beni" />
           </div>
         )}
 
