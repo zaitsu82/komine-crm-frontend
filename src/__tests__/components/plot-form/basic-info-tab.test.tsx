@@ -219,6 +219,82 @@ describe('BasicInfoTab', () => {
     expect(notesInput).toHaveValue('2026年度分は分割払い');
   });
 
+  describe('期/区画 2段階セレクトの初期化（#220）', () => {
+    const sectionNameMasters = [
+      { id: 1, code: 'S1', name: '東1', description: null, sortOrder: 1, isActive: true, period: '第1期' },
+      { id: 2, code: 'S2', name: '西2', description: null, sortOrder: 2, isActive: true, period: '第2期' },
+    ];
+
+    it('マスタが初期レンダー後に到着しても、登録済み areaName から期が復元される', async () => {
+      // 編集画面の実挙動: 初回レンダー時は masterData が空（非同期取得中）
+      const { rerender } = render(
+        <TabHost defaultValues={{
+          physicalPlot: { plotNumber: 'A-001', areaName: '西2', areaSqm: 3.6, notes: null },
+        }}>
+          {(h) => <BasicInfoTab {...h} masterData={emptyMasterData} />}
+        </TabHost>
+      );
+
+      // マスタ未到着の間は期セレクトが未選択
+      // （periodSelect は最初の mock-select。value 空）
+      expect(screen.getAllByTestId('mock-select')[0]).toHaveAttribute('data-value', '');
+
+      // マスタ到着（再レンダー）
+      rerender(
+        <TabHost defaultValues={{
+          physicalPlot: { plotNumber: 'A-001', areaName: '西2', areaSqm: 3.6, notes: null },
+        }}>
+          {(h) => (
+            <BasicInfoTab
+              {...h}
+              masterData={{ ...emptyMasterData, sectionNames: sectionNameMasters }}
+            />
+          )}
+        </TabHost>
+      );
+
+      // areaName='西2' の所属期 '第2期' が自動選択され、区画サブセレクトも表示される
+      const selects = screen.getAllByTestId('mock-select');
+      expect(selects[0]).toHaveAttribute('data-value', '第2期');
+      // サブセレクト（区画）が areaName を保持したまま表示される
+      expect(selects[1]).toHaveAttribute('data-value', '西2');
+    });
+
+    it('マスタが最初から存在する場合も期が選択される', () => {
+      render(
+        <TabHost defaultValues={{
+          physicalPlot: { plotNumber: 'A-001', areaName: '東1', areaSqm: 3.6, notes: null },
+        }}>
+          {(h) => (
+            <BasicInfoTab
+              {...h}
+              masterData={{ ...emptyMasterData, sectionNames: sectionNameMasters }}
+            />
+          )}
+        </TabHost>
+      );
+
+      expect(screen.getAllByTestId('mock-select')[0]).toHaveAttribute('data-value', '第1期');
+    });
+
+    it('areaName がどの期にも属さない（レガシー未正規化）場合は期未選択のまま', () => {
+      render(
+        <TabHost defaultValues={{
+          physicalPlot: { plotNumber: 'A-001', areaName: '1', areaSqm: 3.6, notes: null },
+        }}>
+          {(h) => (
+            <BasicInfoTab
+              {...h}
+              masterData={{ ...emptyMasterData, sectionNames: sectionNameMasters }}
+            />
+          )}
+        </TabHost>
+      );
+
+      expect(screen.getAllByTestId('mock-select')[0]).toHaveAttribute('data-value', '');
+    });
+  });
+
   it('viewMode=trueの場合、契約備考の値が表示用ボックスに表示される（#145）', () => {
     render(
       <TabHost defaultValues={{
