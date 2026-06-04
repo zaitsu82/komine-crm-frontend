@@ -124,7 +124,7 @@ export default function PlotInventoryList({ onClose }: PlotInventoryListProps) {
             <div className="w-full bg-cha-100 rounded-full h-2 mt-1">
               <div
                 className="bg-cha h-2 rounded-full"
-                style={{ width: `${summary.usageRate}%` }}
+                style={{ width: `${Math.min(summary.usageRate, 100)}%` }}
               />
             </div>
           </div>
@@ -314,7 +314,7 @@ export default function PlotInventoryList({ onClose }: PlotInventoryListProps) {
                                 usageRate >= 60 ? 'bg-cha' :
                                   'bg-matsu'
                           )}
-                          style={{ width: `${usageRate}%` }}
+                          style={{ width: `${Math.min(usageRate, 100)}%` }}
                         />
                       </div>
                       <span className="text-xs text-hai w-12">{usageRate}%</span>
