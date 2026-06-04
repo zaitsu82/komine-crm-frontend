@@ -2,6 +2,7 @@
  * 書類管理API
  */
 
+import { DOCUMENT_TEMPLATE_TYPES } from '@komine/types/api';
 import { ApiResponse } from './types';
 import { apiGet, apiPost, apiPut, apiDelete, shouldUseMockData, API_CONFIG } from './client';
 
@@ -137,6 +138,21 @@ export interface UpdateDocumentRequest {
   status?: DocumentStatus;
   templateData?: Record<string, unknown>;
   notes?: string;
+}
+
+/**
+ * 書類が template_data からPDF再生成（=ダウンロード）可能かを判定する。
+ *
+ * ダウンロードボタンの実処理は `regenerateDocumentPdf`（template_data からの
+ * 再生成）なので、表示可否は fileName の有無ではなく templateType の有無で
+ * 判定する。backend の regenerate-pdf も同じ判定
+ * （`isDocumentTemplateType` = DOCUMENT_TEMPLATE_TYPES）を行う（#230）。
+ */
+export function canRegenerateDocument(templateType: string | null): boolean {
+  return (
+    !!templateType &&
+    (DOCUMENT_TEMPLATE_TYPES as readonly string[]).includes(templateType)
+  );
 }
 
 // ダウンロードURLレスポンス
@@ -624,12 +640,7 @@ async function mockRegenerateDocumentPdf(id: string): Promise<ApiResponse<Genera
     };
   }
 
-  if (
-    !doc.templateType ||
-    !['invoice', 'postcard', 'permit', 'payment-guide'].includes(
-      doc.templateType
-    )
-  ) {
+  if (!canRegenerateDocument(doc.templateType)) {
     return {
       success: false,
       error: {
