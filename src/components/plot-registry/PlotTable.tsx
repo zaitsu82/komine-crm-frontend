@@ -102,18 +102,9 @@ export function PlotTable({
                 </div>
                 <ColumnResizer columnKey="plotNumber" onResizeStart={onColumnResizeStart} />
               </th>
-              <th
-                className={cn(
-                  "relative px-2 py-2 text-left text-xs font-bold text-white cursor-pointer transition-all duration-200",
-                  "hover:bg-matsu-light",
-                  sortKey === 'areaName' && "bg-matsu-dark"
-                )}
-                onClick={() => onSort('areaName')}
-              >
-                <div className="flex items-center">
-                  <span>エリア</span>
-                  <SortIndicator columnKey="areaName" sortKey={sortKey} sortOrder={sortOrder} />
-                </div>
+              {/* エリア/電話はサーバーソート未対応のためソート不可の見出しにする（#224） */}
+              <th className="relative px-2 py-2 text-left text-xs font-bold text-white">
+                <span>エリア</span>
                 <ColumnResizer columnKey="areaName" onResizeStart={onColumnResizeStart} />
               </th>
               <th
@@ -134,18 +125,8 @@ export function PlotTable({
                 <span>住所</span>
                 <ColumnResizer columnKey="address" onResizeStart={onColumnResizeStart} />
               </th>
-              <th
-                className={cn(
-                  "relative px-2 py-2 text-left text-xs font-bold text-white cursor-pointer transition-all duration-200 hidden lg:table-cell",
-                  "hover:bg-matsu-light",
-                  sortKey === 'phoneNumber' && "bg-matsu-dark"
-                )}
-                onClick={() => onSort('phoneNumber')}
-              >
-                <div className="flex items-center">
-                  <span>電話</span>
-                  <SortIndicator columnKey="phoneNumber" sortKey={sortKey} sortOrder={sortOrder} />
-                </div>
+              <th className="relative px-2 py-2 text-left text-xs font-bold text-white hidden lg:table-cell">
+                <span>電話</span>
                 <ColumnResizer columnKey="phone" onResizeStart={onColumnResizeStart} />
               </th>
               <th className="relative px-2 py-2 text-left text-xs font-bold text-white hidden lg:table-cell">
