@@ -3,6 +3,9 @@ import path from "path";
 
 const nextConfig: NextConfig = {
   transpilePackages: ['@komine/types'],
+  // Docker 運用（komine-local のローカルサーバ / 将来の ECS）用に自己完結サーバを出力する。
+  // Vercel のビルドには影響しない（Vercel は出力を独自に扱う）。
+  output: 'standalone',
   // 画面右下の Next.js Dev Tools / 開発インジケータを非表示にする (#189)。
   // 本番ビルドでは元々出ないが、非本番ビルド配信時にも管理画面へ出さないため明示的に無効化。
   devIndicators: false,
