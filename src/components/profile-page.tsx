@@ -107,8 +107,19 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
       return;
     }
 
+    // backend passwordSchema（authValidation.ts）と同条件で即時フィードバック
     if (newPassword.length < 8) {
       setPasswordError('新しいパスワードは8文字以上で入力してください');
+      return;
+    }
+
+    if (newPassword.length > 128) {
+      setPasswordError('新しいパスワードは128文字以下で入力してください');
+      return;
+    }
+
+    if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(newPassword)) {
+      setPasswordError('新しいパスワードは大文字、小文字、数字を含む必要があります');
       return;
     }
 
@@ -117,7 +128,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
       return;
     }
 
-    const result = await changePassword({ currentPassword, newPassword });
+    const result = await changePassword({ currentPassword, newPassword, confirmPassword });
 
     if (result.success) {
       setCurrentPassword('');
@@ -329,7 +340,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                     className="mt-1"
                     autoComplete="new-password"
                   />
-                  <p className="text-xs text-hai mt-1">8文字以上で入力してください</p>
+                  <p className="text-xs text-hai mt-1">8文字以上で、大文字・小文字・数字を含めてください</p>
                 </div>
                 <div>
                   <Label htmlFor="confirm-password">新しいパスワード（確認）</Label>

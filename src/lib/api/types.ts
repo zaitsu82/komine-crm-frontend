@@ -116,6 +116,8 @@ export interface BackendCurrentUserResponse {
 export interface ChangePasswordRequest {
   currentPassword: string;
   newPassword: string;
+  /** backend changePasswordSchema で必須（欠落すると 400 VALIDATION_ERROR）#229 */
+  confirmPassword: string;
 }
 
 export interface UpdateProfileRequest {
