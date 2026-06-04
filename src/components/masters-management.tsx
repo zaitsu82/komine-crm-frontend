@@ -121,6 +121,13 @@ export default function MastersManagement() {
       return;
     }
 
+    // 区画名マスタは period が DB で NOT NULL。未入力のまま送ると backend で
+    // NOT NULL 違反 → 原因不明の 500 になるため、送信前に弾く（#227）
+    if (isSectionName && !formData.period.trim()) {
+      setFormError('期を入力してください');
+      return;
+    }
+
     setIsSaving(true);
     setFormError('');
 
