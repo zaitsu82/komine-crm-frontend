@@ -121,6 +121,10 @@ export interface YearlyStats {
   pendingCount: number;
   billedCount: number;
   paidCount: number;
+  /** その年の請求総額（円）。サーバ全件集計（#226） */
+  totalAmount?: number;
+  /** うち billing_status='paid' の入金済額（円）。サーバ全件集計（#226） */
+  paidAmount?: number;
 }
 
 /** 検索パラメータ */
@@ -191,10 +195,10 @@ const mockCollectiveBurials: CollectiveBurialListItem[] = [
 ];
 
 const mockYearlyStats: YearlyStats[] = [
-  { year: 2027, count: 5, pendingCount: 2, billedCount: 2, paidCount: 1 },
-  { year: 2029, count: 8, pendingCount: 6, billedCount: 1, paidCount: 1 },
-  { year: 2034, count: 12, pendingCount: 10, billedCount: 2, paidCount: 0 },
-  { year: 2036, count: 15, pendingCount: 15, billedCount: 0, paidCount: 0 },
+  { year: 2027, count: 5, pendingCount: 2, billedCount: 2, paidCount: 1, totalAmount: 250000, paidAmount: 50000 },
+  { year: 2029, count: 8, pendingCount: 6, billedCount: 1, paidCount: 1, totalAmount: 400000, paidAmount: 50000 },
+  { year: 2034, count: 12, pendingCount: 10, billedCount: 2, paidCount: 0, totalAmount: 600000, paidAmount: 0 },
+  { year: 2036, count: 15, pendingCount: 15, billedCount: 0, paidCount: 0, totalAmount: 750000, paidAmount: 0 },
 ];
 
 // ============================================================

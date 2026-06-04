@@ -87,7 +87,9 @@ export default function CollectiveBurialListView({
     search({});
   };
 
-  // 今年の請求対象者サマリ（件数・内訳は yearlyStats を優先、金額は items から集計）
+  // 今年の請求対象者サマリ（件数・金額ともサーバ全件集計の yearlyStats を優先）
+  // items はページ制限（backend デフォルト limit=50）された先頭分のみのため、
+  // items 由来の集計は statsRow 不在時のフォールバックに限定する（#226）
   const currentYearSummary = useMemo(() => {
     const statsRow = yearlyStats?.find(s => s.year === currentYear);
     const itemsThisYear = items.filter(item => {
@@ -100,10 +102,12 @@ export default function CollectiveBurialListView({
     const billedCount = statsRow?.billedCount ?? itemsThisYear.filter(i => i.billingStatus === 'billed').length;
     const paidCount = statsRow?.paidCount ?? itemsThisYear.filter(i => i.billingStatus === 'paid').length;
 
-    const totalAmount = itemsThisYear.reduce((sum, i) => sum + (i.billingAmount ?? 0), 0);
-    const paidAmount = itemsThisYear
-      .filter(i => i.billingStatus === 'paid')
-      .reduce((sum, i) => sum + (i.billingAmount ?? 0), 0);
+    const totalAmount = statsRow?.totalAmount
+      ?? itemsThisYear.reduce((sum, i) => sum + (i.billingAmount ?? 0), 0);
+    const paidAmount = statsRow?.paidAmount
+      ?? itemsThisYear
+        .filter(i => i.billingStatus === 'paid')
+        .reduce((sum, i) => sum + (i.billingAmount ?? 0), 0);
     const outstandingAmount = totalAmount - paidAmount;
 
     const paidRate = totalCount > 0 ? Math.round((paidCount / totalCount) * 100) : 0;
