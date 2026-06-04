@@ -353,7 +353,8 @@ export default function PlotAvailabilityManagement() {
                     <span className="block w-full bg-cha-50 rounded-full h-1.5 mt-1">
                       <span
                         className="block bg-cha h-1.5 rounded-full transition-all duration-500"
-                        style={{ width: `${summary.usageRate}%` }}
+                        // バー幅のみクランプ（テキストは生値を出し 100% 超の異常に気付けるようにする）#232
+                        style={{ width: `${Math.min(summary.usageRate, 100)}%` }}
                       />
                     </span>
                   }
@@ -625,7 +626,8 @@ export default function PlotAvailabilityManagement() {
                                         usageRate >= 60 ? 'bg-cha' :
                                           'bg-matsu'
                                   )}
-                                  style={{ width: `${usageRate}%` }}
+                                  // バー幅のみクランプ（在庫計算バグ #209 で 100% 超が届く）#232
+                                  style={{ width: `${Math.min(usageRate, 100)}%` }}
                                 />
                               </div>
                               <span className="text-xs text-hai w-12">{usageRate}%</span>
