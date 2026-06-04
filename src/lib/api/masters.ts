@@ -304,10 +304,27 @@ export interface UpdateMasterRequest {
   period?: string;
 }
 
+// モックモードでは書き込みを行わず明示的に失敗を返す。
+// 取得系（getAllMasters 等）が静的モックを返すため、実 backend に書いても
+// 一覧へ反映されず「成功表示なのに変わらない」整合崩れになる（#228）。
+// staff.ts のような可変モックストアが無い以上、擬似成功より失敗が安全。
+function mockReadonlyError<T>(): ApiResponse<T> {
+  return {
+    success: false,
+    error: {
+      code: 'MOCK_READONLY',
+      message: 'デモ（試験）環境ではマスタの変更はできません',
+    },
+  };
+}
+
 export async function createMasterItem(
   masterType: MasterType,
   data: CreateMasterRequest,
 ): Promise<ApiResponse<MasterItem>> {
+  if (shouldUseMockData()) {
+    return mockReadonlyError<MasterItem>();
+  }
   return apiPost<MasterItem>(`/masters/${masterType}`, data);
 }
 
@@ -316,6 +333,9 @@ export async function updateMasterItem(
   id: number,
   data: UpdateMasterRequest,
 ): Promise<ApiResponse<MasterItem>> {
+  if (shouldUseMockData()) {
+    return mockReadonlyError<MasterItem>();
+  }
   return apiPut<MasterItem>(`/masters/${masterType}/${id}`, data);
 }
 
@@ -323,5 +343,8 @@ export async function deleteMasterItem(
   masterType: MasterType,
   id: number,
 ): Promise<ApiResponse<{ message: string }>> {
+  if (shouldUseMockData()) {
+    return mockReadonlyError<{ message: string }>();
+  }
   return apiDelete<{ message: string }>(`/masters/${masterType}/${id}`);
 }

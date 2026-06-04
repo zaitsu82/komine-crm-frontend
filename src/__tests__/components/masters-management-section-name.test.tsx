@@ -20,11 +20,13 @@ jest.mock('@/contexts/auth-context', () => ({
 
 const getAllMastersMock = jest.fn();
 const createMasterItemMock = jest.fn();
+const shouldUseMockDataMock = jest.fn(() => false);
 jest.mock('@/lib/api', () => ({
   getAllMasters: (...args: unknown[]) => getAllMastersMock(...args),
   createMasterItem: (...args: unknown[]) => createMasterItemMock(...args),
   updateMasterItem: jest.fn(),
   deleteMasterItem: jest.fn(),
+  shouldUseMockData: () => shouldUseMockDataMock(),
 }));
 
 jest.mock('@/lib/toast', () => ({
@@ -104,5 +106,25 @@ describe('マスタ管理 区画名の期必須チェック (#227)', () => {
         period: '第1期',
       });
     });
+  });
+});
+
+describe('マスタ管理 モックモードの書き込みガード (#228)', () => {
+  beforeEach(() => {
+    getAllMastersMock.mockReset();
+    getAllMastersMock.mockResolvedValue({ success: true, data: emptyMasters });
+    createMasterItemMock.mockReset();
+    shouldUseMockDataMock.mockReturnValue(true);
+  });
+
+  afterEach(() => {
+    shouldUseMockDataMock.mockReturnValue(false);
+  });
+
+  it('モックモードでは新規登録ボタンが無効化される', async () => {
+    render(<MastersManagement />);
+
+    const createButton = await screen.findByRole('button', { name: /新規登録/ });
+    expect(createButton).toBeDisabled();
   });
 });
