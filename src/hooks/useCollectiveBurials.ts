@@ -2,7 +2,7 @@
  * 合祀管理用カスタムフック
  */
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import {
   getCollectiveBurialList,
   getCollectiveBurialById,
@@ -32,23 +32,30 @@ export function useCollectiveBurialList(initialParams?: CollectiveBurialSearchPa
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [params, setParams] = useState<CollectiveBurialSearchParams>(initialParams || {});
+  // 世代カウンタ: 検索の連続操作時に先発の遅いレスポンスによる上書きを防ぐ（#231）
+  const genRef = useRef(0);
 
   const fetchList = useCallback(async (searchParams?: CollectiveBurialSearchParams) => {
+    const myGen = ++genRef.current;
     setIsLoading(true);
     setError(null);
 
     try {
       const response = await getCollectiveBurialList(searchParams || params);
 
+      if (myGen !== genRef.current) return;
       if (response.success) {
         setData(response.data);
       } else {
         setError(response.error?.message || '合祀一覧の取得に失敗しました');
       }
     } catch {
+      if (myGen !== genRef.current) return;
       setError('合祀一覧の取得中にエラーが発生しました');
     } finally {
-      setIsLoading(false);
+      if (myGen === genRef.current) {
+        setIsLoading(false);
+      }
     }
   }, [params]);
 
@@ -88,7 +95,11 @@ export function useCollectiveBurialDetail(id: string | null) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // 世代カウンタ: id 切替の連続操作時の上書きを防ぐ（#231）
+  const genRef = useRef(0);
+
   const fetchDetail = useCallback(async () => {
+    const myGen = ++genRef.current;
     if (!id) {
       setData(null);
       return;
@@ -100,15 +111,19 @@ export function useCollectiveBurialDetail(id: string | null) {
     try {
       const response = await getCollectiveBurialById(id);
 
+      if (myGen !== genRef.current) return;
       if (response.success) {
         setData(response.data);
       } else {
         setError(response.error?.message || '合祀詳細の取得に失敗しました');
       }
     } catch {
+      if (myGen !== genRef.current) return;
       setError('合祀詳細の取得中にエラーが発生しました');
     } finally {
-      setIsLoading(false);
+      if (myGen === genRef.current) {
+        setIsLoading(false);
+      }
     }
   }, [id]);
 

@@ -120,6 +120,10 @@ export function usePlots(options: UsePlotsOptions = {}): UsePlotsReturn {
   // キャッシュ復元済みフラグ（初回フェッチ時のローディング制御に使用）
   const restoredFromCache = useRef(initialState !== null);
 
+  // 世代カウンタ: 検索・タブ・ページングの連続操作時に先発の遅いレスポンスが
+  // 後発の結果を上書きするのを防ぐ（リクエスト順序逆転対策 #231）
+  const genRef = useRef(0);
+
   // サーバーサイドデータ取得
   const fetchPlots = useCallback(async () => {
     // TTL内の有効なキャッシュがあればフェッチをスキップ
@@ -127,6 +131,7 @@ export function usePlots(options: UsePlotsOptions = {}): UsePlotsReturn {
       restoredFromCache.current = false;
       return;
     }
+    const myGen = ++genRef.current;
     setIsLoading(true);
     setError(null);
 
@@ -148,6 +153,9 @@ export function usePlots(options: UsePlotsOptions = {}): UsePlotsReturn {
 
       const response = await getPlots(params);
 
+      // 最新リクエスト以外の結果は破棄
+      if (myGen !== genRef.current) return;
+
       if (response.success) {
         setPlots(response.data.items);
         setTotal(response.data.total);
@@ -167,10 +175,14 @@ export function usePlots(options: UsePlotsOptions = {}): UsePlotsReturn {
         setPlots([]);
       }
     } catch {
+      if (myGen !== genRef.current) return;
       setError('データの取得に失敗しました');
       setPlots([]);
     } finally {
-      setIsLoading(false);
+      // 古いリクエストの finally で isLoading を落とさない
+      if (myGen === genRef.current) {
+        setIsLoading(false);
+      }
     }
   }, [page, limit, searchQuery, areaName, aiueoTab]);
 
