@@ -64,11 +64,12 @@ export function useCollectiveBurialList(initialParams?: CollectiveBurialSearchPa
     fetchList();
   }, [fetchList]);
 
-  // 検索パラメータを更新して再取得
+  // 検索パラメータを更新して再取得。
+  // 取得は params 変化 → fetchList 再生成 → useEffect 発火の一本に任せる。
+  // ここで fetchList(newParams) も直接呼ぶと同一条件の二重フェッチになる（#223）
   const search = useCallback((newParams: CollectiveBurialSearchParams) => {
     setParams(newParams);
-    fetchList(newParams);
-  }, [fetchList]);
+  }, []);
 
   // 再取得
   const refresh = useCallback(() => {
