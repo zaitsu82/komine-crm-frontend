@@ -91,9 +91,14 @@ export default function PlotAvailabilityManagement() {
   }, [viewMode, setSectionsStatus]);
 
   // 検索クエリの反映
+  // デバウンス: 入力が params に直結しており 1 キーストロークごとに
+  // sections/areas の 2 本フェッチが走るため、300ms 待ってから反映（#231）
   useEffect(() => {
-    setSectionsSearch(searchQuery);
-    setAreasSearch(searchQuery);
+    const timer = setTimeout(() => {
+      setSectionsSearch(searchQuery);
+      setAreasSearch(searchQuery);
+    }, 300);
+    return () => clearTimeout(timer);
   }, [searchQuery, setSectionsSearch, setAreasSearch]);
 
   // ソートの反映

@@ -53,6 +53,9 @@ export function useAsyncData<T>(
   const [error, setError] = useState<string | null>(null);
   const fetchFnRef = useRef(fetchFn);
   const isMountedRef = useRef(true);
+  // 世代カウンタ: 連続操作時に先発の遅いレスポンスが後発の結果を
+  // 上書きするのを防ぐ（リクエスト順序逆転対策 #231）
+  const genRef = useRef(0);
 
   // fetchFnの参照を更新
   useEffect(() => {
@@ -90,6 +93,8 @@ export function useAsyncData<T>(
 
   // データ取得関数
   const fetchData = useCallback(async () => {
+    const myGen = ++genRef.current;
+
     // キャッシュから取得を試みる
     const cachedData = getFromCache();
     if (cachedData !== null) {
@@ -104,7 +109,8 @@ export function useAsyncData<T>(
     try {
       const response = await fetchFnRef.current();
 
-      if (!isMountedRef.current) return;
+      // 最新リクエスト以外の結果は破棄（アンマウント後も含む）
+      if (myGen !== genRef.current || !isMountedRef.current) return;
 
       if (response.success) {
         setData(response.data);
@@ -115,11 +121,12 @@ export function useAsyncData<T>(
         setData(null);
       }
     } catch (err) {
-      if (!isMountedRef.current) return;
+      if (myGen !== genRef.current || !isMountedRef.current) return;
       setError(err instanceof Error ? err.message : 'Unknown error');
       setData(null);
     } finally {
-      if (isMountedRef.current) {
+      // 古いリクエストの finally で isLoading を落とさない
+      if (myGen === genRef.current && isMountedRef.current) {
         setIsLoading(false);
       }
     }

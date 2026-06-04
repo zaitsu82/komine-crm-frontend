@@ -106,6 +106,9 @@ export function useAsyncList<T, P extends ListParams = ListParams>(
   const fetchFnRef = useRef(fetchFn);
   const isMountedRef = useRef(true);
   const initialParamsRef = useRef(initialParams);
+  // 世代カウンタ: 連続操作時に先発の遅いレスポンスが後発の結果を
+  // 上書きするのを防ぐ（リクエスト順序逆転対策 #231）
+  const genRef = useRef(0);
 
   // fetchFnの参照を更新
   useEffect(() => {
@@ -114,13 +117,15 @@ export function useAsyncList<T, P extends ListParams = ListParams>(
 
   // データ取得関数
   const fetchData = useCallback(async (currentParams: P) => {
+    const myGen = ++genRef.current;
     setIsLoading(true);
     setError(null);
 
     try {
       const response = await fetchFnRef.current(currentParams);
 
-      if (!isMountedRef.current) return;
+      // 最新リクエスト以外の結果は破棄（アンマウント後も含む）
+      if (myGen !== genRef.current || !isMountedRef.current) return;
 
       if (response.success) {
         setItems(response.data.items);
@@ -134,13 +139,14 @@ export function useAsyncList<T, P extends ListParams = ListParams>(
         setTotalPages(0);
       }
     } catch (err) {
-      if (!isMountedRef.current) return;
+      if (myGen !== genRef.current || !isMountedRef.current) return;
       setError(err instanceof Error ? err.message : 'Unknown error');
       setItems([]);
       setTotal(0);
       setTotalPages(0);
     } finally {
-      if (isMountedRef.current) {
+      // 古いリクエストの finally で isLoading を落とさない
+      if (myGen === genRef.current && isMountedRef.current) {
         setIsLoading(false);
       }
     }

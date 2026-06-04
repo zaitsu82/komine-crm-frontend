@@ -2,7 +2,7 @@
  * 書類管理用カスタムフック
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   DocumentListItem,
   DocumentDetail,
@@ -53,21 +53,30 @@ export function useDocumentList(initialParams?: Partial<DocumentListParams>) {
     ...initialParams,
   });
 
+  // 世代カウンタ: 検索・フィルタの連続操作時に先発の遅いレスポンスによる
+  // 上書きを防ぐ（#231）
+  const genRef = useRef(0);
+
   const fetchData = useCallback(async () => {
+    const myGen = ++genRef.current;
     setIsLoading(true);
     setError(null);
     try {
       const response = await getDocuments(params);
+      if (myGen !== genRef.current) return;
       if (response.success) {
         setData(response.data);
       } else {
         setError(response.error?.message || 'データの取得に失敗しました');
       }
     } catch (err) {
+      if (myGen !== genRef.current) return;
       setError('データの取得に失敗しました');
       console.error('Error fetching documents:', err);
     } finally {
-      setIsLoading(false);
+      if (myGen === genRef.current) {
+        setIsLoading(false);
+      }
     }
   }, [params]);
 
@@ -104,7 +113,11 @@ export function useDocumentDetail(id: string | null) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // 世代カウンタ: id 切替の連続操作時の上書きを防ぐ（#231）
+  const genRef = useRef(0);
+
   const fetchData = useCallback(async () => {
+    const myGen = ++genRef.current;
     if (!id) {
       setData(null);
       return;
@@ -114,16 +127,20 @@ export function useDocumentDetail(id: string | null) {
     setError(null);
     try {
       const response = await getDocumentById(id);
+      if (myGen !== genRef.current) return;
       if (response.success) {
         setData(response.data);
       } else {
         setError(response.error?.message || 'データの取得に失敗しました');
       }
     } catch (err) {
+      if (myGen !== genRef.current) return;
       setError('データの取得に失敗しました');
       console.error('Error fetching document detail:', err);
     } finally {
-      setIsLoading(false);
+      if (myGen === genRef.current) {
+        setIsLoading(false);
+      }
     }
   }, [id]);
 

@@ -4,7 +4,7 @@
  * 区画在庫管理フック
  */
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { PlotPeriod } from '@/types/plot-constants';
 import {
   getInventorySummary,
@@ -88,22 +88,29 @@ export function usePlotInventorySummary(
   const [summary, setSummary] = useState<InventorySummary | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // 世代カウンタ: 先発の遅いレスポンスによる上書きを防ぐ（#231）
+  const genRef = useRef(0);
 
   const fetchSummary = useCallback(async () => {
+    const myGen = ++genRef.current;
     setIsLoading(true);
     setError(null);
 
     try {
       const response = await getInventorySummary();
+      if (myGen !== genRef.current) return;
       if (response.success) {
         setSummary(response.data);
       } else {
         setError(response.error?.message || 'サマリーの取得に失敗しました');
       }
     } catch {
+      if (myGen !== genRef.current) return;
       setError('ネットワークエラーが発生しました');
     } finally {
-      setIsLoading(false);
+      if (myGen === genRef.current) {
+        setIsLoading(false);
+      }
     }
   }, []);
 
@@ -132,22 +139,29 @@ export function usePlotInventoryPeriods(
   const [periods, setPeriods] = useState<PeriodSummary[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // 世代カウンタ: 期切替の連続操作時の上書きを防ぐ（#231）
+  const genRef = useRef(0);
 
   const fetchPeriods = useCallback(async () => {
+    const myGen = ++genRef.current;
     setIsLoading(true);
     setError(null);
 
     try {
       const response = await getInventoryPeriods(period);
+      if (myGen !== genRef.current) return;
       if (response.success) {
         setPeriods(response.data.periods);
       } else {
         setError(response.error?.message || '期別サマリーの取得に失敗しました');
       }
     } catch {
+      if (myGen !== genRef.current) return;
       setError('ネットワークエラーが発生しました');
     } finally {
-      setIsLoading(false);
+      if (myGen === genRef.current) {
+        setIsLoading(false);
+      }
     }
   }, [period]);
 
@@ -186,12 +200,18 @@ export function usePlotInventorySections(
     ...initialParams,
   });
 
+  // 世代カウンタ: 検索（キーストロークごとにフェッチ）・期切替・ソートの
+  // 連続操作時に古い結果での上書きを防ぐ（#231）
+  const genRef = useRef(0);
+
   const fetchSections = useCallback(async () => {
+    const myGen = ++genRef.current;
     setIsLoading(true);
     setError(null);
 
     try {
       const response = await getInventorySections(params);
+      if (myGen !== genRef.current) return;
       if (response.success) {
         setItems(response.data.items);
         setTotal(response.data.pagination.total);
@@ -200,9 +220,12 @@ export function usePlotInventorySections(
         setError(response.error?.message || 'セクション別集計の取得に失敗しました');
       }
     } catch {
+      if (myGen !== genRef.current) return;
       setError('ネットワークエラーが発生しました');
     } finally {
-      setIsLoading(false);
+      if (myGen === genRef.current) {
+        setIsLoading(false);
+      }
     }
   }, [params]);
 
@@ -279,12 +302,17 @@ export function usePlotInventoryAreas(
     ...initialParams,
   });
 
+  // 世代カウンタ: 検索・期切替・ソートの連続操作時の上書きを防ぐ（#231）
+  const genRef = useRef(0);
+
   const fetchAreas = useCallback(async () => {
+    const myGen = ++genRef.current;
     setIsLoading(true);
     setError(null);
 
     try {
       const response = await getInventoryAreas(params);
+      if (myGen !== genRef.current) return;
       if (response.success) {
         setItems(response.data.items);
         setTotal(response.data.pagination.total);
@@ -293,9 +321,12 @@ export function usePlotInventoryAreas(
         setError(response.error?.message || '面積別集計の取得に失敗しました');
       }
     } catch {
+      if (myGen !== genRef.current) return;
       setError('ネットワークエラーが発生しました');
     } finally {
-      setIsLoading(false);
+      if (myGen === genRef.current) {
+        setIsLoading(false);
+      }
     }
   }, [params]);
 

@@ -9,7 +9,7 @@
  * 状態・データ取得はこの index に集約し、表示は責務別の子コンポーネントに委譲する。
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { PaymentStatus, PhysicalPlotStatus, type PlotListItem } from '@komine/types';
 import { getPlots, getGraveClassifications } from '@/lib/api/plots';
 import type { PlotSearchParams } from '@/lib/api/plots';
@@ -134,8 +134,13 @@ export default function PlotRegistry({
   const [totalItems, setTotalItems] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
 
+  // 世代カウンタ: 検索・フィルタ・ページャの連続操作時に先発の遅いレスポンスが
+  // 後発の結果を上書きするのを防ぐ（リクエスト順序逆転対策 #221/#231）
+  const requestSeqRef = useRef(0);
+
   // サーバーサイドデータ取得
   const fetchPlots = useCallback(async () => {
+    const seq = ++requestSeqRef.current;
     setIsLoading(true);
     setError(null);
     try {
@@ -182,6 +187,8 @@ export default function PlotRegistry({
       }
 
       const response = await getPlots(params);
+      // 最新リクエスト以外の結果は破棄
+      if (seq !== requestSeqRef.current) return;
       if (response.success) {
         setPlots(response.data.items);
         setTotalItems(response.data.total);
@@ -190,9 +197,13 @@ export default function PlotRegistry({
         setError(response.error?.message || 'データの取得に失敗しました');
       }
     } catch {
+      if (seq !== requestSeqRef.current) return;
       setError('ネットワークエラーが発生しました');
     } finally {
-      setIsLoading(false);
+      // 古いリクエストの finally で isLoading を落とさない
+      if (seq === requestSeqRef.current) {
+        setIsLoading(false);
+      }
     }
   }, [currentPage, itemsPerPage, searchQuery, activeTab, sortKey, sortOrder, filterStatus, filterPaymentStatus, filterAreaName, filterGraveKind, filterGraveKubun, filterGraveType]);
 
