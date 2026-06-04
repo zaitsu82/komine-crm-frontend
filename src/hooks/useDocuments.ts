@@ -21,6 +21,7 @@ import {
   regenerateDocumentPdf,
   generatePdf,
   downloadPdfFromBase64,
+  canRegenerateDocument,
   DOCUMENT_TYPE_LABELS,
   DOCUMENT_STATUS_LABELS,
   DOCUMENT_STATUS_COLORS,
@@ -37,7 +38,7 @@ interface DocumentListParams extends DocumentSearchParams {
 
 // 型のエクスポート
 export type { DocumentListItem, DocumentDetail, CreateDocumentRequest, UpdateDocumentRequest, GeneratePdfRequest };
-export { DOCUMENT_TYPE_LABELS, DOCUMENT_STATUS_LABELS, DOCUMENT_STATUS_COLORS };
+export { canRegenerateDocument, DOCUMENT_TYPE_LABELS, DOCUMENT_STATUS_LABELS, DOCUMENT_STATUS_COLORS };
 
 // 一覧取得フック
 export function useDocumentList(initialParams?: Partial<DocumentListParams>) {

@@ -7,6 +7,7 @@
 import { Button } from '@/components/ui/button';
 import {
   useDocumentDetail,
+  canRegenerateDocument,
   DOCUMENT_TYPE_LABELS,
   DOCUMENT_STATUS_LABELS,
   DOCUMENT_STATUS_COLORS,
@@ -117,8 +118,13 @@ export function DocumentDetailView({
             <Edit className="mr-2 h-4 w-4" />
             編集
           </Button>
-          {data.fileName && (
-            <Button variant="outline" size="sm" onClick={() => onDownload(documentId)}>
+          {canRegenerateDocument(data.templateType) && (
+            <Button
+              variant="outline"
+              size="sm"
+              title="PDFを再生成してダウンロード"
+              onClick={() => onDownload(documentId)}
+            >
               <Download className="mr-2 h-4 w-4" />
               ダウンロード
             </Button>

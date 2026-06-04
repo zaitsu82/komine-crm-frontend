@@ -17,6 +17,7 @@ import {
 import {
   useDocumentList,
   DocumentListItem,
+  canRegenerateDocument,
   DOCUMENT_TYPE_LABELS,
   DOCUMENT_STATUS_LABELS,
   DOCUMENT_STATUS_COLORS,
@@ -252,10 +253,11 @@ export function DocumentListView({
                       >
                         <Eye className="h-4 w-4" />
                       </Button>
-                      {doc.fileName && (
+                      {canRegenerateDocument(doc.templateType) && (
                         <Button
                           variant="ghost"
                           size="sm"
+                          title="PDFを再生成してダウンロード"
                           onClick={(e) => {
                             e.stopPropagation();
                             onDownload(doc.id);
