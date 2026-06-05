@@ -64,6 +64,19 @@ import type {
   PlotFormData,
   PlotUpdateFormData,
 } from '@komine/types/validations';
+import { normalizeYearMonth } from '@komine/types/validations';
+
+/**
+ * 終納請求年月の表示用正規化（types #31）。
+ * レガシー移行データ（'2024-04'/'202404' 等）をフォーム初期値の時点で
+ * 'YYYY年M月' に寄せる。バリデーション側（yearMonthSchema の preprocess）
+ * でも正規化されるため保存は通るが、入力欄の表示も統一する。
+ */
+function normalizeLastBillingMonth(value: string | null | undefined): string | null {
+  if (value === null || value === undefined) return null;
+  const normalized = normalizeYearMonth(value);
+  return typeof normalized === 'string' ? normalized : value;
+}
 
 // ===== デフォルト値 =====
 
@@ -644,7 +657,7 @@ export function plotDetailToFormData(detail: PlotDetailResponse): PlotFormData {
         billingMonth: detail.managementFee.billingMonth,
         managementFee: detail.managementFee.managementFee,
         unitPrice: detail.managementFee.unitPrice,
-        lastBillingMonth: detail.managementFee.lastBillingMonth,
+        lastBillingMonth: normalizeLastBillingMonth(detail.managementFee.lastBillingMonth),
         paymentMethod: detail.managementFee.paymentMethod,
       }
       : null,

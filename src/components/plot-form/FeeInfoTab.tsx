@@ -281,7 +281,7 @@ export function FeeInfoTab({
               viewMode={viewMode}
               register={register('managementFee.lastBillingMonth')}
               error={errors.managementFee?.lastBillingMonth?.message}
-              placeholder="2024-04"
+              placeholder="2024年4月"
             />
 
             <ViewModeSelect

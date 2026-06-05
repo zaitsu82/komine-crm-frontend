@@ -535,6 +535,28 @@ describe('plot-form.ts - Zodスキーマバリデーション', () => {
       const result = plotFormSchema.safeParse(data);
       expect(result.success).toBe(true);
     });
+
+    it('レガシー形式の終納請求年月（2024-04 等）でも保存できる（types #31）', () => {
+      const data = validPlotFormData();
+      data.managementFee = {
+        calculationType: null,
+        taxType: null,
+        billingType: null,
+        billingYears: null,
+        area: null,
+        billingMonth: null,
+        managementFee: '5000',
+        unitPrice: null,
+        lastBillingMonth: '2024-04',
+        paymentMethod: null,
+      };
+      const result = plotFormSchema.safeParse(data);
+      expect(result.success).toBe(true);
+      if (result.success) {
+        // yearMonthSchema の preprocess で正規化された値が出力される
+        expect(result.data.managementFee?.lastBillingMonth).toBe('2024年4月');
+      }
+    });
   });
 
   describe('plotUpdateFormSchema', () => {
@@ -1270,6 +1292,28 @@ describe('plotDetailToFormData', () => {
     expect(formData.managementFee).toBeDefined();
     expect(formData.managementFee!.managementFee).toBe('5000');
     expect(formData.managementFee!.billingMonth).toBe('4');
+  });
+
+  it('レガシー形式の lastBillingMonth は読み込み時に正規化される（types #31）', () => {
+    const detail = makePlotDetail({
+      managementFee: {
+        calculationType: null,
+        taxType: null,
+        billingType: null,
+        billingYears: null,
+        area: null,
+        billingMonth: null,
+        managementFee: '5000',
+        unitPrice: null,
+        lastBillingMonth: '2024-04',
+        paymentMethod: null,
+      },
+    });
+    const formData = plotDetailToFormData(detail);
+
+    expect(formData.managementFee!.lastBillingMonth).toBe('2024年4月');
+    // 正規化後のフォームデータが検証を通る（保存ブロックの回帰確認）
+    expect(plotFormSchema.safeParse(formData).success).toBe(true);
   });
 
   it('familyContactsを正しくマッピングする', () => {
