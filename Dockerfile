@@ -12,7 +12,7 @@ WORKDIR /packages/types
 # backend の Dockerfile と同方式（zaitsu82/komine-crm-backend#60 参照）。
 # セキュリティ: main 追従だとリポジトリ汚染が即本番到達するため、commit SHA で固定。
 # types 更新時はこの値を明示的に更新する。
-ARG TYPES_REF=67e6fe7ebf4a18591aca8091678c5f9b28835283
+ARG TYPES_REF=d4055528467e8f154204acc1be4d2d9a2e8913f4
 
 RUN git clone https://github.com/zaitsu82/komine-types.git . && \
     git checkout ${TYPES_REF} && \
