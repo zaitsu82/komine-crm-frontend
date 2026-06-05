@@ -788,8 +788,10 @@ function ConstructionInfoTab({
 export default function PlotDetailView({ plotId, onEdit, onBack, onDelete, onRestore }: PlotDetailViewProps) {
   const { user } = useAuth();
   const { plot, isLoading, error, refresh } = usePlotDetail(plotId);
+  // 名称解決は無効化済みマスタを含む全件で行う（#238: 無効化しても既存データの表示を維持）
+  const { allMasters } = useMasters();
   const { calcTypes, taxTypes, billingTypes, paymentMethods, contractors, directions, positions } =
-    useMasters();
+    allMasters;
   const feeMasters: FeeMasters = { calcTypes, taxTypes, billingTypes, paymentMethods };
 
   // #180: 請求・入金タブの件数バッジ用。子コンポーネントが内部 fetch する構造のため

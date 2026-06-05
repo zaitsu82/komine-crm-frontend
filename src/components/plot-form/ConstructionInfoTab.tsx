@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { ConstructionInfoTabProps, getDefaultConstructionInfo } from './types';
-import { ViewModeSelect } from './ViewModeField';
+import { MasterFallbackSelectItem, ViewModeSelect } from './ViewModeField';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -20,10 +20,12 @@ export function ConstructionInfoTab({
 }: ConstructionInfoTabProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const contractors = masterData?.contractors ?? [];
+  // 名称解決は無効を含む全件で行う（#238: 無効化済み業者を参照する既存工事の表示維持）
+  const allContractors = masterData?.all?.contractors ?? contractors;
 
   const getContractorLabel = (value: string | null | undefined): string => {
     if (!value) return '未入力';
-    const master = contractors.find((c) => c.code === value);
+    const master = allContractors.find((c) => c.code === value);
     return master ? master.name : value;
   };
 
@@ -106,8 +108,6 @@ export function ConstructionInfoTab({
                     <div>
                       {(() => {
                         const currentValue = watch(`constructionInfos.${index}.contractor`) || '';
-                        const hasLegacyValue =
-                          currentValue && !contractors.some((c) => c.code === currentValue);
                         return (
                           <ViewModeSelect
                             label="業者名"
@@ -122,11 +122,11 @@ export function ConstructionInfoTab({
                                 {c.name}
                               </SelectItem>
                             ))}
-                            {hasLegacyValue && (
-                              <SelectItem key="legacy" value={currentValue}>
-                                {currentValue}（既存値）
-                              </SelectItem>
-                            )}
+                            {/* 無効化済み・未登録の既存値はフォールバック表示（#238） */}
+                            <MasterFallbackSelectItem
+                              value={currentValue}
+                              masters={allContractors}
+                            />
                           </ViewModeSelect>
                         );
                       })()}

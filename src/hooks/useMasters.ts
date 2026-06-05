@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   getAllMasters,
   getCemeteryTypes,
@@ -17,6 +17,22 @@ import {
   SectionNameMasterItem,
   AllMastersData,
 } from '@/lib/api';
+
+// マスタ一覧のグループ型（useMasters の返却単位）
+export interface MasterLists {
+  cemeteryTypes: MasterItem[];
+  paymentMethods: MasterItem[];
+  taxTypes: TaxTypeMasterItem[];
+  calcTypes: MasterItem[];
+  billingTypes: MasterItem[];
+  recipientTypes: MasterItem[];
+  constructionTypes: MasterItem[];
+  sectionNames: SectionNameMasterItem[];
+  relationships: MasterItem[];
+  contractors: MasterItem[];
+  directions: MasterItem[];
+  positions: MasterItem[];
+}
 
 // マスタデータの状態型
 interface MastersState {
@@ -93,7 +109,9 @@ export function useMasters(options?: { skipCache?: boolean }) {
     fetchingRef.current = true;
     setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
-    const response = await getAllMasters();
+    // #238: 無効化済みマスタを参照する既存データの名称解決を維持するため全件取得する。
+    // フォーム選択肢用の active 絞り込みはクライアント側（下記アクセサ）で行う。
+    const response = await getAllMasters({ includeInactive: true });
 
     fetchingRef.current = false;
 
@@ -141,19 +159,40 @@ export function useMasters(options?: { skipCache?: boolean }) {
     });
   }, []);
 
-  // 便利なアクセサ
-  const cemeteryTypes = state.data?.cemeteryType || [];
-  const paymentMethods = state.data?.paymentMethod || [];
-  const taxTypes = state.data?.taxType || [];
-  const calcTypes = state.data?.calcType || [];
-  const billingTypes = state.data?.billingType || [];
-  const recipientTypes = state.data?.recipientType || [];
-  const constructionTypes = state.data?.constructionType || [];
-  const sectionNames = state.data?.sectionName || [];
-  const relationships = state.data?.relationship || [];
-  const contractors = state.data?.contractor || [];
-  const directions = state.data?.direction || [];
-  const positions = state.data?.position || [];
+  // 便利なアクセサ（#238: 2系統）
+  // - allMasters: 無効を含む全件。名称解決（resolveMasterName 等）用
+  // - 既存の個別アクセサ: active のみ。フォーム選択肢用（無効マスタは新規選択不可）
+  const { allMasters, activeMasters } = useMemo(() => {
+    const all: MasterLists = {
+      cemeteryTypes: state.data?.cemeteryType || [],
+      paymentMethods: state.data?.paymentMethod || [],
+      taxTypes: state.data?.taxType || [],
+      calcTypes: state.data?.calcType || [],
+      billingTypes: state.data?.billingType || [],
+      recipientTypes: state.data?.recipientType || [],
+      constructionTypes: state.data?.constructionType || [],
+      sectionNames: state.data?.sectionName || [],
+      relationships: state.data?.relationship || [],
+      contractors: state.data?.contractor || [],
+      directions: state.data?.direction || [],
+      positions: state.data?.position || [],
+    };
+    const active: MasterLists = {
+      cemeteryTypes: all.cemeteryTypes.filter((m) => m.isActive),
+      paymentMethods: all.paymentMethods.filter((m) => m.isActive),
+      taxTypes: all.taxTypes.filter((m) => m.isActive),
+      calcTypes: all.calcTypes.filter((m) => m.isActive),
+      billingTypes: all.billingTypes.filter((m) => m.isActive),
+      recipientTypes: all.recipientTypes.filter((m) => m.isActive),
+      constructionTypes: all.constructionTypes.filter((m) => m.isActive),
+      sectionNames: all.sectionNames.filter((m) => m.isActive),
+      relationships: all.relationships.filter((m) => m.isActive),
+      contractors: all.contractors.filter((m) => m.isActive),
+      directions: all.directions.filter((m) => m.isActive),
+      positions: all.positions.filter((m) => m.isActive),
+    };
+    return { allMasters: all, activeMasters: active };
+  }, [state.data]);
 
   return {
     // 状態
@@ -162,19 +201,22 @@ export function useMasters(options?: { skipCache?: boolean }) {
     error: state.error,
     lastFetched: state.lastFetched,
 
-    // 個別マスタデータ
-    cemeteryTypes,
-    paymentMethods,
-    taxTypes,
-    calcTypes,
-    billingTypes,
-    recipientTypes,
-    constructionTypes,
-    sectionNames,
-    relationships,
-    contractors,
-    directions,
-    positions,
+    // 個別マスタデータ（フォーム選択肢用: active のみ）
+    cemeteryTypes: activeMasters.cemeteryTypes,
+    paymentMethods: activeMasters.paymentMethods,
+    taxTypes: activeMasters.taxTypes,
+    calcTypes: activeMasters.calcTypes,
+    billingTypes: activeMasters.billingTypes,
+    recipientTypes: activeMasters.recipientTypes,
+    constructionTypes: activeMasters.constructionTypes,
+    sectionNames: activeMasters.sectionNames,
+    relationships: activeMasters.relationships,
+    contractors: activeMasters.contractors,
+    directions: activeMasters.directions,
+    positions: activeMasters.positions,
+
+    // 名称解決用: 無効化済みを含む全件（#238）
+    allMasters,
 
     // アクション
     refresh,

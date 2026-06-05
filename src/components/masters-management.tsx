@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { Plus } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import {
@@ -68,7 +69,7 @@ export default function MastersManagement() {
   // Dialog state
   const [showDialog, setShowDialog] = useState(false);
   const [editingItem, setEditingItem] = useState<MasterItem | null>(null);
-  const [formData, setFormData] = useState({ name: '', description: '', sortOrder: '', period: '' });
+  const [formData, setFormData] = useState({ name: '', description: '', sortOrder: '', period: '', isActive: true });
   const [formError, setFormError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
@@ -80,7 +81,8 @@ export default function MastersManagement() {
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     setLoadError(null);
-    const response = await getAllMasters();
+    // 無効マスタも一覧に出す（#238: 出さないと無効化したマスタを再有効化できない）
+    const response = await getAllMasters({ includeInactive: true });
     if (response.success) {
       setMastersData(response.data);
     } else {
@@ -103,7 +105,7 @@ export default function MastersManagement() {
 
   const handleOpenCreate = () => {
     setEditingItem(null);
-    setFormData({ name: '', description: '', sortOrder: '', period: '' });
+    setFormData({ name: '', description: '', sortOrder: '', period: '', isActive: true });
     setFormError('');
     setShowDialog(true);
   };
@@ -115,6 +117,7 @@ export default function MastersManagement() {
       description: item.description || '',
       sortOrder: item.sortOrder?.toString() || '',
       period: isSectionName ? (item as SectionNameMasterItem).period || '' : '',
+      isActive: item.isActive,
     });
     setFormError('');
     setShowDialog(true);
@@ -140,6 +143,8 @@ export default function MastersManagement() {
       name: formData.name.trim(),
       description: formData.description.trim() || null,
       sortOrder: formData.sortOrder ? parseInt(formData.sortOrder, 10) : null,
+      // 論理無効化トグルは編集時のみ（#238）。新規作成は backend デフォルト（有効）
+      ...(editingItem ? { isActive: formData.isActive } : {}),
       ...(isSectionName && formData.period.trim() ? { period: formData.period.trim() } : {}),
     };
 
@@ -317,7 +322,7 @@ export default function MastersManagement() {
                       </tr>
                     ) : (
                       currentItems.map((item) => (
-                        <tr key={item.id} className="hover:bg-shiro">
+                        <tr key={item.id} className={`hover:bg-shiro ${item.isActive ? '' : 'opacity-60'}`}>
                           <td className="px-2 md:px-4 py-2 md:py-3 text-sm font-medium text-sumi">{item.name}</td>
                           {isSectionName && (
                             <td className="px-2 md:px-4 py-2 md:py-3 text-sm text-hai">
@@ -432,6 +437,22 @@ export default function MastersManagement() {
                   placeholder="数値"
                 />
               </div>
+              {/* 論理無効化トグル（#238）。削除と違い既存データの表示は維持される */}
+              {editingItem && (
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <Label htmlFor="isActive">有効</Label>
+                    <p className="text-xs text-hai mt-0.5">
+                      無効にすると新規入力の選択肢から外れます（既存データの表示は維持されます）
+                    </p>
+                  </div>
+                  <Switch
+                    id="isActive"
+                    checked={formData.isActive}
+                    onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
+                  />
+                </div>
+              )}
             </div>
 
             <div className="flex justify-end gap-3 mt-6">
