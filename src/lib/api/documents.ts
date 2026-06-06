@@ -4,7 +4,15 @@
 
 import { DOCUMENT_TEMPLATE_TYPES } from '@komine/types/api';
 import { ApiResponse } from './types';
-import { apiGet, apiPost, apiPut, apiDelete, shouldUseMockData, API_CONFIG } from './client';
+import {
+  apiGet,
+  apiPost,
+  apiPut,
+  apiDelete,
+  shouldUseMockData,
+  API_CONFIG,
+  fetchWithTokenRefresh,
+} from './client';
 
 // =============================================================================
 // 型定義
@@ -863,10 +871,10 @@ export async function uploadDocumentFile(
   const url = `${API_CONFIG.baseUrl}/documents/${id}/upload`;
 
   try {
-    const response = await fetch(url, {
+    // FormData のため apiPost は使えないが、トークンリフレッシュは共有する（#256）
+    const response = await fetchWithTokenRefresh(url, {
       method: 'POST',
       body: formData,
-      credentials: 'include',
     });
 
     const data = await response.json();
@@ -918,6 +926,10 @@ export interface DocumentFileResponse {
  * backend `GET /documents/:id/file` は認証付きでファイル実体を返す（res.download）。
  * Authorization は HttpOnly Cookie で行うため `credentials: 'include'` で取得し、
  * 取得した Blob をそのままダウンロードに使う（再生成PDFとは別経路）。
+ *
+ * blob 応答のため apiGet は使えないが、トークンリフレッシュ（期限間近の先行
+ * リフレッシュ・401 時の一度きり再試行）は fetchWithTokenRefresh で
+ * 共有クライアントと同じ挙動にする（#256）。
  */
 export async function getDocumentFile(
   id: string
@@ -929,9 +941,8 @@ export async function getDocumentFile(
   const url = `${API_CONFIG.baseUrl}/documents/${id}/file`;
 
   try {
-    const response = await fetch(url, {
+    const response = await fetchWithTokenRefresh(url, {
       method: 'GET',
-      credentials: 'include',
     });
 
     if (!response.ok) {
