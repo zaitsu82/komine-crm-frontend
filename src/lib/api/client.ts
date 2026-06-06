@@ -135,6 +135,45 @@ async function refreshTokenIfNeeded(): Promise<boolean> {
   return refreshPromise;
 }
 
+/**
+ * 直 fetch（blob 取得等で apiRequest を使えない呼び出し）にトークンリフレッシュを
+ * 共有するラッパー（#256）。apiRequest と同じく、
+ *  1. リクエスト前: トークンが期限切れ間近なら先行リフレッシュ
+ *  2. 401 受領時: 一度だけリフレッシュして再 fetch（無限ループ防止）
+ * を行う。レスポンスの解釈（blob/json）は呼び出し側の責務。
+ *
+ * 新規の API 呼び出しは原則 apiRequest/apiGet 経由とし、blob 等で直 fetch が
+ * 必要な場合のみこれを使うこと（横断機能のバイパスを作らない）。
+ */
+export async function fetchWithTokenRefresh(
+  url: string,
+  init: RequestInit = {}
+): Promise<Response> {
+  if (isTokenExpiringSoon()) {
+    debugLog('Token is expiring soon, attempting refresh (raw fetch)');
+    await refreshTokenIfNeeded();
+  }
+
+  const doFetch = () =>
+    fetch(url, {
+      credentials: 'include', // HttpOnly Cookie を送信するために必須
+      ...init,
+    });
+
+  const response = await doFetch();
+
+  if (response.status === 401) {
+    debugLog('Received 401 (raw fetch), attempting token refresh');
+    const refreshed = await refreshTokenIfNeeded();
+    if (refreshed) {
+      debugLog('Token refreshed, retrying raw fetch');
+      return doFetch();
+    }
+  }
+
+  return response;
+}
+
 // デバッグログ
 function debugLog(message: string, data?: unknown): void {
   if (API_CONFIG.debug) {

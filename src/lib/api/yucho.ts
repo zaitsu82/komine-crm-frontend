@@ -5,7 +5,7 @@
  * 管理料・合祀料金の請求対象データの取得とCSV出力を提供する。
  */
 
-import { apiGet, API_CONFIG } from './client';
+import { apiGet, API_CONFIG, fetchWithTokenRefresh } from './client';
 import { ApiResponse } from './types';
 
 // ============================================================
@@ -103,6 +103,7 @@ export async function getYuchoBilling(
  * GET /api/v1/yucho/export → text/csv (全銀協固定長)
  *
  * apiRequest() は JSON 前提なので、CSV は直接 fetch でダウンロードする。
+ * トークンリフレッシュは fetchWithTokenRefresh で共有クライアントと同じ挙動にする（#256）。
  */
 export async function exportYuchoCsv(params: YuchoExportParams): Promise<Blob> {
   const searchParams = new URLSearchParams();
@@ -112,10 +113,10 @@ export async function exportYuchoCsv(params: YuchoExportParams): Promise<Blob> {
     }
   });
 
-  const response = await fetch(`${API_CONFIG.baseUrl}/yucho/export?${searchParams.toString()}`, {
-    method: 'GET',
-    credentials: 'include',
-  });
+  const response = await fetchWithTokenRefresh(
+    `${API_CONFIG.baseUrl}/yucho/export?${searchParams.toString()}`,
+    { method: 'GET' }
+  );
 
   if (!response.ok) {
     let message = `CSV出力に失敗しました (HTTP ${response.status})`;
