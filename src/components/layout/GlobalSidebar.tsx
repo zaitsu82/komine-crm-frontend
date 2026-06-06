@@ -218,10 +218,13 @@ export default function GlobalSidebar({
                         aria-label={`業務の流れ ${stepLabel}（${step.description ?? ''}）`}
                         aria-current={active ? 'page' : undefined}
                       >
+                        {/* sr-only の番号で textContent をナビ項目と区別（E2E の exact テキスト照合との衝突回避） */}
+                        <span className="sr-only">{index + 1}. </span>
                         {step.label}
                       </Link>
                     ) : (
                       <span className="block text-xs leading-[1.4] text-hai-light" title={tooltip}>
+                        <span className="sr-only">{index + 1}. </span>
                         {step.label}
                       </span>
                     )}
