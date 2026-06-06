@@ -121,13 +121,30 @@ export function formatBillingMonth(
 const DATE_ONLY_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
 
 /**
- * date-only 文字列（YYYY-MM-DD）から年月日を TZ 非依存で抽出する。
- * `new Date('YYYY-MM-DD')` は UTC 00:00 としてパースされるため、
- * ローカル getter で組み立てると負オフセット TZ では前日になる（#218）。
+ * Prisma `@db.Date` のシリアライズ形状（UTC 深夜 0 時ちょうどの datetime）の判定。
+ * backend は @db.Date を生 Prisma Date で返し、res.json() → toISOString() で
+ * `2024-03-15T00:00:00.000Z`（時刻成分が全て 0 の UTC datetime）になる（#250）。
+ * これは実質 date-only なので date-only として UTC ベースで整形する。
+ * 時刻成分を持つ本物のタイムスタンプ（created_at 等）は厳密形状不一致で対象外。
+ */
+const DB_DATE_RE = /^(\d{4})-(\d{2})-(\d{2})T00:00:00\.000Z$/;
+
+/** date-only として扱う形状（手書き YYYY-MM-DD もしくは @db.Date 由来の UTC 深夜 datetime）か */
+function isDateOnlyShape(value: string): boolean {
+  return DATE_ONLY_RE.test(value) || DB_DATE_RE.test(value);
+}
+
+/**
+ * date-only 表現から年月日を TZ 非依存で抽出する。
+ * 対象は以下の 2 形状:
+ *  - 'YYYY-MM-DD'（手書き / 旧 backend）
+ *  - 'YYYY-MM-DDT00:00:00.000Z'（Prisma @db.Date の実 API シリアライズ形状, #250）
+ * いずれも `new Date(value)` は UTC 00:00 としてパースされるため、
+ * ローカル getter で組み立てると負オフセット TZ では前日になる（#218 / #250）。
  * 実在しない日付（2024-02-31 等）は null。
  */
 function parseDateOnly(value: string): { y: number; m: number; d: number } | null {
-  const match = value.match(DATE_ONLY_RE);
+  const match = value.match(DATE_ONLY_RE) ?? value.match(DB_DATE_RE);
   if (!match) return null;
   const y = Number(match[1]);
   const m = Number(match[2]);
@@ -143,12 +160,13 @@ function parseDateOnly(value: string): { y: number; m: number; d: number } | nul
 /**
  * 日付を「YYYY/MM/DD」（西暦4桁・ゼロ埋め）に統一する。
  * 2桁年や非ゼロ埋めの表記揺れ（#167）を解消する共通フォーマッタ。
- * date-only 文字列は Date を経由せず整形し、TZ による前日ズレを防ぐ（#218）。
+ * date-only 文字列・@db.Date 由来の UTC 深夜 datetime は Date を経由せず整形し、
+ * TZ による前日ズレを防ぐ（#218 / #250）。
  * null / 空 / 不正日付は fallback（既定 "-"）。
  */
 export function formatDate(value: string | Date | null | undefined, fallback: string = DASH): string {
   if (value === null || value === undefined || value === '') return fallback;
-  if (typeof value === 'string' && DATE_ONLY_RE.test(value)) {
+  if (typeof value === 'string' && isDateOnlyShape(value)) {
     const dateOnly = parseDateOnly(value);
     // date-only 形式で実在しない日付（2024-02-31 等）は legacy パーサの
     // 繰り上がり（→ 2024/03/02）に流さず fallback
@@ -167,11 +185,12 @@ export function formatDate(value: string | Date | null | undefined, fallback: st
 /**
  * 年月を「YYYY/MM」（西暦4桁・ゼロ埋め）に統一する。
  * 一覧の契約日など、日を省きたい狭い列向け（2桁年 "06/2" を廃止）。
- * date-only 文字列は Date を経由せず整形し、TZ による前日ズレを防ぐ（#218）。
+ * date-only 文字列・@db.Date 由来の UTC 深夜 datetime は Date を経由せず整形し、
+ * TZ による前日ズレを防ぐ（#218 / #250）。
  */
 export function formatYearMonth(value: string | Date | null | undefined, fallback: string = DASH): string {
   if (value === null || value === undefined || value === '') return fallback;
-  if (typeof value === 'string' && DATE_ONLY_RE.test(value)) {
+  if (typeof value === 'string' && isDateOnlyShape(value)) {
     const dateOnly = parseDateOnly(value);
     if (dateOnly === null) return fallback;
     return `${dateOnly.y}/${String(dateOnly.m).padStart(2, '0')}`;
