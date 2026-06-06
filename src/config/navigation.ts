@@ -39,3 +39,18 @@ export const NAV_GROUPS: NavGroup[] = [
 ];
 
 export const NAV_ITEMS: NavItem[] = NAV_GROUPS.flatMap(g => g.items);
+
+/**
+ * サイドバー下部「業務の流れ」ステッパーの表示順（#191）。
+ * label/description/requiredRoles は NAV_ITEMS から path で引き当て、定義を一元化する。
+ */
+export const WORKFLOW_STEP_PATHS: string[] = [
+  '/plots',
+  '/plot-availability',
+  '/yucho',
+  '/collective-burials',
+];
+
+export const WORKFLOW_STEPS: NavItem[] = WORKFLOW_STEP_PATHS.map(path =>
+  NAV_ITEMS.find(item => item.path === path)
+).filter((item): item is NavItem => item !== undefined);

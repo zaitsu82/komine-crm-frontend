@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
-import { NAV_GROUPS, NavItem, NavGroup } from '@/config/navigation';
+import { NAV_GROUPS, WORKFLOW_STEPS, NavItem, NavGroup } from '@/config/navigation';
 
 function MenuIcon({ icon, className = 'w-5 h-5' }: { icon: NavItem['icon']; className?: string }) {
   const props = { className, fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor', 'aria-hidden': true as const };
@@ -132,7 +132,7 @@ export default function GlobalSidebar({
                       {group.label}
                     </p>
                     {group.description && (
-                      <p className="text-[10px] text-hai/80 mt-0.5 normal-case tracking-normal leading-snug">
+                      <p className="text-[10px] text-hai-light mt-0.5 normal-case tracking-normal leading-snug">
                         {group.description}
                       </p>
                     )}
@@ -179,19 +179,56 @@ export default function GlobalSidebar({
           </nav>
         </div>
 
-        {/* 業務フローのヘルプ — 主要機能の関係を新規利用者にも伝える（#191） */}
+        {/* 業務フローのヘルプ — 主要機能の流れをステッパーで示す（#191）。説明はツールチップに退避 */}
         {!collapsed && (
           <div className="border-t border-gin p-4">
-            <p className="text-xs font-semibold text-hai uppercase tracking-wider mb-2">業務の流れ</p>
-            <ol className="space-y-1.5 text-[11px] text-hai leading-snug">
-              <li><span className="text-matsu font-medium">① 台帳問い合わせ</span>：区画ごとに契約・顧客・請求・入金を管理（基点）</li>
-              <li><span className="text-matsu font-medium">② 区画残数管理</span>：空き状況・使用率を把握</li>
-              <li><span className="text-matsu font-medium">③ ゆうちょ連携</span>：管理料の口座振替を出力</li>
-              <li><span className="text-matsu font-medium">④ 合祀管理</span>：契約期間の満了後に合祀・請求</li>
+            <p className="text-xs font-semibold text-hai uppercase tracking-wider mb-3">業務の流れ</p>
+            <ol aria-label="業務の流れ">
+              {WORKFLOW_STEPS.map((step, index) => {
+                const active = isActive(step.path);
+                const accessible = user ? step.requiredRoles.includes(user.role) : false;
+                const stepLabel = `${index + 1}. ${step.label}`;
+                const tooltip = step.description ? `${step.label} — ${step.description}` : step.label;
+
+                return (
+                  <li key={step.path} className="relative pl-7 pb-2.5 last:pb-0">
+                    {/* 接続線 */}
+                    {index < WORKFLOW_STEPS.length - 1 && (
+                      <span className="absolute left-[8px] top-5 bottom-0 w-px bg-gin" aria-hidden="true" />
+                    )}
+                    {/* ステップ番号 */}
+                    <span
+                      className={`absolute left-0 top-0.5 w-[17px] h-[17px] rounded-full flex items-center justify-center text-[10px] font-semibold tabular-nums transition-colors ${active
+                        ? 'bg-matsu text-white shadow-matsu'
+                        : 'bg-white text-hai border border-gin'
+                        }`}
+                      aria-hidden="true"
+                    >
+                      {index + 1}
+                    </span>
+                    {accessible ? (
+                      <Link
+                        href={step.path}
+                        onClick={onMobileClose}
+                        className={`block text-xs leading-[1.4] rounded transition-colors ${focusRing} ${active
+                          ? 'text-matsu font-medium'
+                          : 'text-hai hover:text-matsu'
+                          }`}
+                        title={tooltip}
+                        aria-label={`業務の流れ ${stepLabel}（${step.description ?? ''}）`}
+                        aria-current={active ? 'page' : undefined}
+                      >
+                        {step.label}
+                      </Link>
+                    ) : (
+                      <span className="block text-xs leading-[1.4] text-hai-light" title={tooltip}>
+                        {step.label}
+                      </span>
+                    )}
+                  </li>
+                );
+              })}
             </ol>
-            <p className="text-[10px] text-hai/80 mt-2 leading-snug">
-              合祀一覧の区画番号から台帳詳細へ移動できます。
-            </p>
           </div>
         )}
       </div>
