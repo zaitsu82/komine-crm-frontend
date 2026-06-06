@@ -30,7 +30,10 @@ interface DocumentDetailViewProps {
   onBack: () => void;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
+  /** template_data から PDF を再生成してダウンロード */
   onDownload: (id: string) => void;
+  /** アップロード済みファイル実体をダウンロード */
+  onDownloadFile: (id: string) => void;
 }
 
 export function DocumentDetailView({
@@ -39,6 +42,7 @@ export function DocumentDetailView({
   onEdit,
   onDelete,
   onDownload,
+  onDownloadFile,
 }: DocumentDetailViewProps) {
   const { data, isLoading, error, refresh } = useDocumentDetail(documentId);
 
@@ -118,15 +122,29 @@ export function DocumentDetailView({
             <Edit className="mr-2 h-4 w-4" />
             編集
           </Button>
-          {canRegenerateDocument(data.templateType) && (
+          {data.fileName && (
             <Button
               variant="outline"
               size="sm"
-              title="PDFを再生成してダウンロード"
-              onClick={() => onDownload(documentId)}
+              title="アップロード済みファイルをダウンロード"
+              onClick={() => onDownloadFile(documentId)}
             >
               <Download className="mr-2 h-4 w-4" />
-              ダウンロード
+              ファイルをダウンロード
+            </Button>
+          )}
+          {canRegenerateDocument(
+            data.templateType,
+            !!data.templateData && Object.keys(data.templateData).length > 0
+          ) && (
+            <Button
+              variant="outline"
+              size="sm"
+              title="保存済みテンプレートからPDFを再生成してダウンロード"
+              onClick={() => onDownload(documentId)}
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              PDF再生成
             </Button>
           )}
           <Button

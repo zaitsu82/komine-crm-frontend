@@ -30,6 +30,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Download,
+  FileDown,
   Eye,
   ArrowLeft,
 } from 'lucide-react';
@@ -41,7 +42,10 @@ interface DocumentListViewProps {
   customerName?: string;
   onCreateNew: () => void;
   onViewDetail: (id: string) => void;
+  /** template_data から PDF を再生成してダウンロード */
   onDownload: (id: string) => void;
+  /** アップロード済みファイル実体をダウンロード */
+  onDownloadFile: (id: string) => void;
   /** テンプレートギャラリーに戻る */
   onBack?: () => void;
 }
@@ -51,6 +55,7 @@ export function DocumentListView({
   onCreateNew,
   onViewDetail,
   onDownload,
+  onDownloadFile,
   onBack,
 }: DocumentListViewProps) {
   // 顧客IDが指定されている場合は初期フィルターとして設定
@@ -253,6 +258,21 @@ export function DocumentListView({
                       >
                         <Eye className="h-4 w-4" />
                       </Button>
+                      {doc.fileName && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          title="アップロード済みファイルをダウンロード"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDownloadFile(doc.id);
+                          }}
+                        >
+                          <FileDown className="h-4 w-4" />
+                        </Button>
+                      )}
+                      {/* 一覧応答は template_data を含まないため templateType のみで判定。
+                          template_data 未保存の場合の最終ガードは詳細画面で行う（#251）。 */}
                       {canRegenerateDocument(doc.templateType) && (
                         <Button
                           variant="ghost"
