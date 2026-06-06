@@ -1,7 +1,7 @@
 'use client';
 
 import { ContactsTabProps, getDefaultContact } from './types';
-import { ViewModeSelect } from './ViewModeField';
+import { MasterFallbackSelectItem, ViewModeSelect } from './ViewModeField';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -146,8 +146,6 @@ export function ContactsTab({
                 <div>
                   {(() => {
                     const currentValue = watch(`familyContacts.${index}.relationship`) || '';
-                    const hasLegacyValue =
-                      currentValue && !relationships.some((r) => r.name === currentValue);
                     return (
                       <ViewModeSelect
                         label="続柄"
@@ -161,11 +159,12 @@ export function ContactsTab({
                             {r.name}
                           </SelectItem>
                         ))}
-                        {hasLegacyValue && (
-                          <SelectItem key="legacy" value={currentValue}>
-                            {currentValue}（既存値）
-                          </SelectItem>
-                        )}
+                        {/* 無効化済み・未登録の既存値はフォールバック表示（#238）。続柄は名称を保存 */}
+                        <MasterFallbackSelectItem
+                          value={currentValue}
+                          masters={masterData?.all?.relationships ?? relationships}
+                          matchBy="name"
+                        />
                       </ViewModeSelect>
                     );
                   })()}

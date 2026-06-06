@@ -1,8 +1,9 @@
 'use client';
 
 import { PlotTabBaseProps } from './types';
-import { ViewModeField, ViewModeSelect } from './ViewModeField';
+import { MasterFallbackSelectItem, ViewModeField, ViewModeSelect } from './ViewModeField';
 import { SelectItem } from '@/components/ui/select';
+import { LEGACY_FEE_CODE_MAP } from '@/lib/master-resolve';
 
 export function FeeInfoTab({
   register,
@@ -92,6 +93,11 @@ export function FeeInfoTab({
                   {item.name}
                 </SelectItem>
               ))}
+              <MasterFallbackSelectItem
+                value={watch('usageFee.calculationType')}
+                masters={masterData?.all?.calcTypes ?? []}
+                legacyMap={LEGACY_FEE_CODE_MAP.calc}
+              />
             </ViewModeSelect>
 
             <ViewModeSelect
@@ -106,6 +112,11 @@ export function FeeInfoTab({
                   {item.name}
                 </SelectItem>
               ))}
+              <MasterFallbackSelectItem
+                value={watch('usageFee.taxType')}
+                masters={masterData?.all?.taxTypes ?? []}
+                legacyMap={LEGACY_FEE_CODE_MAP.tax}
+              />
             </ViewModeSelect>
 
             <ViewModeSelect
@@ -120,6 +131,11 @@ export function FeeInfoTab({
                   {item.name}
                 </SelectItem>
               ))}
+              <MasterFallbackSelectItem
+                value={watch('usageFee.billingType')}
+                masters={masterData?.all?.billingTypes ?? []}
+                legacyMap={LEGACY_FEE_CODE_MAP.billing}
+              />
             </ViewModeSelect>
 
             <ViewModeField
@@ -166,6 +182,11 @@ export function FeeInfoTab({
                   {item.name}
                 </SelectItem>
               ))}
+              {/* 送付方法（旧 shiharai）は旧コードの意味が不明なため legacyMap 無し（#177 と同方針） */}
+              <MasterFallbackSelectItem
+                value={watch('usageFee.paymentMethod')}
+                masters={masterData?.all?.paymentMethods ?? []}
+              />
             </ViewModeSelect>
           </div>
         )}
@@ -206,6 +227,11 @@ export function FeeInfoTab({
                   {item.name}
                 </SelectItem>
               ))}
+              <MasterFallbackSelectItem
+                value={watch('managementFee.calculationType')}
+                masters={masterData?.all?.calcTypes ?? []}
+                legacyMap={LEGACY_FEE_CODE_MAP.calc}
+              />
             </ViewModeSelect>
 
             <ViewModeSelect
@@ -220,6 +246,11 @@ export function FeeInfoTab({
                   {item.name}
                 </SelectItem>
               ))}
+              <MasterFallbackSelectItem
+                value={watch('managementFee.taxType')}
+                masters={masterData?.all?.taxTypes ?? []}
+                legacyMap={LEGACY_FEE_CODE_MAP.tax}
+              />
             </ViewModeSelect>
 
             <ViewModeSelect
@@ -234,6 +265,11 @@ export function FeeInfoTab({
                   {item.name}
                 </SelectItem>
               ))}
+              <MasterFallbackSelectItem
+                value={watch('managementFee.billingType')}
+                masters={masterData?.all?.billingTypes ?? []}
+                legacyMap={LEGACY_FEE_CODE_MAP.billing}
+              />
             </ViewModeSelect>
 
             <ViewModeField
@@ -296,6 +332,11 @@ export function FeeInfoTab({
                   {item.name}
                 </SelectItem>
               ))}
+              {/* 送付方法（旧 shiharai）は旧コードの意味が不明なため legacyMap 無し（#177 と同方針） */}
+              <MasterFallbackSelectItem
+                value={watch('managementFee.paymentMethod')}
+                masters={masterData?.all?.paymentMethods ?? []}
+              />
             </ViewModeSelect>
           </div>
         )}

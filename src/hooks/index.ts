@@ -19,6 +19,7 @@ export {
 // マスタフック
 export {
   useMasters,
+  type MasterLists,
   useMasterData,
   useCemeteryTypes,
   usePaymentMethods,

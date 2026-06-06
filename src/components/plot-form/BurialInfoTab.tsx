@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { BurialInfoTabProps, getDefaultBuriedPerson } from './types';
-import { ViewModeField, ViewModeSelect } from './ViewModeField';
+import { MasterFallbackSelectItem, ViewModeField, ViewModeSelect } from './ViewModeField';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -229,8 +229,6 @@ export function BurialInfoTab({
                   <div>
                     {(() => {
                       const currentValue = watch(`buriedPersons.${index}.relationship`) || '';
-                      const hasLegacyValue =
-                        currentValue && !relationships.some((r) => r.name === currentValue);
                       return (
                         <ViewModeSelect
                           label="続柄"
@@ -245,11 +243,12 @@ export function BurialInfoTab({
                               {r.name}
                             </SelectItem>
                           ))}
-                          {hasLegacyValue && (
-                            <SelectItem key="legacy" value={currentValue}>
-                              {currentValue}（既存値）
-                            </SelectItem>
-                          )}
+                          {/* 無効化済み・未登録の既存値はフォールバック表示（#238）。続柄は名称を保存 */}
+                          <MasterFallbackSelectItem
+                            value={currentValue}
+                            masters={masterData?.all?.relationships ?? relationships}
+                            matchBy="name"
+                          />
                         </ViewModeSelect>
                       );
                     })()}

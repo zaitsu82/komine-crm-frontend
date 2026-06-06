@@ -2,8 +2,10 @@ import { UseFormRegister, UseFormWatch, UseFormSetValue, Control, FieldErrors, U
 import type { PlotDetailResponse } from '@komine/types';
 import type { PlotFormData, FamilyContactFormData, BuriedPersonFormData, ConstructionInfoFormData } from '@/lib/validations/plot-form';
 import { MasterItem, TaxTypeMasterItem, SectionNameMasterItem } from '@/lib/api';
+import type { MasterLists } from '@/hooks/useMasters';
 
 export interface MasterData {
+  // フォーム選択肢用: active のみ（無効マスタは新規選択不可）
   calcTypes: MasterItem[];
   taxTypes: TaxTypeMasterItem[];
   billingTypes: MasterItem[];
@@ -11,6 +13,8 @@ export interface MasterData {
   sectionNames: SectionNameMasterItem[];
   relationships: MasterItem[];
   contractors: MasterItem[];
+  /** 名称解決・無効値フォールバック用: 無効を含む全件（#238） */
+  all?: MasterLists;
   isLoading: boolean;
 }
 

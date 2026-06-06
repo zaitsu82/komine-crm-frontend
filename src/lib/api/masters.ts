@@ -133,10 +133,22 @@ const mockMasterData: AllMastersData = {
   ],
 };
 
+// マスタ取得オプション
+export interface GetMastersOptions {
+  /**
+   * 無効（is_active=false）マスタも含めて取得する（#238）。
+   * 名称解決（無効化済みマスタを参照する既存データの表示維持）と
+   * マスタ管理画面（無効マスタの再有効化）で使用。既定は active のみ。
+   */
+  includeInactive?: boolean;
+}
+
 /**
  * 全マスタデータを一括取得
  */
-export async function getAllMasters(): Promise<ApiResponse<AllMastersData>> {
+export async function getAllMasters(
+  options?: GetMastersOptions,
+): Promise<ApiResponse<AllMastersData>> {
   if (shouldUseMockData()) {
     if (process.env.NODE_ENV === 'development') console.log('[API] Using mock data for getAllMasters');
     return {
@@ -145,7 +157,10 @@ export async function getAllMasters(): Promise<ApiResponse<AllMastersData>> {
     };
   }
 
-  const response = await apiGet<AllMastersData>('/masters/all');
+  const response = await apiGet<AllMastersData>(
+    '/masters/all',
+    options?.includeInactive ? { include_inactive: 'true' } : undefined,
+  );
   return response;
 }
 
