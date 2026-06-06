@@ -29,3 +29,24 @@ describe('canRegenerateDocument (#230)', () => {
     expect(canRegenerateDocument('unknown-template')).toBe(false);
   });
 });
+
+describe('canRegenerateDocument with hasTemplateData (#251)', () => {
+  it('有効な templateType + template_data あり → 再生成可能', () => {
+    expect(canRegenerateDocument('invoice', true)).toBe(true);
+  });
+
+  it('有効な templateType でも template_data 無し → 再生成不可', () => {
+    expect(canRegenerateDocument('invoice', false)).toBe(false);
+  });
+
+  it('hasTemplateData 省略時は templateType のみで判定（後方互換・一覧文脈）', () => {
+    // 一覧応答は template_data を含まないため templateType だけで判定する
+    expect(canRegenerateDocument('invoice')).toBe(true);
+    expect(canRegenerateDocument('invoice', undefined)).toBe(true);
+  });
+
+  it('templateType 無効なら template_data の有無に関わらず再生成不可', () => {
+    expect(canRegenerateDocument(null, true)).toBe(false);
+    expect(canRegenerateDocument('unknown-template', true)).toBe(false);
+  });
+});

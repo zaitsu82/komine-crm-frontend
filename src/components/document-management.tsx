@@ -56,7 +56,8 @@ export function DocumentManagement({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [documentToDelete, setDocumentToDelete] = useState<string | null>(null);
 
-  const { remove, download, isLoading: isMutating } = useDocumentMutations();
+  const { remove, download, downloadFile, isLoading: isMutating } =
+    useDocumentMutations();
 
   useEffect(() => {
     if (initialMode === 'create') setViewMode('create');
@@ -122,6 +123,7 @@ export function DocumentManagement({
     }
   }, [documentToDelete, remove, handleBackToList]);
 
+  // PDF再生成（template_data ベース）のダウンロード
   const handleDownload = useCallback(
     async (id: string) => {
       const ok = await download(id);
@@ -130,6 +132,17 @@ export function DocumentManagement({
       }
     },
     [download]
+  );
+
+  // アップロード済みファイル実体のダウンロード
+  const handleDownloadFile = useCallback(
+    async (id: string) => {
+      const ok = await downloadFile(id);
+      if (!ok) {
+        toast.error('ファイルのダウンロードに失敗しました');
+      }
+    },
+    [downloadFile]
   );
 
   const handleBack = useCallback(() => {
@@ -206,6 +219,7 @@ export function DocumentManagement({
             onCreateNew={customerId ? handleCreateNew : handleBackToTemplates}
             onViewDetail={handleViewDetail}
             onDownload={handleDownload}
+            onDownloadFile={handleDownloadFile}
             onBack={customerId ? undefined : handleBackToTemplates}
           />
         )}
@@ -218,6 +232,7 @@ export function DocumentManagement({
               onEdit={handleEdit}
               onDelete={handleDeleteRequest}
               onDownload={handleDownload}
+              onDownloadFile={handleDownloadFile}
             />
           </div>
         )}

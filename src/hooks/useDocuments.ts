@@ -19,8 +19,10 @@ import {
   deleteDocument,
   uploadDocumentFile,
   regenerateDocumentPdf,
+  getDocumentFile,
   generatePdf,
   downloadPdfFromBase64,
+  downloadFileBlob,
   canRegenerateDocument,
   DOCUMENT_TYPE_LABELS,
   DOCUMENT_STATUS_LABELS,
@@ -272,6 +274,27 @@ export function useDocumentMutations() {
     }
   }, []);
 
+  // アップロード済みファイル実体のダウンロード（再生成PDFとは別経路）
+  const downloadFile = useCallback(async (id: string): Promise<boolean> => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await getDocumentFile(id);
+      if (response.success) {
+        downloadFileBlob(response.data.blob, response.data.fileName);
+        return true;
+      }
+      setError(response.error.message || 'ファイルのダウンロードに失敗しました');
+      return false;
+    } catch (err) {
+      setError('ファイルのダウンロードに失敗しました');
+      console.error('Error downloading document file:', err);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   const generate = useCallback(async (data: GeneratePdfRequest): Promise<GeneratePdfResponse | null> => {
     setIsLoading(true);
     setError(null);
@@ -300,6 +323,7 @@ export function useDocumentMutations() {
     remove,
     upload,
     download,
+    downloadFile,
     generate,
   };
 }

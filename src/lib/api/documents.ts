@@ -144,15 +144,42 @@ export interface UpdateDocumentRequest {
  * 書類が template_data からPDF再生成（=ダウンロード）可能かを判定する。
  *
  * ダウンロードボタンの実処理は `regenerateDocumentPdf`（template_data からの
- * 再生成）なので、表示可否は fileName の有無ではなく templateType の有無で
- * 判定する。backend の regenerate-pdf も同じ判定
- * （`isDocumentTemplateType` = DOCUMENT_TEMPLATE_TYPES）を行う（#230）。
+ * 再生成）。backend の regenerate-pdf は template_type **と** template_data の
+ * 両方が無いと NO_TEMPLATE_DATA(400) を返す（documentController.ts）。そのため
+ * フロントの表示判定も両方を加味する（#251）。
+ *
+ * @param templateType    保存済みテンプレート種別（DOCUMENT_TEMPLATE_TYPES）
+ * @param hasTemplateData template_data が保存されているか。
+ *   - `true`/`false`: 判定に反映する（詳細応答など template_data が取得できる文脈）
+ *   - 省略（`undefined`）: template_data の有無が不明な文脈（一覧応答は
+ *     template_data を含まない）。後方互換で templateType のみで判定する（#230）。
  */
-export function canRegenerateDocument(templateType: string | null): boolean {
-  return (
+export function canRegenerateDocument(
+  templateType: string | null,
+  hasTemplateData?: boolean
+): boolean {
+  const hasValidType =
     !!templateType &&
-    (DOCUMENT_TEMPLATE_TYPES as readonly string[]).includes(templateType)
-  );
+    (DOCUMENT_TEMPLATE_TYPES as readonly string[]).includes(templateType);
+  if (!hasValidType) return false;
+  // template_data の有無が判明している場合のみゲートに使う。
+  if (hasTemplateData === false) return false;
+  return true;
+}
+
+/**
+ * オブジェクトURL経由で Blob をブラウザにダウンロードさせる共通処理。
+ * （yucho の同名関数とは引数順が異なるため、書類用に別名で定義する）
+ */
+export function downloadFileBlob(blob: Blob, fileName: string): void {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 }
 
 // ダウンロードURLレスポンス
@@ -311,7 +338,12 @@ const MOCK_DOCUMENTS: DocumentDetail[] = [
     fileSize: 102400,
     mimeType: 'application/pdf',
     templateType: 'invoice',
-    templateData: null,
+    // template_data あり → 実ファイルDL と PDF再生成 の両方が可能
+    templateData: {
+      invoiceNumber: 'INV-2024-001',
+      customerName: '山田太郎',
+      total: 12000,
+    },
     generatedAt: '2024-01-15T10:00:00Z',
     sentAt: '2024-01-16T09:00:00Z',
     createdBy: '管理者',
@@ -351,6 +383,7 @@ const MOCK_DOCUMENTS: DocumentDetail[] = [
     fileSize: 51200,
     mimeType: 'application/pdf',
     templateType: 'postcard',
+    // template_data なし → 実ファイルDLのみ可（PDF再生成は #251 で非表示）
     templateData: null,
     generatedAt: '2023-12-20T14:00:00Z',
     sentAt: null,
@@ -407,6 +440,40 @@ const MOCK_DOCUMENTS: DocumentDetail[] = [
       address: '神奈川県横浜市7-8-9',
       phoneNumber: '07011112222',
       email: 'tanaka@example.com',
+    },
+  },
+  {
+    // templateType はあるが template_data 未保存・ファイル未添付の書類。
+    // backend regeneratePdf は NO_TEMPLATE_DATA(400) になるため、フロントでも
+    // 再生成ボタンを出さない（#251）。実ファイルも無いためDL手段なし。
+    id: 'doc-004',
+    contractPlotId: null,
+    customerId: 'cust-004',
+    type: 'permit',
+    name: '許可証_鈴木様（下書き）',
+    description: 'テンプレート種別のみ選択・項目未入力',
+    status: 'draft',
+    fileKey: null,
+    fileName: null,
+    fileSize: null,
+    mimeType: null,
+    templateType: 'permit',
+    templateData: null,
+    generatedAt: null,
+    sentAt: null,
+    createdBy: 'オペレーター',
+    notes: null,
+    createdAt: '2024-02-01T10:00:00Z',
+    updatedAt: '2024-02-01T10:00:00Z',
+    contractPlot: null,
+    customer: {
+      id: 'cust-004',
+      name: '鈴木次郎',
+      nameKana: 'スズキジロウ',
+      postalCode: '3334444',
+      address: '埼玉県さいたま市1-1-1',
+      phoneNumber: '08033334444',
+      email: 'suzuki@example.com',
     },
   },
 ];
@@ -607,6 +674,40 @@ async function mockGetDownloadUrl(id: string): Promise<ApiResponse<DownloadUrlRe
   };
 }
 
+async function mockGetDocumentFile(
+  id: string
+): Promise<ApiResponse<DocumentFileResponse>> {
+  await new Promise((resolve) => setTimeout(resolve, 200));
+
+  const document = MOCK_DOCUMENTS.find((d) => d.id === id);
+  if (!document) {
+    return {
+      success: false,
+      error: {
+        code: 'NOT_FOUND',
+        message: '書類が見つかりません',
+      },
+    };
+  }
+
+  if (!document.fileKey || !document.fileName) {
+    return {
+      success: false,
+      error: {
+        code: 'NO_FILE',
+        message: 'アップロードされたファイルがありません',
+      },
+    };
+  }
+
+  // モックではダミーのBlobを返す（実体ファイルは存在しないため）
+  const blob = new Blob([`mock file: ${document.fileName}`], {
+    type: document.mimeType || 'application/octet-stream',
+  });
+
+  return { success: true, data: { blob, fileName: document.fileName } };
+}
+
 async function mockGeneratePdf(
   data: GeneratePdfRequest
 ): Promise<ApiResponse<GeneratePdfResponse>> {
@@ -640,7 +741,10 @@ async function mockRegenerateDocumentPdf(id: string): Promise<ApiResponse<Genera
     };
   }
 
-  if (!canRegenerateDocument(doc.templateType)) {
+  // backend regeneratePdf と同条件: template_type AND template_data の両方が必要（#251）
+  const hasTemplateData =
+    !!doc.templateData && Object.keys(doc.templateData).length > 0;
+  if (!canRegenerateDocument(doc.templateType, hasTemplateData)) {
     return {
       success: false,
       error: {
@@ -802,6 +906,83 @@ export async function getDocumentDownloadUrl(
   return apiGet<DownloadUrlResponse>(`/documents/${id}/download`);
 }
 
+// アップロード済みファイル本体（Blob）レスポンス
+export interface DocumentFileResponse {
+  blob: Blob;
+  fileName: string;
+}
+
+/**
+ * アップロード済みのファイル本体（署名済みスキャン等）を取得する。
+ *
+ * backend `GET /documents/:id/file` は認証付きでファイル実体を返す（res.download）。
+ * Authorization は HttpOnly Cookie で行うため `credentials: 'include'` で取得し、
+ * 取得した Blob をそのままダウンロードに使う（再生成PDFとは別経路）。
+ */
+export async function getDocumentFile(
+  id: string
+): Promise<ApiResponse<DocumentFileResponse>> {
+  if (shouldUseMockData()) {
+    return mockGetDocumentFile(id);
+  }
+
+  const url = `${API_CONFIG.baseUrl}/documents/${id}/file`;
+
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      // エラー時は JSON ボディ（{ success:false, error }）が返る
+      let code = `HTTP_${response.status}`;
+      let message = 'ファイルのダウンロードに失敗しました';
+      try {
+        const data = await response.json();
+        code = data.error?.code || code;
+        message = data.error?.message || message;
+      } catch {
+        // JSON でない場合はデフォルトメッセージのまま
+      }
+      return { success: false, error: { code, message } };
+    }
+
+    const blob = await response.blob();
+    const fileName = parseContentDispositionFileName(
+      response.headers.get('content-disposition')
+    );
+
+    return { success: true, data: { blob, fileName: fileName || 'download' } };
+  } catch {
+    return {
+      success: false,
+      error: {
+        code: 'NETWORK_ERROR',
+        message: 'ネットワークエラーが発生しました',
+      },
+    };
+  }
+}
+
+/**
+ * Content-Disposition ヘッダーからファイル名を抽出する。
+ * `filename*=UTF-8''...`（RFC 5987）と `filename="..."` の両方に対応。
+ */
+function parseContentDispositionFileName(header: string | null): string | null {
+  if (!header) return null;
+  const utf8Match = header.match(/filename\*=UTF-8''([^;]+)/i);
+  if (utf8Match) {
+    try {
+      return decodeURIComponent(utf8Match[1]);
+    } catch {
+      return utf8Match[1];
+    }
+  }
+  const asciiMatch = header.match(/filename="?([^";]+)"?/i);
+  return asciiMatch ? asciiMatch[1] : null;
+}
+
 /**
  * PDFを生成
  */
@@ -839,13 +1020,5 @@ export function downloadPdfFromBase64(base64: string, fileName: string): void {
   }
   const byteArray = new Uint8Array(byteNumbers);
   const blob = new Blob([byteArray], { type: 'application/pdf' });
-
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = fileName;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+  downloadFileBlob(blob, fileName);
 }
