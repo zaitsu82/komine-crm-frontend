@@ -1,10 +1,12 @@
 import {
   isJurinArea,
+  classifyGraveType,
   inferValidityPeriodYears,
   summarizeValidityRule,
   calculateElapsedYears,
   calculateScheduledCollectiveBurialDate,
   JURIN_RULE_TRANSITION_DATE,
+  VALIDITY_RULE_TABLE,
 } from '@/lib/collective-burial-rules';
 
 describe('collective-burial-rules', () => {
@@ -19,6 +21,46 @@ describe('collective-burial-rules', () => {
       expect(isJurinArea('第2期')).toBe(false);
       expect(isJurinArea(null)).toBe(false);
       expect(isJurinArea('')).toBe(false);
+    });
+  });
+
+  describe('classifyGraveType（#259 対応表ベース判定）', () => {
+    it('「樹林」を含む区域名は jurin', () => {
+      expect(classifyGraveType('第3期樹林部')).toBe('jurin');
+      expect(classifyGraveType('樹林墓部')).toBe('jurin');
+    });
+
+    it('それ以外 / null は general', () => {
+      expect(classifyGraveType('第1期A')).toBe('general');
+      expect(classifyGraveType(null)).toBe('general');
+      expect(classifyGraveType(undefined)).toBe('general');
+    });
+  });
+
+  describe('VALIDITY_RULE_TABLE（#259 タイプ×年数対応表）', () => {
+    // Q34 回答後に行を追加した際の最低限の整合性ガード
+    it('全タイプの年数が正の整数で label を持つ', () => {
+      for (const [type, rule] of Object.entries(VALIDITY_RULE_TABLE)) {
+        expect(rule.label.length).toBeGreaterThan(0);
+        expect(Number.isInteger(rule.years)).toBe(true);
+        expect(rule.years).toBeGreaterThan(0);
+        expect(Number.isInteger(rule.yearsBeforeTransition)).toBe(true);
+        expect(rule.yearsBeforeTransition).toBeGreaterThan(0);
+        expect(type.length).toBeGreaterThan(0);
+      }
+    });
+
+    it('現時点のエントリは旧帳票準拠（樹林13/15・通常33）', () => {
+      expect(VALIDITY_RULE_TABLE.jurin).toEqual({
+        label: '樹林墓部',
+        years: 13,
+        yearsBeforeTransition: 15,
+      });
+      expect(VALIDITY_RULE_TABLE.general).toEqual({
+        label: '通常区画',
+        years: 33,
+        yearsBeforeTransition: 33,
+      });
     });
   });
 
