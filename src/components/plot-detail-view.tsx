@@ -273,10 +273,25 @@ function Section({
 
 type PlotRole = PlotDetailResponse['roles'][number];
 
-function CustomerInfoSection({ role, title }: { role: PlotRole; title: string }) {
+function CustomerInfoSection({
+  role,
+  title,
+  defaultOpen = true,
+  note,
+}: {
+  role: PlotRole;
+  title: string;
+  defaultOpen?: boolean;
+  note?: string;
+}) {
   const customer = role.customer;
   return (
-    <Section title={title}>
+    <Section title={title} defaultOpen={defaultOpen}>
+      {note && (
+        <div className="col-span-full rounded-elegant border border-cha-200 bg-cha-50 px-3 py-2 text-[11px] md:text-xs text-sumi leading-relaxed">
+          {note}
+        </div>
+      )}
       <InfoField label="氏名" value={customer.name} />
       <InfoField label="ふりがな" value={customer.nameKana} />
       <InfoField label="性別" value={customer.gender ? GENDER_LABELS[customer.gender as Gender] : null} />
@@ -302,8 +317,9 @@ function BasicInfoTab({ plot }: { plot: PlotDetailResponse }) {
   const primaryRole = contractorRole ?? plot.roles[0];
   const primaryCustomer = primaryRole?.customer;
 
-  // 申込者は契約者と同一人物でも基本情報タブに常に表示する（#159, 旧システム準拠）。
-  // 「申込者＝契約者で省略」と「申込者未登録」を区別できるようにするため。
+  // 申込者＝最初の契約者（業務確認 2026-06-07 Q3）。契約者（今の契約者）をメイン表示にし、
+  // 申込者は折りたたみで情報を保持する（#260）。同一人物でもセクション自体は残し、
+  // 「申込者＝契約者で省略」と「申込者未登録」を区別できるようにする（#159 の趣旨は維持）。
   const applicantIsSameAsContractor =
     !!applicantRole && !!primaryRole && applicantRole.customer.id === primaryRole.customer.id;
 
@@ -363,20 +379,8 @@ function BasicInfoTab({ plot }: { plot: PlotDetailResponse }) {
         <InfoField label="契約備考" value={plot.contractNotes} />
       </Section>
 
-      {/* 契約者情報 */}
+      {/* 契約者情報（今の契約者）— メイン表示 */}
       {primaryRole && <CustomerInfoSection role={primaryRole} title="契約者情報" />}
-
-      {/* 申込者情報（申込者ロールがあれば同一人物でも常に表示。未登録時は明示する） */}
-      {applicantRole ? (
-        <CustomerInfoSection
-          role={applicantRole}
-          title={applicantIsSameAsContractor ? '申込者情報（契約者に同じ）' : '申込者情報'}
-        />
-      ) : (
-        <Section title="申込者情報">
-          <InfoField label="申込者" value={null} />
-        </Section>
-      )}
 
       {/* 勤務先情報（契約者） */}
       {primaryCustomer?.workInfo && (
@@ -406,6 +410,28 @@ function BasicInfoTab({ plot }: { plot: PlotDetailResponse }) {
           <InfoField label="口座科目" value={primaryCustomer.accountType ? (ACCOUNT_TYPE_LABELS[primaryCustomer.accountType] ?? primaryCustomer.accountType) : null} />
           <InfoField label="記号番号" value={primaryCustomer.accountNumber} />
           <InfoField label="口座名義" value={primaryCustomer.accountHolder} />
+        </Section>
+      )}
+
+      {/* 申込者情報（最初の契約者）— 控えめ表示（折りたたみ・末尾配置、#260）。情報自体は保持する */}
+      {applicantRole ? (
+        <CustomerInfoSection
+          role={applicantRole}
+          title={
+            applicantIsSameAsContractor
+              ? '申込者情報（最初の契約者・契約者に同じ）'
+              : '申込者情報（最初の契約者）'
+          }
+          defaultOpen={false}
+          note={
+            applicantIsSameAsContractor
+              ? '申込者は契約時点の最初の契約者です。この区画では現在の契約者と同一人物です。'
+              : '申込者は契約時点の最初の契約者です。名義変更などにより現在の契約者とは異なります。'
+          }
+        />
+      ) : (
+        <Section title="申込者情報（最初の契約者）" defaultOpen={false}>
+          <InfoField label="申込者" value={null} />
         </Section>
       )}
     </div>
