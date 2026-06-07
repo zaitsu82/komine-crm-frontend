@@ -20,10 +20,14 @@ export default function EditPlotPage() {
 
   const { plot: plotDetail, isLoading: isPlotDetailLoading } = usePlotDetail(plotId);
 
-  const handleSave = async (data: PlotFormData) => {
+  const handleSave = async (data: PlotFormData, changeReason?: string) => {
     setIsLoading(true);
     try {
       const request = plotFormDataToUpdateRequest(data);
+      // 変更理由（#261）。指定があれば本更新で記録される履歴の変更事由に反映される
+      if (changeReason) {
+        request.changeReason = changeReason;
+      }
       const response = await updatePlot(plotId, request);
       if (response.success) {
         showApiSuccess('更新', '区画情報');

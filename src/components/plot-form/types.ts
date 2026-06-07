@@ -20,7 +20,11 @@ export interface MasterData {
 
 export interface PlotFormProps {
   plotDetail?: PlotDetailResponse;
-  onSave: (data: PlotFormData) => void;
+  /**
+   * 保存コールバック。編集時は確認ダイアログで入力された変更理由（#261）が
+   * 第2引数で渡る（未入力時は undefined、新規登録時は常に undefined）。
+   */
+  onSave: (data: PlotFormData, changeReason?: string) => void;
   onCancel: () => void;
   isLoading?: boolean;
 }

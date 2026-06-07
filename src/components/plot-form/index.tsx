@@ -11,7 +11,10 @@ import {
 import type { PlotFormData } from '@/lib/validations/plot-form';
 import { PreviewDialog } from '@/components/shared/dialogs';
 import { buildPlotPreviewSections, buildPlotDiffSections } from './previewHelper';
+import { CHANGE_REASON_PRESETS, CHANGE_REASON_MAX_LENGTH } from '@/lib/change-reasons';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useMasters } from '@/hooks';
 import { showWarning } from '@/lib/toast';
@@ -94,6 +97,8 @@ export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProp
   const [expandedContactId, setExpandedContactId] = useState<string | null>(null);
   const [previewData, setPreviewData] = useState<PlotFormData | null>(null);
   const [showPreview, setShowPreview] = useState(false);
+  // 変更理由（#261）。編集時の確認ダイアログでプリセット＋自由入力を受け付ける
+  const [changeReason, setChangeReason] = useState('');
 
   const initialFormData = plotDetail ? plotDetailToFormData(plotDetail) : null;
 
@@ -105,7 +110,7 @@ export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProp
   const handleConfirmSubmit = () => {
     if (previewData) {
       setShowPreview(false);
-      onSave(previewData);
+      onSave(previewData, isEditing ? changeReason.trim() || undefined : undefined);
     }
   };
 
@@ -457,7 +462,33 @@ export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProp
           confirmText={isEditing ? '確認して更新' : '確認して登録'}
           isLoading={isLoading}
           size="xl"
-        />
+        >
+          {/* 変更理由（#261）。プリセット＋自由入力（datalist）。履歴に記録される */}
+          {isEditing && (
+            <div>
+              <Label htmlFor="plot-change-reason" className="text-sm font-medium text-sumi">
+                変更理由（任意）
+              </Label>
+              <Input
+                id="plot-change-reason"
+                list="change-reason-presets"
+                value={changeReason}
+                maxLength={CHANGE_REASON_MAX_LENGTH}
+                placeholder="例: 名義変更（選択または自由入力）"
+                onChange={(e) => setChangeReason(e.target.value)}
+                className="mt-1"
+              />
+              <datalist id="change-reason-presets">
+                {CHANGE_REASON_PRESETS.map((preset) => (
+                  <option key={preset} value={preset} />
+                ))}
+              </datalist>
+              <p className="text-xs text-hai mt-1">
+                入力した理由は変更履歴（変更事由）に記録されます
+              </p>
+            </div>
+          )}
+        </PreviewDialog>
       )}
     </form>
   );

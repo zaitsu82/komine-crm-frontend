@@ -653,6 +653,63 @@ describe('PlotForm', () => {
     expect(onSave.mock.calls[0][0].physicalPlot.plotNumber).toBe('A-002');
   });
 
+  it('プレビューの変更理由入力（プリセットdatalist付き）の値が onSave の第2引数に渡る（#261）', async () => {
+    const user = userEvent.setup();
+    const onSave = jest.fn();
+    const detail = makePlotDetail();
+    render(<PlotForm plotDetail={detail} onSave={onSave} onCancel={jest.fn()} />);
+
+    const plotNumberInput = screen.getByDisplayValue('A-001');
+    await user.clear(plotNumberInput);
+    await user.type(plotNumberInput, 'A-002');
+    await user.click(screen.getByRole('button', { name: '更新' }));
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('変更理由（任意）')).toBeInTheDocument();
+    });
+
+    // プリセットの datalist が描画されている
+    const reasonInput = screen.getByLabelText('変更理由（任意）') as HTMLInputElement;
+    expect(reasonInput).toHaveAttribute('list', 'change-reason-presets');
+    const datalist = document.getElementById('change-reason-presets');
+    expect(datalist).not.toBeNull();
+    const options = Array.from(datalist!.querySelectorAll('option')).map((o) => o.value);
+    expect(options).toEqual(
+      expect.arrayContaining(['名義変更', '住所変更', '解約', '合祀', '修理', '字彫', '備品購入'])
+    );
+
+    // 自由入力（プリセット外）も可
+    await user.type(reasonInput, '名義変更');
+    await user.click(screen.getByRole('button', { name: '確認して更新' }));
+
+    await waitFor(() => {
+      expect(onSave).toHaveBeenCalledTimes(1);
+    });
+    expect(onSave.mock.calls[0][1]).toBe('名義変更');
+  });
+
+  it('変更理由が未入力なら onSave の第2引数は undefined（#261）', async () => {
+    const user = userEvent.setup();
+    const onSave = jest.fn();
+    const detail = makePlotDetail();
+    render(<PlotForm plotDetail={detail} onSave={onSave} onCancel={jest.fn()} />);
+
+    const plotNumberInput = screen.getByDisplayValue('A-001');
+    await user.clear(plotNumberInput);
+    await user.type(plotNumberInput, 'A-002');
+    await user.click(screen.getByRole('button', { name: '更新' }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: '確認して更新' })).toBeInTheDocument();
+    });
+    await user.click(screen.getByRole('button', { name: '確認して更新' }));
+
+    await waitFor(() => {
+      expect(onSave).toHaveBeenCalledTimes(1);
+    });
+    expect(onSave.mock.calls[0][1]).toBeUndefined();
+  });
+
   it('プレビューで「戻る」をクリックするとダイアログが閉じて onSave は呼ばれない', async () => {
     const user = userEvent.setup();
     const onSave = jest.fn();
