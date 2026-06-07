@@ -71,7 +71,7 @@ test.describe('サイドバーナビゲーション', () => {
     const sidebar = page.locator('.w-64');
     await expect(sidebar.getByText('台帳問い合わせ', { exact: true })).toBeVisible({ timeout: 20_000 });
 
-    // 合祀管理をクリック（Link要素）。exact 指定で「業務の流れ」ステッパー側のリンクと区別する
+    // 合祀管理をクリック（Link要素）。exact 指定で同名テキストを含む他要素との衝突を防ぐ
     const menuLink = sidebar.getByRole('link', { name: '合祀管理', exact: true });
     await menuLink.click();
     await page.waitForTimeout(500);
