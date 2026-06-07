@@ -52,6 +52,8 @@ interface PreviewDialogProps {
   isLoading?: boolean;
   /** ダイアログサイズ */
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
+  /** プレビュー本文の下（フッターの上）に表示する追加コンテンツ（例: 変更理由入力 #261） */
+  children?: ReactNode;
 }
 
 function formatValue(value: ReactNode): ReactNode {
@@ -132,6 +134,7 @@ export function PreviewDialog({
   cancelText = '戻る',
   isLoading = false,
   size = 'lg',
+  children,
 }: PreviewDialogProps) {
   const hasDiff = diffSections && diffSections.some((s) => s.items.some((item) => {
     const beforeStr = String(item.before ?? '');
@@ -198,6 +201,8 @@ export function PreviewDialog({
           <p className="text-sm text-hai text-center py-4">変更された項目はありません</p>
         )}
       </div>
+
+      {children && <div className="mt-4 pt-4 border-t border-gin">{children}</div>}
     </BaseDialog>
   );
 }
