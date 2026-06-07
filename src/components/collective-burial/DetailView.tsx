@@ -22,7 +22,7 @@ import {
   calculateElapsedYears,
   calculateScheduledCollectiveBurialDate,
   inferValidityPeriodYears,
-  isJurinArea,
+  summarizeValidityRule,
 } from '@/lib/collective-burial-rules';
 
 interface CollectiveBurialDetailViewProps {
@@ -76,11 +76,10 @@ export default function CollectiveBurialDetailView({
     : scheduledDateFallback;
   const isFallbackScheduled = !data.billingScheduledDate && scheduledDateFallback !== null;
 
-  // 業務ルール基準 (区域名 + 契約日 から推定)
+  // 業務ルール基準 (区域名 + 契約日 から対応表で推定)。
+  // 根拠文言は対応表（VALIDITY_RULE_TABLE）から一元生成し、年数のハードコードを排除（#259）
   const inferredRule = inferValidityPeriodYears(data.areaName, data.contractDate);
-  const ruleBasis = isJurinArea(data.areaName)
-    ? `${data.areaName} は樹林墓部のため、契約日が 2023-04-01 以降 → 13 年 / それ以前 → 15 年`
-    : `${data.areaName} は通常区画のため 33 年`;
+  const ruleBasis = `${data.areaName}: ${summarizeValidityRule(data.areaName, data.contractDate)}`;
   // 推定値と異なる登録値は手動の例外指定（#259, Q17「決まった年数より短くて良い人も出る」）。
   // エラーではなく「手動指定」として情報表示する。
   const isManualOverride = data.validityPeriodYears !== inferredRule;
@@ -293,7 +292,7 @@ export default function CollectiveBurialDetailView({
                   ) : (
                     <p className="text-sm text-hai">埋葬日が未設定のため算出できません</p>
                   )}
-                  <p className="text-xs text-hai mt-2">{ruleBasis}（自動判定 {inferredRule} 年）</p>
+                  <p className="text-xs text-hai mt-2">自動判定: {ruleBasis}</p>
                   {isManualOverride && (
                     <p className="text-xs text-kohaku-dark mt-1">
                       この区画は手動指定 {data.validityPeriodYears} 年 / 自動判定 {inferredRule} 年 です。業務上の例外指定（短縮など）の場合はそのままで問題ありません。
