@@ -1,6 +1,7 @@
 import {
   isJurinArea,
   inferValidityPeriodYears,
+  summarizeValidityRule,
   calculateElapsedYears,
   calculateScheduledCollectiveBurialDate,
   JURIN_RULE_TRANSITION_DATE,
@@ -45,6 +46,25 @@ describe('collective-burial-rules', () => {
     it('areaName が null / undefined は 33 年', () => {
       expect(inferValidityPeriodYears(null)).toBe(33);
       expect(inferValidityPeriodYears(undefined)).toBe(33);
+    });
+  });
+
+  describe('summarizeValidityRule (#259)', () => {
+    it('樹林墓部 + 新ルール → 13年と根拠を返す', () => {
+      expect(summarizeValidityRule('第3期樹林部', '2023-04-01')).toBe(
+        '樹林墓部・契約日 2023-04-01 以降 → 13年'
+      );
+    });
+
+    it('樹林墓部 + 旧ルール → 15年と根拠を返す', () => {
+      expect(summarizeValidityRule('第3期樹林部', '2022-12-01')).toBe(
+        '樹林墓部・契約日 2023-04-01 より前 → 15年'
+      );
+    });
+
+    it('通常区画 → 33年と根拠を返す', () => {
+      expect(summarizeValidityRule('第1期A', '2024-01-01')).toBe('通常区画 → 33年');
+      expect(summarizeValidityRule(null)).toBe('通常区画 → 33年');
     });
   });
 

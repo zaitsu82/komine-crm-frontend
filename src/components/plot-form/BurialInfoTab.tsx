@@ -10,6 +10,10 @@ import { SelectItem } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Gender } from '@komine/types';
 import { ChevronDown, ChevronUp, Trash2, Plus } from 'lucide-react';
+import {
+  inferValidityPeriodYears,
+  summarizeValidityRule,
+} from '@/lib/collective-burial-rules';
 
 export function BurialInfoTab({
   register,
@@ -27,6 +31,19 @@ export function BurialInfoTab({
   const collectiveBurial = watch('collectiveBurial');
   const [collectiveBurialEnabled, setCollectiveBurialEnabled] = useState(!!collectiveBurial);
 
+  // 合祀年数の自動判定（#259）。区域名＋契約日から業務ルールで推定する。
+  // タイプ×年数の確定対応表は業務確認 Q34 回答待ちのため、現行ルールを fallback とし、
+  // 推定値と異なる手動指定は例外指定として許容する（Q17「例外対応できるように」）。
+  const areaName = watch('physicalPlot.areaName');
+  const contractDate = watch('saleContract.contractDate');
+  const inferredValidityYears = inferValidityPeriodYears(areaName, contractDate || null);
+  const validityRuleSummary = summarizeValidityRule(areaName, contractDate || null);
+  const currentValidityYears = collectiveBurial?.validityPeriodYears;
+  const isValidityOverridden =
+    typeof currentValidityYears === 'number' &&
+    !Number.isNaN(currentValidityYears) &&
+    currentValidityYears !== inferredValidityYears;
+
   useEffect(() => {
     setCollectiveBurialEnabled(!!collectiveBurial);
   }, [collectiveBurial]);
@@ -36,7 +53,8 @@ export function BurialInfoTab({
     if (enabled) {
       setValue('collectiveBurial', {
         burialCapacity: 10,
-        validityPeriodYears: 33,
+        // 自動判定値を初期値にする（#259）。手動で変更すれば例外指定として保存される。
+        validityPeriodYears: inferredValidityYears,
         billingAmount: null,
         notes: null,
       });
@@ -403,11 +421,34 @@ export function BurialInfoTab({
                 type="number"
                 min={1}
                 max={100}
-                placeholder="例: 33"
+                placeholder={`例: ${inferredValidityYears}`}
                 {...register('collectiveBurial.validityPeriodYears', { valueAsNumber: true })}
                 className={errors.collectiveBurial?.validityPeriodYears ? 'border-beni' : ''}
               />
               <p className="text-xs text-hai mt-1">埋葬上限到達後の合祀管理期間</p>
+              {/* 自動判定 vs 手動指定の明示（#259）。例外指定は正当な運用として許容する */}
+              {isValidityOverridden ? (
+                <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
+                  <p className="text-xs text-kohaku-dark">
+                    手動指定: {currentValidityYears}年（自動判定: {inferredValidityYears}年 / {validityRuleSummary}）。例外指定として保存されます。
+                  </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-6 px-2 text-xs"
+                    onClick={() =>
+                      setValue('collectiveBurial.validityPeriodYears', inferredValidityYears, {
+                        shouldDirty: true,
+                      })
+                    }
+                  >
+                    自動判定値に戻す
+                  </Button>
+                </div>
+              ) : (
+                <p className="text-xs text-hai mt-1">自動判定: {inferredValidityYears}年（{validityRuleSummary}）</p>
+              )}
               {errors.collectiveBurial?.validityPeriodYears && (
                 <p className="text-sm text-beni mt-1">
                   {errors.collectiveBurial.validityPeriodYears.message}

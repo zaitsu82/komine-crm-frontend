@@ -81,7 +81,9 @@ export default function CollectiveBurialDetailView({
   const ruleBasis = isJurinArea(data.areaName)
     ? `${data.areaName} は樹林墓部のため、契約日が 2023-04-01 以降 → 13 年 / それ以前 → 15 年`
     : `${data.areaName} は通常区画のため 33 年`;
-  const ruleMismatch = data.validityPeriodYears !== inferredRule;
+  // 推定値と異なる登録値は手動の例外指定（#259, Q17「決まった年数より短くて良い人も出る」）。
+  // エラーではなく「手動指定」として情報表示する。
+  const isManualOverride = data.validityPeriodYears !== inferredRule;
 
   return (
     <div className="h-full flex flex-col bg-shiro">
@@ -241,6 +243,11 @@ export default function CollectiveBurialDetailView({
                   <div className="p-4 bg-kinari rounded-lg border border-gin">
                     <Label className="text-sm text-hai">有効期間</Label>
                     <p className="text-2xl font-bold text-sumi mt-1">{data.validityPeriodYears} 年</p>
+                    <p className="text-[11px] mt-1 leading-snug text-hai">
+                      {isManualOverride
+                        ? `手動指定（自動判定: ${inferredRule}年）`
+                        : '自動判定どおり'}
+                    </p>
                   </div>
                 </div>
 
@@ -286,10 +293,11 @@ export default function CollectiveBurialDetailView({
                   ) : (
                     <p className="text-sm text-hai">埋葬日が未設定のため算出できません</p>
                   )}
-                  <p className="text-xs text-hai mt-2">{ruleBasis}（推定 {inferredRule} 年）</p>
-                  {ruleMismatch && (
+                  <p className="text-xs text-hai mt-2">{ruleBasis}（自動判定 {inferredRule} 年）</p>
+                  {isManualOverride && (
                     <p className="text-xs text-kohaku-dark mt-1">
-                      ⚠ 登録値 {data.validityPeriodYears} 年 と業務ルール推定値 {inferredRule} 年 が一致しません。区域分類または契約日をご確認ください。
+                      この区画は手動指定 {data.validityPeriodYears} 年 / 自動判定 {inferredRule} 年 です。業務上の例外指定（短縮など）の場合はそのままで問題ありません。
+                      ※ お墓のタイプ別の年数（24年等）は業務確認中で、確定後に自動判定へ反映予定です。
                     </p>
                   )}
                 </div>

@@ -16,6 +16,11 @@
  *       - 業務ルールの根拠表示
  *       - 経過年数表示
  *       のために使う。
+ *
+ * ⚠ 業務確認（2026-06-07）で「24年も有る」「樹木葬や納骨堂など種類により年数違う」
+ *    との指摘あり（#259）。タイプ×年数の確定対応表は業務確認シート第3版 Q34 で回収中。
+ *    回答が確定するまで本モジュールの 13/15/33 推定は fallback として維持し、
+ *    推定値と異なる手動指定（例外指定）は正当な運用として許容する。
  */
 
 /** 業務ルール変更日（樹林墓部 15→13年） */
@@ -47,6 +52,26 @@ export function inferValidityPeriodYears(
     return 13;
   }
   return 15;
+}
+
+/**
+ * 自動判定の根拠を短文で返す（フォーム・詳細画面の hint 表示用）。
+ *
+ * @param areaName 区域名
+ * @param contractDate 契約日
+ * @returns 例: "樹林墓部・契約日 2023-04-01 以降 → 13年"
+ */
+export function summarizeValidityRule(
+  areaName: string | null | undefined,
+  contractDate?: Date | string | null,
+): string {
+  const years = inferValidityPeriodYears(areaName, contractDate);
+  if (!isJurinArea(areaName)) {
+    return `通常区画 → ${years}年`;
+  }
+  return years === 13
+    ? `樹林墓部・契約日 2023-04-01 以降 → ${years}年`
+    : `樹林墓部・契約日 2023-04-01 より前 → ${years}年`;
 }
 
 /**
