@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import { BurialInfoTab } from '@/components/plot-form/BurialInfoTab';
+import { defaultPlotFormData } from '@/lib/validations/plot-form';
 import { TabHost, emptyMasterData } from './test-helpers';
 
 jest.mock('@/components/ui/select', () => ({
@@ -117,6 +118,60 @@ describe('BurialInfoTab', () => {
 
     expect(screen.getByLabelText(/埋葬上限数/)).toBeInTheDocument();
     expect(screen.getByLabelText(/有効期間/)).toBeInTheDocument();
+  });
+
+  it('トグルON時の有効期間は自動判定値が初期値になる（通常区画 → 33年）（#259）', async () => {
+    const user = userEvent.setup();
+    render(<BurialInfoTabHost />);
+
+    await user.click(screen.getByLabelText('合祀対象区画'));
+
+    const input = screen.getByLabelText(/有効期間/) as HTMLInputElement;
+    expect(input.value).toBe('33');
+    expect(screen.getByText(/自動判定: 33年（通常区画 → 33年）/)).toBeInTheDocument();
+  });
+
+  it('樹林墓部＋2023-04以降の契約日なら自動判定は13年（#259）', async () => {
+    const user = userEvent.setup();
+    render(
+      <BurialInfoTabHost
+        defaultValues={{
+          physicalPlot: {
+            ...defaultPlotFormData.physicalPlot,
+            areaName: '第3期樹林部',
+          },
+          saleContract: {
+            ...defaultPlotFormData.saleContract,
+            contractDate: '2023-05-01',
+          },
+        }}
+      />
+    );
+
+    await user.click(screen.getByLabelText('合祀対象区画'));
+
+    const input = screen.getByLabelText(/有効期間/) as HTMLInputElement;
+    expect(input.value).toBe('13');
+    expect(screen.getByText(/樹林墓部・契約日 2023-04-01 以降 → 13年/)).toBeInTheDocument();
+  });
+
+  it('自動判定と異なる値は手動指定（例外）として表示され、自動判定値に戻せる（#259）', async () => {
+    const user = userEvent.setup();
+    render(<BurialInfoTabHost />);
+
+    await user.click(screen.getByLabelText('合祀対象区画'));
+
+    const input = screen.getByLabelText(/有効期間/) as HTMLInputElement;
+    await user.clear(input);
+    await user.type(input, '24');
+
+    expect(screen.getByText(/手動指定: 24年（自動判定: 33年/)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: '自動判定値に戻す' }));
+
+    expect(input.value).toBe('33');
+    expect(screen.queryByText(/手動指定: 24年/)).not.toBeInTheDocument();
+    expect(screen.getByText(/自動判定: 33年（通常区画 → 33年）/)).toBeInTheDocument();
   });
 
   it('「墓石情報を追加」で墓石情報セクションが展開される', async () => {
