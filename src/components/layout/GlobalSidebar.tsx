@@ -52,9 +52,16 @@ export default function GlobalSidebar({
     ),
   })).filter(group => group.items.length > 0);
 
+  // 区画コンテキストの書類画面（/plots/[id]/documents 配下）は
+  // 「台帳問い合わせ」ではなく「書類管理」をアクティブにする（#270）
+  const isPlotDocuments = /^\/plots\/[^/]+\/documents(\/|$)/.test(pathname);
+
   const isActive = (itemPath: string) => {
+    if (itemPath === '/documents') {
+      return pathname === itemPath || pathname.startsWith(itemPath + '/') || isPlotDocuments;
+    }
     if (itemPath === '/plots') {
-      return pathname === '/plots' || pathname.startsWith('/plots/');
+      return (pathname === '/plots' || pathname.startsWith('/plots/')) && !isPlotDocuments;
     }
     return pathname === itemPath || pathname.startsWith(itemPath + '/');
   };
