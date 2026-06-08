@@ -119,6 +119,7 @@ function makePlotDetail(overrides: Partial<PlotDetailResponse> = {}): PlotDetail
     permitNumber: null,
     startDate: null,
     contractNotes: null,
+    inscription: null,
     agentName: null,
     graveKind: null,
     graveKubun: null,
@@ -652,6 +653,7 @@ describe('plot-form.ts - デフォルト値', () => {
     expect(defaultContractPlot).toEqual({
       contractAreaSqm: 3.6,
       locationDescription: null,
+      inscription: null,
     });
   });
 
@@ -1371,6 +1373,7 @@ describe('plotDetailToFormData', () => {
           causeOfDeath: null,
           chiefMournerName: null,
           chiefMournerRelationship: null,
+          validityPeriodYearsOverride: null,
           notes: null,
         },
       ],

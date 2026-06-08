@@ -52,6 +52,7 @@ const sectionConfigs: SectionConfig[] = [
     fields: [
       { key: 'contractPlot.contractAreaSqm', label: '契約面積（㎡）', format: formatNumber },
       { key: 'contractPlot.locationDescription', label: '区画位置詳細' },
+      { key: 'contractPlot.inscription', label: '碑文（注意書き）' },
     ],
   },
   {
@@ -219,6 +220,13 @@ export function buildPlotPreviewSections(
         { label: '埋葬日', value: p.burialDate || '' },
         { label: '享年', value: p.age != null ? String(p.age) : '' },
         { label: '性別', value: formatGender(p.gender) },
+        {
+          label: '合祀年数（この方のみ）',
+          value:
+            p.validityPeriodYearsOverride != null
+              ? `${p.validityPeriodYearsOverride}年`
+              : '',
+        },
       ].filter((item) => item.value !== '');
       if (items.length > 0) {
         sections.push({ title: `埋葬者 ${i + 1}`, items });
@@ -348,6 +356,11 @@ const buriedPersonFieldDefs: ArrayFieldDef[] = [
   { key: 'burialDate', label: '埋葬日' },
   { key: 'age', label: '享年' },
   { key: 'gender', label: '性別' },
+  {
+    key: 'validityPeriodYearsOverride',
+    label: '合祀年数（この方のみ）',
+    format: (v) => (v != null ? `${v as number}年` : ''),
+  },
 ];
 
 const buildConstructionInfoFieldDefs = (

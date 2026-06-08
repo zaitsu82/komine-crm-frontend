@@ -13,7 +13,9 @@ import { ChevronDown, ChevronUp, Trash2, Plus } from 'lucide-react';
 import {
   inferValidityPeriodYears,
   summarizeValidityRule,
+  calculateScheduledCollectiveBurialDate,
 } from '@/lib/collective-burial-rules';
+import { formatDate } from '@/lib/format';
 
 export function BurialInfoTab({
   register,
@@ -350,6 +352,65 @@ export function BurialInfoTab({
                         {errors.buriedPersons[index]?.burialDate?.message}
                       </p>
                     )}
+                  </div>
+
+                  {/* 合祀年数（この方のみ）— 空欄で区画の合祀年数を継承（#10） */}
+                  <div className="col-span-2">
+                    {(() => {
+                      const overrideRaw = watch(`buriedPersons.${index}.validityPeriodYearsOverride`);
+                      const hasOverride =
+                        typeof overrideRaw === 'number' && !Number.isNaN(overrideRaw);
+                      // 区画の合祀年数（合祀設定の入力値）。未入力時は自動判定値で代替表示
+                      const plotYears =
+                        typeof collectiveBurial?.validityPeriodYears === 'number' &&
+                        !Number.isNaN(collectiveBurial.validityPeriodYears)
+                          ? collectiveBurial.validityPeriodYears
+                          : inferredValidityYears;
+                      const resolvedYears = hasOverride ? overrideRaw : plotYears;
+                      const scheduledDate = contractDate
+                        ? calculateScheduledCollectiveBurialDate(contractDate, resolvedYears)
+                        : null;
+                      return (
+                        <>
+                          <Label htmlFor={`buriedPersons.${index}.validityPeriodYearsOverride`}>
+                            合祀年数（この方のみ）
+                          </Label>
+                          <Input
+                            id={`buriedPersons.${index}.validityPeriodYearsOverride`}
+                            type="number"
+                            min={1}
+                            max={100}
+                            placeholder={`空欄で区画既定（${plotYears}年）を継承`}
+                            {...register(`buriedPersons.${index}.validityPeriodYearsOverride`, {
+                              setValueAs: (v) =>
+                                v === '' || v === null || v === undefined ? null : Number(v),
+                            })}
+                            className={
+                              errors.buriedPersons?.[index]?.validityPeriodYearsOverride
+                                ? 'border-beni'
+                                : ''
+                            }
+                          />
+                          {hasOverride ? (
+                            <p className="text-xs text-kohaku-dark mt-1">
+                              個別指定: {overrideRaw}年
+                              {scheduledDate
+                                ? ` → 合祀予定日: ${formatDate(scheduledDate.toISOString())}`
+                                : '（契約日未入力のため予定日は未算出）'}
+                            </p>
+                          ) : (
+                            <p className="text-xs text-hai mt-1">
+                              区画既定: {plotYears}年（空欄でこの方も同じ）
+                            </p>
+                          )}
+                          {errors.buriedPersons?.[index]?.validityPeriodYearsOverride && (
+                            <p className="text-sm text-beni mt-1">
+                              {errors.buriedPersons[index]?.validityPeriodYearsOverride?.message}
+                            </p>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
 
                   {/* Notes */}

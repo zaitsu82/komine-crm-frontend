@@ -165,6 +165,7 @@ export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProp
     // 契約区画
     'contractPlot.contractAreaSqm': '契約面積',
     'contractPlot.locationDescription': '区画位置詳細',
+    'contractPlot.inscription': '碑文（注意書き）',
     // 販売契約
     'saleContract.contractDate': '契約日',
     'saleContract.price': '金額',
@@ -264,6 +265,7 @@ export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProp
     'posthumousName': '戒名',
     'reportDate': '届出日',
     'religion': '宗派',
+    'validityPeriodYearsOverride': '合祀年数（この方のみ）',
     // 工事情報（配列内フィールド）
     'constructionType': '工事種別',
     'contractor': '業者名',
