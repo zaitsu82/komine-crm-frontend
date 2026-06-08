@@ -27,6 +27,7 @@ import {
   calculateScheduledCollectiveBurialDate,
 } from '@/lib/collective-burial-rules';
 import PageHeader from '@/components/page-header';
+import { LegacyAwareValue } from '@/components/legacy-aware-value';
 
 interface CollectiveBurialListViewProps {
   onBack?: () => void;
@@ -592,7 +593,8 @@ export default function CollectiveBurialListView({
                                     className="font-semibold text-matsu hover:text-matsu-700 hover:underline underline-offset-2"
                                     title="台帳詳細を開く"
                                   >
-                                    {record.plotNumber}
+                                    {/* displayNumber 優先・legacy-* 等は「整備中」ミュート表示 #283 */}
+                                    <LegacyAwareValue value={record.displayNumber || record.plotNumber} kind="plotNumber" />
                                   </Link>
                                 </td>
                                 <td className="px-2 md:px-4 py-3 text-center text-sm text-sumi hidden md:table-cell">

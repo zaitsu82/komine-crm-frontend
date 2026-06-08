@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { LegacyAwareValue } from '@/components/legacy-aware-value';
 import {
   CollectiveBurialDetail,
   BillingStatus,
@@ -98,7 +99,8 @@ export default function CollectiveBurialDetailView({
             <div>
               <h2 className="font-mincho text-xl font-semibold text-sumi tracking-wide">合祀詳細</h2>
               <p className="text-sm text-hai mt-0.5">
-                区画: {data.plotNumber} / {data.areaName}
+                {/* displayNumber 優先・legacy-* 等は「整備中」ミュート表示 #283 */}
+                区画: <LegacyAwareValue value={data.displayNumber || data.plotNumber} kind="plotNumber" /> / {data.areaName}
               </p>
             </div>
             <span className={`px-4 py-1.5 rounded-full text-sm font-medium ${BILLING_STATUS_COLORS[data.billingStatus as BillingStatus]}`}>
@@ -145,7 +147,10 @@ export default function CollectiveBurialDetailView({
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
                   <div>
                     <Label className="text-sm text-hai">区画番号</Label>
-                    <p className="font-semibold text-sumi mt-1">{data.plotNumber}</p>
+                    {/* displayNumber 優先・legacy-* 等は「整備中」ミュート表示 #283 */}
+                    <p className="font-semibold text-sumi mt-1">
+                      <LegacyAwareValue value={data.displayNumber || data.plotNumber} kind="plotNumber" />
+                    </p>
                   </div>
                   <div>
                     <Label className="text-sm text-hai">区域</Label>

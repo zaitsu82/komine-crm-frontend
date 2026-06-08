@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { BillingDetailResponse } from '@komine/types';
 import { getBillingById, BILLING_CATEGORY_LABELS, BILLING_RECORD_STATUS_LABELS } from '@/lib/api/billings';
+import { LegacyAwareValue } from '@/components/legacy-aware-value';
 
 const formatYen = (n: number): string => `¥${n.toLocaleString('ja-JP')}`;
 
@@ -105,7 +106,19 @@ function BillingDetailBody({ billing }: { billing: BillingDetailResponse }) {
               </span>
             }
           />
-          <Row label="区画" value={billing.plotNumber ? `${billing.plotNumber} (${billing.areaName ?? ''})` : '-'} />
+          {/* Row.value は React.ReactNode のため LegacyAwareValue を使用。displayNumber 優先・legacy-* 等は「整備中」ミュート表示 #283 */}
+          <Row
+            label="区画"
+            value={
+              billing.displayNumber || billing.plotNumber ? (
+                <>
+                  <LegacyAwareValue value={billing.displayNumber || billing.plotNumber} kind="plotNumber" /> ({billing.areaName ?? ''})
+                </>
+              ) : (
+                '-'
+              )
+            }
+          />
           <Row label="顧客" value={billing.customer?.name ?? '-'} />
           <Row label="金額" value={<span className="tabular-nums">¥{billing.amount.toLocaleString('ja-JP')}</span>} />
           <Row label="入金済" value={<span className="tabular-nums">¥{billing.paidAmount.toLocaleString('ja-JP')}</span>} />

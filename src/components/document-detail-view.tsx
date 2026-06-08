@@ -5,6 +5,7 @@
  */
 
 import { Button } from '@/components/ui/button';
+import { LegacyAwareValue } from '@/components/legacy-aware-value';
 import {
   useDocumentDetail,
   canRegenerateDocument,
@@ -279,7 +280,8 @@ export function DocumentDetailView({
                   区画
                 </dt>
                 <dd className="text-sumi">
-                  {data.contractPlot.physicalPlot.areaName} - {data.contractPlot.physicalPlot.plotNumber}
+                  {/* displayNumber 優先・legacy-* 等は「整備中」ミュート表示 #283 */}
+                  {data.contractPlot.physicalPlot.areaName} - <LegacyAwareValue value={data.contractPlot.physicalPlot.displayNumber || data.contractPlot.physicalPlot.plotNumber} kind="plotNumber" />
                 </dd>
               </div>
             ) : (

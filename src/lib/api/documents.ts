@@ -53,6 +53,7 @@ export interface DocumentListItem {
   contractPlot: {
     id: string;
     plotNumber: string;
+    displayNumber?: string | null;
     areaName: string;
   } | null;
   customer: {
@@ -90,6 +91,7 @@ export interface DocumentDetail {
     physicalPlot: {
       id: string;
       plotNumber: string;
+      displayNumber?: string | null;
       areaName: string;
     };
   } | null;

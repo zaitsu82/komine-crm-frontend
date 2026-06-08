@@ -168,7 +168,7 @@ function buildAutoFillData(
       base.contractNumber = `CON-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`;
       base.contractDate = plotDetail.contractDate || today;
       base.contractorName = customerName;
-      base.plotNumber = `${plot.areaName} ${plot.plotNumber}`;
+      base.plotNumber = `${plot.areaName} ${plot.displayNumber || plot.plotNumber}`;
       base.terms = '';
       break;
     }
@@ -176,7 +176,7 @@ function buildAutoFillData(
       const now = new Date();
       base.permitNumber = plotDetail.permitNumber || '';
       base.permitType = '普通墓地';
-      base.plotNumber = `${plot.areaName} ${plot.plotNumber}`;
+      base.plotNumber = `${plot.areaName} ${plot.displayNumber || plot.plotNumber}`;
       if (plot.areaSqm) base.area = String(plot.areaSqm);
       base.issueYear = String(now.getFullYear());
       base.issueMonth = String(now.getMonth() + 1);
@@ -334,7 +334,7 @@ export function DocumentForm({
       ? getPrimaryCustomer(plotDetail)?.name || ''
       : '';
     const plotNumber = plotDetail
-      ? `${plotDetail.physicalPlot.areaName} ${plotDetail.physicalPlot.plotNumber}`
+      ? `${plotDetail.physicalPlot.areaName} ${plotDetail.physicalPlot.displayNumber || plotDetail.physicalPlot.plotNumber}`
       : '';
     const nameSuffix = customerName
       ? `_${customerName}_${plotNumber}`
