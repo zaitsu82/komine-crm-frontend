@@ -935,6 +935,10 @@ export default function PlotDetailView({ plotId, onEdit, onBack, onDelete, onRes
   const primaryCustomer = plot.roles.find(r => r.role === ContractRole.Contractor)?.customer
     || plot.roles[0]?.customer;
 
+  // 表示用区画番号（grave_name_cd 由来）を優先。未設定時のみ legacy 値にフォールバック（#158/#164）。
+  // パンくず・復活/削除ダイアログなどユーザー向け表示で一貫して使う。
+  const displayPlotNumber = plot.physicalPlot.displayNumber || plot.physicalPlot.plotNumber;
+
   return (
     <div className="w-full">
       {/* パンくずナビゲーション */}
@@ -946,7 +950,7 @@ export default function PlotDetailView({ plotId, onEdit, onBack, onDelete, onRes
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
         </svg>
         <span className="text-sumi font-medium truncate">
-          <LegacyAwareValue value={plot.physicalPlot.plotNumber} kind="plotNumber" />
+          <LegacyAwareValue value={displayPlotNumber} kind="plotNumber" />
         </span>
       </nav>
 
@@ -954,7 +958,7 @@ export default function PlotDetailView({ plotId, onEdit, onBack, onDelete, onRes
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4 md:mb-6 bg-white border border-gin rounded-elegant-lg shadow-elegant-sm p-4 md:p-5">
         <div className="min-w-0">
           <h2 className="text-lg md:text-2xl font-bold text-sumi truncate">
-            <LegacyAwareValue value={plot.physicalPlot.displayNumber || plot.physicalPlot.plotNumber} kind="plotNumber" /> - <LegacyAwareValue value={plot.physicalPlot.areaName} kind="areaName" />
+            <LegacyAwareValue value={displayPlotNumber} kind="plotNumber" /> - <LegacyAwareValue value={plot.physicalPlot.areaName} kind="areaName" />
           </h2>
           {((!plot.physicalPlot.displayNumber && isLegacyPlotNumber(plot.physicalPlot.plotNumber)) || isLegacyAreaName(plot.physicalPlot.areaName)) && (
             <LegacyValueNote className="mt-1" />
@@ -989,8 +993,8 @@ export default function PlotDetailView({ plotId, onEdit, onBack, onDelete, onRes
             <Button
               onClick={() =>
                 onRestore(
-                  plot.physicalPlot.plotNumber,
-                  primaryCustomer?.name || plot.physicalPlot.plotNumber
+                  displayPlotNumber,
+                  primaryCustomer?.name || displayPlotNumber
                 )
               }
               variant="outline"
@@ -1032,8 +1036,8 @@ export default function PlotDetailView({ plotId, onEdit, onBack, onDelete, onRes
               <DropdownMenuContent align="end">
                 <DropdownMenuItem
                   onClick={() => onDelete(
-                    plot.physicalPlot.plotNumber,
-                    primaryCustomer?.name || plot.physicalPlot.plotNumber
+                    displayPlotNumber,
+                    primaryCustomer?.name || displayPlotNumber
                   )}
                   className="text-beni focus:text-beni"
                 >
