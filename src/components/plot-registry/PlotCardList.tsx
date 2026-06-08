@@ -71,7 +71,10 @@ export function PlotCardList({
                         <LegacyAwareValue value={plot.displayNumber || plot.plotNumber} kind="plotNumber" />
                       </span>
                       {plot.areaName && (
-                        <span className="text-xs text-hai truncate">{plot.areaName}</span>
+                        // エリア（区画名）。legacy-* / "1-29" 等の未正規化値は「整備中」ミュート表示 #166
+                        <span className="text-xs truncate">
+                          <LegacyAwareValue value={plot.areaName} kind="areaName" className="text-hai" />
+                        </span>
                       )}
                     </div>
                     <div className="flex items-center gap-1 shrink-0">

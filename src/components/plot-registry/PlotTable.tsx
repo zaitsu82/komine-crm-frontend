@@ -272,8 +272,9 @@ export function PlotTable({
                     <td className={cellWrapClass('plotNumber', 'px-2 py-2 font-mono text-matsu font-medium text-xs underline-offset-2 group-hover:underline')} title={plot.displayNumber || plot.plotNumber}>
                       <LegacyAwareValue value={plot.displayNumber || plot.plotNumber} kind="plotNumber" />
                     </td>
+                    {/* エリア（区画名）。legacy-* / "1-29" 等の未正規化値は「整備中」ミュート表示にする #166 */}
                     <td className={cellWrapClass('areaName', 'px-2 py-2 text-xs text-hai')} title={plot.areaName || undefined}>
-                      {plot.areaName || '-'}
+                      <LegacyAwareValue value={plot.areaName} kind="areaName" />
                     </td>
                     <td className="px-2 py-2 align-top">
                       <div className={isColumnExpanded(columnWidths, 'customerName') ? '' : 'truncate'}>

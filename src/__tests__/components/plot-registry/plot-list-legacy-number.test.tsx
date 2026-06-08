@@ -49,4 +49,19 @@ describe('区画一覧の区画No表示 (#164)', () => {
     expect(el).toHaveAttribute('title', LEGACY_VALUE_NOTE);
     expect(el.className).toContain('italic');
   });
+
+  // #166: エリア（区画名）列も legacy 値を「整備中」ミュート表示にする
+  it('エリアが正規化済みの区画名ならそのまま表示する', () => {
+    renderList([makePlot({ id: 'c', displayNumber: 'A-1', areaName: '凛A' })]);
+    const el = screen.getByText('凛A');
+    expect(el).toBeInTheDocument();
+    expect(el).not.toHaveAttribute('title', LEGACY_VALUE_NOTE);
+  });
+
+  it('エリアが legacy 内部コード（"1-29"）なら「整備中」ミュート表示にする', () => {
+    renderList([makePlot({ id: 'd', displayNumber: 'A-1', areaName: '1-29' })]);
+    const el = screen.getByText('1-29');
+    expect(el).toHaveAttribute('title', LEGACY_VALUE_NOTE);
+    expect(el.className).toContain('italic');
+  });
 });

@@ -22,8 +22,9 @@ import {
 } from '@komine/types';
 import { usePlotDetail } from '@/hooks/usePlots';
 import { useMasters } from '@/hooks/useMasters';
-import type { MasterItem, TaxTypeMasterItem } from '@/lib/api/masters';
+import type { MasterItem, TaxTypeMasterItem, SectionNameMasterItem } from '@/lib/api/masters';
 import { resolveMasterName, LEGACY_FEE_CODE_MAP } from '@/lib/master-resolve';
+import { resolvePeriodFromAreaName } from '@/lib/section-period';
 import { getPlotSizeLabel } from '@/types/plot-constants';
 import { calculateScheduledCollectiveBurialDate } from '@/lib/collective-burial-rules';
 import { isEmptyDisplayValue, EMPTY_LABELS, type EmptyKind } from '@/lib/empty-display';
@@ -312,7 +313,16 @@ function CustomerInfoSection({
   );
 }
 
-function BasicInfoTab({ plot }: { plot: PlotDetailResponse }) {
+function BasicInfoTab({
+  plot,
+  sectionNames,
+}: {
+  plot: PlotDetailResponse;
+  sectionNames: SectionNameMasterItem[];
+}) {
+  // 期は area_name から区画名マスタ経由で導出する（DBに独立カラムが無い設計 #166/#285）
+  const period = resolvePeriodFromAreaName(plot.physicalPlot.areaName, sectionNames);
+  const areaIsLegacy = isLegacyAreaName(plot.physicalPlot.areaName);
   const contractorRole = plot.roles.find(r => r.role === ContractRole.Contractor);
   const applicantRole = plot.roles.find(r => r.role === ContractRole.Applicant);
   const primaryRole = contractorRole ?? plot.roles[0];
@@ -344,9 +354,25 @@ function BasicInfoTab({ plot }: { plot: PlotDetailResponse }) {
           }
         />
         <InfoField
-          label="エリア"
+          label="期"
+          // 期は区画名マスタ（SectionNameMaster.period）から導出（#285）
+          value={period ?? undefined}
+          hint={
+            period
+              ? undefined
+              : areaIsLegacy
+                ? '整備中（レガシー移行値・要確認）'
+                : '区画名マスタから期を判定できません（要確認）'
+          }
+        />
+        <InfoField
+          label="区画名（エリア）"
           value={plot.physicalPlot.areaName}
-          hint={isLegacyAreaName(plot.physicalPlot.areaName) ? '整備中（レガシー移行値・要確認）' : undefined}
+          hint={
+            areaIsLegacy
+              ? '整備中（レガシー移行値・要確認）'
+              : '霊園の区画名（例: 凛A）。上の「期」はこの区画名から判定'
+          }
         />
         <InfoField
           label="物理区画面積 (㎡)"
@@ -854,7 +880,7 @@ export default function PlotDetailView({ plotId, onEdit, onBack, onDelete, onRes
   const { plot, isLoading, error, refresh } = usePlotDetail(plotId);
   // 名称解決は無効化済みマスタを含む全件で行う（#238: 無効化しても既存データの表示を維持）
   const { allMasters } = useMasters();
-  const { calcTypes, taxTypes, billingTypes, paymentMethods, contractors, directions, positions } =
+  const { calcTypes, taxTypes, billingTypes, paymentMethods, contractors, directions, positions, sectionNames } =
     allMasters;
   const feeMasters: FeeMasters = { calcTypes, taxTypes, billingTypes, paymentMethods };
 
@@ -1179,7 +1205,7 @@ export default function PlotDetailView({ plotId, onEdit, onBack, onDelete, onRes
         </TabsList>
 
         <TabsContent value="basic" className="mt-4 md:mt-6">
-          <BasicInfoTab plot={plot} />
+          <BasicInfoTab plot={plot} sectionNames={sectionNames} />
         </TabsContent>
 
         <TabsContent value="fee" className="mt-4 md:mt-6">
