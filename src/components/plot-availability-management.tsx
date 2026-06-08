@@ -447,7 +447,7 @@ export default function PlotAvailabilityManagement() {
               <Input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={displayMode === 'section' ? "区画名・コードで検索…（期マスタ整備中）" : "面積・タイプ・コードで検索…（期マスタ整備中）"}
+                placeholder={displayMode === 'section' ? "区画名・期で検索…" : "面積・タイプで検索…"}
                 className="flex-1 sm:max-w-md"
               />
               <Button
