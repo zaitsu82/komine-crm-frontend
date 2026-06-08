@@ -215,6 +215,82 @@ async function mockGetPlots(
 }
 
 /**
+ * モック: 区画の変更履歴を組み立てる（issue #267）
+ *
+ * 実環境（backend #51 の historyService）が返すリッチな履歴 shape に合わせて
+ * 区画作成（CREATE）と代表的な更新（UPDATE）を数件生成する。
+ * `@komine/types` の PlotDetailResponse.histories は簡易 shape のため、
+ * HistoryTab が解釈する拡張 shape を unknown 経由でキャストして返す。
+ */
+function buildMockHistories(plot: PlotListItem): PlotDetailResponse['histories'] {
+  const contractorName =
+    plot.roles.find((r) => r.role === ContractRole.Contractor)?.customer.name ??
+    plot.customerName ??
+    '';
+
+  const histories: Array<Record<string, unknown>> = [];
+
+  // 直近の更新（UPDATE）— 区画ごとに妥当な変更を1件
+  if (plot.paymentStatus === PaymentStatus.Paid) {
+    histories.push({
+      id: `${plot.id}-hist-update-1`,
+      entityType: 'SaleContract',
+      entityLabel: '販売契約',
+      actionType: 'UPDATE',
+      changedFields: {
+        paymentStatus: { before: '未入金', after: '入金済' },
+      },
+      fieldLabels: { paymentStatus: '入金状況' },
+      changedBy: '管理者',
+      changeReason: '管理料の口座振替を確認',
+      createdAt: plot.updatedAt,
+    });
+  } else if (plot.customerNotes) {
+    histories.push({
+      id: `${plot.id}-hist-update-1`,
+      entityType: 'Customer',
+      entityLabel: '顧客情報',
+      actionType: 'UPDATE',
+      changedFields: {
+        notes: { before: null, after: plot.customerNotes },
+      },
+      fieldLabels: { notes: '備考' },
+      changedBy: '担当者',
+      changeReason: '顧客からの連絡を反映',
+      createdAt: plot.updatedAt,
+    });
+  }
+
+  // 区画作成（CREATE）— レガシー移行時の初期登録
+  histories.push({
+    id: `${plot.id}-hist-create`,
+    entityType: 'ContractPlot',
+    entityLabel: '契約区画',
+    actionType: 'CREATE',
+    changedFields: null,
+    afterRecord: {
+      plotNumber: plot.plotNumber,
+      areaName: plot.areaName,
+      contractDate: plot.contractDate,
+      price: plot.price,
+      contractorName,
+    },
+    fieldLabels: {
+      plotNumber: '区画番号',
+      areaName: 'エリア',
+      contractDate: '契約日',
+      price: '契約金額',
+      contractorName: '契約者名',
+    },
+    changedBy: 'システム移行',
+    changeReason: 'レガシーデータ移行による初期登録',
+    createdAt: plot.createdAt,
+  });
+
+  return histories as unknown as PlotDetailResponse['histories'];
+}
+
+/**
  * モック: 区画詳細取得
  */
 async function mockGetPlotById(
@@ -379,6 +455,7 @@ async function mockGetPlotById(
         workInfo: null,
       },
     })),
+    histories: buildMockHistories(plot),
   };
 
   return {
