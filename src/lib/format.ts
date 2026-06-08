@@ -82,6 +82,20 @@ export function formatPostalCode(value: string | null | undefined): string {
 }
 
 /**
+ * 入力値を数字のみに正規化する（保存用）。電話・郵便・FAX の入力欄で
+ * ハイフン等の非数字を除去してから保存・検証する（#280）。
+ *
+ * 共有 zod（@komine/types）が電話=max11/15・郵便=max7・workPhone=0始まり数字のみ
+ * regex を課しているため、ハイフン付き入力（"807-0842" 等）はそのままだと
+ * バリデーションエラー / P2000 になる。react-hook-form の `setValueAs` に渡し、
+ * フォーム state には数字のみを格納する（表示は formatPhoneNumber 等で別途整形）。
+ */
+export function digitsOnly(value: string | null | undefined): string {
+  if (!value) return '';
+  return value.replace(/[^\d]/g, '');
+}
+
+/**
  * 終納請求年月などの年月文字列を「YYYY年M月」に正規化する。
  * - null / undefined / 空 / "0" / 全ゼロ → fallback（既定 "未設定"）
  * - "YYYY年M月" / "YYYY年MM月" → 前ゼロを除いて返す

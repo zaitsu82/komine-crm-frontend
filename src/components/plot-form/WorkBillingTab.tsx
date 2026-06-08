@@ -6,6 +6,7 @@ import { SelectItem } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { DmSetting, AddressType } from '@komine/types'
+import { digitsOnly } from '@/lib/format'
 
 export function WorkBillingTab({
   register,
@@ -60,13 +61,13 @@ export function WorkBillingTab({
               />
               <ViewModeField
                 label="勤務先郵便番号"
-                register={register('workInfo.workPostalCode')}
+                register={register('workInfo.workPostalCode', { setValueAs: digitsOnly })}
                 error={errors.workInfo?.workPostalCode?.message}
                 placeholder="123-4567"
               />
               <ViewModeField
                 label="勤務先電話番号"
-                register={register('workInfo.workPhoneNumber')}
+                register={register('workInfo.workPhoneNumber', { setValueAs: digitsOnly })}
                 error={errors.workInfo?.workPhoneNumber?.message}
                 placeholder="03-1234-5678"
               />

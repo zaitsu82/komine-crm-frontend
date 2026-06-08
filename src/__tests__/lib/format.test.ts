@@ -6,7 +6,12 @@ import {
   formatBillingMonth,
   formatDate,
   formatYearMonth,
+  digitsOnly,
 } from '@/lib/format';
+import {
+  customerSchema,
+  workInfoSchema,
+} from '@komine/types/validations';
 
 describe('formatCurrency', () => {
   it('数値をカンマ区切り + 円で表示する', () => {
@@ -151,5 +156,64 @@ describe('formatYearMonth', () => {
   it('null / 不正値は fallback を返す', () => {
     expect(formatYearMonth(null)).toBe('-');
     expect(formatYearMonth('bad')).toBe('-');
+  });
+});
+
+describe('digitsOnly (#280 入力正規化)', () => {
+  it('ハイフン・空白・括弧等の非数字を除去する', () => {
+    expect(digitsOnly('090-1234-5678')).toBe('09012345678');
+    expect(digitsOnly('807-0842')).toBe('8070842');
+    expect(digitsOnly('03 (1234) 5678')).toBe('0312345678');
+    expect(digitsOnly('１２３')).toBe(''); // 全角数字は半角数字でないため除去
+  });
+
+  it('null / undefined / 空は空文字を返す', () => {
+    expect(digitsOnly(null)).toBe('');
+    expect(digitsOnly(undefined)).toBe('');
+    expect(digitsOnly('')).toBe('');
+    expect(digitsOnly('---')).toBe('');
+  });
+
+  it('既に数字のみの値はそのまま返す', () => {
+    expect(digitsOnly('09012345678')).toBe('09012345678');
+    expect(digitsOnly('8070842')).toBe('8070842');
+  });
+
+  // 正規化後の値が共有 zod（@komine/types）の max / regex を通ることを保証する。
+  // これが #280 の主目的（ハイフン付き入力での P2000・バリデーションエラー防止）。
+  it('正規化後の電話/郵便が customerSchema を通る', () => {
+    const parsed = customerSchema.safeParse({
+      name: '田中太郎',
+      nameKana: 'タナカタロウ',
+      address: '東京都新宿区西新宿1-1-1',
+      postalCode: digitsOnly('807-0842'), // 7桁数字 → regex /^\d{7}$/
+      phoneNumber: digitsOnly('090-1234-5678'), // 0始まり11桁 → phoneSchema
+      faxNumber: digitsOnly('03-1234-5678'), // 0始まり10桁 → phoneSchema
+    });
+    expect(parsed.success).toBe(true);
+  });
+
+  it('正規化前のハイフン付き郵便は customerSchema で弾かれる（正規化の必要性）', () => {
+    const parsed = customerSchema.safeParse({
+      name: '田中太郎',
+      nameKana: 'タナカタロウ',
+      address: '東京都新宿区西新宿1-1-1',
+      postalCode: '807-0842', // ハイフン付き → regex /^\d{7}$/ 不一致
+    });
+    expect(parsed.success).toBe(false);
+  });
+
+  it('正規化後の workPhoneNumber が workInfoSchema の数字のみ regex を通る', () => {
+    const ok = workInfoSchema.safeParse({
+      companyName: '株式会社サンプル',
+      workPhoneNumber: digitsOnly('090-1234-5678'), // 0始まり11桁
+    });
+    expect(ok.success).toBe(true);
+
+    const ng = workInfoSchema.safeParse({
+      companyName: '株式会社サンプル',
+      workPhoneNumber: '090-1234-5678', // ハイフン付き → regex 不一致
+    });
+    expect(ng.success).toBe(false);
   });
 });
