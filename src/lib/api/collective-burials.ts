@@ -48,6 +48,7 @@ export interface CollectiveBurialListItem {
   id: string;
   contractPlotId: string;
   plotNumber: string;
+  displayNumber?: string | null;
   areaName: string;
   contractDate: string;
   applicantName: string | null;

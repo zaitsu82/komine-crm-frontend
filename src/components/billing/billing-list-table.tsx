@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react';
 import { Billing } from '@komine/types';
 import { BILLING_CATEGORY_LABELS, BILLING_RECORD_STATUS_LABELS } from '@/lib/api/billings';
+import { LegacyAwareValue } from '@/components/legacy-aware-value';
 
 const formatYen = (n: number): string => `¥${n.toLocaleString('ja-JP')}`;
 
@@ -114,7 +115,8 @@ export function BillingListTable({
               </td>
               {!hidePlotColumns && (
                 <td className="px-2 md:px-4 py-3 text-sm text-sumi hidden md:table-cell">
-                  {b.plotNumber ?? '-'}
+                  {/* displayNumber 優先・legacy-* 等は「整備中」ミュート表示 #283 */}
+                  <LegacyAwareValue value={b.displayNumber || b.plotNumber} kind="plotNumber" emptyText="-" />
                   {b.areaName && (
                     <span className="text-xs text-hai ml-1">({b.areaName})</span>
                   )}

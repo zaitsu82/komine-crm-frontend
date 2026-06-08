@@ -2,6 +2,7 @@
 
 import { Payment } from '@komine/types';
 import { BILLING_CATEGORY_LABELS } from '@/lib/api/billings';
+import { LegacyAwareValue } from '@/components/legacy-aware-value';
 
 const formatYen = (n: number): string => `¥${n.toLocaleString('ja-JP')}`;
 
@@ -99,7 +100,8 @@ export function PaymentListTable({
               </td>
               {!hidePlotColumns && (
                 <td className="px-2 md:px-4 py-3 text-sm text-sumi hidden lg:table-cell">
-                  {p.plotNumber ?? '-'}
+                  {/* displayNumber 優先・legacy-* 等は「整備中」ミュート表示 #283 */}
+                  <LegacyAwareValue value={p.displayNumber || p.plotNumber} kind="plotNumber" emptyText="-" />
                 </td>
               )}
               <td className="px-2 md:px-4 py-3 text-sm text-sumi hidden sm:table-cell">

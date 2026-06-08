@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EmptyState } from '@/components/ui/empty-state';
 import { StatCard } from '@/components/ui/stat-card';
 import { BaseDialog } from '@/components/shared/dialogs/BaseDialog';
+import { LegacyAwareValue } from '@/components/legacy-aware-value';
 import { showSuccess, showError } from '@/lib/toast';
 import { useAsyncData } from '@/hooks/useAsyncData';
 import {
@@ -388,7 +389,10 @@ function ManagementTable({ items, year }: { items: YuchoBillingItem[]; year: num
             <tbody>
               {items.map((item) => (
                 <tr key={item.sourceId} className="border-t border-gin hover:bg-kinari/50">
-                  <td className="px-4 py-3 font-mono text-sumi">{item.plotNumber}</td>
+                  <td className="px-4 py-3 font-mono text-sumi">
+                    {/* displayNumber 優先・legacy-* 等は「整備中」ミュート表示 #283 */}
+                    <LegacyAwareValue value={item.displayNumber || item.plotNumber} kind="plotNumber" />
+                  </td>
                   <td className="px-4 py-3 text-sumi">{item.areaName}</td>
                   <td className="px-4 py-3 text-sumi">
                     <div>{item.customerName ?? '—'}</div>
@@ -414,7 +418,10 @@ function ManagementTable({ items, year }: { items: YuchoBillingItem[]; year: num
           >
             <div className="flex items-start justify-between gap-2 mb-2">
               <div className="min-w-0">
-                <p className="font-mono text-xs text-hai">{item.plotNumber}</p>
+                {/* displayNumber 優先・legacy-* 等は「整備中」ミュート表示 #283 */}
+                <p className="font-mono text-xs text-hai">
+                  <LegacyAwareValue value={item.displayNumber || item.plotNumber} kind="plotNumber" />
+                </p>
                 <p className="text-sm text-sumi truncate">{item.customerName ?? '—'}</p>
                 <p className="text-[10px] text-hai truncate">{item.customerNameKana ?? ''}</p>
               </div>
@@ -471,7 +478,10 @@ function CollectiveTable({ items, year }: { items: YuchoBillingItem[]; year: num
             <tbody>
               {items.map((item) => (
                 <tr key={item.sourceId} className="border-t border-gin hover:bg-kinari/50">
-                  <td className="px-4 py-3 font-mono text-sumi">{item.plotNumber}</td>
+                  <td className="px-4 py-3 font-mono text-sumi">
+                    {/* displayNumber 優先・legacy-* 等は「整備中」ミュート表示 #283 */}
+                    <LegacyAwareValue value={item.displayNumber || item.plotNumber} kind="plotNumber" />
+                  </td>
                   <td className="px-4 py-3 text-sumi">
                     <div>{item.customerName ?? '—'}</div>
                     <div className="text-xs text-hai">{item.customerNameKana ?? ''}</div>
@@ -496,7 +506,10 @@ function CollectiveTable({ items, year }: { items: YuchoBillingItem[]; year: num
           >
             <div className="flex items-start justify-between gap-2 mb-2">
               <div className="min-w-0">
-                <p className="font-mono text-xs text-hai">{item.plotNumber}</p>
+                {/* displayNumber 優先・legacy-* 等は「整備中」ミュート表示 #283 */}
+                <p className="font-mono text-xs text-hai">
+                  <LegacyAwareValue value={item.displayNumber || item.plotNumber} kind="plotNumber" />
+                </p>
                 <p className="text-sm text-sumi truncate">{item.customerName ?? '—'}</p>
                 <p className="text-[10px] text-hai truncate">{item.customerNameKana ?? ''}</p>
               </div>

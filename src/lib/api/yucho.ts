@@ -28,6 +28,7 @@ export interface YuchoBillingItem {
   sourceId: string;
   contractPlotId: string;
   plotNumber: string;
+  displayNumber?: string | null;
   areaName: string;
   contractDate: string;
   customerId: string | null;
