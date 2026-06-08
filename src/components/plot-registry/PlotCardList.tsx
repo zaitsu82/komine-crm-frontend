@@ -65,7 +65,7 @@ export function PlotCardList({
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 min-w-0">
                       <span className="font-mono text-matsu font-semibold text-sm truncate">
-                        {plot.plotNumber}
+                        {plot.displayNumber || plot.plotNumber}
                       </span>
                       {plot.areaName && (
                         <span className="text-xs text-hai truncate">{plot.areaName}</span>

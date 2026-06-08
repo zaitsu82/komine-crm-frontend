@@ -79,6 +79,7 @@ const mockPlots: PlotListItem[] = [
     contractAreaSqm: 3.6,
     locationDescription: null,
     plotNumber: 'A-001',
+    displayNumber: 'A-1',
     areaName: '第1期',
     physicalPlotAreaSqm: 3.6,
     physicalPlotStatus: PhysicalPlotStatus.SoldOut,
@@ -118,6 +119,7 @@ const mockPlots: PlotListItem[] = [
     contractAreaSqm: 1.8,
     locationDescription: '左半分',
     plotNumber: 'B-015',
+    displayNumber: 'B-15',
     areaName: '第2期',
     physicalPlotAreaSqm: 3.6,
     physicalPlotStatus: PhysicalPlotStatus.PartiallySold,
@@ -238,6 +240,7 @@ async function mockGetPlotById(
     physicalPlot: {
       id: `physical-${plot.id}`,
       plotNumber: plot.plotNumber,
+      displayNumber: plot.displayNumber,
       areaName: plot.areaName,
       areaSqm: plot.physicalPlotAreaSqm,
       status: plot.physicalPlotStatus,

@@ -257,10 +257,11 @@ export function PlotTable({
                         onPlotSelect(plot);
                       }
                     }}
-                    aria-label={`${plot.plotNumber} の詳細を開く`}
+                    aria-label={`${plot.displayNumber || plot.plotNumber} の詳細を開く`}
                   >
-                    <td className={cellWrapClass('plotNumber', 'px-2 py-2 font-mono text-matsu font-medium text-xs underline-offset-2 group-hover:underline')} title={plot.plotNumber}>
-                      {plot.plotNumber}
+                    {/* 表示用区画番号（grave_name_cd 由来）を優先。未設定時は plotNumber にフォールバック #158 */}
+                    <td className={cellWrapClass('plotNumber', 'px-2 py-2 font-mono text-matsu font-medium text-xs underline-offset-2 group-hover:underline')} title={plot.displayNumber || plot.plotNumber}>
+                      {plot.displayNumber || plot.plotNumber}
                     </td>
                     <td className={cellWrapClass('areaName', 'px-2 py-2 text-xs text-hai')} title={plot.areaName || undefined}>
                       {plot.areaName || '-'}

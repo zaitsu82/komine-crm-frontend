@@ -50,7 +50,7 @@ export function getSearchHitReason(
   const has = (v: string | null | undefined): boolean => !!v && v.toLowerCase().includes(q);
 
   if (has(plot.customerName) || has(plot.customerNameKana)) return null;
-  if (has(plot.plotNumber)) return '区画番号に一致';
+  if (has(plot.displayNumber) || has(plot.plotNumber)) return '区画番号に一致';
   if (has(plot.customerAddress)) return '住所に一致';
   if (has(plot.customerPhoneNumber)) return '電話番号に一致';
   if (plot.buriedPersonNames?.some((n) => has(n))) return '埋葬者名に一致';
