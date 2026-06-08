@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SelectItem } from '@/components/ui/select';
 import { AddressType } from '@komine/types';
+import { digitsOnly } from '@/lib/format';
 import { ChevronDown, ChevronUp, Trash2, Plus } from 'lucide-react';
 
 export function ContactsTab({
@@ -198,7 +199,7 @@ export function ContactsTab({
                   <Label htmlFor={`familyContacts.${index}.postalCode`}>郵便番号</Label>
                   <Input
                     id={`familyContacts.${index}.postalCode`}
-                    {...register(`familyContacts.${index}.postalCode`)}
+                    {...register(`familyContacts.${index}.postalCode`, { setValueAs: digitsOnly })}
                     placeholder="123-4567"
                     className={
                       errors.familyContacts?.[index]?.postalCode ? 'border-beni' : ''
@@ -231,7 +232,7 @@ export function ContactsTab({
                   <Label htmlFor={`familyContacts.${index}.phoneNumber`}>電話番号</Label>
                   <Input
                     id={`familyContacts.${index}.phoneNumber`}
-                    {...register(`familyContacts.${index}.phoneNumber`)}
+                    {...register(`familyContacts.${index}.phoneNumber`, { setValueAs: digitsOnly })}
                     className={
                       errors.familyContacts?.[index]?.phoneNumber ? 'border-beni' : ''
                     }
@@ -248,7 +249,7 @@ export function ContactsTab({
                   <Label htmlFor={`familyContacts.${index}.phoneNumber2`}>電話番号2</Label>
                   <Input
                     id={`familyContacts.${index}.phoneNumber2`}
-                    {...register(`familyContacts.${index}.phoneNumber2`)}
+                    {...register(`familyContacts.${index}.phoneNumber2`, { setValueAs: digitsOnly })}
                     className={
                       errors.familyContacts?.[index]?.phoneNumber2 ? 'border-beni' : ''
                     }
@@ -265,7 +266,7 @@ export function ContactsTab({
                   <Label htmlFor={`familyContacts.${index}.faxNumber`}>FAX</Label>
                   <Input
                     id={`familyContacts.${index}.faxNumber`}
-                    {...register(`familyContacts.${index}.faxNumber`)}
+                    {...register(`familyContacts.${index}.faxNumber`, { setValueAs: digitsOnly })}
                     className={errors.familyContacts?.[index]?.faxNumber ? 'border-beni' : ''}
                   />
                   {errors.familyContacts?.[index]?.faxNumber && (

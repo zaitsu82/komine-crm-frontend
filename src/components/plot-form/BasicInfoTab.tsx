@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Gender, PaymentStatus } from '@komine/types';
 import { defaultApplicant } from '@/lib/validations/plot-form';
+import { digitsOnly } from '@/lib/format';
 
 export function BasicInfoTab({
   register,
@@ -328,7 +329,7 @@ export function BasicInfoTab({
             label="郵便番号"
             viewMode={viewMode}
             required
-            register={register('customer.postalCode')}
+            register={register('customer.postalCode', { setValueAs: digitsOnly })}
             error={errors.customer?.postalCode?.message}
             placeholder="1234567（ハイフンなし7桁）"
           />
@@ -357,7 +358,7 @@ export function BasicInfoTab({
           <ViewModeField
             label="本籍郵便番号"
             viewMode={viewMode}
-            register={register('customer.registeredPostalCode')}
+            register={register('customer.registeredPostalCode', { setValueAs: digitsOnly })}
             error={errors.customer?.registeredPostalCode?.message}
             placeholder="1234567（ハイフンなし7桁）"
           />
@@ -375,7 +376,7 @@ export function BasicInfoTab({
           <ViewModeField
             label="電話番号"
             viewMode={viewMode}
-            register={register('customer.phoneNumber')}
+            register={register('customer.phoneNumber', { setValueAs: digitsOnly })}
             error={errors.customer?.phoneNumber?.message}
             placeholder="09012345678（ハイフンなし10-11桁）"
           />
@@ -383,7 +384,7 @@ export function BasicInfoTab({
           <ViewModeField
             label="FAX"
             viewMode={viewMode}
-            register={register('customer.faxNumber')}
+            register={register('customer.faxNumber', { setValueAs: digitsOnly })}
             error={errors.customer?.faxNumber?.message}
             placeholder="0312345678"
           />
@@ -504,7 +505,7 @@ function ApplicantSection({
           <ViewModeField
             label="郵便番号"
             viewMode={viewMode}
-            register={register('applicant.postalCode')}
+            register={register('applicant.postalCode', { setValueAs: digitsOnly })}
             error={errors.applicant?.postalCode?.message}
             placeholder="1234567（ハイフンなし7桁）"
           />
@@ -532,7 +533,7 @@ function ApplicantSection({
           <ViewModeField
             label="本籍郵便番号"
             viewMode={viewMode}
-            register={register('applicant.registeredPostalCode')}
+            register={register('applicant.registeredPostalCode', { setValueAs: digitsOnly })}
             error={errors.applicant?.registeredPostalCode?.message}
             placeholder="1234567（ハイフンなし7桁）"
           />
@@ -550,7 +551,7 @@ function ApplicantSection({
           <ViewModeField
             label="電話番号"
             viewMode={viewMode}
-            register={register('applicant.phoneNumber')}
+            register={register('applicant.phoneNumber', { setValueAs: digitsOnly })}
             error={errors.applicant?.phoneNumber?.message}
             placeholder="09012345678"
           />
@@ -558,7 +559,7 @@ function ApplicantSection({
           <ViewModeField
             label="FAX"
             viewMode={viewMode}
-            register={register('applicant.faxNumber')}
+            register={register('applicant.faxNumber', { setValueAs: digitsOnly })}
             error={errors.applicant?.faxNumber?.message}
             placeholder="0312345678"
           />
