@@ -157,6 +157,15 @@ export function BasicInfoTab({
             error={errors.contractPlot?.locationDescription?.message}
             placeholder="例: 北側中央付近"
           />
+
+          <ViewModeField
+            label="碑文（注意書き）"
+            viewMode={viewMode}
+            className="col-span-2"
+            register={register('contractPlot.inscription')}
+            error={errors.contractPlot?.inscription?.message}
+            placeholder="一覧に表示する注意書きの一言"
+          />
         </div>
       </div>
 

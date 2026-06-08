@@ -87,6 +87,7 @@ export const getDefaultBuriedPerson = (): BuriedPersonFormData => ({
   age: null,
   gender: null,
   burialDate: null,
+  validityPeriodYearsOverride: null,
   notes: null,
 });
 

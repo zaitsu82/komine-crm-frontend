@@ -90,6 +90,7 @@ export const defaultPhysicalPlot: PhysicalPlotFormData = {
 export const defaultContractPlot: ContractPlotFormData = {
   contractAreaSqm: 3.6,
   locationDescription: null,
+  inscription: null,
 };
 
 export const defaultSaleContract: SaleContractFormData = {
@@ -178,6 +179,7 @@ export function plotFormDataToCreateRequest(formData: PlotFormData): CreatePlotR
     contractPlot: {
       contractAreaSqm: formData.contractPlot.contractAreaSqm,
       locationDescription: formData.contractPlot.locationDescription || undefined,
+      inscription: formData.contractPlot.inscription || undefined,
     },
     saleContract: {
       contractDate: formData.saleContract.contractDate,
@@ -314,6 +316,7 @@ export function plotFormDataToCreateRequest(formData: PlotFormData): CreatePlotR
       posthumousName: bp.posthumousName || undefined,
       reportDate: bp.reportDate || undefined,
       religion: bp.religion || undefined,
+      validityPeriodYearsOverride: bp.validityPeriodYearsOverride ?? undefined,
       notes: bp.notes || undefined,
     })),
     constructionInfos: formData.constructionInfos?.map((ci) => ({
@@ -377,6 +380,7 @@ export function plotFormDataToUpdateRequest(formData: PlotUpdateFormData): Updat
     request.contractPlot = {
       contractAreaSqm: formData.contractPlot.contractAreaSqm,
       locationDescription: formData.contractPlot.locationDescription || undefined,
+      inscription: formData.contractPlot.inscription || undefined,
     };
   }
 
@@ -489,6 +493,7 @@ export function plotFormDataToUpdateRequest(formData: PlotUpdateFormData): Updat
       posthumousName: bp.posthumousName || undefined,
       reportDate: bp.reportDate || undefined,
       religion: bp.religion || undefined,
+      validityPeriodYearsOverride: bp.validityPeriodYearsOverride ?? undefined,
       notes: bp.notes || undefined,
     }));
   }
@@ -569,6 +574,7 @@ export function plotDetailToFormData(detail: PlotDetailResponse): PlotFormData {
     contractPlot: {
       contractAreaSqm: detail.contractAreaSqm,
       locationDescription: detail.locationDescription,
+      inscription: detail.inscription,
     },
     saleContract: {
       contractDate: toDateOnly(detail.contractDate),
@@ -708,6 +714,7 @@ export function plotDetailToFormData(detail: PlotDetailResponse): PlotFormData {
       posthumousName: bp.posthumousName || null,
       reportDate: toDateOnly(bp.reportDate) || null,
       religion: bp.religion || null,
+      validityPeriodYearsOverride: bp.validityPeriodYearsOverride ?? null,
       notes: bp.notes,
     })),
     constructionInfos: detail.constructionInfos.map((ci) => ({

@@ -160,6 +160,8 @@ export interface ApiPlotListItem {
       name: string;
     };
   }>;
+  /** 碑文（注意書きの一言）。墓誌(gravestoneInscription)とは別物。 */
+  inscription: string | null;
   nextBillingDate: string | null;
   managementFee: number | null;
   createdAt: string;
@@ -190,6 +192,8 @@ export interface ApiPlotDetail {
   permitDate: string | null;
   startDate: string | null;
   contractNotes: string | null;
+  /** 碑文（注意書きの一言）。墓誌(gravestoneInscription)とは別物。 */
+  inscription: string | null;
 
   primaryCustomer?: {
     id: string;
@@ -280,6 +284,8 @@ export interface ApiPlotDetail {
     age: number | null;
     gender: string | null;
     burialDate: string | null;
+    /** 合祀年数の個別上書き（null=区画の合祀年数を継承）。 */
+    validityPeriodYearsOverride: number | null;
     notes: string | null;
   }>;
 

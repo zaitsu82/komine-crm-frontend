@@ -85,6 +85,7 @@ function makePlotDetail(overrides: Partial<PlotDetailResponse> = {}): PlotDetail
     permitNumber: null,
     startDate: null,
     contractNotes: null,
+    inscription: null,
     agentName: null,
     graveKind: null,
     graveKubun: null,

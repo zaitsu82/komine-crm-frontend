@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react';
+import { AlertTriangle } from 'lucide-react';
 import { PlotListItem, PaymentStatus } from '@komine/types';
 import { cn, truncateAddressToCity } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -76,6 +77,7 @@ export function PlotTable({
             <col className="hidden lg:table-column w-[100px]" style={colStyle('phone')} />
             <col className="hidden lg:table-column w-[72px]" style={colStyle('agent')} />
             <col className="hidden lg:table-column w-[96px]" style={colStyle('permitNumber')} />
+            <col className="hidden md:table-column w-[120px]" style={colStyle('inscription')} />
             <col className="hidden md:table-column" style={colStyle('notes')} />
             {showBuriedPersons && (
               <col className="hidden lg:table-column w-[90px]" style={colStyle('buriedPersons')} />
@@ -136,6 +138,10 @@ export function PlotTable({
               <th className="relative px-2 py-2 text-left text-xs font-bold text-white hidden lg:table-cell">
                 <span>許可番号</span>
                 <ColumnResizer columnKey="permitNumber" onResizeStart={onColumnResizeStart} />
+              </th>
+              <th className="relative px-2 py-2 text-left text-xs font-bold text-white hidden md:table-cell">
+                <span>碑文</span>
+                <ColumnResizer columnKey="inscription" onResizeStart={onColumnResizeStart} />
               </th>
               <th className="relative px-2 py-2 text-left text-xs font-bold text-white hidden md:table-cell">
                 <span>備考</span>
@@ -205,6 +211,7 @@ export function PlotTable({
                     <td className="px-2 py-2.5"><Skeleton className="h-4 w-20" /></td>
                     <td className="px-2 py-2.5"><Skeleton className="h-4 w-14" /></td>
                     <td className="px-2 py-2.5"><Skeleton className="h-4 w-20" /></td>
+                    <td className="px-2 py-2.5"><Skeleton className="h-4 w-20" /></td>
                     <td className="px-2 py-2.5"><Skeleton className="h-4 w-full" /></td>
                     {showBuriedPersons && <td className="px-2 py-2.5"><Skeleton className="h-4 w-16" /></td>}
                     <td className="px-2 py-2.5"><Skeleton className="h-4 w-12" /></td>
@@ -216,7 +223,7 @@ export function PlotTable({
               </>
             ) : error ? (
               <tr>
-                <td colSpan={showBuriedPersons ? 14 : 13} className="px-4 py-12 text-center text-beni">
+                <td colSpan={showBuriedPersons ? 15 : 14} className="px-4 py-12 text-center text-beni">
                   <div className="flex flex-col items-center">
                     <svg className="w-12 h-12 text-beni mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -298,6 +305,26 @@ export function PlotTable({
                     <td className={cellWrapClass('permitNumber', 'px-2 py-2 text-xs text-hai tabular-nums hidden lg:table-cell')} title={plot.permitNumber || undefined}>
                       {plot.permitNumber || '-'}
                     </td>
+                    {/* 碑文（注意書き）: 値があれば琥珀の注意喚起バッジで強調表示（#10） */}
+                    <td className="px-2 py-2 text-xs hidden md:table-cell align-top" title={plot.inscription || undefined}>
+                      {plot.inscription ? (
+                        <span
+                          className={cn(
+                            'inline-flex items-start gap-1 rounded bg-kohaku-50 text-kohaku-700 border border-kohaku-200 px-1.5 py-0.5 font-medium leading-tight',
+                            isColumnExpanded(columnWidths, 'inscription')
+                              ? 'whitespace-normal break-words'
+                              : 'max-w-full'
+                          )}
+                        >
+                          <AlertTriangle className="h-3 w-3 shrink-0 mt-px" aria-hidden="true" />
+                          <span className={isColumnExpanded(columnWidths, 'inscription') ? 'whitespace-normal break-words' : 'truncate'}>
+                            {plot.inscription}
+                          </span>
+                        </span>
+                      ) : (
+                        <span className="text-hai">-</span>
+                      )}
+                    </td>
                     <td className="px-2 py-2 text-xs text-hai hidden md:table-cell align-top">
                       <div
                         className={isColumnExpanded(columnWidths, 'notes') ? 'whitespace-normal break-words' : 'line-clamp-2 break-all'}
@@ -344,7 +371,7 @@ export function PlotTable({
               })
             ) : (
               <tr>
-                <td colSpan={showBuriedPersons ? 14 : 13} className="px-4 md:px-6 py-6">
+                <td colSpan={showBuriedPersons ? 15 : 14} className="px-4 md:px-6 py-6">
                   {emptyState}
                 </td>
               </tr>

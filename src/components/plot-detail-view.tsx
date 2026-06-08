@@ -25,6 +25,7 @@ import { useMasters } from '@/hooks/useMasters';
 import type { MasterItem, TaxTypeMasterItem } from '@/lib/api/masters';
 import { resolveMasterName, LEGACY_FEE_CODE_MAP } from '@/lib/master-resolve';
 import { getPlotSizeLabel } from '@/types/plot-constants';
+import { calculateScheduledCollectiveBurialDate } from '@/lib/collective-burial-rules';
 import { isEmptyDisplayValue, EMPTY_LABELS, type EmptyKind } from '@/lib/empty-display';
 import { LegacyAwareValue, LegacyValueNote } from '@/components/legacy-aware-value';
 import { isLegacyPlotNumber, isLegacyAreaName } from '@/lib/legacy-plot-display';
@@ -382,6 +383,8 @@ function BasicInfoTab({ plot }: { plot: PlotDetailResponse }) {
         <InfoField label="平成書番号" value={plot.permitNumber} emptyKind={contractEmptyKind} />
         <InfoField label="開始日" value={formatDate(plot.startDate)} emptyKind={contractEmptyKind} />
         <InfoField label="契約備考" value={plot.contractNotes} />
+        {/* 碑文（注意書き）。墓誌(gravestoneInscription)とは別物（#10） */}
+        <InfoField label="碑文（注意書き）" value={plot.inscription} hint="一覧に表示する注意書きの一言（墓誌とは別）" />
       </Section>
 
       {/* 契約者情報（今の契約者）— メイン表示 */}
@@ -655,24 +658,54 @@ function BurialInfoTab({
       {/* 埋葬者情報 */}
       <Section title="埋葬者一覧">
         {plot.buriedPersons && plot.buriedPersons.length > 0 ? (
-          plot.buriedPersons.map((person, idx) => (
-            <div key={person.id || idx} className={`col-span-full ${idx > 0 ? 'border-t border-gin pt-4' : ''}`}>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <InfoField label="氏名" value={person.name} />
-                <InfoField label="ふりがな" value={person.nameKana} />
-                <InfoField label="戒名" value={person.posthumousName} />
-                <InfoField label="性別" value={person.gender ? GENDER_LABELS[person.gender as Gender] : null} />
-                <InfoField label="生年月日" value={formatDate(person.birthDate)} />
-                <InfoField label="命日" value={formatDate(person.deathDate)} />
-                <InfoField label="享年" value={person.age?.toString()} />
-                <InfoField label="埋葬日" value={formatDate(person.burialDate)} />
-                <InfoField label="届出日" value={formatDate(person.reportDate)} />
-                <InfoField label="続柄" value={person.relationship} />
-                <InfoField label="宗派" value={person.religion} />
-                <InfoField label="備考" value={person.notes} />
+          plot.buriedPersons.map((person, idx) => {
+            // 合祀年数: 個別上書きがあればそれ、なければ区画の合祀年数を継承（#10）
+            const override = person.validityPeriodYearsOverride;
+            const hasOverride = typeof override === 'number' && !Number.isNaN(override);
+            const resolvedYears = hasOverride
+              ? override
+              : plot.collectiveBurial?.validityPeriodYears ?? null;
+            // 合祀予定日 = 契約日 + 解決年数（起点=契約日）。請求には影響しない表示のみ
+            const scheduledDate =
+              resolvedYears != null
+                ? calculateScheduledCollectiveBurialDate(plot.contractDate, resolvedYears)
+                : null;
+            return (
+              <div key={person.id || idx} className={`col-span-full ${idx > 0 ? 'border-t border-gin pt-4' : ''}`}>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <InfoField label="氏名" value={person.name} />
+                  <InfoField label="ふりがな" value={person.nameKana} />
+                  <InfoField label="戒名" value={person.posthumousName} />
+                  <InfoField label="性別" value={person.gender ? GENDER_LABELS[person.gender as Gender] : null} />
+                  <InfoField label="生年月日" value={formatDate(person.birthDate)} />
+                  <InfoField label="命日" value={formatDate(person.deathDate)} />
+                  <InfoField label="享年" value={person.age?.toString()} />
+                  <InfoField label="埋葬日" value={formatDate(person.burialDate)} />
+                  <InfoField label="届出日" value={formatDate(person.reportDate)} />
+                  <InfoField label="続柄" value={person.relationship} />
+                  <InfoField label="宗派" value={person.religion} />
+                  <InfoField label="備考" value={person.notes} />
+                </div>
+                {/* 合祀年数の個別上書き（#10）。上書き時のみ琥珀で目立たせる。継承時は控えめ表示 */}
+                {hasOverride ? (
+                  <div className="mt-2 rounded-elegant border border-kohaku-200 bg-kohaku-50 px-3 py-2 text-[11px] md:text-xs text-sumi leading-relaxed">
+                    <span className="font-semibold text-kohaku-700">合祀年数（個別）: {override}年</span>
+                    {scheduledDate && (
+                      <span className="ml-1">→ 合祀予定日: {formatDate(scheduledDate.toISOString())}</span>
+                    )}
+                    <span className="block text-hai">この方のみ区画の合祀年数を上書きしています（請求には影響しません）。</span>
+                  </div>
+                ) : (
+                  resolvedYears != null && (
+                    <p className="mt-2 text-[11px] md:text-xs text-hai leading-relaxed">
+                      合祀年数: {resolvedYears}年（区画の合祀年数を継承）
+                      {scheduledDate && <> ／ 合祀予定日: {formatDate(scheduledDate.toISOString())}</>}
+                    </p>
+                  )
+                )}
               </div>
-            </div>
-          ))
+            );
+          })
         ) : (
           <div className="col-span-full text-center text-hai py-4">
             埋葬者が登録されていません

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { AlertTriangle } from 'lucide-react';
 import { PlotListItem, PaymentStatus } from '@komine/types';
 import { cn, truncateAddressToCity } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -87,6 +88,18 @@ export function PlotCardList({
                       </svg>
                     </div>
                   </div>
+                  {/* 碑文（注意書き）: 値があればカード上部に琥珀の注意喚起バッジで強調（#10） */}
+                  {plot.inscription && (
+                    <div className="mt-1.5">
+                      <span
+                        className="inline-flex items-start gap-1 rounded bg-kohaku-50 text-kohaku-700 border border-kohaku-200 px-1.5 py-0.5 text-[11px] font-medium leading-tight max-w-full"
+                        title={plot.inscription}
+                      >
+                        <AlertTriangle className="h-3 w-3 shrink-0 mt-px" aria-hidden="true" />
+                        <span className="break-words">{plot.inscription}</span>
+                      </span>
+                    </div>
+                  )}
                   <div className="mt-1.5 flex items-baseline justify-between gap-2">
                     <div className="min-w-0">
                       <div className="font-medium text-sumi text-sm truncate">
