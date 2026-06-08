@@ -6,6 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { PAYMENT_STATUS_LABELS, PAYMENT_STATUS_VARIANTS } from './constants';
 import { formatContractDate, getRowBgColor, getSearchHitReason } from './utils';
+import { LegacyAwareValue } from '@/components/legacy-aware-value';
 
 interface PlotCardListProps {
   plots: PlotListItem[];
@@ -66,7 +67,8 @@ export function PlotCardList({
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 min-w-0">
                       <span className="font-mono text-matsu font-semibold text-sm truncate">
-                        {plot.displayNumber || plot.plotNumber}
+                        {/* displayNumber 優先・legacy-* 等は「整備中」ミュート表示 #158/#164 */}
+                        <LegacyAwareValue value={plot.displayNumber || plot.plotNumber} kind="plotNumber" />
                       </span>
                       {plot.areaName && (
                         <span className="text-xs text-hai truncate">{plot.areaName}</span>

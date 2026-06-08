@@ -10,6 +10,7 @@ import { showError, showApiSuccess, showApiError } from '@/lib/toast';
 import PlotForm from '@/components/plot-form';
 import PageHeader from '@/components/page-header';
 import { DesktopOnlyGate } from '@/components/desktop-only-gate';
+import { LegacyAwareValue } from '@/components/legacy-aware-value';
 import { usePlotDetail } from '@/hooks/usePlots';
 
 export default function EditPlotPage() {
@@ -67,7 +68,15 @@ export default function EditPlotPage() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
           <Link href={`/plots/${plotId}`} className="hover:text-matsu transition-colors truncate">
-            {plotDetail?.physicalPlot?.plotNumber || '区画詳細'}
+            {/* 表示用区画番号を優先・legacy-* は「整備中」ミュート表示 #158/#164 */}
+            {plotDetail?.physicalPlot ? (
+              <LegacyAwareValue
+                value={plotDetail.physicalPlot.displayNumber || plotDetail.physicalPlot.plotNumber}
+                kind="plotNumber"
+              />
+            ) : (
+              '区画詳細'
+            )}
           </Link>
           <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

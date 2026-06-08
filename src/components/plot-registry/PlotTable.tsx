@@ -11,6 +11,7 @@ import {
 } from '@/lib/plots-column-widths';
 import { PAYMENT_STATUS_LABELS, PAYMENT_STATUS_VARIANTS } from './constants';
 import { formatPhoneNumber, formatDate } from '@/lib/format';
+import { LegacyAwareValue } from '@/components/legacy-aware-value';
 import { formatContractDate, formatMoneyString, getRowBgColor, getSearchHitReason } from './utils';
 import { ColumnResizer } from './ColumnResizer';
 import { SortIndicator } from './SortIndicator';
@@ -266,9 +267,10 @@ export function PlotTable({
                     }}
                     aria-label={`${plot.displayNumber || plot.plotNumber} の詳細を開く`}
                   >
-                    {/* 表示用区画番号（grave_name_cd 由来）を優先。未設定時は plotNumber にフォールバック #158 */}
+                    {/* 表示用区画番号（grave_name_cd 由来）を優先。未設定時は plotNumber に
+                        フォールバックし、legacy-* 等の未正規化値は「整備中」ミュート表示にする #158/#164 */}
                     <td className={cellWrapClass('plotNumber', 'px-2 py-2 font-mono text-matsu font-medium text-xs underline-offset-2 group-hover:underline')} title={plot.displayNumber || plot.plotNumber}>
-                      {plot.displayNumber || plot.plotNumber}
+                      <LegacyAwareValue value={plot.displayNumber || plot.plotNumber} kind="plotNumber" />
                     </td>
                     <td className={cellWrapClass('areaName', 'px-2 py-2 text-xs text-hai')} title={plot.areaName || undefined}>
                       {plot.areaName || '-'}
