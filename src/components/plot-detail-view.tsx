@@ -335,8 +335,13 @@ function BasicInfoTab({ plot }: { plot: PlotDetailResponse }) {
       <Section title="区画情報">
         <InfoField
           label="区画番号"
-          value={plot.physicalPlot.plotNumber}
-          hint={isLegacyPlotNumber(plot.physicalPlot.plotNumber) ? '整備中（レガシー移行値・要確認）' : undefined}
+          // 表示用区画番号（grave_name_cd 由来）を優先。未設定時のみ legacy 値を表示し注記 #158
+          value={plot.physicalPlot.displayNumber || plot.physicalPlot.plotNumber}
+          hint={
+            !plot.physicalPlot.displayNumber && isLegacyPlotNumber(plot.physicalPlot.plotNumber)
+              ? '整備中（レガシー移行値・要確認）'
+              : undefined
+          }
         />
         <InfoField
           label="エリア"
@@ -949,9 +954,9 @@ export default function PlotDetailView({ plotId, onEdit, onBack, onDelete, onRes
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4 md:mb-6 bg-white border border-gin rounded-elegant-lg shadow-elegant-sm p-4 md:p-5">
         <div className="min-w-0">
           <h2 className="text-lg md:text-2xl font-bold text-sumi truncate">
-            <LegacyAwareValue value={plot.physicalPlot.plotNumber} kind="plotNumber" /> - <LegacyAwareValue value={plot.physicalPlot.areaName} kind="areaName" />
+            <LegacyAwareValue value={plot.physicalPlot.displayNumber || plot.physicalPlot.plotNumber} kind="plotNumber" /> - <LegacyAwareValue value={plot.physicalPlot.areaName} kind="areaName" />
           </h2>
-          {(isLegacyPlotNumber(plot.physicalPlot.plotNumber) || isLegacyAreaName(plot.physicalPlot.areaName)) && (
+          {((!plot.physicalPlot.displayNumber && isLegacyPlotNumber(plot.physicalPlot.plotNumber)) || isLegacyAreaName(plot.physicalPlot.areaName)) && (
             <LegacyValueNote className="mt-1" />
           )}
           {primaryCustomer && (
