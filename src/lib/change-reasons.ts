@@ -17,6 +17,7 @@ export const CHANGE_REASON_PRESETS: readonly string[] = [
   '修理',
   '字彫',
   '備品購入',
+  'その他',
 ];
 
 /** History.change_reason の DB 上限（VarChar(200)） */
