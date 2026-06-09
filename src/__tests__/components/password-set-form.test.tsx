@@ -22,6 +22,7 @@ describe('PasswordSetForm', () => {
     pushMock.mockClear()
     resetPasswordMock.mockReset()
     mockSearchParams = new URLSearchParams()
+    window.location.hash = ''
   })
 
   describe('コードなしの場合', () => {
@@ -106,7 +107,11 @@ describe('PasswordSetForm', () => {
       await user.click(screen.getByRole('button', { name: 'パスワードを設定' }))
 
       await waitFor(() => {
-        expect(resetPasswordMock).toHaveBeenCalledWith('valid-code-123', 'Abcdef12', 'Abcdef12')
+        expect(resetPasswordMock).toHaveBeenCalledWith(
+          { accessToken: undefined, code: 'valid-code-123' },
+          'Abcdef12',
+          'Abcdef12'
+        )
       })
     })
 
@@ -158,6 +163,74 @@ describe('PasswordSetForm', () => {
           screen.getByRole('button', { name: 'パスワードリセットをやり直す' })
         ).toBeInTheDocument()
       })
+    })
+  })
+
+  describe('ハッシュに access_token がある場合（implicit フロー）', () => {
+    beforeEach(() => {
+      window.location.hash =
+        '#access_token=hash-token-abc&refresh_token=r1&expires_in=3600&type=recovery'
+    })
+    afterEach(() => {
+      window.location.hash = ''
+    })
+
+    it('パスワード入力フォームが表示される', () => {
+      render(<PasswordSetForm mode="reset" />)
+      expect(screen.getByLabelText('新しいパスワード')).toBeInTheDocument()
+      expect(screen.getByLabelText('パスワード確認')).toBeInTheDocument()
+    })
+
+    it('access_token を credentials として resetPassword に渡す', async () => {
+      resetPasswordMock.mockResolvedValue({ success: true, data: {} })
+      const user = userEvent.setup()
+      render(<PasswordSetForm mode="reset" />)
+
+      await user.type(screen.getByLabelText('新しいパスワード'), 'Abcdef12')
+      await user.type(screen.getByLabelText('パスワード確認'), 'Abcdef12')
+      await user.click(screen.getByRole('button', { name: 'パスワードを再設定' }))
+
+      await waitFor(() => {
+        expect(resetPasswordMock).toHaveBeenCalledWith(
+          { accessToken: 'hash-token-abc', code: undefined },
+          'Abcdef12',
+          'Abcdef12'
+        )
+      })
+    })
+
+    it('読み込み後トークンをURLハッシュから除去する', async () => {
+      render(<PasswordSetForm mode="reset" />)
+      await waitFor(() => {
+        expect(screen.getByLabelText('新しいパスワード')).toBeInTheDocument()
+      })
+      // access_token を履歴・アドレスバーに残さない
+      expect(window.location.hash).toBe('')
+    })
+  })
+
+  describe('期限切れ・無効リンク（ハッシュに #error=...）の場合', () => {
+    beforeEach(() => {
+      window.location.hash =
+        '#error=access_denied&error_code=otp_expired&error_description=Email+link+is+invalid+or+has+expired'
+    })
+    afterEach(() => {
+      window.location.hash = ''
+    })
+
+    it('reset モード: フォームを出さず、期限切れヒントと「やり直す」CTAを表示する', () => {
+      render(<PasswordSetForm mode="reset" />)
+      expect(screen.queryByLabelText('新しいパスワード')).not.toBeInTheDocument()
+      expect(screen.getByText(/リセットリンクの有効期限が切れている/)).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: 'パスワードリセットをやり直す' })
+      ).toBeInTheDocument()
+    })
+
+    it('set モード: フォームを出さず、招待リンクの期限切れヒントを表示する', () => {
+      render(<PasswordSetForm mode="set" />)
+      expect(screen.queryByLabelText('新しいパスワード')).not.toBeInTheDocument()
+      expect(screen.getByText(/招待リンクの有効期限が切れている/)).toBeInTheDocument()
     })
   })
 })
