@@ -463,7 +463,7 @@ export default function CollectiveBurialListView({
               description={
                 (searchQuery || billingStatus !== 'all' || selectedYear !== 'all')
                   ? '検索語・請求状況・請求年の条件を緩めて再検索してください。'
-                  : 'まだ合祀者が登録されていません。新規登録ボタンから追加できます。'
+                  : 'まだ合祀者が登録されていません。台帳の区画編集→「埋葬情報」タブの「合祀対象区画」から登録できます。'
               }
               action={
                 (searchQuery || billingStatus !== 'all' || selectedYear !== 'all') ? (
