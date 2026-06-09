@@ -46,7 +46,14 @@ function PermitFieldOverlay({
     leftPx = field.x * scale;
     topPx = (page.heightPt - field.y) * scale;
   } else {
-    leftPx = field.x * scale;
+    const widthPt = field.widthPt ?? 100;
+    if (field.align === 'center') {
+      leftPx = (field.x - widthPt / 2) * scale;
+    } else if (field.align === 'right') {
+      leftPx = (field.x - widthPt) * scale;
+    } else {
+      leftPx = field.x * scale;
+    }
     topPx = (page.heightPt - field.y - field.fontSize) * scale;
   }
 
@@ -66,8 +73,12 @@ function PermitFieldOverlay({
       field.direction === 'horizontal' ? (field.align ?? 'left') : 'center',
   };
 
-  const inputClassName =
-    'block bg-white/70 border border-dashed border-matsu/40 rounded-[2px] px-1 outline-none focus:bg-ai/5 focus:border-ai focus:border-solid focus:ring-2 focus:ring-ai/20 font-mincho text-sumi placeholder:text-hai/60';
+  const isPostalDigit = field.hint === '1';
+  const showFieldLabel = !isPostalDigit;
+
+  const inputClassName = isPostalDigit
+    ? 'block bg-transparent border border-transparent rounded-[1px] px-0 outline-none focus:bg-white/40 focus:border-matsu/50 focus:border-dashed font-mincho text-sumi text-center placeholder:text-hai/40'
+    : 'block bg-white/70 border border-dashed border-matsu/40 rounded-[2px] px-1 outline-none focus:bg-ai/5 focus:border-ai focus:border-solid focus:ring-2 focus:ring-ai/20 font-mincho text-sumi placeholder:text-hai/60';
 
   if (field.direction === 'vertical') {
     return (
@@ -114,16 +125,26 @@ function PermitFieldOverlay({
 
   return (
     <div style={commonStyle}>
-      <span
-        className="pointer-events-none absolute -top-4 left-0 text-[10px] font-sans text-matsu-dark bg-white px-1 rounded border border-gin whitespace-nowrap"
-        aria-hidden
-      >
-        {field.label}
-      </span>
+      {showFieldLabel && (
+        <span
+          className="pointer-events-none absolute -top-4 left-0 text-[10px] font-sans text-matsu-dark bg-white px-1 rounded border border-gin whitespace-nowrap"
+          aria-hidden
+        >
+          {field.label}
+        </span>
+      )}
       <input
         type="text"
+        inputMode={field.hint === '1' ? 'numeric' : undefined}
+        maxLength={field.hint === '1' ? 1 : undefined}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => {
+          const next =
+            field.hint === '1'
+              ? e.target.value.replace(/\D/g, '').slice(-1)
+              : e.target.value;
+          onChange(next);
+        }}
         placeholder={field.placeholder}
         className={cn(inputClassName, 'w-full h-full')}
         style={{ fontSize: `${fontPx}px`, textAlign: field.align ?? 'left' }}
@@ -161,15 +182,25 @@ function PermitPagePreview({
         className="relative mx-auto bg-white border border-gin shadow-elegant-sm rounded overflow-hidden"
         style={{ width: `${renderWidth}px`, height: `${renderHeight}px` }}
       >
-        <Image
-          src={page.previewPng}
-          alt={`${page.label} テンプレート`}
-          fill
-          sizes={`${renderWidth}px`}
-          priority={page.pageIndex === 0}
-          unoptimized
-          className="pointer-events-none select-none"
-        />
+        {page.previewPng.endsWith('.svg') ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={page.previewPng}
+            alt={`${page.label} テンプレート`}
+            className="pointer-events-none select-none absolute inset-0 h-full w-full object-fill"
+            draggable={false}
+          />
+        ) : (
+          <Image
+            src={page.previewPng}
+            alt={`${page.label} テンプレート`}
+            fill
+            sizes={`${renderWidth}px`}
+            priority={page.pageIndex === 0}
+            unoptimized
+            className="pointer-events-none select-none"
+          />
+        )}
         {page.fields.map((field) => (
           <PermitFieldOverlay
             key={`${field.pageIndex}-${field.id}`}
@@ -234,8 +265,7 @@ export function PermitLivePreview({
       </div>
 
       <p className="text-xs text-hai leading-relaxed">
-        背景はテンプレート PDF のプレビューです。入力欄が重なっている位置に、実際の
-        PDF 出力でも文字が印字されます。縦書きの欄は 1 文字ずつ縦に積まれます。
+        背景はテンプレート画像です。入力欄の位置に PDF 出力でも文字が印字されます。
       </p>
 
       <div className="rounded-lg border border-gin bg-shiro p-3 max-h-[min(82vh,60rem)] overflow-auto">

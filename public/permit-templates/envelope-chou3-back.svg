@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 666" width="340" height="666">
+  <defs>
+    <linearGradient id="paper-back" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#F8F6F2"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="340" height="666" fill="url(#paper-back)"/>
+  <rect x="4" y="4" width="332" height="658" fill="none" stroke="#D8D4CC" stroke-width="0.8"/>
+
+  <path d="M4 4 L170 88 L336 4 Z" fill="#F0EDE8" stroke="#D8D4CC" stroke-width="0.6"/>
+  <line x1="4" y1="4" x2="336" y2="4" stroke="#C8C4BC" stroke-width="1"/>
+
+  <line x1="24" y1="88" x2="316" y2="88" stroke="#E0DCD4" stroke-width="0.5" stroke-dasharray="6 4"/>
+</svg>

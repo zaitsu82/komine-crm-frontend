@@ -253,8 +253,17 @@ export interface PermitTemplateData {
   issueDay?: string;
   applicantName?: string;
   registeredAddress?: string;
+  registeredAddress2?: string;
   currentAddress?: string;
+  currentAddress2?: string;
   recipientPostalCode?: string;
+  recipientPostalDigit1?: string;
+  recipientPostalDigit2?: string;
+  recipientPostalDigit3?: string;
+  recipientPostalDigit4?: string;
+  recipientPostalDigit5?: string;
+  recipientPostalDigit6?: string;
+  recipientPostalDigit7?: string;
   recipientAddress?: string;
   recipientAddress2?: string;
   recipientName?: string;
