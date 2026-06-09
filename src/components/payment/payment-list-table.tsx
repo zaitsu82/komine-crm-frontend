@@ -3,6 +3,7 @@
 import { Payment } from '@komine/types';
 import { BILLING_CATEGORY_LABELS } from '@/lib/api/billings';
 import { LegacyAwareValue } from '@/components/legacy-aware-value';
+import { formatFeeType } from '@/lib/legacy-sentinels';
 
 const formatYen = (n: number): string => `¥${n.toLocaleString('ja-JP')}`;
 
@@ -108,7 +109,7 @@ export function PaymentListTable({
                 {p.customer?.name ?? '-'}
               </td>
               <td className="px-2 md:px-4 py-3 text-sm text-hai hidden lg:table-cell">
-                {p.feeType ?? '-'}
+                {formatFeeType(p.feeType)}
               </td>
               <td className="px-2 md:px-4 py-3 text-sm text-hai hidden lg:table-cell">
                 {p.staffInCharge ?? '-'}

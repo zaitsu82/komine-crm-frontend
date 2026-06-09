@@ -30,6 +30,7 @@ import { calculateScheduledCollectiveBurialDate } from '@/lib/collective-burial-
 import { isEmptyDisplayValue, EMPTY_LABELS, type EmptyKind } from '@/lib/empty-display';
 import { LegacyAwareValue, LegacyValueNote } from '@/components/legacy-aware-value';
 import { isLegacyPlotNumber, isLegacyAreaName } from '@/lib/legacy-plot-display';
+import { isUnsetContractor } from '@/lib/legacy-sentinels';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -754,10 +755,10 @@ function BurialInfoTab({
       )}
 
       {/* 墓石情報 */}
-      {(plot.gravestoneInfo || plot.graveKind != null || plot.graveKubun != null) && (
+      {/* 墓石形状(graveKind)・基地タイプ(graveKubun) はマスタ未設計でレガシーintの意味が
+          未確定のため非表示（#334）。業務側で意味が確定したらマスタ化して再表示する。 */}
+      {plot.gravestoneInfo && (
         <Section title="墓石情報">
-          <InfoField label="墓石形状" value={plot.graveKind?.toString()} />
-          <InfoField label="基地タイプ" value={plot.graveKubun?.toString()} />
           <InfoField label="墓石基礎" value={plot.gravestoneInfo?.gravestoneBase} />
           <InfoField label="外柵位置" value={plot.gravestoneInfo?.enclosurePosition} />
           <InfoField label="石材店" value={plot.gravestoneInfo?.gravestoneDealer} />
@@ -788,7 +789,8 @@ function ConstructionInfoTab({
   contractors: MasterItem[];
 }) {
   const resolveContractor = (value: string | null | undefined): string | null => {
-    if (!value) return null;
+    // legacy-gyousha-0 は「業者ID未設定」のセンチネル。実在業者でないため未登録扱い（#334）。
+    if (!value || isUnsetContractor(value)) return null;
     const master = contractors.find((c) => c.code === value);
     return master ? master.name : value;
   };
