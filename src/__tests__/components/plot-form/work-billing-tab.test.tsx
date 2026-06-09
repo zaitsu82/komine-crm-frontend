@@ -89,4 +89,19 @@ describe('WorkBillingTab', () => {
   // 請求情報（BillingInfo）セクションは Phase 2 移行で廃止。
   // Phase 3 で Billing/Payment エンティティとして再設計予定。
   // Refs: zaitsu82/komine-crm-backend#106
+
+  it('「ゆうちょ自動払込をセット」で機関名称に「ゆうちょ銀行」が入る (#170)', async () => {
+    const user = userEvent.setup();
+    render(
+      <TabHost>
+        {(h) => <WorkBillingTab {...h} masterData={emptyMasterData} />}
+      </TabHost>
+    );
+
+    const bankInput = screen.getByPlaceholderText('○○銀行 / ゆうちょ銀行') as HTMLInputElement;
+    expect(bankInput.value).toBe('');
+
+    await user.click(screen.getByRole('button', { name: 'ゆうちょ自動払込をセット' }));
+    expect(bankInput.value).toBe('ゆうちょ銀行');
+  });
 });
