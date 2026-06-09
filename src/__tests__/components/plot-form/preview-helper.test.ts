@@ -5,7 +5,7 @@
  * 別レコード同士を比較して誤った差分を表示しない）を保証する。
  */
 
-import { buildPlotDiffSections } from '@/components/plot-form/previewHelper';
+import { buildPlotDiffSections, buildPlotPreviewSections } from '@/components/plot-form/previewHelper';
 import { defaultPlotFormData } from '@/lib/validations/plot-form';
 import type { PlotFormData } from '@/lib/validations/plot-form';
 
@@ -121,6 +121,25 @@ describe('buildPlotDiffSections 配列差分の id 突合 (#222)', () => {
       expect.arrayContaining([
         expect.objectContaining({ label: '氏名', before: '乙野二郎', after: '' }),
       ])
+    );
+  });
+});
+
+describe('buildPlotPreviewSections 享年0の扱い (#297)', () => {
+  it('享年0（旧システムで未記録）は書類プレビューに印字しない', () => {
+    const zero = makeBuriedPerson({ id: 'bp-0', name: '零野零', age: 0 } as Partial<BuriedPerson>);
+    const sections = buildPlotPreviewSections(makeFormData([zero]));
+    const buried = sections.find((s) => s.title === '埋葬者 1');
+    expect(buried).toBeDefined();
+    expect(buried?.items.some((i) => i.label === '享年')).toBe(false);
+  });
+
+  it('享年1以上は書類プレビューに印字する', () => {
+    const aged = makeBuriedPerson({ id: 'bp-a', name: '齢野有', age: 82 } as Partial<BuriedPerson>);
+    const sections = buildPlotPreviewSections(makeFormData([aged]));
+    const buried = sections.find((s) => s.title === '埋葬者 1');
+    expect(buried?.items).toEqual(
+      expect.arrayContaining([{ label: '享年', value: '82' }]),
     );
   });
 });

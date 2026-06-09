@@ -520,16 +520,19 @@ export default function PlotListTable({
                       )}
                       onClick={() => onPlotSelect?.(plot)}
                     >
-                      <td className="px-2 md:px-4 py-2 md:py-3 whitespace-nowrap">
+                      {/* td 自体の whitespace-nowrap は埋葬者divの折返しと行高がぶつかり
+                          ラベルと氏名が重なる原因になるため、nowrap は氏名・ふりがな行に限定し
+                          td は align-top にする (#299) */}
+                      <td className="px-2 md:px-4 py-2 md:py-3 align-top">
                         <div>
-                          <div className="text-sm font-semibold text-sumi">
+                          <div className="text-sm font-semibold text-sumi whitespace-nowrap">
                             {plot.customerName || '-'}
                           </div>
-                          <div className="text-xs md:text-sm text-hai">
+                          <div className="text-xs md:text-sm text-hai whitespace-nowrap">
                             {plot.customerNameKana || ''}
                           </div>
                           {showBuriedPersons && plot.buriedPersonNames.length > 0 && (
-                            <div className="mt-1 text-xs text-hai whitespace-normal max-w-[260px]">
+                            <div className="mt-1 text-xs text-hai whitespace-normal break-words leading-relaxed max-w-[260px]">
                               <span className="text-cha font-medium">埋葬者:</span>{' '}
                               {plot.buriedPersonNames.join('、')}
                             </div>

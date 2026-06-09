@@ -220,7 +220,7 @@ export function buildPlotPreviewSections(
         { label: '氏名', value: p.name || '' },
         { label: '命日', value: p.deathDate || '' },
         { label: '埋葬日', value: p.burialDate || '' },
-        { label: '享年', value: p.age != null ? String(p.age) : '' },
+        { label: '享年', value: p.age ? String(p.age) : '' },
         { label: '性別', value: formatGender(p.gender) },
         {
           label: '合祀年数（この方のみ）',
