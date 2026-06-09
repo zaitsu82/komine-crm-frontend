@@ -706,7 +706,8 @@ function BurialInfoTab({
                   <InfoField label="性別" value={person.gender ? GENDER_LABELS[person.gender as Gender] : null} />
                   <InfoField label="生年月日" value={formatDate(person.birthDate)} />
                   <InfoField label="命日" value={formatDate(person.deathDate)} />
-                  <InfoField label="享年" value={person.age?.toString()} />
+                  {/* 享年は数え年(1始まり)。0=旧システムで未記録のため未登録扱い(#297) */}
+                  <InfoField label="享年" value={person.age ? person.age.toString() : null} />
                   <InfoField label="埋葬日" value={formatDate(person.burialDate)} />
                   <InfoField label="届出日" value={formatDate(person.reportDate)} />
                   <InfoField label="続柄" value={person.relationship} />
