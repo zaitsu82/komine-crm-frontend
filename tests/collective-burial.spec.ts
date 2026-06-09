@@ -176,20 +176,22 @@ test.describe('合祀管理 - 請求ステータス変更', () => {
   });
 });
 
-test.describe('合祀管理 - viewer アクセス', () => {
+test.describe('合祀管理 - viewer アクセス制限', () => {
   test.use({ storageState: storageStatePath('viewer') });
 
-  test('viewer で合祀管理画面にアクセス可能', async ({ page }) => {
+  // 合祀管理は backend 権限(permission.ts)で manager 以上に限定されているため、
+  // viewer にはメニューを出さず、直接URLアクセス時は /plots へリダイレクトする（403を出さない）
+  test('viewer には合祀管理メニューが表示されない', async ({ page }) => {
     await page.goto('/');
     const sidebar = page.locator('.w-64');
     await expect(sidebar.getByText('台帳問い合わせ', { exact: true })).toBeVisible({ timeout: 20_000 });
 
-    const menuItem = sidebar.getByText('合祀管理', { exact: true });
-    await expect(menuItem).toBeVisible();
+    await expect(sidebar.getByText('合祀管理', { exact: true })).toHaveCount(0);
+  });
 
-    await menuItem.click();
-    await page.waitForTimeout(1_000);
-    await expect(page.getByText(/合祀/).first()).toBeVisible({ timeout: 10_000 });
+  test('viewer が /collective-burials へ直接アクセスすると /plots へリダイレクトされる', async ({ page }) => {
+    await page.goto('/collective-burials');
+    await expect(page).toHaveURL(/\/plots(\?|$)/, { timeout: 15_000 });
   });
 });
 
