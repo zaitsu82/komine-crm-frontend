@@ -406,13 +406,14 @@ export async function forgotPassword(
  * 招待メールからの初回設定・パスワードリセット両方で使用
  */
 export async function resetPassword(
-  code: string,
+  credentials: { accessToken?: string; code?: string },
   newPassword: string,
   confirmPassword: string
 ): Promise<ApiResponse<{ message: string }>> {
   if (shouldUseMockData()) {
     await new Promise((resolve) => setTimeout(resolve, 500));
-    if (code.startsWith('invalid-')) {
+    const token = credentials.accessToken ?? credentials.code ?? '';
+    if (token.startsWith('invalid-')) {
       return {
         success: false,
         error: {
@@ -429,8 +430,11 @@ export async function resetPassword(
     };
   }
 
+  // implicit フローの access_token を主に送る。PKCE の code も後方互換で送る。
+  // undefined のキーは JSON.stringify で除外される。
   return apiPost<{ message: string }>('/auth/reset-password', {
-    code,
+    accessToken: credentials.accessToken,
+    code: credentials.code,
     newPassword,
     confirmPassword,
   });

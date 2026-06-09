@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -43,7 +43,11 @@ export function PasswordSetForm({ mode }: PasswordSetFormProps) {
   const searchParams = useSearchParams()
   const config = MODE_CONFIG[mode]
 
-  const code = searchParams.get('code')
+  // 認証情報: implicit フロー（メールリンクのハッシュ #access_token=...）が主経路。
+  // PKCE の ?code= は後方互換として併用する。
+  const [accessToken, setAccessToken] = useState<string | null>(null)
+  const [credentialCode, setCredentialCode] = useState<string | null>(null)
+  const [linkChecked, setLinkChecked] = useState(false)
 
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -51,6 +55,38 @@ export function PasswordSetForm({ mode }: PasswordSetFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [isExpired, setIsExpired] = useState(false)
+
+  useEffect(() => {
+    // Supabase の implicit フローでは、メールリンクは
+    //   /reset-password#access_token=...&refresh_token=...&type=recovery
+    // のように **ハッシュ** でトークンを返す。useSearchParams ではハッシュを
+    // 読めないため window.location.hash を直接パースする（これが主経路）。
+    const rawHash = window.location.hash.replace(/^#/, '')
+    const hashParams = new URLSearchParams(rawHash)
+    const tokenFromHash = hashParams.get('access_token')
+    const errorCode = hashParams.get('error_code') || hashParams.get('error')
+    const errorDescription = hashParams.get('error_description')
+    // PKCE フロー（後方互換）: ?code=
+    const codeFromQuery = searchParams.get('code')
+
+    if (tokenFromHash) {
+      setAccessToken(tokenFromHash)
+      // 短命トークンを履歴・アドレスバーに残さない
+      window.history.replaceState(null, '', window.location.pathname + window.location.search)
+    } else if (codeFromQuery) {
+      setCredentialCode(codeFromQuery)
+    } else if (errorCode) {
+      // 期限切れ・使用済みリンク等（#error=access_denied&error_code=otp_expired&error_description=...）
+      setIsExpired(true)
+      if (errorDescription) {
+        setError(decodeURIComponent(errorDescription.replace(/\+/g, ' ')))
+      }
+    }
+    setLinkChecked(true)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const hasCredential = Boolean(accessToken || credentialCode)
 
   const validatePassword = (): string | null => {
     if (newPassword.length < 8) {
@@ -75,7 +111,7 @@ export function PasswordSetForm({ mode }: PasswordSetFormProps) {
       return
     }
 
-    if (!code) {
+    if (!hasCredential) {
       setError(config.noCodeMessage)
       return
     }
@@ -83,7 +119,11 @@ export function PasswordSetForm({ mode }: PasswordSetFormProps) {
     setIsSubmitting(true)
 
     try {
-      const result = await resetPassword(code, newPassword, confirmPassword)
+      const result = await resetPassword(
+        { accessToken: accessToken ?? undefined, code: credentialCode ?? undefined },
+        newPassword,
+        confirmPassword
+      )
 
       if (result.success) {
         setIsSuccess(true)
@@ -168,17 +208,25 @@ export function PasswordSetForm({ mode }: PasswordSetFormProps) {
             <div className="w-12 h-px bg-gin mx-auto mt-4" />
           </div>
 
-          {!code ? (
-            <div className="text-center">
-              <div className="bg-beni-50 border border-beni-200 rounded-elegant px-4 py-3 mb-6">
-                <p className="text-beni text-sm">{config.noCodeMessage}</p>
+          {!linkChecked ? (
+            <div className="text-center text-hai text-sm py-4">読み込み中...</div>
+          ) : !hasCredential ? (
+            <div className="text-center space-y-4">
+              <div className="bg-beni-50 border border-beni-200 rounded-elegant px-4 py-3">
+                <p className="text-beni text-sm">{error || config.noCodeMessage}</p>
+                {isExpired && (
+                  <p className="text-beni/80 text-xs mt-2">{config.expiredHint}</p>
+                )}
               </div>
-              <Button
-                variant="outline"
-                onClick={() => router.push('/login')}
-              >
-                ログイン画面へ戻る
-              </Button>
+              {isExpired && config.retryCta ? (
+                <Button variant="outline" onClick={() => router.push(config.retryCta!.href)}>
+                  {config.retryCta.label}
+                </Button>
+              ) : (
+                <Button variant="outline" onClick={() => router.push('/login')}>
+                  ログイン画面へ戻る
+                </Button>
+              )}
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
