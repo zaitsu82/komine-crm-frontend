@@ -48,6 +48,8 @@ import {
   PERMIT_CERTIFICATE_PAGES,
   ENVELOPE_LETTER_PAGES,
   ENVELOPE_BASE_PAGES,
+  splitPermitAddressAtChome,
+  splitPostalCodeDigits,
 } from '@komine/types';
 
 type DocumentType =
@@ -182,14 +184,31 @@ function buildAutoFillData(
       base.issueMonth = String(now.getMonth() + 1);
       base.issueDay = String(now.getDate());
       base.applicantName = customerName;
-      base.registeredAddress = customer?.address || '';
-      base.currentAddress = customer?.address || '';
+      {
+        const registeredSplit = splitPermitAddressAtChome(
+          customer?.registeredAddress || ''
+        );
+        base.registeredAddress = registeredSplit.line1;
+        base.registeredAddress2 = registeredSplit.line2;
+      }
+      {
+        const currentFull = [customer?.address, customer?.addressLine2]
+          .filter(Boolean)
+          .join(' ');
+        const currentSplit = splitPermitAddressAtChome(currentFull);
+        base.currentAddress = currentSplit.line1;
+        base.currentAddress2 = currentSplit.line2;
+      }
       break;
     }
     case 'envelope-letter':
     case 'envelope-base': {
       base.recipientName = customerName ? `${customerName} 様` : '';
-      base.recipientPostalCode = customer?.postalCode || '';
+      const postalCode = customer?.postalCode || '';
+      base.recipientPostalCode = postalCode;
+      splitPostalCodeDigits(postalCode).forEach((digit, i) => {
+        base[`recipientPostalDigit${i + 1}`] = digit;
+      });
       base.recipientAddress = customer?.address || '';
       base.recipientAddress2 = customer?.addressLine2 || '';
       break;
@@ -366,6 +385,20 @@ export function DocumentForm({
 
   const handleTemplateDataChange = (key: string, value: string) => {
     setTemplateData((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleEnvelopePostalCodeChange = (value: string) => {
+    const digits = splitPostalCodeDigits(value);
+    setTemplateData((prev) => {
+      const next: Record<string, string> = {
+        ...prev,
+        recipientPostalCode: value,
+      };
+      digits.forEach((digit, i) => {
+        next[`recipientPostalDigit${i + 1}`] = digit;
+      });
+      return next;
+    });
   };
 
   const handleTextStyleChange = (id: DocumentTextStylePresetId) => {
@@ -1082,8 +1115,8 @@ export function DocumentForm({
                     placeholder="【デモ】小峰 太郎"
                   />
                 </div>
-                <div className="space-y-2 md:col-span-2">
-                  <Label>本籍</Label>
+                <div className="space-y-2">
+                  <Label>本籍（1列目・○丁目まで）</Label>
                   <Input
                     value={templateData.registeredAddress || ''}
                     onChange={(e) =>
@@ -1092,11 +1125,24 @@ export function DocumentForm({
                         e.target.value
                       )
                     }
-                    placeholder="デモ県デモ市 小峰霊園サンプル参考地1-2-3（架空）"
+                    placeholder="福岡県北九州市八幡西区小峰1丁目"
                   />
                 </div>
-                <div className="space-y-2 md:col-span-2">
-                  <Label>現住所</Label>
+                <div className="space-y-2">
+                  <Label>本籍（2列目・丁目以降）</Label>
+                  <Input
+                    value={templateData.registeredAddress2 || ''}
+                    onChange={(e) =>
+                      handleTemplateDataChange(
+                        'registeredAddress2',
+                        e.target.value
+                      )
+                    }
+                    placeholder="2番3号"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>現住所（1列目・○丁目まで）</Label>
                   <Input
                     value={templateData.currentAddress || ''}
                     onChange={(e) =>
@@ -1105,7 +1151,20 @@ export function DocumentForm({
                         e.target.value
                       )
                     }
-                    placeholder="デモ県デモ市 小峰霊園サンプル…（架空）"
+                    placeholder="福岡県北九州市八幡西区小峰1丁目"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>現住所（2列目・丁目以降）</Label>
+                  <Input
+                    value={templateData.currentAddress2 || ''}
+                    onChange={(e) =>
+                      handleTemplateDataChange(
+                        'currentAddress2',
+                        e.target.value
+                      )
+                    }
+                    placeholder="2番3号 マンション名など"
                   />
                 </div>
               </div>
@@ -1128,17 +1187,24 @@ export function DocumentForm({
             </header>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>郵便番号</Label>
+                <Label>郵便番号（7桁・ハイフン可）</Label>
                 <Input
                   value={templateData.recipientPostalCode || ''}
                   onChange={(e) =>
-                    handleTemplateDataChange(
-                      'recipientPostalCode',
-                      e.target.value
-                    )
+                    isEnvelopeLetterTemplate
+                      ? handleEnvelopePostalCodeChange(e.target.value)
+                      : handleTemplateDataChange(
+                          'recipientPostalCode',
+                          e.target.value
+                        )
                   }
-                  placeholder="100-0001"
+                  placeholder="807-0081"
                 />
+                {isEnvelopeLetterTemplate && (
+                  <p className="text-xs text-hai">
+                    プレビューでは各赤枠に1桁ずつ印字します（ハイフンは印字しません）。
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label>宛名</Label>
