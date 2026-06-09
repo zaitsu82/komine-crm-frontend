@@ -7,6 +7,8 @@ import {
   calculateScheduledCollectiveBurialDate,
   JURIN_RULE_TRANSITION_DATE,
   VALIDITY_RULE_TABLE,
+  STANDARD_VALIDITY_YEARS,
+  getValidityYearOptions,
 } from '@/lib/collective-burial-rules';
 
 describe('collective-burial-rules', () => {
@@ -61,6 +63,43 @@ describe('collective-burial-rules', () => {
         years: 33,
         yearsBeforeTransition: 33,
       });
+    });
+  });
+
+  describe('getValidityYearOptions（#289 合祀年数マスタ参照）', () => {
+    it('マスタの code から年数を昇順・重複排除で返す', () => {
+      const master = [
+        { code: '33', name: '33年' },
+        { code: '13', name: '13年' },
+        { code: '24', name: '24年' },
+        { code: '15', name: '15年' },
+        { code: '13', name: '13年（重複）' },
+      ];
+      expect(getValidityYearOptions(master)).toEqual([13, 15, 24, 33]);
+    });
+
+    it('code が非数値でも name から年数を拾う', () => {
+      const master = [
+        { code: 'VP_13', name: '13年' },
+        { code: null, name: '24年' },
+      ];
+      expect(getValidityYearOptions(master)).toEqual([13, 24]);
+    });
+
+    it('マスタが空 / undefined / null は標準値にフォールバックする', () => {
+      expect(getValidityYearOptions([])).toEqual(STANDARD_VALIDITY_YEARS);
+      expect(getValidityYearOptions(undefined)).toEqual(STANDARD_VALIDITY_YEARS);
+      expect(getValidityYearOptions(null)).toEqual(STANDARD_VALIDITY_YEARS);
+    });
+
+    it('年数を一切取り出せない場合も標準値にフォールバックする', () => {
+      const master = [{ code: 'x', name: '不明' }];
+      expect(getValidityYearOptions(master)).toEqual(STANDARD_VALIDITY_YEARS);
+    });
+
+    it('標準値フォールバックには 24 年が含まれる（旧ハードコードに無かった値）', () => {
+      expect(STANDARD_VALIDITY_YEARS).toContain(24);
+      expect(getValidityYearOptions([])).toContain(24);
     });
   });
 

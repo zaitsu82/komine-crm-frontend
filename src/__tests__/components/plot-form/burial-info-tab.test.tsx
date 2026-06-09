@@ -174,6 +174,20 @@ describe('BurialInfoTab', () => {
     expect(screen.getByText(/自動判定: 33年（通常区画 → 33年）/)).toBeInTheDocument();
   });
 
+  it('合祀年数の標準チップ（マスタ由来・24年含む）で有効期間を設定できる（#289）', async () => {
+    const user = userEvent.setup();
+    render(<BurialInfoTabHost />);
+
+    await user.click(screen.getByLabelText('合祀対象区画'));
+
+    const input = screen.getByLabelText(/有効期間/) as HTMLInputElement;
+    expect(input.value).toBe('33');
+
+    // マスタ未取得時は標準値（13/15/24/33）がフォールバックでチップに並ぶ
+    await user.click(screen.getByRole('button', { name: '24年' }));
+    expect(input.value).toBe('24');
+  });
+
   it('「墓石情報を追加」で墓石情報セクションが展開される', async () => {
     const user = userEvent.setup();
     render(<BurialInfoTabHost />);

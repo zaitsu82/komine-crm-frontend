@@ -16,6 +16,7 @@ export const emptyMasterData: MasterData = {
   sectionNames: [],
   relationships: [],
   contractors: [],
+  validityPeriods: [],
   isLoading: false,
 };
 

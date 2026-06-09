@@ -12,6 +12,7 @@ import {
   getConstructionTypes,
   getSectionNames,
   getContractors,
+  getValidityPeriods,
   MasterItem,
   TaxTypeMasterItem,
   SectionNameMasterItem,
@@ -32,6 +33,7 @@ export interface MasterLists {
   contractors: MasterItem[];
   directions: MasterItem[];
   positions: MasterItem[];
+  validityPeriods: MasterItem[];
 }
 
 // マスタデータの状態型
@@ -176,6 +178,7 @@ export function useMasters(options?: { skipCache?: boolean }) {
       contractors: state.data?.contractor || [],
       directions: state.data?.direction || [],
       positions: state.data?.position || [],
+      validityPeriods: state.data?.validityPeriod || [],
     };
     const active: MasterLists = {
       cemeteryTypes: all.cemeteryTypes.filter((m) => m.isActive),
@@ -190,6 +193,7 @@ export function useMasters(options?: { skipCache?: boolean }) {
       contractors: all.contractors.filter((m) => m.isActive),
       directions: all.directions.filter((m) => m.isActive),
       positions: all.positions.filter((m) => m.isActive),
+      validityPeriods: all.validityPeriods.filter((m) => m.isActive),
     };
     return { allMasters: all, activeMasters: active };
   }, [state.data]);
@@ -214,6 +218,7 @@ export function useMasters(options?: { skipCache?: boolean }) {
     contractors: activeMasters.contractors,
     directions: activeMasters.directions,
     positions: activeMasters.positions,
+    validityPeriods: activeMasters.validityPeriods,
 
     // 名称解決用: 無効化済みを含む全件（#238）
     allMasters,
@@ -272,6 +277,7 @@ export const useRecipientTypes = () => useMasterData<MasterItem>(getRecipientTyp
 export const useConstructionTypes = () => useMasterData<MasterItem>(getConstructionTypes);
 export const useSectionNames = () => useMasterData<SectionNameMasterItem>(getSectionNames);
 export const useContractors = () => useMasterData<MasterItem>(getContractors);
+export const useValidityPeriods = () => useMasterData<MasterItem>(getValidityPeriods);
 
 /**
  * マスタデータからコードで値を検索するユーティリティ

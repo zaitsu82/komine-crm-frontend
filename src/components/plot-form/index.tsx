@@ -37,6 +37,7 @@ export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProp
     sectionNames,
     relationships,
     contractors,
+    validityPeriods,
     allMasters,
     isLoading: isMasterLoading,
   } = useMasters();
@@ -49,6 +50,7 @@ export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProp
     sectionNames,
     relationships,
     contractors,
+    validityPeriods,
     // 無効を含む全件。既存値のフォールバック表示に使用（#238）
     all: allMasters,
     isLoading: isMasterLoading,

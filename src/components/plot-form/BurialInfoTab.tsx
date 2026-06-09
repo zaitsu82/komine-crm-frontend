@@ -14,8 +14,58 @@ import {
   inferValidityPeriodYears,
   summarizeValidityRule,
   calculateScheduledCollectiveBurialDate,
+  getValidityYearOptions,
 } from '@/lib/collective-burial-rules';
 import { formatDate } from '@/lib/format';
+
+/**
+ * 合祀年数の標準値（マスタ由来）をワンタップで選べるクイック選択チップ（#289）。
+ * 自由入力（例外指定 Q17）は維持しつつ、標準年数の語彙をマスタから供給する。
+ */
+function ValidityYearChips({
+  options,
+  value,
+  onPick,
+  onClear,
+}: {
+  options: number[];
+  value: number | null | undefined;
+  onPick: (year: number) => void;
+  onClear?: () => void;
+}) {
+  return (
+    <div className="mt-2 flex flex-wrap items-center gap-1.5">
+      <span className="text-xs text-hai">標準（マスタ）:</span>
+      {options.map((year) => {
+        const active = value === year;
+        return (
+          <button
+            key={year}
+            type="button"
+            aria-pressed={active}
+            onClick={() => onPick(year)}
+            className={`px-2 py-0.5 rounded-full border text-xs transition-colors ${
+              active
+                ? 'bg-matsu text-white border-matsu'
+                : 'bg-white text-sumi border-gin hover:bg-matsu-50'
+            }`}
+          >
+            {year}年
+          </button>
+        );
+      })}
+      {onClear && (
+        <button
+          type="button"
+          onClick={onClear}
+          className="px-2 py-0.5 rounded-full border border-gin text-xs text-hai bg-white hover:bg-kinari"
+        >
+          区画既定
+        </button>
+      )}
+    </div>
+  );
+}
 
 export function BurialInfoTab({
   register,
@@ -28,6 +78,8 @@ export function BurialInfoTab({
   masterData,
 }: BurialInfoTabProps) {
   const relationships = masterData?.relationships ?? [];
+  // 合祀年数の標準選択肢は backend マスタから供給（#289）。未取得時は標準値にフォールバック
+  const validityYearOptions = getValidityYearOptions(masterData?.validityPeriods);
   const [expandedBurialId, setExpandedBurialId] = useState<string | null>(null);
 
   const collectiveBurial = watch('collectiveBurial');
@@ -403,6 +455,25 @@ export function BurialInfoTab({
                               区画既定: {plotYears}年（空欄でこの方も同じ）
                             </p>
                           )}
+                          {/* 個別指定の標準年数もマスタから供給。「区画既定」で継承に戻す（#289） */}
+                          <ValidityYearChips
+                            options={validityYearOptions}
+                            value={hasOverride ? overrideRaw : null}
+                            onPick={(year) =>
+                              setValue(
+                                `buriedPersons.${index}.validityPeriodYearsOverride`,
+                                year,
+                                { shouldDirty: true },
+                              )
+                            }
+                            onClear={() =>
+                              setValue(
+                                `buriedPersons.${index}.validityPeriodYearsOverride`,
+                                null,
+                                { shouldDirty: true },
+                              )
+                            }
+                          />
                           {errors.buriedPersons?.[index]?.validityPeriodYearsOverride && (
                             <p className="text-sm text-beni mt-1">
                               {errors.buriedPersons[index]?.validityPeriodYearsOverride?.message}
@@ -510,6 +581,14 @@ export function BurialInfoTab({
               ) : (
                 <p className="text-xs text-hai mt-1">自動判定: {inferredValidityYears}年（{validityRuleSummary}）</p>
               )}
+              {/* 標準年数（13/15/24/33 等）をマスタから供給。クリックで設定（#289） */}
+              <ValidityYearChips
+                options={validityYearOptions}
+                value={currentValidityYears}
+                onPick={(year) =>
+                  setValue('collectiveBurial.validityPeriodYears', year, { shouldDirty: true })
+                }
+              />
               {errors.collectiveBurial?.validityPeriodYears && (
                 <p className="text-sm text-beni mt-1">
                   {errors.collectiveBurial.validityPeriodYears.message}

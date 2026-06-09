@@ -67,6 +67,7 @@ export {
   getContractors,
   getDirections,
   getPositions,
+  getValidityPeriods,
   createMasterItem,
   updateMasterItem,
   deleteMasterItem,
