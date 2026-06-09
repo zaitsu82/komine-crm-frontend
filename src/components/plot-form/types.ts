@@ -13,6 +13,8 @@ export interface MasterData {
   sectionNames: SectionNameMasterItem[];
   relationships: MasterItem[];
   contractors: MasterItem[];
+  /** 合祀年数マスタ（#289）。合祀設定の有効期間・個別合祀年数の標準選択肢に使う */
+  validityPeriods: MasterItem[];
   /** 名称解決・無効値フォールバック用: 無効を含む全件（#238） */
   all?: MasterLists;
   isLoading: boolean;

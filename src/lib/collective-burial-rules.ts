@@ -54,6 +54,44 @@ export const VALIDITY_RULE_TABLE: Record<GraveType, ValidityRule> = {
   general: { label: '通常区画', years: 33, yearsBeforeTransition: 33 },
 };
 
+/**
+ * 合祀年数マスタ（backend `validity-period`）が未取得/空のときに使う標準年数のフォールバック（#289）。
+ * backend seedMasters.ts の validity-period（13/15/24/33）と一致させる。
+ */
+export const STANDARD_VALIDITY_YEARS: number[] = [13, 15, 24, 33];
+
+/**
+ * 合祀年数の選択肢（標準年数）を backend の合祀年数マスタから導出する（#289）。
+ *
+ * マスタは code/name に年数を持つフラットな一覧（13/15/24/33 等）。ここから
+ * 年数(number)を昇順・重複排除で返す。マスタが空/未取得なら
+ * {@link STANDARD_VALIDITY_YEARS} にフォールバックする。
+ *
+ * 注意: どの区域が何年か（タイプ×年数の対応）はマスタには含まれないため、
+ * 自動判定の既定値は引き続き {@link VALIDITY_RULE_TABLE} が算出する。
+ * 本関数はあくまで「入力時に選べる標準年数の語彙」を提供する。
+ *
+ * @param master 合祀年数マスタ（active のみ想定。code or name に年数を含む）
+ */
+export function getValidityYearOptions(
+  master?: ReadonlyArray<{ code?: string | null; name?: string | null }> | null,
+): number[] {
+  const years = (master ?? [])
+    .map((m) => parseYear(m?.code) ?? parseYear(m?.name))
+    .filter((n): n is number => n !== null);
+  const unique = Array.from(new Set(years)).sort((a, b) => a - b);
+  return unique.length > 0 ? unique : [...STANDARD_VALIDITY_YEARS];
+}
+
+/** "13" / "13年" 等の文字列から先頭の正の整数を取り出す。取れなければ null。 */
+function parseYear(value: string | null | undefined): number | null {
+  if (value == null) return null;
+  const matched = String(value).match(/\d+/);
+  if (!matched) return null;
+  const n = Number(matched[0]);
+  return Number.isInteger(n) && n > 0 ? n : null;
+}
+
 /** 樹林墓部かどうかを区域名から判定 */
 export function isJurinArea(areaName: string | null | undefined): boolean {
   if (!areaName) return false;

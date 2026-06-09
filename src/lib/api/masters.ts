@@ -40,6 +40,10 @@ export interface AllMastersData {
   contractor: MasterItem[];
   direction: MasterItem[];
   position: MasterItem[];
+  // 合祀年数マスタ（#289）。code/name に年数（13/15/24/33 等）を持つフラットな一覧。
+  // タイプ×年数の対応（どの区域が何年か）は持たないため、自動判定ルールは
+  // collective-burial-rules.ts の VALIDITY_RULE_TABLE が引き続き担う（Q34/#281）。
+  validityPeriod: MasterItem[];
 }
 
 // モックデータ
@@ -130,6 +134,13 @@ const mockMasterData: AllMastersData = {
     { id: 1, code: '1', name: '角', description: null, sortOrder: 1, isActive: true },
     { id: 2, code: '2', name: '端', description: null, sortOrder: 2, isActive: true },
     { id: 3, code: '3', name: '中', description: null, sortOrder: 3, isActive: true },
+  ],
+  // 合祀年数: backend seedMasters.ts の validity-period（13/15/24/33）と一致。code=年数。
+  validityPeriod: [
+    { id: 1, code: '13', name: '13年', description: null, sortOrder: 13, isActive: true },
+    { id: 2, code: '15', name: '15年', description: null, sortOrder: 15, isActive: true },
+    { id: 3, code: '24', name: '24年', description: null, sortOrder: 24, isActive: true },
+    { id: 4, code: '33', name: '33年', description: null, sortOrder: 33, isActive: true },
   ],
 };
 
@@ -284,6 +295,16 @@ export async function getPositions(): Promise<ApiResponse<MasterItem[]>> {
   return apiGet<MasterItem[]>('/masters/position');
 }
 
+/**
+ * 合祀年数マスタ取得（#289）
+ */
+export async function getValidityPeriods(): Promise<ApiResponse<MasterItem[]>> {
+  if (shouldUseMockData()) {
+    return { success: true, data: mockMasterData.validityPeriod };
+  }
+  return apiGet<MasterItem[]>('/masters/validity-period');
+}
+
 // CRUD用の型定義
 export type MasterType =
   | 'cemetery-type'
@@ -297,7 +318,8 @@ export type MasterType =
   | 'relationship'
   | 'contractor'
   | 'direction'
-  | 'position';
+  | 'position'
+  | 'validity-period';
 
 export interface CreateMasterRequest {
   code?: string;

@@ -25,6 +25,7 @@ jest.mock('@/lib/api', () => ({
   getConstructionTypes: jest.fn(),
   getSectionNames: jest.fn(),
   getContractors: jest.fn(),
+  getValidityPeriods: jest.fn(),
 }));
 
 const mastersData: AllMastersData = {
@@ -43,6 +44,7 @@ const mastersData: AllMastersData = {
   contractor: [],
   direction: [],
   position: [],
+  validityPeriod: [],
 };
 
 describe('useMasters 2系統アクセサ (#238)', () => {

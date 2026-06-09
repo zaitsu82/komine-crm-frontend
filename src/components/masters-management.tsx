@@ -55,6 +55,7 @@ const MASTER_TYPES: MasterTypeConfig[] = [
   { key: 'recipient-type', label: '受取人タイプ', dataKey: 'recipientType' },
   { key: 'construction-type', label: '工事タイプ', dataKey: 'constructionType' },
   { key: 'section-name', label: '区画名', dataKey: 'sectionName' },
+  { key: 'validity-period', label: '合祀年数', dataKey: 'validityPeriod' },
 ];
 
 export default function MastersManagement() {
