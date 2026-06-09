@@ -1,6 +1,7 @@
 import type { PlotFormData } from '@/lib/validations/plot-form';
 import type { PreviewSection, PreviewDiffSection, PreviewDiffItem } from '@/components/shared/dialogs';
 import type { MasterItem } from '@/lib/api';
+import { isUnsetContractor } from '@/lib/legacy-sentinels';
 
 export interface PreviewMasterContext {
   contractors?: MasterItem[];
@@ -10,7 +11,8 @@ function resolveContractorLabel(
   value: string | null | undefined,
   contractors: MasterItem[] | undefined,
 ): string {
-  if (!value) return '';
+  // legacy-gyousha-0 は「業者ID未設定」のセンチネル。書類にも実在業者として印字しない（#334）。
+  if (!value || isUnsetContractor(value)) return '';
   if (!contractors || contractors.length === 0) return value;
   const master = contractors.find((c) => c.code === value);
   return master ? master.name : value;

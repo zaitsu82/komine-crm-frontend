@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { BillingDetailResponse } from '@komine/types';
 import { getBillingById, BILLING_CATEGORY_LABELS, BILLING_RECORD_STATUS_LABELS } from '@/lib/api/billings';
 import { LegacyAwareValue } from '@/components/legacy-aware-value';
+import { formatFeeType } from '@/lib/legacy-sentinels';
 
 const formatYen = (n: number): string => `¥${n.toLocaleString('ja-JP')}`;
 
@@ -165,7 +166,7 @@ function BillingDetailBody({ billing }: { billing: BillingDetailResponse }) {
                     <td className="px-3 py-2 text-sm text-sumi tabular-nums">{p.paymentDate ?? p.scheduledDate ?? '-'}</td>
                     <td className="px-3 py-2 text-sm text-right text-sumi tabular-nums">{formatYen(p.paymentAmount)}</td>
                     <td className="px-3 py-2 text-sm text-hai hidden sm:table-cell">{p.staffInCharge ?? '-'}</td>
-                    <td className="px-3 py-2 text-sm text-hai hidden md:table-cell">{p.feeType ?? '-'}</td>
+                    <td className="px-3 py-2 text-sm text-hai hidden md:table-cell">{formatFeeType(p.feeType)}</td>
                   </tr>
                 ))}
               </tbody>
