@@ -5,6 +5,7 @@ import {
   formatPostalCode,
   formatBillingMonth,
   formatDate,
+  formatDateWithEra,
   formatYearMonth,
   digitsOnly,
 } from '@/lib/format';
@@ -144,6 +145,83 @@ describe('formatDate', () => {
     expect(formatDate('')).toBe('-');
     expect(formatDate('not-a-date')).toBe('-');
     expect(formatDate(null, '未設定')).toBe('未設定');
+  });
+});
+
+describe('formatDateWithEra', () => {
+  describe('令和時代の日付', () => {
+    it('令和元年の日付を正しくフォーマットする', () => {
+      expect(formatDateWithEra(new Date(2019, 4, 1))).toBe('令和1年 5月1日'); // 令和改元日
+    });
+
+    it('令和5年の日付を正しくフォーマットする', () => {
+      expect(formatDateWithEra(new Date(2023, 11, 25))).toBe('令和5年 12月25日');
+    });
+
+    it('令和6年の日付を正しくフォーマットする', () => {
+      expect(formatDateWithEra(new Date(2024, 0, 1))).toBe('令和6年 1月1日');
+    });
+  });
+
+  describe('平成時代の日付', () => {
+    it('平成元年の日付を正しくフォーマットする', () => {
+      expect(formatDateWithEra(new Date(1989, 0, 8))).toBe('平成1年 1月8日');
+    });
+
+    it('平成10年の日付を正しくフォーマットする', () => {
+      expect(formatDateWithEra(new Date(1998, 5, 10))).toBe('平成10年 6月10日');
+    });
+
+    it('平成最後の日（2019年4月30日）を正しくフォーマットする', () => {
+      expect(formatDateWithEra(new Date(2019, 3, 30))).toBe('平成31年 4月30日');
+    });
+  });
+
+  describe('昭和時代の日付', () => {
+    it('昭和時代の日付は西暦で表示される', () => {
+      expect(formatDateWithEra(new Date(1988, 11, 31))).toBe('1988年 12月31日');
+      expect(formatDateWithEra(new Date(1989, 0, 7))).toBe('1989年 1月7日'); // 平成改元前日
+    });
+  });
+
+  describe('エッジケース', () => {
+    it('nullの場合は空文字を返す', () => {
+      expect(formatDateWithEra(null)).toBe('');
+    });
+
+    it('無効な文字列の場合空文字を返す', () => {
+      expect(formatDateWithEra('invalid-date')).toBe('');
+    });
+
+    it('ISO文字列の日付を正しくフォーマットする', () => {
+      expect(formatDateWithEra('2023-06-15')).toBe('令和5年 6月15日');
+    });
+  });
+
+  describe('年の計算', () => {
+    it('令和年数の計算が正しい', () => {
+      const testCases = [
+        { year: 2019, month: 5, expected: 1 }, // 2019年5月以降が令和
+        { year: 2020, month: 1, expected: 2 },
+        { year: 2023, month: 1, expected: 5 },
+        { year: 2024, month: 1, expected: 6 },
+      ];
+      testCases.forEach(({ year, month, expected }) => {
+        expect(formatDateWithEra(new Date(year, month - 1, 1))).toBe(`令和${expected}年 ${month}月1日`);
+      });
+    });
+
+    it('平成年数の計算が正しい', () => {
+      const testCases = [
+        { year: 1989, month: 2, expected: 1 }, // 1989年1月8日以降が平成
+        { year: 1990, month: 1, expected: 2 },
+        { year: 2000, month: 1, expected: 12 },
+        { year: 2018, month: 1, expected: 30 },
+      ];
+      testCases.forEach(({ year, month, expected }) => {
+        expect(formatDateWithEra(new Date(year, month - 1, 1))).toBe(`平成${expected}年 ${month}月1日`);
+      });
+    });
   });
 });
 
