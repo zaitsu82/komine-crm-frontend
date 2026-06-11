@@ -4,7 +4,7 @@
  * 区画在庫管理フック
  */
 
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { PlotPeriod } from '@/types/plot-constants';
 import {
   getInventorySummary,
@@ -374,47 +374,5 @@ export function usePlotInventoryAreas(
     setSearch,
     setPeriod,
     refresh: fetchAreas,
-  };
-}
-
-/**
- * 在庫管理に必要なすべてのデータを取得する統合フック
- */
-export function usePlotInventory(options: UsePlotInventoryOptions = {}) {
-  const summary = usePlotInventorySummary(options);
-  const periods = usePlotInventoryPeriods(undefined, options);
-  const sections = usePlotInventorySections({}, options);
-  const areas = usePlotInventoryAreas({}, options);
-
-  const isLoading = useMemo(
-    () => summary.isLoading || periods.isLoading || sections.isLoading || areas.isLoading,
-    [summary.isLoading, periods.isLoading, sections.isLoading, areas.isLoading]
-  );
-
-  const error = useMemo(
-    () => summary.error || periods.error || sections.error || areas.error,
-    [summary.error, periods.error, sections.error, areas.error]
-  );
-
-  const refreshAll = useCallback(() => {
-    summary.refresh();
-    periods.refresh();
-    sections.refresh();
-    areas.refresh();
-  }, [summary, periods, sections, areas]);
-
-  return {
-    summary: summary.summary,
-    periods: periods.periods,
-    sections: sections.items,
-    areas: areas.items,
-    isLoading,
-    error,
-    refreshAll,
-    // 詳細操作用
-    summaryHook: summary,
-    periodsHook: periods,
-    sectionsHook: sections,
-    areasHook: areas,
   };
 }

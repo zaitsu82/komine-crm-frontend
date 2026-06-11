@@ -380,8 +380,5 @@ export function useHasPermission(
   return requiredRoles.includes(user.role);
 }
 
-// 認証状態チェック用のヘルパー関数
-export { getAuthToken as getStoredAuthToken } from '@/lib/api';
-
 // Re-export AuthContextType for external use
 export type { AuthContextType };

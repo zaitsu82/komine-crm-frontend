@@ -275,7 +275,7 @@ Customer (顧客 — 申込者・契約者)
 - `src/lib/api/plots.ts` — 区画APIクライアント（@komine/types使用）
 - `src/components/plot-form/` — 区画フォーム（BasicInfo, WorkBilling, Contacts, BurialInfo, History）
 - `src/lib/validations/plot-form.ts` — Zodバリデーション
-- `src/components/plot-list-table.tsx` — 区画一覧テーブル
+- `src/components/plot-registry/` — 区画一覧（テーブル・フィルタ・モバイルカード）
 - `src/components/plot-detail-view.tsx` — 区画詳細表示
 
 ---

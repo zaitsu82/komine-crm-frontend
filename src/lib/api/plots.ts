@@ -661,32 +661,6 @@ export async function getPlots(
 }
 
 /**
- * 全区画一覧取得（複数ページを順次取得）
- * クライアントサイドで全件を扱う場合に使用
- */
-export async function getAllPlots(
-  params: Omit<PlotSearchParams, 'page' | 'limit'> = {}
-): Promise<ApiResponse<PlotListItem[]>> {
-  const allItems: PlotListItem[] = [];
-  let page = 1;
-
-  for (; ;) {
-    const response = await getPlots({ ...params, page, limit: 100 });
-
-    if (!response.success) {
-      return response as ApiResponse<PlotListItem[]>;
-    }
-
-    allItems.push(...response.data.items);
-
-    if (page >= response.data.totalPages) break;
-    page++;
-  }
-
-  return { success: true, data: allItems };
-}
-
-/**
  * 区画区分 distinct 値取得（フィルタ select 用）
  * master 化されるまでの暫定 API
  */

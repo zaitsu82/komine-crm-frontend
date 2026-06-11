@@ -64,19 +64,6 @@ export function formatMoneyString(value: string | null | undefined): string {
 
 // ===== 行表示ヘルパー（テーブル・モバイルカードで共用） =====
 
-/** 入金状態に応じたステータスバッジ（丸印） */
-export function getStatusBadge(plot: PlotListItem) {
-  const status = getPlotDisplayStatus(plot);
-  switch (status) {
-    case 'overdue':
-      return <span className="inline-block w-6 h-6 rounded-full bg-beni text-white text-xs leading-6 text-center" title="滞納">滞</span>;
-    case 'attention':
-      return <span className="inline-block w-6 h-6 rounded-full bg-kohaku text-white text-xs leading-6 text-center" title="未入金">未</span>;
-    default:
-      return <span className="inline-block w-6 h-6 rounded-full bg-matsu text-white text-xs leading-6 text-center" title="正常">正</span>;
-  }
-}
-
 /** 行背景色。滞納/未入金を強調し、それ以外はゼブラ。 */
 export function getRowBgColor(plot: PlotListItem, absoluteIndex: number) {
   const status = getPlotDisplayStatus(plot);

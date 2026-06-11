@@ -448,15 +448,6 @@ export function isAuthenticated(): boolean {
 }
 
 /**
- * モックユーザーを設定（テスト用）
- */
-export function setMockCurrentUser(user: AuthUser | null): void {
-  if (shouldUseMockData()) {
-    mockCurrentUser = user;
-  }
-}
-
-/**
  * アクセストークンをリフレッシュ
  * HttpOnly Cookie対応: リフレッシュトークンはCookieから自動送信される
  * @returns リフレッシュ成功時true、失敗時false
