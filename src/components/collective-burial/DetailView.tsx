@@ -18,7 +18,7 @@ import {
   BILLING_STATUS_COLORS,
 } from '@/lib/api';
 import { useCollectiveBurialMutations } from '@/hooks/useCollectiveBurials';
-import { formatDateWithEra } from '@/lib/utils';
+import { formatDateWithEra } from '@/lib/format';
 import {
   calculateElapsedYears,
   calculateScheduledCollectiveBurialDate,

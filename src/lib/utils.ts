@@ -1,51 +1,8 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
-import { formatCurrency } from "./format"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
-}
-
-export function formatDate(date: Date | null) {
-  if (!date) return ""
-  return new Intl.DateTimeFormat("ja-JP", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(date)
-}
-
-export function formatDateWithEra(date: Date | string | null) {
-  if (!date) return ""
-
-  // 文字列の日付をDateオブジェクトに変換
-  const dateObj = typeof date === 'string' ? new Date(date) : date
-
-  // 無効な日付の場合は空文字列を返す
-  if (isNaN(dateObj.getTime())) return ""
-
-  // 元号境界日（日本標準時）
-  const reiwaStart = new Date(2019, 4, 1)  // 2019年5月1日
-  const heiseiStart = new Date(1989, 0, 8) // 1989年1月8日
-
-  let era = ""
-  let eraYear = 0
-
-  if (dateObj >= reiwaStart) {
-    era = "令和"
-    eraYear = dateObj.getFullYear() - 2018 // 2019年が令和1年
-  } else if (dateObj >= heiseiStart) {
-    era = "平成"
-    eraYear = dateObj.getFullYear() - 1988 // 1989年が平成1年
-  }
-  // 昭和以前は元号なし
-
-  // 元号がない場合は西暦表示
-  if (!era) {
-    return `${dateObj.getFullYear()}年 ${dateObj.getMonth() + 1}月${dateObj.getDate()}日`
-  }
-
-  return `${era}${eraYear}年 ${dateObj.getMonth() + 1}月${dateObj.getDate()}日`
 }
 
 /**
@@ -276,12 +233,4 @@ export function validatePlotAssignments(
  */
 export function formatPlotNumber(section: string, number: string): string {
   return `${section}-${number}`;
-}
-
-/**
- * 価格を日本円形式でフォーマット（例: "1,500,000円"）
- * @deprecated 共通の {@link formatCurrency}（@/lib/format）を使用。後方互換のため残置。
- */
-export function formatPrice(price: number | undefined): string {
-  return formatCurrency(price, "未設定");
 }

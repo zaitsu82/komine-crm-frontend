@@ -197,6 +197,44 @@ export function formatDate(value: string | Date | null | undefined, fallback: st
 }
 
 /**
+ * 日付を元号付き「令和N年 M月D日」形式にする（合祀詳細などの和暦表示向け）。
+ * 平成以前（昭和まで）は元号未対応のため西暦「YYYY年 M月D日」で返す。
+ * null / 無効な日付は空文字。
+ */
+export function formatDateWithEra(date: Date | string | null): string {
+  if (!date) return ''
+
+  // 文字列の日付をDateオブジェクトに変換
+  const dateObj = typeof date === 'string' ? new Date(date) : date
+
+  // 無効な日付の場合は空文字列を返す
+  if (isNaN(dateObj.getTime())) return ''
+
+  // 元号境界日（日本標準時）
+  const reiwaStart = new Date(2019, 4, 1)  // 2019年5月1日
+  const heiseiStart = new Date(1989, 0, 8) // 1989年1月8日
+
+  let era = ""
+  let eraYear = 0
+
+  if (dateObj >= reiwaStart) {
+    era = "令和"
+    eraYear = dateObj.getFullYear() - 2018 // 2019年が令和1年
+  } else if (dateObj >= heiseiStart) {
+    era = "平成"
+    eraYear = dateObj.getFullYear() - 1988 // 1989年が平成1年
+  }
+  // 昭和以前は元号なし
+
+  // 元号がない場合は西暦表示
+  if (!era) {
+    return `${dateObj.getFullYear()}年 ${dateObj.getMonth() + 1}月${dateObj.getDate()}日`
+  }
+
+  return `${era}${eraYear}年 ${dateObj.getMonth() + 1}月${dateObj.getDate()}日`
+}
+
+/**
  * 年月を「YYYY/MM」（西暦4桁・ゼロ埋め）に統一する。
  * 一覧の契約日など、日を省きたい狭い列向け（2桁年 "06/2" を廃止）。
  * date-only 文字列・@db.Date 由来の UTC 深夜 datetime は Date を経由せず整形し、

@@ -141,10 +141,6 @@ const ACCOUNT_TYPE_LABELS: Record<string, string> = {
 
 // ===== ヘルパー関数 =====
 
-function formatPrice(price: number | null | undefined): string {
-  return formatCurrency(price);
-}
-
 interface FeeMasters {
   calcTypes: MasterItem[];
   taxTypes: TaxTypeMasterItem[];
@@ -398,7 +394,7 @@ function BasicInfoTab({
       {/* 契約情報 */}
       <Section title="契約情報">
         <InfoField label="契約日" value={formatDate(plot.contractDate)} emptyKind={contractEmptyKind} />
-        <InfoField label="契約金額" value={formatPrice(plot.price)} emptyKind={contractEmptyKind} />
+        <InfoField label="契約金額" value={formatCurrency(plot.price)} emptyKind={contractEmptyKind} />
         <InfoField label="利用申込" value={CONTRACT_STATUS_LABELS[plot.contractStatus as ContractStatus]} />
         <InfoField label="入金状態" value={PAYMENT_STATUS_LABELS[plot.paymentStatus as PaymentStatus]} />
         <InfoField label="予約日" value={formatDate(plot.reservationDate)} />
@@ -750,7 +746,7 @@ function BurialInfoTab({
           <InfoField label="上限到達日" value={formatDate(plot.collectiveBurial.capacityReachedDate)} />
           <InfoField label="請求予定日" value={formatDate(plot.collectiveBurial.billingScheduledDate)} />
           <InfoField label="請求状態" value={plot.collectiveBurial.billingStatus} />
-          <InfoField label="請求金額" value={formatPrice(plot.collectiveBurial.billingAmount)} />
+          <InfoField label="請求金額" value={formatCurrency(plot.collectiveBurial.billingAmount)} />
           <InfoField label="備考" value={plot.collectiveBurial.notes} />
         </Section>
       )}
@@ -765,7 +761,7 @@ function BurialInfoTab({
           <InfoField label="石材店" value={plot.gravestoneInfo?.gravestoneDealer} />
           <InfoField label="墓石種類" value={plot.gravestoneInfo?.gravestoneType} />
           <InfoField label="周辺面積" value={plot.gravestoneInfo?.surroundingArea} />
-          <InfoField label="墓石代" value={formatPrice(plot.gravestoneInfo?.gravestoneCost)} />
+          <InfoField label="墓石代" value={formatCurrency(plot.gravestoneInfo?.gravestoneCost)} />
           <InfoField label="方位" value={resolveMasterName(directions, plot.gravestoneInfo?.directionId?.toString())} />
           <InfoField label="位置" value={resolveMasterName(positions, plot.gravestoneInfo?.positionId?.toString())} />
           <InfoField label="墓誌" value={plot.gravestoneInfo?.gravestoneInscription} />
@@ -825,7 +821,7 @@ function ConstructionInfoTab({
                       <div className="border border-gin rounded-elegant p-2">
                         <InfoField label="項目1" value={record.workItem1} />
                         <InfoField label="日付" value={formatDate(record.workDate1)} />
-                        <InfoField label="金額" value={formatPrice(record.workAmount1)} />
+                        <InfoField label="金額" value={formatCurrency(record.workAmount1)} />
                         <InfoField label="状態" value={record.workStatus1} />
                       </div>
                     )}
@@ -833,7 +829,7 @@ function ConstructionInfoTab({
                       <div className="border border-gin rounded-elegant p-2">
                         <InfoField label="項目2" value={record.workItem2} />
                         <InfoField label="日付" value={formatDate(record.workDate2)} />
-                        <InfoField label="金額" value={formatPrice(record.workAmount2)} />
+                        <InfoField label="金額" value={formatCurrency(record.workAmount2)} />
                         <InfoField label="状態" value={record.workStatus2} />
                       </div>
                     )}
@@ -848,7 +844,7 @@ function ConstructionInfoTab({
                     {record.paymentType1 && (
                       <div className="border border-gin rounded-elegant p-2">
                         <InfoField label="入金種別1" value={record.paymentType1} />
-                        <InfoField label="入金額" value={formatPrice(record.paymentAmount1)} />
+                        <InfoField label="入金額" value={formatCurrency(record.paymentAmount1)} />
                         <InfoField label="入金日" value={formatDate(record.paymentDate1)} />
                         <InfoField label="状態" value={record.paymentStatus1} />
                       </div>
@@ -856,7 +852,7 @@ function ConstructionInfoTab({
                     {record.paymentType2 && (
                       <div className="border border-gin rounded-elegant p-2">
                         <InfoField label="入金種別2" value={record.paymentType2} />
-                        <InfoField label="入金額" value={formatPrice(record.paymentAmount2)} />
+                        <InfoField label="入金額" value={formatCurrency(record.paymentAmount2)} />
                         <InfoField label="入金予定日" value={formatDate(record.paymentScheduledDate2)} />
                         <InfoField label="状態" value={record.paymentStatus2} />
                       </div>
