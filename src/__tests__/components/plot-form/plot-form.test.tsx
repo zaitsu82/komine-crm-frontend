@@ -17,7 +17,6 @@ jest.mock('@/lib/toast', () => ({
   showWarning: jest.fn(),
   showSuccess: jest.fn(),
   showError: jest.fn(),
-  showInfo: jest.fn(),
 }));
 
 // ===== Mocks =====

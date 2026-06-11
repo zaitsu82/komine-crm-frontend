@@ -10,9 +10,6 @@ import {
   getBillingTypes,
   getRecipientTypes,
   getConstructionTypes,
-  getSectionNames,
-  getContractors,
-  getValidityPeriods,
   MasterItem,
   TaxTypeMasterItem,
   SectionNameMasterItem,
@@ -275,9 +272,6 @@ export const useCalcTypes = () => useMasterData<MasterItem>(getCalcTypes);
 export const useBillingTypes = () => useMasterData<MasterItem>(getBillingTypes);
 export const useRecipientTypes = () => useMasterData<MasterItem>(getRecipientTypes);
 export const useConstructionTypes = () => useMasterData<MasterItem>(getConstructionTypes);
-export const useSectionNames = () => useMasterData<SectionNameMasterItem>(getSectionNames);
-export const useContractors = () => useMasterData<MasterItem>(getContractors);
-export const useValidityPeriods = () => useMasterData<MasterItem>(getValidityPeriods);
 
 /**
  * マスタデータからコードで値を検索するユーティリティ

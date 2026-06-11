@@ -20,9 +20,6 @@ import type { SectionNameMasterItem } from '@/lib/api/masters';
 /** 期の正式名称（backend inventoryService.PERIODS と一致）。表示順の正本も兼ねる。 */
 export const PERIOD_NAMES = ['第1期', '第2期', '第3期', '第3期樹林部', '第4期'] as const;
 
-/** 未分類バケットのラベル（backend UNCLASSIFIED_PERIOD と一致）。 */
-export const UNCLASSIFIED_PERIOD = 'その他';
-
 const PERIOD_NAME_SET: ReadonlySet<string> = new Set(PERIOD_NAMES);
 
 /**

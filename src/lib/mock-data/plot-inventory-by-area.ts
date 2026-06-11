@@ -14,17 +14,6 @@ export interface PlotByAreaItem {
   plotType: string; // タイプ（自由、吉相、樹林など）
 }
 
-// 期ごとの面積別集計
-export interface PeriodAreaSummary {
-  period: PlotPeriod;
-  totalCount: number;
-  usedCount: number;
-  remainingCount: number;
-  totalAreaSqm: number;
-  remainingAreaSqm: number;
-  items: PlotByAreaItem[];
-}
-
 // 第1期の面積別データ
 export const PERIOD_1_BY_AREA: PlotByAreaItem[] = [
   { period: '第1期', areaSqm: 0.5, totalCount: 35, usedCount: 35, remainingCount: 0, remainingAreaSqm: 0, plotType: '千羽鶴' },
@@ -108,11 +97,6 @@ export const PERIOD_4_BY_AREA: PlotByAreaItem[] = [
   { period: '第4期', areaSqm: 0.45, totalCount: 64, usedCount: 1, remainingCount: 63, remainingAreaSqm: 14, plotType: 'るり庵テラスⅡ' },
 ];
 
-// 第4期 つながり区の面積別データ
-export const PERIOD_4_TSUNAGARI_BY_AREA: PlotByAreaItem[] = [
-  { period: '第4期', areaSqm: 1, totalCount: 104, usedCount: 95, remainingCount: 9, remainingAreaSqm: 9, plotType: 'つながり区' },
-];
-
 // 全面積別データを取得
 export function getAllPlotsByArea(): PlotByAreaItem[] {
   return [
@@ -141,130 +125,3 @@ export function getPlotsByAreaForPeriod(period: PlotPeriod): PlotByAreaItem[] {
       return [];
   }
 }
-
-// 期ごとの面積別集計を計算
-export function calculatePeriodAreaSummary(period: PlotPeriod): PeriodAreaSummary {
-  const items = getPlotsByAreaForPeriod(period);
-  const totalCount = items.reduce((sum, item) => sum + item.totalCount, 0);
-  const usedCount = items.reduce((sum, item) => sum + item.usedCount, 0);
-  const remainingCount = items.reduce((sum, item) => sum + item.remainingCount, 0);
-  const totalAreaSqm = items.reduce((sum, item) => sum + (item.totalCount * item.areaSqm), 0);
-  const remainingAreaSqm = items.reduce((sum, item) => sum + item.remainingAreaSqm, 0);
-
-  return {
-    period,
-    totalCount,
-    usedCount,
-    remainingCount,
-    totalAreaSqm,
-    remainingAreaSqm,
-    items,
-  };
-}
-
-// 全期の面積別集計を計算
-export function calculateAllPeriodAreaSummaries(): PeriodAreaSummary[] {
-  const periods: PlotPeriod[] = ['第1期', '第2期', '第3期', '第3期樹林部', '第4期'];
-  return periods.map(period => calculatePeriodAreaSummary(period));
-}
-
-// 全体の面積別集計を計算
-export function calculateTotalAreaSummary(): {
-  totalCount: number;
-  usedCount: number;
-  remainingCount: number;
-  totalAreaSqm: number;
-  remainingAreaSqm: number;
-} {
-  const allItems = getAllPlotsByArea();
-  return {
-    totalCount: allItems.reduce((sum, item) => sum + item.totalCount, 0),
-    usedCount: allItems.reduce((sum, item) => sum + item.usedCount, 0),
-    remainingCount: allItems.reduce((sum, item) => sum + item.remainingCount, 0),
-    totalAreaSqm: allItems.reduce((sum, item) => sum + (item.totalCount * item.areaSqm), 0),
-    remainingAreaSqm: allItems.reduce((sum, item) => sum + item.remainingAreaSqm, 0),
-  };
-}
-
-// 面積でグループ化して集計
-export function getInventoryGroupedByArea(): {
-  areaSqm: number;
-  totalCount: number;
-  usedCount: number;
-  remainingCount: number;
-  remainingAreaSqm: number;
-}[] {
-  const allItems = getAllPlotsByArea();
-  const grouped = new Map<number, {
-    totalCount: number;
-    usedCount: number;
-    remainingCount: number;
-    remainingAreaSqm: number;
-  }>();
-
-  allItems.forEach(item => {
-    const existing = grouped.get(item.areaSqm) || {
-      totalCount: 0,
-      usedCount: 0,
-      remainingCount: 0,
-      remainingAreaSqm: 0,
-    };
-    grouped.set(item.areaSqm, {
-      totalCount: existing.totalCount + item.totalCount,
-      usedCount: existing.usedCount + item.usedCount,
-      remainingCount: existing.remainingCount + item.remainingCount,
-      remainingAreaSqm: existing.remainingAreaSqm + item.remainingAreaSqm,
-    });
-  });
-
-  return Array.from(grouped.entries())
-    .map(([areaSqm, data]) => ({ areaSqm, ...data }))
-    .sort((a, b) => a.areaSqm - b.areaSqm);
-}
-
-// タイプでグループ化して集計
-export function getInventoryGroupedByType(): {
-  plotType: string;
-  totalCount: number;
-  usedCount: number;
-  remainingCount: number;
-  remainingAreaSqm: number;
-}[] {
-  const allItems = getAllPlotsByArea();
-  const grouped = new Map<string, {
-    totalCount: number;
-    usedCount: number;
-    remainingCount: number;
-    remainingAreaSqm: number;
-  }>();
-
-  allItems.forEach(item => {
-    const existing = grouped.get(item.plotType) || {
-      totalCount: 0,
-      usedCount: 0,
-      remainingCount: 0,
-      remainingAreaSqm: 0,
-    };
-    grouped.set(item.plotType, {
-      totalCount: existing.totalCount + item.totalCount,
-      usedCount: existing.usedCount + item.usedCount,
-      remainingCount: existing.remainingCount + item.remainingCount,
-      remainingAreaSqm: existing.remainingAreaSqm + item.remainingAreaSqm,
-    });
-  });
-
-  return Array.from(grouped.entries())
-    .map(([plotType, data]) => ({ plotType, ...data }))
-    .sort((a, b) => b.remainingCount - a.remainingCount);
-}
-
-// 残数のある面積別区画のみを取得
-export function getAvailablePlotsByArea(): PlotByAreaItem[] {
-  return getAllPlotsByArea().filter(item => item.remainingCount > 0);
-}
-
-// 残数0の面積別区画（完売）を取得
-export function getSoldOutPlotsByArea(): PlotByAreaItem[] {
-  return getAllPlotsByArea().filter(item => item.remainingCount === 0);
-}
-

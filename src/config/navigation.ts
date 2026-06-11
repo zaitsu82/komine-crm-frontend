@@ -38,7 +38,5 @@ export const NAV_GROUPS: NavGroup[] = [
   },
 ];
 
-export const NAV_ITEMS: NavItem[] = NAV_GROUPS.flatMap(g => g.items);
-
 // 「業務の流れ」ステッパー定義（WORKFLOW_STEP_PATHS / WORKFLOW_STEPS、#191）は
 // 業務フロー誤記載のため暫定削除（#265）。正フロー確定後に再実装を検討する。
