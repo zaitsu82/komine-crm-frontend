@@ -3,6 +3,8 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import { ContactsTab } from '@/components/plot-form/ContactsTab';
+import { digitsOnly } from '@/lib/format';
+import { familyContactSchema } from '@komine/types/validations';
 import { TabHost, emptyMasterData } from './test-helpers';
 
 jest.mock('@/components/ui/select', () => ({
@@ -160,5 +162,68 @@ describe('ContactsTab', () => {
 
     await user.click(screen.getByText('未入力'));
     expect(screen.getByText('氏名は必須です')).toBeInTheDocument();
+  });
+});
+
+// 連絡先の電話/郵便フィールドに setValueAs: digitsOnly が揃っていることの回帰テスト。
+// フォーム submit ではなく familyContactSchema に対し直接検証する（PR#282 format.test.ts と同方式）。
+// #306: workPhoneNumber への digitsOnly 横展開漏れの再発防止。
+describe('ContactsTab 入力正規化 (#306 digitsOnly)', () => {
+  // ContactsTab で digitsOnly を register に付与している5フィールドと、
+  // それぞれが familyContactSchema 上で取りうる桁数上限（max）を超えるハイフン付き入力。
+  const NORMALIZED_FIELDS = [
+    // [フィールド名, ハイフン付き入力, 正規化後の数字のみ値]
+    ['postalCode', '123-4567', '1234567'], // 8文字 > max(7)
+    ['phoneNumber', '03-1234-5678', '0312345678'], // 12文字 > max(11)
+    ['phoneNumber2', '090-1111-2222', '09011112222'], // 13文字 (max15内だがハイフン除去で揃う)
+    ['faxNumber', '03-9999-8888', '0399998888'], // 12文字 > max(11)
+    ['workPhoneNumber', '06-1234-5678', '0612345678'], // 12文字 (max15内・#306対象)
+  ] as const;
+
+  const baseContact = {
+    emergencyContactFlag: false,
+    name: '田中花子',
+    relationship: '配偶者',
+  };
+
+  it.each(NORMALIZED_FIELDS)(
+    '%s: digitsOnly 後の値は familyContactSchema を通る',
+    (fieldKey, _input, expected) => {
+      const result = familyContactSchema.safeParse({
+        ...baseContact,
+        [fieldKey]: expected,
+      });
+      expect(result.success).toBe(true);
+    }
+  );
+
+  it('postalCode: ハイフン付き(8文字)は max(7) で弾かれる', () => {
+    const result = familyContactSchema.safeParse({
+      ...baseContact,
+      postalCode: '123-4567',
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it.each([['phoneNumber'], ['faxNumber']] as const)(
+    '%s: ハイフン付き(12文字)は max(11) で弾かれる',
+    (fieldKey) => {
+      const result = familyContactSchema.safeParse({
+        ...baseContact,
+        [fieldKey]: '03-1234-5678', // 12文字 > max(11)
+      });
+      expect(result.success).toBe(false);
+    }
+  );
+
+  it('digitsOnly がハイフンを除去して桁内に収める（postalCode）', () => {
+    // 正規化前は弾かれ、正規化後は通る、を1ケースで対比
+    const raw = '123-4567';
+    expect(familyContactSchema.safeParse({ ...baseContact, postalCode: raw }).success).toBe(
+      false
+    );
+    expect(
+      familyContactSchema.safeParse({ ...baseContact, postalCode: digitsOnly(raw) }).success
+    ).toBe(true);
   });
 });
