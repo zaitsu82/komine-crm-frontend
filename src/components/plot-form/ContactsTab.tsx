@@ -398,7 +398,7 @@ export function ContactsTab({
                       </Label>
                       <Input
                         id={`familyContacts.${index}.workPhoneNumber`}
-                        {...register(`familyContacts.${index}.workPhoneNumber`)}
+                        {...register(`familyContacts.${index}.workPhoneNumber`, { setValueAs: digitsOnly })}
                         className={
                           errors.familyContacts?.[index]?.workPhoneNumber ? 'border-beni' : ''
                         }
