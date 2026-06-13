@@ -281,7 +281,7 @@ export function DocumentDetailView({
                 </dt>
                 <dd className="text-sumi">
                   {/* displayNumber 優先・legacy-* 等は「整備中」ミュート表示 #283 */}
-                  {data.contractPlot.physicalPlot.areaName} - <LegacyAwareValue value={data.contractPlot.physicalPlot.displayNumber || data.contractPlot.physicalPlot.plotNumber} kind="plotNumber" />
+                  <LegacyAwareValue value={data.contractPlot.physicalPlot.areaName} kind="areaName" /> - <LegacyAwareValue value={data.contractPlot.physicalPlot.displayNumber || data.contractPlot.physicalPlot.plotNumber} kind="plotNumber" />
                 </dd>
               </div>
             ) : (

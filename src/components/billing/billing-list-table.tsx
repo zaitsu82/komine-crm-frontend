@@ -118,7 +118,9 @@ export function BillingListTable({
                   {/* displayNumber 優先・legacy-* 等は「整備中」ミュート表示 #283 */}
                   <LegacyAwareValue value={b.displayNumber || b.plotNumber} kind="plotNumber" emptyText="-" />
                   {b.areaName && (
-                    <span className="text-xs text-hai ml-1">({b.areaName})</span>
+                    <span className="text-xs text-hai ml-1">
+                      (<LegacyAwareValue value={b.areaName} kind="areaName" />)
+                    </span>
                   )}
                 </td>
               )}

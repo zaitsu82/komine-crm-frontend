@@ -100,7 +100,7 @@ export default function CollectiveBurialDetailView({
               <h2 className="font-mincho text-xl font-semibold text-sumi tracking-wide">合祀詳細</h2>
               <p className="text-sm text-hai mt-0.5">
                 {/* displayNumber 優先・legacy-* 等は「整備中」ミュート表示 #283 */}
-                区画: <LegacyAwareValue value={data.displayNumber || data.plotNumber} kind="plotNumber" /> / {data.areaName}
+                区画: <LegacyAwareValue value={data.displayNumber || data.plotNumber} kind="plotNumber" /> / <LegacyAwareValue value={data.areaName} kind="areaName" />
               </p>
             </div>
             <span className={`px-4 py-1.5 rounded-full text-sm font-medium ${BILLING_STATUS_COLORS[data.billingStatus as BillingStatus]}`}>
@@ -154,7 +154,10 @@ export default function CollectiveBurialDetailView({
                   </div>
                   <div>
                     <Label className="text-sm text-hai">区域</Label>
-                    <p className="text-sumi mt-1">{data.areaName}</p>
+                    {/* legacy-* エリア値は「整備中」ミュート表示 #307 */}
+                    <p className="text-sumi mt-1">
+                      <LegacyAwareValue value={data.areaName} kind="areaName" />
+                    </p>
                   </div>
                   <div>
                     <Label className="text-sm text-hai">契約日</Label>

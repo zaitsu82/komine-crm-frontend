@@ -113,7 +113,7 @@ function BillingDetailBody({ billing }: { billing: BillingDetailResponse }) {
             value={
               billing.displayNumber || billing.plotNumber ? (
                 <>
-                  <LegacyAwareValue value={billing.displayNumber || billing.plotNumber} kind="plotNumber" /> ({billing.areaName ?? ''})
+                  <LegacyAwareValue value={billing.displayNumber || billing.plotNumber} kind="plotNumber" /> (<LegacyAwareValue value={billing.areaName} kind="areaName" emptyText="" />)
                 </>
               ) : (
                 '-'
