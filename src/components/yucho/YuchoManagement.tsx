@@ -413,7 +413,10 @@ function ManagementTable({ items, year }: { items: YuchoBillingItem[]; year: num
                     {/* displayNumber 優先・legacy-* 等は「整備中」ミュート表示 #283 */}
                     <LegacyAwareValue value={item.displayNumber || item.plotNumber} kind="plotNumber" />
                   </td>
-                  <td className="px-4 py-3 text-sumi">{item.areaName}</td>
+                  <td className="px-4 py-3 text-sumi">
+                    {/* legacy-* エリア値は「整備中」ミュート表示 #307 */}
+                    <LegacyAwareValue value={item.areaName} kind="areaName" />
+                  </td>
                   <td className="px-4 py-3 text-sumi">
                     <div>{item.customerName ?? '—'}</div>
                     <div className="text-xs text-hai">{item.customerNameKana ?? ''}</div>

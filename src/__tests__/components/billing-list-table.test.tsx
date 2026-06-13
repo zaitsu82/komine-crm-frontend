@@ -76,3 +76,34 @@ describe('BillingListTable の区画番号表示 (#283)', () => {
     expect(el.className).toContain('italic');
   });
 });
+
+/**
+ * #307: 二次画面の areaName も legacy-aware 表示にする。
+ * 正規化済みの期名はそのまま、レガシー移行値（1-29 等）は「整備中」ミュート表示。
+ */
+describe('BillingListTable の areaName 表示 (#307)', () => {
+  const makeBilling = (overrides: Partial<Billing>): Billing =>
+    ({
+      id: 'b1',
+      amount: 5000,
+      paidAmount: 0,
+      plotNumber: 'A-1',
+      displayNumber: 'A-1',
+      areaName: '第1期',
+      customer: null,
+      ...overrides,
+    } as unknown as Billing);
+
+  it('正規化済みの areaName はミュートせずそのまま表示する', () => {
+    render(<BillingListTable items={[makeBilling({ areaName: '第1期' })]} />);
+    const el = screen.getByText('第1期');
+    expect(el).not.toHaveAttribute('title', LEGACY_VALUE_NOTE);
+  });
+
+  it('legacy 移行値の areaName は「整備中」ミュート表示にする', () => {
+    render(<BillingListTable items={[makeBilling({ areaName: '1-29' })]} />);
+    const el = screen.getByText('1-29');
+    expect(el).toHaveAttribute('title', LEGACY_VALUE_NOTE);
+    expect(el.className).toContain('italic');
+  });
+});
