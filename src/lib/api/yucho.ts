@@ -21,6 +21,10 @@ export interface YuchoBillingInfo {
   accountType: string | null;
   accountNumber: string | null;
   accountHolder: string | null;
+  /** ゆうちょ記号（5桁・"1"+店番3桁+預金種目1桁）。CSVと同じ正準ソース（backend#367） */
+  yuchoSymbol: string | null;
+  /** ゆうちょ番号（口座番号）。CSVと同じ正準ソース（backend#367） */
+  yuchoNumber: string | null;
 }
 
 export interface YuchoBillingItem {
