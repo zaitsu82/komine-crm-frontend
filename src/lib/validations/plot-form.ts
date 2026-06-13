@@ -379,8 +379,15 @@ export function plotFormDataToUpdateRequest(formData: PlotUpdateFormData): Updat
   if (formData.contractPlot) {
     request.contractPlot = {
       contractAreaSqm: formData.contractPlot.contractAreaSqm,
-      locationDescription: formData.contractPlot.locationDescription || undefined,
-      inscription: formData.contractPlot.inscription || undefined,
+      // 空文字は明示 null で送り、backend に「クリア」と解釈させる（#304）。
+      // `|| undefined` だと backend の `!== undefined` ガードで「変更なし」扱いになり、
+      // 一度登録した値を UI から空にできなくなる。
+      locationDescription: formData.contractPlot.locationDescription?.trim()
+        ? formData.contractPlot.locationDescription
+        : null,
+      inscription: formData.contractPlot.inscription?.trim()
+        ? formData.contractPlot.inscription
+        : null,
     };
   }
 

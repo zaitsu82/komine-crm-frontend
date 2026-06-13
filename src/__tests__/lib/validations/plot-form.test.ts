@@ -922,6 +922,38 @@ describe('plotFormDataToUpdateRequest', () => {
     expect(request.contractPlot!.locationDescription).toBe('右半分');
   });
 
+  // issue #304: 碑文・区画位置詳細を空にして保存したとき、backend に「クリア」と
+  // 解釈させるため空文字を null で送る（`|| undefined` だと backend の
+  // `!== undefined` ガードで握りつぶされ、一度登録した値を UI から消せなくなる）。
+  it('locationDescription / inscription が空文字のとき null を送る（クリア）', () => {
+    const formData: PlotUpdateFormData = {
+      contractPlot: { contractAreaSqm: 3.6, locationDescription: '', inscription: '' },
+    };
+    const request = plotFormDataToUpdateRequest(formData);
+
+    expect(request.contractPlot!.locationDescription).toBeNull();
+    expect(request.contractPlot!.inscription).toBeNull();
+  });
+
+  it('locationDescription / inscription が空白のみのとき null を送る（クリア）', () => {
+    const formData: PlotUpdateFormData = {
+      contractPlot: { contractAreaSqm: 3.6, locationDescription: '   ', inscription: '\t ' },
+    };
+    const request = plotFormDataToUpdateRequest(formData);
+
+    expect(request.contractPlot!.locationDescription).toBeNull();
+    expect(request.contractPlot!.inscription).toBeNull();
+  });
+
+  it('inscription に値があるときはそのまま送る', () => {
+    const formData: PlotUpdateFormData = {
+      contractPlot: { contractAreaSqm: 3.6, inscription: '南無阿弥陀仏' },
+    };
+    const request = plotFormDataToUpdateRequest(formData);
+
+    expect(request.contractPlot!.inscription).toBe('南無阿弥陀仏');
+  });
+
   it('optionalセクションを直接パスする', () => {
     const workInfo = {
       companyName: '株式会社テスト',
