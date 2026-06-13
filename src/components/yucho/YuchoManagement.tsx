@@ -34,12 +34,32 @@ function formatYen(amount: number) {
 }
 
 /**
- * BillingInfo の口座番号からゆうちょ風の表示「記号-番号」を組み立てる。
- * 方式A前提: branch_name の3桁数字を支店コードとして「1{支店コード}0」を記号、account_number を番号として表示。
+ * 記号番号があれば「記号-番号」を組み立てる（backend yuchoAccount.formatSymbolNumber と同ロジック）。
+ * どちらか欠ければ null を返し、呼び出し側で従来の支店名推定にフォールバックさせる。
  */
-function formatYuchoAccount(item: YuchoBillingItem): string {
+function formatSymbolNumber(
+  symbol: string | null | undefined,
+  num: string | null | undefined,
+): string | null {
+  const s = symbol?.replace(/[^\d]/g, '') ?? '';
+  const n = num?.replace(/[^\d]/g, '') ?? '';
+  if (!s || !n) return null;
+  return `${s}-${n}`;
+}
+
+/**
+ * ゆうちょ風の表示「記号-番号」を組み立てる。
+ * #305: CSV出力（backend）は記号番号(yuchoSymbol/yuchoNumber)を正準ソースにするため、
+ * プレビュー表示も記号番号があればそれを優先し、CSVと乖離しないようにする。
+ * 記号番号が無い場合のみ、従来の支店名(branch_name)の3桁数字から「1{支店コード}0」を推定。
+ */
+export function formatYuchoAccount(item: YuchoBillingItem): string {
   const info = item.billingInfo;
   if (!info) return '—';
+  // 記号番号があれば最優先（CSVと同一ソース）
+  const fromSymbolNumber = formatSymbolNumber(info.yuchoSymbol, info.yuchoNumber);
+  if (fromSymbolNumber) return fromSymbolNumber;
+  // フォールバック: 支店名の3桁から記号を推定（旧データ向け）
   const branch = (info.branchName ?? '').match(/\d{3}/)?.[0];
   const symbol = branch ? `1${branch}0` : info.branchName ?? '';
   const number = info.accountNumber ?? '';
