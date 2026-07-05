@@ -406,8 +406,6 @@ function BasicInfoTab({
         <InfoField label="平成書番号" value={plot.permitNumber} emptyKind={contractEmptyKind} />
         <InfoField label="開始日" value={formatDate(plot.startDate)} emptyKind={contractEmptyKind} />
         <InfoField label="契約備考" value={plot.contractNotes} />
-        {/* 碑文（注意書き）。墓誌(gravestoneInscription)とは別物（#10） */}
-        <InfoField label="碑文（注意書き）" value={plot.inscription} hint="一覧に表示する注意書きの一言（墓誌とは別）" />
       </Section>
 
       {/* 契約者情報（今の契約者）— メイン表示 */}
@@ -982,8 +980,9 @@ export default function PlotDetailView({ plotId, onEdit, onBack, onDelete, onRes
       {/* ヘッダー + ツールバー */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4 md:mb-6 bg-white border border-gin rounded-elegant-lg shadow-elegant-sm p-4 md:p-5">
         <div className="min-w-0">
+          {/* エリア（区）- 区画No（番）の順で「2区-12番」と読めるようにする（システム確認 項目①） */}
           <h2 className="text-lg md:text-2xl font-bold text-sumi truncate">
-            <LegacyAwareValue value={displayPlotNumber} kind="plotNumber" /> - <LegacyAwareValue value={plot.physicalPlot.areaName} kind="areaName" />
+            <LegacyAwareValue value={plot.physicalPlot.areaName} kind="areaName" /> - <LegacyAwareValue value={displayPlotNumber} kind="plotNumber" />
           </h2>
           {((!plot.physicalPlot.displayNumber && isLegacyPlotNumber(plot.physicalPlot.plotNumber)) || isLegacyAreaName(plot.physicalPlot.areaName)) && (
             <LegacyValueNote className="mt-1" />

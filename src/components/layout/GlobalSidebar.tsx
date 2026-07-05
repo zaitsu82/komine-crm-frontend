@@ -77,7 +77,7 @@ export default function GlobalSidebar({
       )}
       <div
         className={`bg-kinari border-r border-gin fixed top-0 left-0 h-screen overflow-y-auto overflow-x-hidden flex flex-col transition-all duration-300 ease-in-out
-          ${collapsed ? 'w-16' : 'w-64'}
+          ${collapsed ? 'w-16' : 'w-56'}
           ${mobileOpen ? 'translate-x-0 z-50' : '-translate-x-full z-50'}
           md:translate-x-0 md:z-10
         `}

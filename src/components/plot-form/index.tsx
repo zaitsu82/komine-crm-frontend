@@ -167,7 +167,6 @@ export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProp
     // 契約区画
     'contractPlot.contractAreaSqm': '契約面積',
     'contractPlot.locationDescription': '区画位置詳細',
-    'contractPlot.inscription': '碑文（注意書き）',
     // 販売契約
     'saleContract.contractDate': '契約日',
     'saleContract.price': '金額',

@@ -54,7 +54,6 @@ const sectionConfigs: SectionConfig[] = [
     fields: [
       { key: 'contractPlot.contractAreaSqm', label: '契約面積（㎡）', format: formatNumber },
       { key: 'contractPlot.locationDescription', label: '区画位置詳細' },
-      { key: 'contractPlot.inscription', label: '碑文（注意書き）' },
     ],
   },
   {

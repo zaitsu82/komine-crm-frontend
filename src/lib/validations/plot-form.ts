@@ -90,7 +90,6 @@ export const defaultPhysicalPlot: PhysicalPlotFormData = {
 export const defaultContractPlot: ContractPlotFormData = {
   contractAreaSqm: 3.6,
   locationDescription: null,
-  inscription: null,
 };
 
 export const defaultSaleContract: SaleContractFormData = {
@@ -179,7 +178,6 @@ export function plotFormDataToCreateRequest(formData: PlotFormData): CreatePlotR
     contractPlot: {
       contractAreaSqm: formData.contractPlot.contractAreaSqm,
       locationDescription: formData.contractPlot.locationDescription || undefined,
-      inscription: formData.contractPlot.inscription || undefined,
     },
     saleContract: {
       contractDate: formData.saleContract.contractDate,
@@ -385,9 +383,6 @@ export function plotFormDataToUpdateRequest(formData: PlotUpdateFormData): Updat
       locationDescription: formData.contractPlot.locationDescription?.trim()
         ? formData.contractPlot.locationDescription
         : null,
-      inscription: formData.contractPlot.inscription?.trim()
-        ? formData.contractPlot.inscription
-        : null,
     };
   }
 
@@ -581,7 +576,6 @@ export function plotDetailToFormData(detail: PlotDetailResponse): PlotFormData {
     contractPlot: {
       contractAreaSqm: detail.contractAreaSqm,
       locationDescription: detail.locationDescription,
-      inscription: detail.inscription,
     },
     saleContract: {
       contractDate: toDateOnly(detail.contractDate),
