@@ -119,7 +119,6 @@ function makePlotDetail(overrides: Partial<PlotDetailResponse> = {}): PlotDetail
     permitNumber: null,
     startDate: null,
     contractNotes: null,
-    inscription: null,
     agentName: null,
     graveKind: null,
     graveKubun: null,
@@ -653,7 +652,6 @@ describe('plot-form.ts - デフォルト値', () => {
     expect(defaultContractPlot).toEqual({
       contractAreaSqm: 3.6,
       locationDescription: null,
-      inscription: null,
     });
   });
 
@@ -922,36 +920,25 @@ describe('plotFormDataToUpdateRequest', () => {
     expect(request.contractPlot!.locationDescription).toBe('右半分');
   });
 
-  // issue #304: 碑文・区画位置詳細を空にして保存したとき、backend に「クリア」と
+  // issue #304: 区画位置詳細を空にして保存したとき、backend に「クリア」と
   // 解釈させるため空文字を null で送る（`|| undefined` だと backend の
   // `!== undefined` ガードで握りつぶされ、一度登録した値を UI から消せなくなる）。
-  it('locationDescription / inscription が空文字のとき null を送る（クリア）', () => {
+  it('locationDescription が空文字のとき null を送る（クリア）', () => {
     const formData: PlotUpdateFormData = {
-      contractPlot: { contractAreaSqm: 3.6, locationDescription: '', inscription: '' },
+      contractPlot: { contractAreaSqm: 3.6, locationDescription: '' },
     };
     const request = plotFormDataToUpdateRequest(formData);
 
     expect(request.contractPlot!.locationDescription).toBeNull();
-    expect(request.contractPlot!.inscription).toBeNull();
   });
 
-  it('locationDescription / inscription が空白のみのとき null を送る（クリア）', () => {
+  it('locationDescription が空白のみのとき null を送る（クリア）', () => {
     const formData: PlotUpdateFormData = {
-      contractPlot: { contractAreaSqm: 3.6, locationDescription: '   ', inscription: '\t ' },
+      contractPlot: { contractAreaSqm: 3.6, locationDescription: '   ' },
     };
     const request = plotFormDataToUpdateRequest(formData);
 
     expect(request.contractPlot!.locationDescription).toBeNull();
-    expect(request.contractPlot!.inscription).toBeNull();
-  });
-
-  it('inscription に値があるときはそのまま送る', () => {
-    const formData: PlotUpdateFormData = {
-      contractPlot: { contractAreaSqm: 3.6, inscription: '南無阿弥陀仏' },
-    };
-    const request = plotFormDataToUpdateRequest(formData);
-
-    expect(request.contractPlot!.inscription).toBe('南無阿弥陀仏');
   });
 
   it('optionalセクションを直接パスする', () => {

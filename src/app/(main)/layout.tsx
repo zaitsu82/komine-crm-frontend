@@ -15,7 +15,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     return () => window.removeEventListener('open-mobile-sidebar', handleOpenSidebar);
   }, []);
 
-  const sidebarWidth = sidebarCollapsed ? 'md:ml-16' : 'md:ml-64';
+  const sidebarWidth = sidebarCollapsed ? 'md:ml-16' : 'md:ml-56';
 
   return (
     <AuthGuard>
