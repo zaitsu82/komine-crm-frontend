@@ -226,7 +226,7 @@ const TEMPLATE_LABELS: Record<TemplateId, string> = {
   contract: '契約書',
   permit: '許可証',
   'envelope-letter': '封筒書',
-  'envelope-base': '封筒台',
+  'envelope-base': '封筒大',
   'payment-guide': 'お支払い方法のご案内',
   other: 'その他',
 };
@@ -631,7 +631,7 @@ export function DocumentForm({
                     : isEnvelopeLetterTemplate
                       ? '封筒書は表面・裏面の2ページです。タブで切り替えてください。'
                       : isEnvelopeBaseTemplate
-                        ? '封筒台（大型封筒）1枚のテンプレートです。'
+                        ? '封筒大（大型封筒）1枚のテンプレートです。'
                         : isPaymentGuideTemplate
                           ? '振込先や代表者名など、変更があれば直接編集できます。大半の文面は既定のままで問題ありません。'
                           : '下の「テキストの種」で書体バランスを変えられます。本文はプレビュー内を直接編集してください。右のフォームとも同期します。'}
@@ -1172,13 +1172,13 @@ export function DocumentForm({
           </section>
         )}
 
-        {/* ===== 封筒書・封筒台（宛先） ===== */}
+        {/* ===== 封筒書・封筒大（宛先） ===== */}
         {showEnvelopeRecipientForm && (
           <section className="bg-white rounded-elegant-lg border border-gin p-4 md:p-6">
             <header className="mb-4 flex items-start gap-2 pl-3 border-l-4 border-l-cha">
               <div>
                 <h3 className="font-mincho text-base md:text-lg font-semibold text-sumi">
-                  {isEnvelopeLetterTemplate ? '封筒書（宛先）' : '封筒台（宛先）'}
+                  {isEnvelopeLetterTemplate ? '封筒書（宛先）' : '封筒大（宛先）'}
                 </h3>
                 <p className="text-xs text-hai mt-0.5">
                   プレビュー上の宛先欄に印字されます。

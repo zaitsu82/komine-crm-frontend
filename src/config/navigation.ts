@@ -24,7 +24,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: '台帳問い合わせ', path: '/plots', requiredRoles: ['viewer', 'operator', 'manager', 'admin'], icon: 'search', description: '区画ごとの契約・顧客・請求・入金を管理する基点の画面' },
       { label: '合祀管理', path: '/collective-burials', requiredRoles: ['manager', 'admin'], icon: 'archive', description: '契約期間の満了後に行う合祀の予定・請求を管理' },
       { label: '区画残数管理', path: '/plot-availability', requiredRoles: ['viewer', 'operator', 'manager', 'admin'], icon: 'grid', description: '区画の空き状況・使用率を期別に集計' },
-      { label: '書類管理', path: '/documents', requiredRoles: ['viewer', 'operator', 'manager', 'admin'], icon: 'file-text', description: '契約書・許可証などの書類を発行・管理' },
+      { label: '書類管理', path: '/documents', requiredRoles: ['viewer', 'operator', 'manager', 'admin'], icon: 'file-text', description: '許可証・封筒などの書類を発行・管理' },
       { label: 'ゆうちょ連携', path: '/yucho', requiredRoles: ['manager', 'admin'], icon: 'bank', description: '管理料の口座振替データ（CSV）を出力' },
     ],
   },
