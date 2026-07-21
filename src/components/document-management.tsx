@@ -33,7 +33,7 @@ const TEMPLATE_LABELS: Record<TemplateId, string> = {
   contract: '契約書',
   permit: '許可証（永代使用）',
   'envelope-letter': '封筒書',
-  'envelope-base': '封筒台',
+  'envelope-base': '封筒大',
   'payment-guide': 'お支払い方法のご案内',
   other: 'その他',
 };

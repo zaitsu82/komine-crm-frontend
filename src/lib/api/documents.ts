@@ -321,7 +321,7 @@ export const DOCUMENT_TYPE_LABELS: Record<DocumentType, string> = {
   contract: '契約書',
   permit: '許可証',
   envelope_letter: '封筒書',
-  envelope_base: '封筒台',
+  envelope_base: '封筒大',
   other: 'その他',
 };
 

@@ -3,8 +3,6 @@
 import { Button } from '@/components/ui/button';
 import {
   FileText,
-  Mail,
-  FileCheck,
   FileBadge,
   File,
   Plus,
@@ -96,23 +94,7 @@ const TEMPLATES: TemplateOption[] = [
     theme: 'ai',
     hasTemplate: true,
   },
-  {
-    id: 'postcard',
-    label: 'はがき',
-    description:
-      '案内状・お知らせ等のはがきを作成します。宛先・差出人情報を入力できます。',
-    icon: <Mail className="h-7 w-7" />,
-    theme: 'matsu',
-    hasTemplate: true,
-  },
-  {
-    id: 'contract',
-    label: '契約書',
-    description: '区画の使用契約書を作成します。契約条件を入力して出力できます。',
-    icon: <FileCheck className="h-7 w-7" />,
-    theme: 'kohaku',
-    hasTemplate: false,
-  },
+  // はがき・契約書は業務上不要のため新規作成の選択肢から外す（既存データの閲覧は維持）
   {
     id: 'permit',
     label: '許可証',
@@ -133,7 +115,7 @@ const TEMPLATES: TemplateOption[] = [
   },
   {
     id: 'envelope-base',
-    label: '封筒台',
+    label: '封筒大',
     description:
       '大型封筒用のテンプレート（1枚）に宛先を印字して作成します。',
     icon: <LayoutTemplate className="h-7 w-7" />,
