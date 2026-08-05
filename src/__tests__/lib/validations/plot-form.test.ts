@@ -1393,6 +1393,7 @@ describe('plotDetailToFormData', () => {
           chiefMournerName: null,
           chiefMournerRelationship: null,
           validityPeriodYearsOverride: null,
+          isFinalBurial: false,
           notes: null,
         },
       ],

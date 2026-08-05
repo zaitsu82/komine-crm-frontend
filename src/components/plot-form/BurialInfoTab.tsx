@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { SelectItem } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Gender } from '@komine/types';
 import { ChevronDown, ChevronUp, Trash2, Plus } from 'lucide-react';
 import {
@@ -123,6 +124,59 @@ export function BurialInfoTab({
     [Gender.NotAnswered]: '未回答',
   };
 
+  // ===== 最終納骨者（合祀カウントダウンの起点）— 議事録 2026-07-21 §1 =====
+
+  const buriedPersons = watch('buriedPersons');
+  // 区画に適用される合祀年数（合祀設定の入力値。未入力なら自動判定値）
+  const resolvedPlotValidityYears =
+    typeof collectiveBurial?.validityPeriodYears === 'number' &&
+    !Number.isNaN(collectiveBurial.validityPeriodYears)
+      ? collectiveBurial.validityPeriodYears
+      : inferredValidityYears;
+  const finalBurialIndex =
+    buriedPersons?.findIndex((person) => person?.isFinalBurial === true) ?? -1;
+  const hasFinalBurial = finalBurialIndex >= 0;
+  // 議事録の「2人目以降の納骨登録時に毎回、カウントダウンを開始してよいか確認を促す」に対応。
+  // 毎回モーダルを出すと作業を止めるため、未指定であることを常設の注意として見せる。
+  const shouldPromptFinalBurial =
+    collectiveBurialEnabled && (buriedPersons?.length ?? 0) >= 2 && !hasFinalBurial;
+
+  // 確認ダイアログ対象の埋葬者 index（null = 非表示）
+  const [finalBurialConfirmIndex, setFinalBurialConfirmIndex] = useState<number | null>(null);
+
+  /**
+   * 最終納骨者フラグを設定する。1区画につき1人までなので、オンにしたら他は自動でオフにする
+   * （backend も1人までしか受け付けず、複数指定は 400 になる）。
+   */
+  const setFinalBurial = (index: number, value: boolean) => {
+    if (value) {
+      (buriedPersons ?? []).forEach((_, i) => {
+        if (i !== index) {
+          setValue(`buriedPersons.${i}.isFinalBurial`, false, { shouldDirty: true });
+        }
+      });
+    }
+    setValue(`buriedPersons.${index}.isFinalBurial`, value, { shouldDirty: true });
+  };
+
+  const requestFinalBurialConfirm = (index: number) => setFinalBurialConfirmIndex(index);
+
+  const confirmTargetName =
+    finalBurialConfirmIndex === null
+      ? ''
+      : watch(`buriedPersons.${finalBurialConfirmIndex}.name`) || 'この方';
+  const confirmTargetBurialDate =
+    finalBurialConfirmIndex === null
+      ? null
+      : watch(`buriedPersons.${finalBurialConfirmIndex}.burialDate`) || null;
+  const confirmScheduledDate = confirmTargetBurialDate
+    ? calculateScheduledCollectiveBurialDate(confirmTargetBurialDate, resolvedPlotValidityYears)
+    : null;
+  const replacedFinalBurialName =
+    hasFinalBurial && finalBurialConfirmIndex !== null && finalBurialIndex !== finalBurialConfirmIndex
+      ? watch(`buriedPersons.${finalBurialIndex}.name`) || '（氏名未入力）'
+      : null;
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -137,6 +191,19 @@ export function BurialInfoTab({
           埋葬者を追加
         </Button>
       </div>
+
+      {/* 最終納骨者が未指定である旨の常設注意（議事録 2026-07-21 §1）。
+          2人目以降の納骨で毎回意識してもらう箇所。指定されるまで契約日起点で数える */}
+      {shouldPromptFinalBurial && (
+        <div className="p-3 rounded-lg border border-kohaku-200 bg-kohaku-50">
+          <p className="text-sm text-kohaku-dark font-medium">最終納骨者が指定されていません</p>
+          <p className="text-xs text-kohaku-dark mt-1">
+            この中に最後の納骨者がいる場合は、その方を開いて「最終納骨者」をオンにしてください。
+            オンにするとその方の埋葬日を起点に合祀までのカウントダウンが始まります。
+            指定がない間は契約日起点で数えます。
+          </p>
+        </div>
+      )}
 
       {/* Header Row */}
       <div className="grid grid-cols-4 gap-4 p-3 bg-kinari border rounded-md text-sm font-semibold">
@@ -169,6 +236,12 @@ export function BurialInfoTab({
                 <div className="grid grid-cols-4 gap-4 flex-1 text-sm">
                   <span className="font-medium">
                     {watch(`buriedPersons.${index}.name`) || '未入力'}
+                    {/* 折りたたんだままでも最終納骨者が誰か分かるようにする */}
+                    {watch(`buriedPersons.${index}.isFinalBurial`) && (
+                      <span className="ml-2 px-1.5 py-0.5 rounded bg-ai-50 text-ai text-xs font-normal border border-ai-200">
+                        最終納骨者
+                      </span>
+                    )}
                   </span>
                   <span>{genderLabel}</span>
                   <span>{watch(`buriedPersons.${index}.deathDate`) || '-'}</span>
@@ -404,6 +477,55 @@ export function BurialInfoTab({
                         {errors.buriedPersons[index]?.burialDate?.message}
                       </p>
                     )}
+                  </div>
+
+                  {/* 最終納骨者（合祀カウントダウンの起点）— 議事録 2026-07-21 §1 */}
+                  <div className="col-span-2">
+                    <div className="flex items-start justify-between gap-4 p-3 rounded-lg border border-gin bg-kinari">
+                      <div>
+                        <Label
+                          htmlFor={`buriedPersons.${index}.isFinalBurial`}
+                          className="font-medium"
+                        >
+                          最終納骨者
+                        </Label>
+                        <p className="text-xs text-hai mt-1">
+                          この方を最終納骨者にすると、埋葬日を起点に合祀までのカウントダウンが始まります。
+                          指定がない間は契約日起点で数えます。1区画につき1人だけ指定できます。
+                        </p>
+                        {(() => {
+                          const burialDate = watch(`buriedPersons.${index}.burialDate`);
+                          const isFinal = watch(`buriedPersons.${index}.isFinalBurial`);
+                          if (!isFinal) return null;
+                          if (!burialDate) {
+                            return (
+                              <p className="text-xs text-kohaku-dark mt-1">
+                                埋葬日が未入力のため、入力されるまでは契約日起点で数えます
+                              </p>
+                            );
+                          }
+                          const scheduled = calculateScheduledCollectiveBurialDate(
+                            burialDate,
+                            resolvedPlotValidityYears,
+                          );
+                          return scheduled ? (
+                            <p className="text-xs text-ai mt-1">
+                              合祀予定日: {formatDate(scheduled.toISOString())}（埋葬日 +{' '}
+                              {resolvedPlotValidityYears}年）
+                            </p>
+                          ) : null;
+                        })()}
+                      </div>
+                      <Switch
+                        id={`buriedPersons.${index}.isFinalBurial`}
+                        checked={!!watch(`buriedPersons.${index}.isFinalBurial`)}
+                        onCheckedChange={(checked) =>
+                          checked
+                            ? requestFinalBurialConfirm(index)
+                            : setFinalBurial(index, false)
+                        }
+                      />
+                    </div>
                   </div>
 
                   {/* 合祀年数（この方のみ）— 空欄で区画の合祀年数を継承（#10） */}
@@ -724,6 +846,32 @@ export function BurialInfoTab({
           )}
         </div>
       </div>
+
+      {/* 最終納骨者をオンにする前の確認（議事録 2026-07-21 §1「カウントダウンを開始してよいか確認」）。
+          合祀予定日が動く操作なので、結果の日付を見せてから確定させる */}
+      <ConfirmDialog
+        open={finalBurialConfirmIndex !== null}
+        onOpenChange={(open) => {
+          if (!open) setFinalBurialConfirmIndex(null);
+        }}
+        title="合祀までのカウントダウンを開始しますか？"
+        description={[
+          `${confirmTargetName} を最終納骨者にします。`,
+          confirmScheduledDate
+            ? `合祀予定日は ${formatDate(confirmScheduledDate.toISOString())}（埋葬日 + ${resolvedPlotValidityYears}年）になります。`
+            : '埋葬日が未入力のため、入力されるまでは契約日起点で数えます。',
+          replacedFinalBurialName
+            ? `現在の最終納骨者「${replacedFinalBurialName}」の指定は外れます（1区画につき1人まで）。`
+            : '',
+        ]
+          .filter(Boolean)
+          .join('\n')}
+        confirmLabel="最終納骨者にする"
+        onConfirm={() => {
+          if (finalBurialConfirmIndex !== null) setFinalBurial(finalBurialConfirmIndex, true);
+          setFinalBurialConfirmIndex(null);
+        }}
+      />
     </div>
   );
 }

@@ -17,6 +17,8 @@ export interface BuriedPersonSummary {
   id: string;
   name: string;
   burialDate: string | null;
+  /** 最終納骨者。true の人の burialDate が合祀カウントダウンの起点になる（議事録 2026-07-21 §1） */
+  isFinalBurial: boolean;
 }
 
 /** 埋葬者（詳細版） */
@@ -29,6 +31,8 @@ export interface BuriedPersonDetail {
   age: number | null;
   gender: 'male' | 'female' | 'not_answered' | null;
   burialDate: string | null;
+  /** 最終納骨者。true の人の burialDate が合祀カウントダウンの起点になる（議事録 2026-07-21 §1） */
+  isFinalBurial: boolean;
   notes: string | null;
 }
 
@@ -164,8 +168,8 @@ const mockCollectiveBurials: CollectiveBurialListItem[] = [
     billingAmount: 300000,
     notes: null,
     buriedPersons: [
-      { id: 'bp-001', name: '田中一郎', burialDate: '2020-05-10' },
-      { id: 'bp-002', name: '田中梅', burialDate: '2022-08-20' },
+      { id: 'bp-001', name: '田中一郎', burialDate: '2020-05-10', isFinalBurial: false },
+      { id: 'bp-002', name: '田中梅', burialDate: '2022-08-20', isFinalBurial: true },
     ],
     createdAt: '2020-04-01T09:00:00Z',
     updatedAt: '2024-06-20T14:30:00Z',
@@ -187,8 +191,8 @@ const mockCollectiveBurials: CollectiveBurialListItem[] = [
     billingAmount: 250000,
     notes: '上限到達済み',
     buriedPersons: [
-      { id: 'bp-003', name: '鈴木次郎', burialDate: '2022-09-10' },
-      { id: 'bp-004', name: '鈴木美智子', burialDate: '2024-02-20' },
+      { id: 'bp-003', name: '鈴木次郎', burialDate: '2022-09-10', isFinalBurial: false },
+      { id: 'bp-004', name: '鈴木美智子', burialDate: '2024-02-20', isFinalBurial: false },
     ],
     createdAt: '2022-08-15T10:00:00Z',
     updatedAt: '2024-02-20T16:00:00Z',
