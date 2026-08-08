@@ -11,7 +11,13 @@ import {
 import { PAYMENT_STATUS_LABELS, PAYMENT_STATUS_VARIANTS } from './constants';
 import { formatPhoneNumber, formatDate } from '@/lib/format';
 import { LegacyAwareValue } from '@/components/legacy-aware-value';
-import { formatContractDate, formatMoneyString, getRowBgColor, getSearchHitReason } from './utils';
+import {
+  buildPlotDisplayRows,
+  formatContractDate,
+  formatMoneyString,
+  getRowBgColor,
+  getSearchHitReason,
+} from './utils';
 import { ColumnResizer } from './ColumnResizer';
 import { SortIndicator } from './SortIndicator';
 import type { SortKey, SortOrder } from './types';
@@ -241,20 +247,23 @@ export function PlotTable({
                 </td>
               </tr>
             ) : plots.length > 0 ? (
-              plots.map((plot, index) => {
-                const absoluteIndex = startIndex + index;
+              buildPlotDisplayRows(plots, startIndex, showBuriedPersons).map((row) => {
+                const { plot, buriedPersonName, buriedIndex, isPlotLead, plotAbsoluteIndex } = row;
                 const paymentStatus = plot.paymentStatus as PaymentStatus;
                 const hitReason = getSearchHitReason(plot, searchQuery);
 
                 return (
                   <tr
-                    key={plot.id}
+                    key={`${plot.id}-${buriedIndex}`}
                     className={cn(
                       'group cursor-pointer transition-all duration-200',
                       'hover:bg-matsu-50 focus-visible:outline-none focus-visible:bg-matsu-50 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-matsu',
                       // 選択行は藍(ai)の左ボーダーで強調し、緑のホバーと区別 (#190)
                       selectedPlotId === plot.id && 'bg-ai-50 border-l-4 border-ai',
-                      getRowBgColor(plot, absoluteIndex)
+                      // ゼブラは区画単位。行単位だと同一区画が縞で分断されまとまりが崩れる
+                      getRowBgColor(plot, plotAbsoluteIndex),
+                      // 積み上げ行は区画の続きであることを示すため上罫線を消す
+                      !isPlotLead && 'border-t-0'
                     )}
                     onClick={() => onPlotSelect(plot)}
                     onMouseEnter={() => onPlotHover?.(plot)}
@@ -266,26 +275,37 @@ export function PlotTable({
                         onPlotSelect(plot);
                       }
                     }}
-                    aria-label={`${plot.displayNumber || plot.plotNumber} の詳細を開く`}
+                    aria-label={
+                      buriedPersonName
+                        ? `${plot.displayNumber || plot.plotNumber} の詳細を開く（埋葬者: ${buriedPersonName}）`
+                        : `${plot.displayNumber || plot.plotNumber} の詳細を開く`
+                    }
                   >
                     {/* エリア（区画名）。legacy-* / "1-29" 等の未正規化値は「整備中」ミュート表示にする #166 */}
-                    <td className={cellWrapClass('areaName', 'px-2 py-2 text-xs text-hai')} title={plot.areaName || undefined}>
-                      <LegacyAwareValue value={plot.areaName} kind="areaName" />
+                    <td className={cellWrapClass('areaName', 'px-2 py-2 text-xs text-hai')} title={isPlotLead ? plot.areaName || undefined : undefined}>
+                      {isPlotLead && <LegacyAwareValue value={plot.areaName} kind="areaName" />}
                     </td>
                     {/* 表示用区画番号（grave_name_cd 由来）を優先。未設定時は plotNumber に
                         フォールバックし、legacy-* 等の未正規化値は「整備中」ミュート表示にする #158/#164 */}
                     <td className={cellWrapClass('plotNumber', 'px-2 py-2 font-mono text-matsu font-medium text-xs underline-offset-2 group-hover:underline')} title={plot.displayNumber || plot.plotNumber}>
-                      <LegacyAwareValue value={plot.displayNumber || plot.plotNumber} kind="plotNumber" />
+                      {isPlotLead ? (
+                        <LegacyAwareValue value={plot.displayNumber || plot.plotNumber} kind="plotNumber" />
+                      ) : (
+                        // 積み上げ行。同じ区画の続きであることを示す
+                        <span className="text-hai" aria-hidden="true">
+                          ↳
+                        </span>
+                      )}
                     </td>
                     <td className="px-2 py-2 align-top">
                       <div className={isColumnExpanded(columnWidths, 'customerName') ? '' : 'truncate'}>
                         <div className={cellWrapClass('customerName', 'font-medium text-sumi text-sm')} title={plot.customerName || undefined}>
-                          {plot.customerName || '-'}
+                          {isPlotLead ? plot.customerName || '-' : ''}
                         </div>
                         <div className={cellWrapClass('customerName', 'text-xs text-hai')} title={plot.customerNameKana || undefined}>
-                          {plot.customerNameKana || ''}
+                          {isPlotLead ? plot.customerNameKana || '' : ''}
                         </div>
-                        {hitReason && (
+                        {isPlotLead && hitReason && (
                           <span
                             className="mt-0.5 inline-block rounded bg-ai-50 text-ai-700 border border-ai-200 px-1 py-px text-[10px] font-medium leading-tight"
                             title={`「${searchQuery}」は契約者名以外で一致しました`}
@@ -295,38 +315,44 @@ export function PlotTable({
                         )}
                       </div>
                     </td>
-                    <td className={cellWrapClass('address', 'px-2 py-2 text-xs text-hai hidden md:table-cell')} title={plot.customerAddress || undefined}>
-                      {isColumnExpanded(columnWidths, 'address')
-                        ? (plot.customerAddress || '-')
-                        : truncateAddressToCity(plot.customerAddress)}
+                    <td className={cellWrapClass('address', 'px-2 py-2 text-xs text-hai hidden md:table-cell')} title={isPlotLead ? plot.customerAddress || undefined : undefined}>
+                      {!isPlotLead
+                        ? ''
+                        : isColumnExpanded(columnWidths, 'address')
+                          ? (plot.customerAddress || '-')
+                          : truncateAddressToCity(plot.customerAddress)}
                     </td>
-                    <td className={cellWrapClass('phone', 'px-2 py-2 text-xs text-hai hidden lg:table-cell tabular-nums')} title={plot.customerPhoneNumber || undefined}>
-                      {formatPhoneNumber(plot.customerPhoneNumber) || '-'}
+                    <td className={cellWrapClass('phone', 'px-2 py-2 text-xs text-hai hidden lg:table-cell tabular-nums')} title={isPlotLead ? plot.customerPhoneNumber || undefined : undefined}>
+                      {isPlotLead ? formatPhoneNumber(plot.customerPhoneNumber) || '-' : ''}
                     </td>
-                    <td className={cellWrapClass('agent', 'px-2 py-2 text-xs text-hai hidden lg:table-cell')} title={plot.agentName || undefined}>
-                      {plot.agentName || '-'}
+                    <td className={cellWrapClass('agent', 'px-2 py-2 text-xs text-hai hidden lg:table-cell')} title={isPlotLead ? plot.agentName || undefined : undefined}>
+                      {isPlotLead ? plot.agentName || '-' : ''}
                     </td>
-                    <td className={cellWrapClass('permitNumber', 'px-2 py-2 text-xs text-hai tabular-nums hidden lg:table-cell')} title={plot.permitNumber || undefined}>
-                      {plot.permitNumber || '-'}
+                    <td className={cellWrapClass('permitNumber', 'px-2 py-2 text-xs text-hai tabular-nums hidden lg:table-cell')} title={isPlotLead ? plot.permitNumber || undefined : undefined}>
+                      {isPlotLead ? plot.permitNumber || '-' : ''}
                     </td>
                     <td className="px-2 py-2 text-xs text-hai hidden md:table-cell align-top">
-                      <div
-                        className={isColumnExpanded(columnWidths, 'notes') ? 'whitespace-normal break-words' : 'line-clamp-2 break-all'}
-                        title={[plot.contractNotes, plot.customerNotes].filter(Boolean).join(' / ')}
-                      >
-                        {[plot.contractNotes, plot.customerNotes].filter(Boolean).join(' / ') || '-'}
-                      </div>
+                      {isPlotLead && (
+                        <div
+                          className={isColumnExpanded(columnWidths, 'notes') ? 'whitespace-normal break-words' : 'line-clamp-2 break-all'}
+                          title={[plot.contractNotes, plot.customerNotes].filter(Boolean).join(' / ')}
+                        >
+                          {[plot.contractNotes, plot.customerNotes].filter(Boolean).join(' / ') || '-'}
+                        </div>
+                      )}
                     </td>
                     {showBuriedPersons && (
-                      <td className={cellWrapClass('buriedPersons', 'px-2 py-2 text-xs text-hai hidden lg:table-cell')} title={plot.buriedPersonNames?.join(', ') || undefined}>
-                        {plot.buriedPersonNames && plot.buriedPersonNames.length > 0 ? plot.buriedPersonNames.join(', ') : '-'}
+                      // 埋葬者は1人1行。旧システム（ソフタス）の区画一覧と同じ並べ方にする。
+                      // 埋葬者0人の区画は buildPlotDisplayRows が1行で返すため「-」になる
+                      <td className={cellWrapClass('buriedPersons', 'px-2 py-2 text-xs text-sumi hidden lg:table-cell')} title={buriedPersonName || undefined}>
+                        {buriedPersonName || '-'}
                       </td>
                     )}
                     <td className="px-2 py-2 text-xs text-hai text-center hidden sm:table-cell">
-                      {formatContractDate(plot.contractDate)}
+                      {isPlotLead ? formatContractDate(plot.contractDate) : ''}
                     </td>
                     <td className="px-2 py-2 text-xs text-center">
-                      {paymentStatus ? (
+                      {!isPlotLead ? null : paymentStatus ? (
                         <StatusBadge
                           variant={PAYMENT_STATUS_VARIANTS[paymentStatus]}
                           size="sm"
@@ -339,10 +365,10 @@ export function PlotTable({
                       )}
                     </td>
                     <td className="px-2 py-2 text-xs text-hai text-center hidden sm:table-cell">
-                      {formatMoneyString(plot.managementFee)}
+                      {isPlotLead ? formatMoneyString(plot.managementFee) : ''}
                     </td>
-                    <td className="px-2 py-2 text-xs text-hai truncate tabular-nums hidden md:table-cell" title={formatDate(plot.nextBillingDate) === '-' ? undefined : formatDate(plot.nextBillingDate)}>
-                      {formatDate(plot.nextBillingDate)}
+                    <td className="px-2 py-2 text-xs text-hai truncate tabular-nums hidden md:table-cell" title={!isPlotLead || formatDate(plot.nextBillingDate) === '-' ? undefined : formatDate(plot.nextBillingDate)}>
+                      {isPlotLead ? formatDate(plot.nextBillingDate) : ''}
                     </td>
                     {/* 詳細を開くシェブロン (#163)。行全体クリックでも遷移する */}
                     <td className="px-2 py-2 text-center text-hai">
