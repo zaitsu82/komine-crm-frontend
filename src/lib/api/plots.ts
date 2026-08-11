@@ -22,6 +22,9 @@ import {
   BillingRecordStatus,
   CreatePhysicalPlotRequest,
   CreatePhysicalPlotResponse,
+  VacantPlotItem,
+  VacantPlotsParams,
+  VacantPlotsResponse,
 } from '@komine/types';
 import { apiGet, apiPost, apiPut, apiDelete, shouldUseMockData } from './client';
 import { ApiResponse } from './types';
@@ -687,6 +690,56 @@ export async function createPhysicalPlot(
     };
   }
   return apiPost<CreatePhysicalPlotResponse>('/plots/physical', request);
+}
+
+/**
+ * 空き区画一覧取得（議事録 2026-07-21 §6）
+ *
+ * 新規顧客登録時の区画指定を手入力不可の選択式にするための選択肢。
+ * 空き区画は実データで約2,500件、単一の区画名でも最大647件あるため、
+ * 呼び出し側は areaName で絞り、必要に応じて search で更に絞ること。
+ */
+export async function getVacantPlots(
+  params: VacantPlotsParams = {}
+): Promise<ApiResponse<VacantPlotsResponse>> {
+  if (shouldUseMockData()) {
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    const items: VacantPlotItem[] = [
+      {
+        id: 'mock-vacant-1',
+        plotNumber: 'A-101',
+        displayNumber: 'A-101',
+        areaName: params.areaName ?? 'A',
+        areaSqm: 3.6,
+        availableAreaSqm: 3.6,
+      },
+      {
+        id: 'mock-vacant-2',
+        plotNumber: 'A-102',
+        displayNumber: 'A-102',
+        areaName: params.areaName ?? 'A',
+        areaSqm: 3.6,
+        availableAreaSqm: 1.8,
+      },
+    ].filter((item) =>
+      params.search ? (item.displayNumber ?? item.plotNumber).includes(params.search) : true
+    );
+    return {
+      success: true,
+      data: {
+        items,
+        pagination: { page: 1, limit: 50, total: items.length, totalPages: 1 },
+      },
+    };
+  }
+
+  const query: Record<string, string> = {};
+  if (params.areaName) query['areaName'] = params.areaName;
+  if (params.search) query['search'] = params.search;
+  if (params.page !== undefined) query['page'] = String(params.page);
+  if (params.limit !== undefined) query['limit'] = String(params.limit);
+
+  return apiGet<VacantPlotsResponse>('/plots/vacant', query);
 }
 
 /**

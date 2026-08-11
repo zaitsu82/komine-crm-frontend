@@ -56,7 +56,7 @@ export function PlotCardList({
                   data-testid="plot-card"
                   onClick={() => onPlotSelect(plot)}
                   className={cn(
-                    'w-full min-h-[44px] rounded-elegant border border-gin bg-white p-3 text-left shadow-sm transition-colors',
+                    'w-full min-h-[52px] rounded-elegant border border-gin bg-white p-4 text-left shadow-sm transition-colors',
                     'active:bg-matsu-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-matsu',
                     // 選択は藍(ai)アクセントでホバー(緑)と区別 (#190)
                     selectedPlotId === plot.id && 'border-ai bg-ai-50 ring-1 ring-ai',

@@ -39,6 +39,12 @@ export interface PlotTabBaseProps {
   control: Control<PlotFormData>;
   viewMode?: boolean;
   masterData?: MasterData;
+  /**
+   * 編集画面か。区画番号の入力方式を切り替える（議事録 2026-07-21 §6）。
+   * 新規は空き区画からの選択式、編集は手入力のまま。編集で選択式にすると
+   * レガシー由来の値（legacy-XXXX、「28、29/2」等）が選択肢に無く保存できない。
+   */
+  isEditing?: boolean;
 }
 
 export interface ContactsTabProps extends PlotTabBaseProps {
