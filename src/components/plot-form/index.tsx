@@ -127,6 +127,7 @@ export default function PlotForm({ plotDetail, onSave, isLoading }: PlotFormProp
     errors,
     control,
     masterData,
+    isEditing,
   };
 
   // タブ定義: フィールドグループ → タブ名の対応
