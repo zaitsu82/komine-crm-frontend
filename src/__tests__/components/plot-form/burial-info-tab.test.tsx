@@ -30,6 +30,37 @@ jest.mock('@/components/ui/switch', () => ({
   ),
 }));
 
+// ConfirmDialog（Radix AlertDialog ベース）は open 時の内容と確定操作だけ見たいのでモックする
+jest.mock('@/components/ui/confirm-dialog', () => ({
+  ConfirmDialog: ({
+    open,
+    title,
+    description,
+    confirmLabel,
+    onConfirm,
+    onOpenChange,
+  }: {
+    open: boolean;
+    title: string;
+    description: string;
+    confirmLabel?: string;
+    onConfirm: () => void;
+    onOpenChange: (open: boolean) => void;
+  }) =>
+    open ? (
+      <div data-testid="confirm-dialog">
+        <p>{title}</p>
+        <p data-testid="confirm-description">{description}</p>
+        <button type="button" onClick={onConfirm}>
+          {confirmLabel ?? '確認'}
+        </button>
+        <button type="button" onClick={() => onOpenChange(false)}>
+          キャンセル
+        </button>
+      </div>
+    ) : null,
+}));
+
 function BurialInfoTabHost({ defaultValues }: { defaultValues?: Parameters<typeof TabHost>[0]['defaultValues'] }) {
   return (
     <TabHost arrayName="buriedPersons" defaultValues={defaultValues}>
@@ -195,5 +226,136 @@ describe('BurialInfoTab', () => {
     await user.click(screen.getByRole('button', { name: '墓石情報を追加' }));
     expect(screen.getByPlaceholderText('御影石')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '墓石情報を削除' })).toBeInTheDocument();
+  });
+
+  // 最終納骨者（合祀カウントダウンの起点）— 議事録 2026-07-21 §1
+  describe('最終納骨者', () => {
+    /** 埋葬者を n 人追加し、index 番目の詳細を開く */
+    const addAndExpand = async (
+      user: ReturnType<typeof userEvent.setup>,
+      count: number,
+      expandIndex: number,
+    ) => {
+      for (let i = 0; i < count; i += 1) {
+        await user.click(screen.getByRole('button', { name: /埋葬者を追加/ }));
+      }
+      const summaries = screen.getAllByText('未入力');
+      await user.click(summaries[expandIndex]);
+    };
+
+    it('埋葬者の詳細に最終納骨者トグルを表示する', async () => {
+      const user = userEvent.setup();
+      render(<BurialInfoTabHost />);
+      await addAndExpand(user, 1, 0);
+
+      expect(screen.getByLabelText('最終納骨者')).toBeInTheDocument();
+    });
+
+    it('トグルONで確認ダイアログを出し、確定するまでフラグは立たない', async () => {
+      const user = userEvent.setup();
+      render(<BurialInfoTabHost />);
+      await addAndExpand(user, 1, 0);
+
+      await user.click(screen.getByLabelText('最終納骨者'));
+
+      expect(screen.getByTestId('confirm-dialog')).toBeInTheDocument();
+      expect(screen.getByText('合祀までのカウントダウンを開始しますか？')).toBeInTheDocument();
+      // 未確定なのでフラグは立っていない
+      expect(screen.getByLabelText('最終納骨者')).not.toBeChecked();
+
+      await user.click(screen.getByRole('button', { name: '最終納骨者にする' }));
+      expect(screen.getByLabelText('最終納骨者')).toBeChecked();
+    });
+
+    it('確認ダイアログをキャンセルするとフラグは立たない', async () => {
+      const user = userEvent.setup();
+      render(<BurialInfoTabHost />);
+      await addAndExpand(user, 1, 0);
+
+      await user.click(screen.getByLabelText('最終納骨者'));
+      await user.click(screen.getByRole('button', { name: 'キャンセル' }));
+
+      expect(screen.queryByTestId('confirm-dialog')).not.toBeInTheDocument();
+      expect(screen.getByLabelText('最終納骨者')).not.toBeChecked();
+    });
+
+    it('OFFに戻すときは確認を出さない', async () => {
+      const user = userEvent.setup();
+      render(<BurialInfoTabHost />);
+      await addAndExpand(user, 1, 0);
+
+      await user.click(screen.getByLabelText('最終納骨者'));
+      await user.click(screen.getByRole('button', { name: '最終納骨者にする' }));
+      expect(screen.getByLabelText('最終納骨者')).toBeChecked();
+
+      await user.click(screen.getByLabelText('最終納骨者'));
+      expect(screen.queryByTestId('confirm-dialog')).not.toBeInTheDocument();
+      expect(screen.getByLabelText('最終納骨者')).not.toBeChecked();
+    });
+
+    it('埋葬日が未入力なら契約日起点で数える旨を確認ダイアログに出す', async () => {
+      const user = userEvent.setup();
+      render(<BurialInfoTabHost />);
+      await addAndExpand(user, 1, 0);
+
+      await user.click(screen.getByLabelText('最終納骨者'));
+
+      expect(screen.getByTestId('confirm-description')).toHaveTextContent(
+        '埋葬日が未入力のため、入力されるまでは契約日起点で数えます。',
+      );
+    });
+
+    // 合祀対象かつ2人目以降が居るのに最終納骨者未指定なら、常設の注意を出して
+    // 「毎回確認を促す」（議事録 §1）を満たす
+    it('合祀ONで埋葬者2人以上・最終納骨者未指定なら未指定の注意を出す', async () => {
+      const user = userEvent.setup();
+      render(<BurialInfoTabHost />);
+
+      await user.click(screen.getByLabelText('合祀対象区画'));
+      await user.click(screen.getByRole('button', { name: /埋葬者を追加/ }));
+      expect(screen.queryByText('最終納骨者が指定されていません')).not.toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: /埋葬者を追加/ }));
+      expect(screen.getByText('最終納骨者が指定されていません')).toBeInTheDocument();
+    });
+
+    it('最終納骨者を指定すると未指定の注意が消える', async () => {
+      const user = userEvent.setup();
+      render(<BurialInfoTabHost />);
+
+      await user.click(screen.getByLabelText('合祀対象区画'));
+      await addAndExpand(user, 2, 0);
+      expect(screen.getByText('最終納骨者が指定されていません')).toBeInTheDocument();
+
+      await user.click(screen.getByLabelText('最終納骨者'));
+      await user.click(screen.getByRole('button', { name: '最終納骨者にする' }));
+
+      expect(screen.queryByText('最終納骨者が指定されていません')).not.toBeInTheDocument();
+    });
+
+    // backend は1契約区画につき1人しか受け付けない（複数指定は 400）ため、
+    // 画面側でも自動的に付け替える
+    it('別の人をONにすると先の最終納骨者は外れる', async () => {
+      const user = userEvent.setup();
+      render(<BurialInfoTabHost />);
+      await addAndExpand(user, 2, 0);
+
+      // 1人目をON
+      await user.click(screen.getByLabelText('最終納骨者'));
+      await user.click(screen.getByRole('button', { name: '最終納骨者にする' }));
+      expect(screen.getAllByText('最終納骨者')).toHaveLength(2); // ラベル + サマリー行バッジ
+
+      // 2人目を開いてON。付け替えの旨が確認ダイアログに出る
+      await user.click(screen.getAllByText('未入力')[1]);
+      await user.click(screen.getByLabelText('最終納骨者'));
+      expect(screen.getByTestId('confirm-description')).toHaveTextContent(
+        '現在の最終納骨者「（氏名未入力）」の指定は外れます（1区画につき1人まで）。',
+      );
+      await user.click(screen.getByRole('button', { name: '最終納骨者にする' }));
+
+      // バッジは1つだけ（＝最終納骨者は1人）
+      const badges = screen.getAllByText('最終納骨者');
+      expect(badges).toHaveLength(2);
+    });
   });
 });

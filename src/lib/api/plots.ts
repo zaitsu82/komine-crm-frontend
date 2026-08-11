@@ -362,7 +362,8 @@ async function mockGetPlotById(
         paymentMethod: null,
       }
       : null,
-    // mock-plot-1 のみ合祀デモ: 1名は区画年数を継承、1名は個別上書き（合祀年数）を持つ
+    // mock-plot-1 のみ合祀デモ: 1名は区画年数を継承、1名は個別上書き（合祀年数）と
+    // 最終納骨者フラグを持つ（合祀カウントダウンの起点確認用）
     buriedPersons:
       plot.id === 'mock-plot-1'
         ? [
@@ -384,6 +385,7 @@ async function mockGetPlotById(
               chiefMournerName: null,
               chiefMournerRelationship: null,
               validityPeriodYearsOverride: null,
+              isFinalBurial: false,
               notes: null,
             },
             {
@@ -404,6 +406,8 @@ async function mockGetPlotById(
               chiefMournerName: null,
               chiefMournerRelationship: null,
               validityPeriodYearsOverride: 13,
+              // 最後に納骨された方を最終納骨者にして、最終納骨日起点の表示を確認できるようにする
+              isFinalBurial: true,
               notes: null,
             },
           ]

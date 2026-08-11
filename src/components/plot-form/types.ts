@@ -96,6 +96,8 @@ export const getDefaultBuriedPerson = (): BuriedPersonFormData => ({
   gender: null,
   burialDate: null,
   validityPeriodYearsOverride: null,
+  // 最終納骨者は既定オフ。オンにした人の埋葬日が合祀カウントダウンの起点になる（議事録 2026-07-21 §1）
+  isFinalBurial: false,
   notes: null,
 });
 
