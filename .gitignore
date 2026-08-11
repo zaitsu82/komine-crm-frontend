@@ -25,6 +25,7 @@ dist/
 
 # Environment variables
 .env
+.env*.local
 !.env.example
 
 # Vercel
@@ -96,7 +97,6 @@ storybook-static/
 /.specstory/
 /images/
 /.mcp.json
-/AGENTS.md
 /command.md
 /IMPLEMENTATION_SUMMARY.md
 /project.yaml
