@@ -11,7 +11,13 @@ import {
 import { PAYMENT_STATUS_LABELS, PAYMENT_STATUS_VARIANTS } from './constants';
 import { formatPhoneNumber, formatDate } from '@/lib/format';
 import { LegacyAwareValue } from '@/components/legacy-aware-value';
-import { formatContractDate, formatMoneyString, getRowBgColor, getSearchHitReason } from './utils';
+import {
+  buildPlotDisplayRows,
+  formatContractDate,
+  formatMoneyString,
+  getRowBgColor,
+  getSearchHitReason,
+} from './utils';
 import { ColumnResizer } from './ColumnResizer';
 import { SortIndicator } from './SortIndicator';
 import type { SortKey, SortOrder } from './types';
@@ -91,13 +97,13 @@ export function PlotTable({
             <tr>
               {/* エリア（区）を先頭に。区画Noと合わせて「2区-12番」の順で読める（システム確認 項目①） */}
               {/* エリア/電話はサーバーソート未対応のためソート不可の見出しにする（#224） */}
-              <th className="relative px-2 py-2 text-left text-xs font-bold text-white">
+              <th className="relative px-2 py-3 text-left text-xs font-bold text-white">
                 <span>エリア</span>
                 <ColumnResizer columnKey="areaName" onResizeStart={onColumnResizeStart} />
               </th>
               <th
                 className={cn(
-                  "relative px-2 py-2 text-left text-xs font-bold text-white cursor-pointer transition-all duration-200",
+                  "relative px-2 py-3 text-left text-xs font-bold text-white cursor-pointer transition-all duration-200",
                   "hover:bg-matsu-light",
                   sortKey === 'plotNumber' && "bg-matsu-dark"
                 )}
@@ -111,7 +117,7 @@ export function PlotTable({
               </th>
               <th
                 className={cn(
-                  "relative px-2 py-2 text-left text-xs font-bold text-white cursor-pointer transition-all duration-200",
+                  "relative px-2 py-3 text-left text-xs font-bold text-white cursor-pointer transition-all duration-200",
                   "hover:bg-matsu-light",
                   sortKey === 'customerName' && "bg-matsu-dark"
                 )}
@@ -123,35 +129,35 @@ export function PlotTable({
                 </div>
                 <ColumnResizer columnKey="customerName" onResizeStart={onColumnResizeStart} />
               </th>
-              <th className="relative px-2 py-2 text-left text-xs font-bold text-white hidden md:table-cell">
+              <th className="relative px-2 py-3 text-left text-xs font-bold text-white hidden md:table-cell">
                 <span>住所</span>
                 <ColumnResizer columnKey="address" onResizeStart={onColumnResizeStart} />
               </th>
-              <th className="relative px-2 py-2 text-left text-xs font-bold text-white hidden lg:table-cell">
+              <th className="relative px-2 py-3 text-left text-xs font-bold text-white hidden lg:table-cell">
                 <span>電話</span>
                 <ColumnResizer columnKey="phone" onResizeStart={onColumnResizeStart} />
               </th>
-              <th className="relative px-2 py-2 text-left text-xs font-bold text-white hidden lg:table-cell">
+              <th className="relative px-2 py-3 text-left text-xs font-bold text-white hidden lg:table-cell">
                 <span>取扱</span>
                 <ColumnResizer columnKey="agent" onResizeStart={onColumnResizeStart} />
               </th>
-              <th className="relative px-2 py-2 text-left text-xs font-bold text-white hidden lg:table-cell">
+              <th className="relative px-2 py-3 text-left text-xs font-bold text-white hidden lg:table-cell">
                 <span>許可番号</span>
                 <ColumnResizer columnKey="permitNumber" onResizeStart={onColumnResizeStart} />
               </th>
-              <th className="relative px-2 py-2 text-left text-xs font-bold text-white hidden md:table-cell">
+              <th className="relative px-2 py-3 text-left text-xs font-bold text-white hidden md:table-cell">
                 <span>備考</span>
                 <ColumnResizer columnKey="notes" onResizeStart={onColumnResizeStart} />
               </th>
               {showBuriedPersons && (
-                <th className="relative px-2 py-2 text-left text-xs font-bold text-white hidden lg:table-cell">
+                <th className="relative px-2 py-3 text-left text-xs font-bold text-white hidden lg:table-cell">
                   <span>埋葬者</span>
                   <ColumnResizer columnKey="buriedPersons" onResizeStart={onColumnResizeStart} />
                 </th>
               )}
               <th
                 className={cn(
-                  "px-2 py-2 text-center text-xs font-bold text-white cursor-pointer transition-all duration-200 hidden sm:table-cell",
+                  "px-2 py-3 text-center text-xs font-bold text-white cursor-pointer transition-all duration-200 hidden sm:table-cell",
                   "hover:bg-matsu-light",
                   sortKey === 'contractDate' && "bg-matsu-dark"
                 )}
@@ -161,13 +167,15 @@ export function PlotTable({
                   <span>契約日</span>
                 </div>
               </th>
+              {/* 入金/管理料/次請求の意味をツールチップで説明（システム確認 項目③） */}
               <th
                 className={cn(
-                  "px-2 py-2 text-center text-xs font-bold text-white cursor-pointer transition-all duration-200",
+                  "px-2 py-3 text-center text-xs font-bold text-white cursor-pointer transition-all duration-200",
                   "hover:bg-matsu-light",
                   sortKey === 'paymentStatus' && "bg-matsu-dark"
                 )}
                 onClick={() => onSort('paymentStatus')}
+                title="使用料・管理料の入金状況（入金済・未入金・一部入金・滞納）。未入金は黄色、滞納は赤色の行で表示されます。クリックで並べ替え"
               >
                 <div className="flex items-center justify-center">
                   <span>入金</span>
@@ -175,21 +183,25 @@ export function PlotTable({
               </th>
               <th
                 className={cn(
-                  "px-2 py-2 text-center text-xs font-bold text-white cursor-pointer transition-all duration-200 hidden sm:table-cell",
+                  "px-2 py-3 text-center text-xs font-bold text-white cursor-pointer transition-all duration-200 hidden sm:table-cell",
                   "hover:bg-matsu-light",
                   sortKey === 'managementFee' && "bg-matsu-dark"
                 )}
                 onClick={() => onSort('managementFee')}
+                title="登録されている管理料の金額。クリックで並べ替え"
               >
                 <div className="flex items-center justify-center">
                   <span>管理料</span>
                 </div>
               </th>
-              <th className="px-2 py-2 text-left text-xs font-bold text-white hidden md:table-cell">
+              <th
+                className="px-2 py-3 text-left text-xs font-bold text-white hidden md:table-cell"
+                title="次回請求予定の年月（管理料の終納請求年月の翌月）。終納請求年月が未登録の区画は「-」"
+              >
                 <span>次請求</span>
               </th>
               {/* 詳細遷移アフォーダンス列 (#163) */}
-              <th className="px-2 py-2 text-center text-xs font-bold text-white">
+              <th className="px-2 py-3 text-center text-xs font-bold text-white">
                 <span className="sr-only">詳細</span>
               </th>
             </tr>
@@ -200,20 +212,20 @@ export function PlotTable({
               <>
                 {Array.from({ length: 8 }).map((_, i) => (
                   <tr key={i}>
-                    <td className="px-2 py-2.5"><Skeleton className="h-4 w-14" /></td>
-                    <td className="px-2 py-2.5"><Skeleton className="h-4 w-10" /></td>
-                    <td className="px-2 py-2.5"><Skeleton className="h-4 w-20" /></td>
-                    <td className="px-2 py-2.5"><Skeleton className="h-4 w-16" /></td>
-                    <td className="px-2 py-2.5"><Skeleton className="h-4 w-20" /></td>
-                    <td className="px-2 py-2.5"><Skeleton className="h-4 w-14" /></td>
-                    <td className="px-2 py-2.5"><Skeleton className="h-4 w-20" /></td>
-                    <td className="px-2 py-2.5"><Skeleton className="h-4 w-20" /></td>
-                    <td className="px-2 py-2.5"><Skeleton className="h-4 w-full" /></td>
-                    {showBuriedPersons && <td className="px-2 py-2.5"><Skeleton className="h-4 w-16" /></td>}
-                    <td className="px-2 py-2.5"><Skeleton className="h-4 w-12" /></td>
-                    <td className="px-2 py-2.5"><Skeleton className="h-4 w-12" /></td>
-                    <td className="px-2 py-2.5"><Skeleton className="h-4 w-14" /></td>
-                    <td className="px-2 py-2.5"><Skeleton className="h-4 w-12" /></td>
+                    <td className="px-2 py-3.5"><Skeleton className="h-4 w-14" /></td>
+                    <td className="px-2 py-3.5"><Skeleton className="h-4 w-10" /></td>
+                    <td className="px-2 py-3.5"><Skeleton className="h-4 w-20" /></td>
+                    <td className="px-2 py-3.5"><Skeleton className="h-4 w-16" /></td>
+                    <td className="px-2 py-3.5"><Skeleton className="h-4 w-20" /></td>
+                    <td className="px-2 py-3.5"><Skeleton className="h-4 w-14" /></td>
+                    <td className="px-2 py-3.5"><Skeleton className="h-4 w-20" /></td>
+                    <td className="px-2 py-3.5"><Skeleton className="h-4 w-20" /></td>
+                    <td className="px-2 py-3.5"><Skeleton className="h-4 w-full" /></td>
+                    {showBuriedPersons && <td className="px-2 py-3.5"><Skeleton className="h-4 w-16" /></td>}
+                    <td className="px-2 py-3.5"><Skeleton className="h-4 w-12" /></td>
+                    <td className="px-2 py-3.5"><Skeleton className="h-4 w-12" /></td>
+                    <td className="px-2 py-3.5"><Skeleton className="h-4 w-14" /></td>
+                    <td className="px-2 py-3.5"><Skeleton className="h-4 w-12" /></td>
                   </tr>
                 ))}
               </>
@@ -235,20 +247,23 @@ export function PlotTable({
                 </td>
               </tr>
             ) : plots.length > 0 ? (
-              plots.map((plot, index) => {
-                const absoluteIndex = startIndex + index;
+              buildPlotDisplayRows(plots, startIndex, showBuriedPersons).map((row) => {
+                const { plot, buriedPersonName, buriedIndex, isPlotLead, plotAbsoluteIndex } = row;
                 const paymentStatus = plot.paymentStatus as PaymentStatus;
                 const hitReason = getSearchHitReason(plot, searchQuery);
 
                 return (
                   <tr
-                    key={plot.id}
+                    key={`${plot.id}-${buriedIndex}`}
                     className={cn(
                       'group cursor-pointer transition-all duration-200',
                       'hover:bg-matsu-50 focus-visible:outline-none focus-visible:bg-matsu-50 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-matsu',
                       // 選択行は藍(ai)の左ボーダーで強調し、緑のホバーと区別 (#190)
                       selectedPlotId === plot.id && 'bg-ai-50 border-l-4 border-ai',
-                      getRowBgColor(plot, absoluteIndex)
+                      // ゼブラは区画単位。行単位だと同一区画が縞で分断されまとまりが崩れる
+                      getRowBgColor(plot, plotAbsoluteIndex),
+                      // 積み上げ行は区画の続きであることを示すため上罫線を消す
+                      !isPlotLead && 'border-t-0'
                     )}
                     onClick={() => onPlotSelect(plot)}
                     onMouseEnter={() => onPlotHover?.(plot)}
@@ -260,26 +275,37 @@ export function PlotTable({
                         onPlotSelect(plot);
                       }
                     }}
-                    aria-label={`${plot.displayNumber || plot.plotNumber} の詳細を開く`}
+                    aria-label={
+                      buriedPersonName
+                        ? `${plot.displayNumber || plot.plotNumber} の詳細を開く（埋葬者: ${buriedPersonName}）`
+                        : `${plot.displayNumber || plot.plotNumber} の詳細を開く`
+                    }
                   >
                     {/* エリア（区画名）。legacy-* / "1-29" 等の未正規化値は「整備中」ミュート表示にする #166 */}
-                    <td className={cellWrapClass('areaName', 'px-2 py-2 text-xs text-hai')} title={plot.areaName || undefined}>
-                      <LegacyAwareValue value={plot.areaName} kind="areaName" />
+                    <td className={cellWrapClass('areaName', 'px-2 py-3 text-xs text-hai')} title={isPlotLead ? plot.areaName || undefined : undefined}>
+                      {isPlotLead && <LegacyAwareValue value={plot.areaName} kind="areaName" />}
                     </td>
                     {/* 表示用区画番号（grave_name_cd 由来）を優先。未設定時は plotNumber に
                         フォールバックし、legacy-* 等の未正規化値は「整備中」ミュート表示にする #158/#164 */}
-                    <td className={cellWrapClass('plotNumber', 'px-2 py-2 font-mono text-matsu font-medium text-xs underline-offset-2 group-hover:underline')} title={plot.displayNumber || plot.plotNumber}>
-                      <LegacyAwareValue value={plot.displayNumber || plot.plotNumber} kind="plotNumber" />
+                    <td className={cellWrapClass('plotNumber', 'px-2 py-3 font-mono text-matsu font-medium text-xs underline-offset-2 group-hover:underline')} title={plot.displayNumber || plot.plotNumber}>
+                      {isPlotLead ? (
+                        <LegacyAwareValue value={plot.displayNumber || plot.plotNumber} kind="plotNumber" />
+                      ) : (
+                        // 積み上げ行。同じ区画の続きであることを示す
+                        <span className="text-hai" aria-hidden="true">
+                          ↳
+                        </span>
+                      )}
                     </td>
-                    <td className="px-2 py-2 align-top">
+                    <td className="px-2 py-3 align-top">
                       <div className={isColumnExpanded(columnWidths, 'customerName') ? '' : 'truncate'}>
                         <div className={cellWrapClass('customerName', 'font-medium text-sumi text-sm')} title={plot.customerName || undefined}>
-                          {plot.customerName || '-'}
+                          {isPlotLead ? plot.customerName || '-' : ''}
                         </div>
                         <div className={cellWrapClass('customerName', 'text-xs text-hai')} title={plot.customerNameKana || undefined}>
-                          {plot.customerNameKana || ''}
+                          {isPlotLead ? plot.customerNameKana || '' : ''}
                         </div>
-                        {hitReason && (
+                        {isPlotLead && hitReason && (
                           <span
                             className="mt-0.5 inline-block rounded bg-ai-50 text-ai-700 border border-ai-200 px-1 py-px text-[10px] font-medium leading-tight"
                             title={`「${searchQuery}」は契約者名以外で一致しました`}
@@ -289,38 +315,44 @@ export function PlotTable({
                         )}
                       </div>
                     </td>
-                    <td className={cellWrapClass('address', 'px-2 py-2 text-xs text-hai hidden md:table-cell')} title={plot.customerAddress || undefined}>
-                      {isColumnExpanded(columnWidths, 'address')
-                        ? (plot.customerAddress || '-')
-                        : truncateAddressToCity(plot.customerAddress)}
+                    <td className={cellWrapClass('address', 'px-2 py-3 text-xs text-hai hidden md:table-cell')} title={isPlotLead ? plot.customerAddress || undefined : undefined}>
+                      {!isPlotLead
+                        ? ''
+                        : isColumnExpanded(columnWidths, 'address')
+                          ? (plot.customerAddress || '-')
+                          : truncateAddressToCity(plot.customerAddress)}
                     </td>
-                    <td className={cellWrapClass('phone', 'px-2 py-2 text-xs text-hai hidden lg:table-cell tabular-nums')} title={plot.customerPhoneNumber || undefined}>
-                      {formatPhoneNumber(plot.customerPhoneNumber) || '-'}
+                    <td className={cellWrapClass('phone', 'px-2 py-3 text-xs text-hai hidden lg:table-cell tabular-nums')} title={isPlotLead ? plot.customerPhoneNumber || undefined : undefined}>
+                      {isPlotLead ? formatPhoneNumber(plot.customerPhoneNumber) || '-' : ''}
                     </td>
-                    <td className={cellWrapClass('agent', 'px-2 py-2 text-xs text-hai hidden lg:table-cell')} title={plot.agentName || undefined}>
-                      {plot.agentName || '-'}
+                    <td className={cellWrapClass('agent', 'px-2 py-3 text-xs text-hai hidden lg:table-cell')} title={isPlotLead ? plot.agentName || undefined : undefined}>
+                      {isPlotLead ? plot.agentName || '-' : ''}
                     </td>
-                    <td className={cellWrapClass('permitNumber', 'px-2 py-2 text-xs text-hai tabular-nums hidden lg:table-cell')} title={plot.permitNumber || undefined}>
-                      {plot.permitNumber || '-'}
+                    <td className={cellWrapClass('permitNumber', 'px-2 py-3 text-xs text-hai tabular-nums hidden lg:table-cell')} title={isPlotLead ? plot.permitNumber || undefined : undefined}>
+                      {isPlotLead ? plot.permitNumber || '-' : ''}
                     </td>
-                    <td className="px-2 py-2 text-xs text-hai hidden md:table-cell align-top">
-                      <div
-                        className={isColumnExpanded(columnWidths, 'notes') ? 'whitespace-normal break-words' : 'line-clamp-2 break-all'}
-                        title={[plot.contractNotes, plot.customerNotes].filter(Boolean).join(' / ')}
-                      >
-                        {[plot.contractNotes, plot.customerNotes].filter(Boolean).join(' / ') || '-'}
-                      </div>
+                    <td className="px-2 py-3 text-xs text-hai hidden md:table-cell align-top">
+                      {isPlotLead && (
+                        <div
+                          className={isColumnExpanded(columnWidths, 'notes') ? 'whitespace-normal break-words' : 'line-clamp-2 break-all'}
+                          title={[plot.contractNotes, plot.customerNotes].filter(Boolean).join(' / ')}
+                        >
+                          {[plot.contractNotes, plot.customerNotes].filter(Boolean).join(' / ') || '-'}
+                        </div>
+                      )}
                     </td>
                     {showBuriedPersons && (
-                      <td className={cellWrapClass('buriedPersons', 'px-2 py-2 text-xs text-hai hidden lg:table-cell')} title={plot.buriedPersonNames?.join(', ') || undefined}>
-                        {plot.buriedPersonNames && plot.buriedPersonNames.length > 0 ? plot.buriedPersonNames.join(', ') : '-'}
+                      // 埋葬者は1人1行。旧システム（ソフタス）の区画一覧と同じ並べ方にする。
+                      // 埋葬者0人の区画は buildPlotDisplayRows が1行で返すため「-」になる
+                      <td className={cellWrapClass('buriedPersons', 'px-2 py-3 text-xs text-sumi hidden lg:table-cell')} title={buriedPersonName || undefined}>
+                        {buriedPersonName || '-'}
                       </td>
                     )}
-                    <td className="px-2 py-2 text-xs text-hai text-center hidden sm:table-cell">
-                      {formatContractDate(plot.contractDate)}
+                    <td className="px-2 py-3 text-xs text-hai text-center hidden sm:table-cell">
+                      {isPlotLead ? formatContractDate(plot.contractDate) : ''}
                     </td>
-                    <td className="px-2 py-2 text-xs text-center">
-                      {paymentStatus ? (
+                    <td className="px-2 py-3 text-xs text-center">
+                      {!isPlotLead ? null : paymentStatus ? (
                         <StatusBadge
                           variant={PAYMENT_STATUS_VARIANTS[paymentStatus]}
                           size="sm"
@@ -332,14 +364,14 @@ export function PlotTable({
                         <span className="text-hai">-</span>
                       )}
                     </td>
-                    <td className="px-2 py-2 text-xs text-hai text-center hidden sm:table-cell">
-                      {formatMoneyString(plot.managementFee)}
+                    <td className="px-2 py-3 text-xs text-hai text-center hidden sm:table-cell">
+                      {isPlotLead ? formatMoneyString(plot.managementFee) : ''}
                     </td>
-                    <td className="px-2 py-2 text-xs text-hai truncate tabular-nums hidden md:table-cell" title={formatDate(plot.nextBillingDate) === '-' ? undefined : formatDate(plot.nextBillingDate)}>
-                      {formatDate(plot.nextBillingDate)}
+                    <td className="px-2 py-3 text-xs text-hai truncate tabular-nums hidden md:table-cell" title={!isPlotLead || formatDate(plot.nextBillingDate) === '-' ? undefined : formatDate(plot.nextBillingDate)}>
+                      {isPlotLead ? formatDate(plot.nextBillingDate) : ''}
                     </td>
                     {/* 詳細を開くシェブロン (#163)。行全体クリックでも遷移する */}
-                    <td className="px-2 py-2 text-center text-hai">
+                    <td className="px-2 py-3 text-center text-hai">
                       <svg className="w-4 h-4 inline-block transition-colors group-hover:text-matsu" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>

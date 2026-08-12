@@ -124,17 +124,40 @@ describe('BasicInfoTab', () => {
     expect(asterisks.length).toBeGreaterThanOrEqual(7);
   });
 
-  it('区画番号フィールドに入力できる', async () => {
+  // 編集時は手入力のまま。既存データにレガシー由来の値（legacy-XXXX、「28、29/2」等）が
+  // 入っており、選択式にすると選択肢に無く保存できなくなる（議事録 2026-07-21 §6）
+  it('編集時は区画番号を手入力できる', async () => {
     const user = userEvent.setup();
     render(
       <TabHost>
-        {(h) => <BasicInfoTab {...h} masterData={emptyMasterData} />}
+        {(h) => <BasicInfoTab {...h} masterData={emptyMasterData} isEditing />}
       </TabHost>
     );
 
     const plotNumberInput = screen.getByPlaceholderText('例: A-001');
     await user.type(plotNumberInput, 'B-100');
     expect(plotNumberInput).toHaveValue('B-100');
+  });
+
+  // 新規は手入力を不可にして空き区画から選ばせる（存在しない区画・重複登録の防止）
+  it('新規登録時は区画番号を手入力できない', () => {
+    render(
+      <TabHost>
+        {(h) => <BasicInfoTab {...h} masterData={emptyMasterData} />}
+      </TabHost>
+    );
+
+    expect(screen.queryByPlaceholderText('例: A-001')).not.toBeInTheDocument();
+  });
+
+  it('新規登録時は区画（エリア）未選択なら先に選ぶよう促す', () => {
+    render(
+      <TabHost>
+        {(h) => <BasicInfoTab {...h} masterData={emptyMasterData} />}
+      </TabHost>
+    );
+
+    expect(screen.getByText('先に区画（エリア）を選択してください')).toBeInTheDocument();
   });
 
   it('氏名フィールドに入力できる', async () => {

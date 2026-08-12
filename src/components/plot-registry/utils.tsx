@@ -71,3 +71,59 @@ export function getRowBgColor(plot: PlotListItem, absoluteIndex: number) {
   if (status === 'attention') return 'bg-kohaku-50';
   return absoluteIndex % 2 === 0 ? 'bg-white' : 'bg-kinari';
 }
+
+// ===== 埋葬者の行展開 =====
+
+/**
+ * 一覧に描画する1行。埋葬者表示ONのとき、1区画は埋葬者の人数だけ行に展開される。
+ *
+ * 旧システム（ソフタス）の区画一覧と同じ「埋葬者を1人1行で並べる」表示に対応する。
+ * 契約者名で探すときに区画が消えないよう、埋葬者0人の区画も1行として残す。
+ */
+export interface PlotDisplayRow {
+  plot: PlotListItem;
+  /** この行に出す埋葬者名。埋葬者0人の区画、および展開OFF時は null */
+  buriedPersonName: string | null;
+  /** 区画内での何人目か（0始まり）。key の一意化と積み上げ判定に使う */
+  buriedIndex: number;
+  /**
+   * 区画の先頭行か。false（＝積み上げ行）では契約者情報を省略して
+   * 埋葬者だけを出し、同一区画のまとまりが目で追えるようにする。
+   */
+  isPlotLead: boolean;
+  /**
+   * ゼブラ縞を区画単位で揃えるための区画の絶対 index。
+   * 行単位で縞を付けると同一区画が縞で分断され、まとまりが崩れる。
+   */
+  plotAbsoluteIndex: number;
+}
+
+/**
+ * 区画一覧を描画用の行リストへ変換する。
+ *
+ * @param plots 表示対象の区画（APIのページング単位。1ページ=N区画のまま変えない）
+ * @param startIndex ページ先頭の通し番号（ゼブラ縞をページ跨ぎで連続させる）
+ * @param expandBuriedPersons 埋葬者を1人1行に展開するか（「埋葬者を表示」トグル）
+ */
+export function buildPlotDisplayRows(
+  plots: PlotListItem[],
+  startIndex: number,
+  expandBuriedPersons: boolean,
+): PlotDisplayRow[] {
+  return plots.flatMap((plot, index): PlotDisplayRow[] => {
+    const plotAbsoluteIndex = startIndex + index;
+    const names = expandBuriedPersons ? (plot.buriedPersonNames ?? []).filter(Boolean) : [];
+
+    if (names.length === 0) {
+      return [{ plot, buriedPersonName: null, buriedIndex: 0, isPlotLead: true, plotAbsoluteIndex }];
+    }
+
+    return names.map((buriedPersonName, buriedIndex) => ({
+      plot,
+      buriedPersonName,
+      buriedIndex,
+      isPlotLead: buriedIndex === 0,
+      plotAbsoluteIndex,
+    }));
+  });
+}

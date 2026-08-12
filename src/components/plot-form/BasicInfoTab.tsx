@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Gender, PaymentStatus } from '@komine/types';
 import { defaultApplicant } from '@/lib/validations/plot-form';
+import { VacantPlotPicker } from './VacantPlotPicker';
 import { digitsOnly } from '@/lib/format';
 
 export function BasicInfoTab({
@@ -17,6 +18,7 @@ export function BasicInfoTab({
   errors,
   viewMode = false,
   masterData,
+  isEditing = false,
 }: PlotTabBaseProps) {
   // マスタデータから期→区画名のマッピングを構築
   const { periods, sectionsByPeriod } = useMemo(() => {
@@ -57,14 +59,33 @@ export function BasicInfoTab({
       <div className="border rounded-lg p-4">
         <h3 className="text-sm font-semibold text-sumi mb-3">物理区画情報</h3>
         <div className="grid grid-cols-3 gap-4">
-          <ViewModeField
-            label="区画番号"
-            viewMode={viewMode}
-            required
-            register={register('physicalPlot.plotNumber')}
-            error={errors.physicalPlot?.plotNumber?.message}
-            placeholder="例: A-001"
-          />
+          {/* 区画番号（議事録 2026-07-21 §6）
+              新規登録は手入力を不可とし空き区画から選ばせる。存在しない区画・既に
+              契約のある区画の登録ミスを防ぐため。
+              編集時は選択式にしない。既存データにレガシー由来の値（legacy-XXXX、
+              「28、29/2」等）が入っており、選択肢に無いため保存できなくなる。 */}
+          {isEditing || viewMode ? (
+            <ViewModeField
+              label="区画番号"
+              viewMode={viewMode}
+              required
+              register={register('physicalPlot.plotNumber')}
+              error={errors.physicalPlot?.plotNumber?.message}
+              placeholder="例: A-001"
+            />
+          ) : (
+            <VacantPlotPicker
+              value={watch('physicalPlot.plotNumber') || ''}
+              areaName={watch('physicalPlot.areaName') || undefined}
+              onSelect={(plot) => {
+                setValue('physicalPlot.plotNumber', plot.plotNumber, { shouldDirty: true });
+                // 面積は選んだ区画の実面積を初期値にする（手入力の 3.6 決め打ちを避ける）
+                setValue('physicalPlot.areaSqm', plot.areaSqm, { shouldDirty: true });
+              }}
+              onClear={() => setValue('physicalPlot.plotNumber', '', { shouldDirty: true })}
+              error={errors.physicalPlot?.plotNumber?.message}
+            />
+          )}
 
           {/* 区画の選択 - 期→区画の2段階セレクト */}
           <div>

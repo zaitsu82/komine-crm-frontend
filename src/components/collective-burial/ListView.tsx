@@ -25,6 +25,8 @@ import {
 import {
   calculateElapsedYears,
   calculateScheduledCollectiveBurialDate,
+  findFinalBurialDate,
+  resolveCountdownBaseDate,
 } from '@/lib/collective-burial-rules';
 import PageHeader from '@/components/page-header';
 import { LegacyAwareValue } from '@/components/legacy-aware-value';
@@ -552,9 +554,13 @@ export default function CollectiveBurialListView({
                             const elapsedYears = calculateElapsedYears(latestBurialDate);
 
                             // 合祀年: billingScheduledDate 優先、無ければ
-                            // 上限到達日 or 最新埋葬日 + validityPeriodYears で client-side fallback 計算
+                            // 「最終納骨者の埋葬日 or 契約日」+ validityPeriodYears で client-side fallback 計算。
+                            // 起点は backend の resolveCountdownBaseDate と揃える（議事録 2026-07-21 §1）
                             const fallbackScheduled = calculateScheduledCollectiveBurialDate(
-                              record.capacityReachedDate ?? latestBurialDate,
+                              resolveCountdownBaseDate(
+                                record.contractDate,
+                                findFinalBurialDate(record.buriedPersons),
+                              ),
                               record.validityPeriodYears,
                             );
                             const scheduledDate = record.billingScheduledDate

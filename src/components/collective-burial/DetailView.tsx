@@ -22,7 +22,9 @@ import { formatDateWithEra } from '@/lib/format';
 import {
   calculateElapsedYears,
   calculateScheduledCollectiveBurialDate,
+  findFinalBurialDate,
   inferValidityPeriodYears,
+  resolveCountdownBaseDate,
   summarizeValidityRule,
 } from '@/lib/collective-burial-rules';
 
@@ -61,17 +63,18 @@ export default function CollectiveBurialDetailView({
   const capacityPercentage = Math.round((data.currentBurialCount / data.burialCapacity) * 100);
   const isCapacityReached = data.currentBurialCount >= data.burialCapacity;
 
-  // 合祀予定日: DB 値優先、無ければ「上限到達日 or 最新埋葬日 + 有効年数」で自動計算
-  const latestBurialDate = data.buriedPersons
-    .map(bp => bp.burialDate)
-    .filter((d): d is string => d !== null)
-    .sort()
-    .at(-1) || null;
-  const scheduledBase = data.capacityReachedDate ?? latestBurialDate;
+  // 合祀予定日: DB 値優先、無ければ「最終納骨者の埋葬日 or 契約日 + 有効年数」で自動計算。
+  // 起点の規則は backend の resolveCountdownBaseDate と揃える（議事録 2026-07-21 §1）。
+  // 以前は「上限到達日 or 最新埋葬日」を起点にしていたが、backend は使っておらず
+  // 画面の予定日と実際に請求が発火する日が食い違っていた。
+  const finalBurialDate = findFinalBurialDate(data.buriedPersons);
+  const scheduledBase = resolveCountdownBaseDate(data.contractDate, finalBurialDate);
   const scheduledDateFallback = calculateScheduledCollectiveBurialDate(
     scheduledBase,
     data.validityPeriodYears,
   );
+  // 起点が最終納骨日か契約日かを画面に出す（どちらで数えているか分からないと確認できない）
+  const scheduledBasisLabel = finalBurialDate ? '最終納骨日' : '契約日';
   const scheduledDate = data.billingScheduledDate
     ? new Date(data.billingScheduledDate)
     : scheduledDateFallback;
@@ -293,14 +296,22 @@ export default function CollectiveBurialDetailView({
                       {formatDateWithEra(scheduledDate)}
                       {isFallbackScheduled && (
                         <span className="ml-2 text-xs text-hai font-normal">
-                          ※ 請求予定日未設定のため埋葬日 + 有効年数で自動算出
+                          ※ 請求予定日未設定のため{scheduledBasisLabel} + 有効年数で自動算出
                         </span>
                       )}
                     </p>
                   ) : (
-                    <p className="text-sm text-hai">埋葬日が未設定のため算出できません</p>
+                    <p className="text-sm text-hai">
+                      最終納骨者の埋葬日・契約日ともに未設定のため算出できません
+                    </p>
                   )}
-                  <p className="text-xs text-hai mt-2">自動判定: {ruleBasis}</p>
+                  {/* どちらを起点に数えているかを明示する（議事録 2026-07-21 §1） */}
+                  <p className="text-xs text-hai mt-2">
+                    カウントダウン起点: {scheduledBasisLabel}
+                    {scheduledBase ? `（${formatDateWithEra(scheduledBase)}）` : '（未設定）'}
+                    {!finalBurialDate && ' — 最終納骨者が指定されると最終納骨日起点に切り替わります'}
+                  </p>
+                  <p className="text-xs text-hai mt-1">自動判定: {ruleBasis}</p>
                   {isManualOverride && (
                     <p className="text-xs text-kohaku-dark mt-1">
                       この区画は手動指定 {data.validityPeriodYears} 年 / 自動判定 {inferredRule} 年 です。業務上の例外指定（短縮など）の場合はそのままで問題ありません。
@@ -435,7 +446,7 @@ export default function CollectiveBurialDetailView({
                     <p className="text-lg font-semibold text-sumi mt-1">
                       {formatDateWithEra(scheduledDateFallback)}
                       <span className="ml-2 text-xs text-hai font-normal">
-                        ※ 埋葬日 + 有効年数 ({data.validityPeriodYears} 年) で算出
+                        ※ {scheduledBasisLabel} + 有効年数 ({data.validityPeriodYears} 年) で算出
                       </span>
                     </p>
                   </div>

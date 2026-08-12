@@ -20,6 +20,11 @@ import {
   RestoreContractResponse,
   GraveClassificationsResponse,
   BillingRecordStatus,
+  CreatePhysicalPlotRequest,
+  CreatePhysicalPlotResponse,
+  VacantPlotItem,
+  VacantPlotsParams,
+  VacantPlotsResponse,
 } from '@komine/types';
 import { apiGet, apiPost, apiPut, apiDelete, shouldUseMockData } from './client';
 import { ApiResponse } from './types';
@@ -357,7 +362,8 @@ async function mockGetPlotById(
         paymentMethod: null,
       }
       : null,
-    // mock-plot-1 のみ合祀デモ: 1名は区画年数を継承、1名は個別上書き（合祀年数）を持つ
+    // mock-plot-1 のみ合祀デモ: 1名は区画年数を継承、1名は個別上書き（合祀年数）と
+    // 最終納骨者フラグを持つ（合祀カウントダウンの起点確認用）
     buriedPersons:
       plot.id === 'mock-plot-1'
         ? [
@@ -379,6 +385,7 @@ async function mockGetPlotById(
               chiefMournerName: null,
               chiefMournerRelationship: null,
               validityPeriodYearsOverride: null,
+              isFinalBurial: false,
               notes: null,
             },
             {
@@ -399,6 +406,8 @@ async function mockGetPlotById(
               chiefMournerName: null,
               chiefMournerRelationship: null,
               validityPeriodYearsOverride: 13,
+              // 最後に納骨された方を最終納骨者にして、最終納骨日起点の表示を確認できるようにする
+              isFinalBurial: true,
               notes: null,
             },
           ]
@@ -654,6 +663,83 @@ export async function getPlots(
       totalPages: response.data.pagination.totalPages,
     },
   };
+}
+
+/**
+ * 空き区画（物理区画のみ）の先行登録（システム確認 項目⑦）
+ * 旧システムの「区画を先ず作り、後から契約者を入れる」運用に対応。
+ * 登録された区画は契約が付くまで区画残数管理に「空き」として現れる。
+ */
+export async function createPhysicalPlot(
+  request: CreatePhysicalPlotRequest
+): Promise<ApiResponse<CreatePhysicalPlotResponse>> {
+  if (shouldUseMockData()) {
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    return {
+      success: true,
+      data: {
+        id: `mock-physical-${Date.now()}`,
+        plotNumber: request.plotNumber,
+        displayNumber: request.displayNumber ?? null,
+        areaName: request.areaName,
+        areaSqm: request.areaSqm ?? 3.6,
+        status: PhysicalPlotStatus.Available,
+        notes: request.notes ?? null,
+        createdAt: new Date().toISOString(),
+      },
+    };
+  }
+  return apiPost<CreatePhysicalPlotResponse>('/plots/physical', request);
+}
+
+/**
+ * 空き区画一覧取得（議事録 2026-07-21 §6）
+ *
+ * 新規顧客登録時の区画指定を手入力不可の選択式にするための選択肢。
+ * 空き区画は実データで約2,500件、単一の区画名でも最大647件あるため、
+ * 呼び出し側は areaName で絞り、必要に応じて search で更に絞ること。
+ */
+export async function getVacantPlots(
+  params: VacantPlotsParams = {}
+): Promise<ApiResponse<VacantPlotsResponse>> {
+  if (shouldUseMockData()) {
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    const items: VacantPlotItem[] = [
+      {
+        id: 'mock-vacant-1',
+        plotNumber: 'A-101',
+        displayNumber: 'A-101',
+        areaName: params.areaName ?? 'A',
+        areaSqm: 3.6,
+        availableAreaSqm: 3.6,
+      },
+      {
+        id: 'mock-vacant-2',
+        plotNumber: 'A-102',
+        displayNumber: 'A-102',
+        areaName: params.areaName ?? 'A',
+        areaSqm: 3.6,
+        availableAreaSqm: 1.8,
+      },
+    ].filter((item) =>
+      params.search ? (item.displayNumber ?? item.plotNumber).includes(params.search) : true
+    );
+    return {
+      success: true,
+      data: {
+        items,
+        pagination: { page: 1, limit: 50, total: items.length, totalPages: 1 },
+      },
+    };
+  }
+
+  const query: Record<string, string> = {};
+  if (params.areaName) query['areaName'] = params.areaName;
+  if (params.search) query['search'] = params.search;
+  if (params.page !== undefined) query['page'] = String(params.page);
+  if (params.limit !== undefined) query['limit'] = String(params.limit);
+
+  return apiGet<VacantPlotsResponse>('/plots/vacant', query);
 }
 
 /**

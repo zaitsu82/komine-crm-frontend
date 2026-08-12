@@ -5,6 +5,8 @@ import {
   summarizeValidityRule,
   calculateElapsedYears,
   calculateScheduledCollectiveBurialDate,
+  findFinalBurialDate,
+  resolveCountdownBaseDate,
   JURIN_RULE_TRANSITION_DATE,
   VALIDITY_RULE_TABLE,
   STANDARD_VALIDITY_YEARS,
@@ -207,6 +209,65 @@ describe('collective-burial-rules', () => {
       expect(JURIN_RULE_TRANSITION_DATE.getFullYear()).toBe(2023);
       expect(JURIN_RULE_TRANSITION_DATE.getMonth()).toBe(3); // 4月
       expect(JURIN_RULE_TRANSITION_DATE.getDate()).toBe(1);
+    });
+  });
+
+  // 合祀カウントダウンの起点（議事録 2026-07-21 §1）。
+  // backend の resolveCountdownBaseDate / findFinalBurialDate と同じ規則にする。
+  // ここがズレると画面の合祀予定日と実際に請求が発火する日が食い違う。
+  describe('resolveCountdownBaseDate', () => {
+    it('最終納骨日があればそれを起点にする', () => {
+      const result = resolveCountdownBaseDate('2019-04-01', '2025-03-01');
+      expect(result?.toISOString().slice(0, 10)).toBe('2025-03-01');
+    });
+
+    it('最終納骨日が無ければ契約日を起点にする', () => {
+      const result = resolveCountdownBaseDate('2019-04-01', null);
+      expect(result?.toISOString().slice(0, 10)).toBe('2019-04-01');
+    });
+
+    it('どちらも無ければ null', () => {
+      expect(resolveCountdownBaseDate(null, null)).toBe(null);
+      expect(resolveCountdownBaseDate(undefined, undefined)).toBe(null);
+    });
+
+    it('上限到達日や最新埋葬日は起点にしない（最終納骨者フラグのみを見る）', () => {
+      // 最終納骨者未確定なら、埋葬者がいても契約日起点のまま
+      const finalBurialDate = findFinalBurialDate([
+        { isFinalBurial: false, burialDate: '2024-12-31' },
+      ]);
+      expect(finalBurialDate).toBe(null);
+      expect(resolveCountdownBaseDate('2019-04-01', finalBurialDate)?.toISOString().slice(0, 10)).toBe(
+        '2019-04-01',
+      );
+    });
+  });
+
+  describe('findFinalBurialDate', () => {
+    it('最終納骨者の埋葬日を返す', () => {
+      const result = findFinalBurialDate([
+        { isFinalBurial: false, burialDate: '2020-05-10' },
+        { isFinalBurial: true, burialDate: '2022-08-20' },
+      ]);
+      expect(result?.toISOString().slice(0, 10)).toBe('2022-08-20');
+    });
+
+    it('最終納骨者が居なければ null', () => {
+      expect(findFinalBurialDate([{ isFinalBurial: false, burialDate: '2020-05-10' }])).toBe(null);
+      expect(findFinalBurialDate([])).toBe(null);
+      expect(findFinalBurialDate(null)).toBe(null);
+    });
+
+    it('最終納骨者に埋葬日が無ければ null（契約日起点にフォールバックさせる）', () => {
+      expect(findFinalBurialDate([{ isFinalBurial: true, burialDate: null }])).toBe(null);
+    });
+
+    it('最終納骨者が複数居た場合は最も遅い埋葬日を採る（合祀の前倒しを防ぐ）', () => {
+      const result = findFinalBurialDate([
+        { isFinalBurial: true, burialDate: '2021-01-01' },
+        { isFinalBurial: true, burialDate: '2023-06-15' },
+      ]);
+      expect(result?.toISOString().slice(0, 10)).toBe('2023-06-15');
     });
   });
 });

@@ -177,9 +177,51 @@ export function calculateElapsedYears(
 }
 
 /**
+ * 合祀カウントダウンの起点日を解決する（議事録 2026-07-21 §1）。
+ *
+ * backend の `resolveCountdownBaseDate` と同じ規則にする。ここがズレると画面の
+ * 合祀予定日と実際に請求が発火する日が食い違う。
+ *
+ * 起点は「最終納骨者の埋葬日、無ければ契約日」。上限到達日や最新埋葬日は起点にしない
+ * （上限人数では最終納骨を判定できない＝「4人契約だが3人で終了」があるため。#164 も参照）。
+ *
+ * @param contractDate 契約日
+ * @param finalBurialDate 最終納骨者（isFinalBurial）の埋葬日。未確定なら null
+ * @returns 起点日。どちらも無ければ null
+ */
+export function resolveCountdownBaseDate(
+  contractDate: Date | string | null | undefined,
+  finalBurialDate: Date | string | null | undefined,
+): Date | null {
+  return toDate(finalBurialDate) ?? toDate(contractDate);
+}
+
+/**
+ * 埋葬者一覧から最終納骨者の埋葬日を取り出す。
+ *
+ * 最終納骨者は1契約区画につき1人までだが、複数あった場合は最も遅い埋葬日を採る
+ * （backend `findFinalBurialDate` と同じ。早い方を採ると合祀が前倒しになる）。
+ *
+ * @returns 最終納骨者が未確定、または埋葬日が未入力なら null
+ */
+export function findFinalBurialDate(
+  buriedPersons: ReadonlyArray<{
+    isFinalBurial?: boolean | null;
+    burialDate?: string | null;
+  }> | null | undefined,
+): Date | null {
+  const dates = (buriedPersons ?? [])
+    .filter((person) => person.isFinalBurial === true)
+    .map((person) => toDate(person.burialDate))
+    .filter((date): date is Date => date !== null);
+  if (dates.length === 0) return null;
+  return dates.reduce((latest, date) => (date > latest ? date : latest));
+}
+
+/**
  * 基準日 + N 年 で合祀予定日を計算する。
  *
- * @param baseDate 基準日 (上限到達日 or 最新埋葬日)
+ * @param baseDate 基準日（{@link resolveCountdownBaseDate} で解決した起点日）
  * @param validityPeriodYears 有効年数 (通常 13 / 15 / 33)
  * @returns 合祀予定日 (基準日が無ければ null)
  */
