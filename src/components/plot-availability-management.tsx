@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { ClipboardList, Check, X, BarChart3, Hash, Layers, PieChart, Grid3X3, ChevronDown, ChevronUp, Plus } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { CreateVacantPlotDialog } from '@/components/create-vacant-plot-dialog';
+import { BulkCreateVacantPlotsDialog } from '@/components/bulk-create-vacant-plots-dialog';
 import {
   Select,
   SelectContent,
@@ -68,6 +69,8 @@ export default function PlotAvailabilityManagement() {
   const { user } = useAuth();
   const canRegisterVacant = !!user && ['operator', 'manager', 'admin'].includes(user.role);
   const [isVacantDialogOpen, setIsVacantDialogOpen] = useState(false);
+  // 範囲一括登録（議事録 2026-07-21 §6）。区画増設時にまとめて作る用
+  const [isBulkDialogOpen, setIsBulkDialogOpen] = useState(false);
   const handleVacantCreated = () => {
     refreshSummary();
     refreshPeriods();
@@ -273,12 +276,21 @@ export default function PlotAvailabilityManagement() {
             </div>
           )}
 
-          {/* 空き区画の先行登録（旧システムの「区画を先ず作る」運用。項目⑦） */}
+          {/* 空き区画の登録（項目⑦の単発 ＋ 議事録 2026-07-21 §6 の範囲一括） */}
           {canRegisterVacant && (
-            <div className="sm:ml-auto">
+            <div className="sm:ml-auto flex flex-wrap gap-2">
               <Button size="sm" onClick={() => setIsVacantDialogOpen(true)} className="cursor-pointer">
                 <Plus className="w-4 h-4 mr-1" aria-hidden="true" />
                 空き区画を登録
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setIsBulkDialogOpen(true)}
+                className="cursor-pointer"
+              >
+                <Plus className="w-4 h-4 mr-1" aria-hidden="true" />
+                まとめて登録
               </Button>
             </div>
           )}
@@ -986,6 +998,13 @@ export default function PlotAvailabilityManagement() {
       <CreateVacantPlotDialog
         isOpen={isVacantDialogOpen}
         onClose={() => setIsVacantDialogOpen(false)}
+        onCreated={handleVacantCreated}
+      />
+
+      {/* 空き区画の範囲一括登録ダイアログ（議事録 2026-07-21 §6） */}
+      <BulkCreateVacantPlotsDialog
+        isOpen={isBulkDialogOpen}
+        onClose={() => setIsBulkDialogOpen(false)}
         onCreated={handleVacantCreated}
       />
     </div>
