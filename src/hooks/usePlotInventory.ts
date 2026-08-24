@@ -11,6 +11,7 @@ import {
   getInventoryPeriods,
   getInventorySections,
   getInventoryAreas,
+  getInventoryMonthlyReport,
   InventorySummary,
   PeriodSummary,
   SectionInventoryItem,
@@ -21,6 +22,7 @@ import {
   SectionSortKey,
   AreaSortKey,
   SortOrder,
+  MonthlyReportResponse,
 } from '@/lib/api/plot-inventory';
 
 // ==================== 型定義 ====================
@@ -375,4 +377,59 @@ export function usePlotInventoryAreas(
     setPeriod,
     refresh: fetchAreas,
   };
+}
+
+/**
+ * 月次報告（区画残数）帳票を取得するフック
+ */
+export interface UsePlotInventoryMonthlyReportResult {
+  report: MonthlyReportResponse | null;
+  isLoading: boolean;
+  error: string | null;
+  includeOther: boolean;
+  setIncludeOther: (includeOther: boolean) => void;
+  refresh: () => void;
+}
+
+export function usePlotInventoryMonthlyReport(
+  options: UsePlotInventoryOptions = {}
+): UsePlotInventoryMonthlyReportResult {
+  const { autoFetch = true } = options;
+  const [report, setReport] = useState<MonthlyReportResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [includeOther, setIncludeOther] = useState(true);
+  // 世代カウンタ: 先発の遅いレスポンスによる上書きを防ぐ（#231）
+  const genRef = useRef(0);
+
+  const fetchReport = useCallback(async () => {
+    const myGen = ++genRef.current;
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await getInventoryMonthlyReport({ includeOther });
+      if (myGen !== genRef.current) return;
+      if (response.success) {
+        setReport(response.data);
+      } else {
+        setError(response.error?.message || '月次報告データの取得に失敗しました');
+      }
+    } catch {
+      if (myGen !== genRef.current) return;
+      setError('ネットワークエラーが発生しました');
+    } finally {
+      if (myGen === genRef.current) {
+        setIsLoading(false);
+      }
+    }
+  }, [includeOther]);
+
+  useEffect(() => {
+    if (autoFetch) {
+      fetchReport();
+    }
+  }, [autoFetch, fetchReport]);
+
+  return { report, isLoading, error, includeOther, setIncludeOther, refresh: fetchReport };
 }
