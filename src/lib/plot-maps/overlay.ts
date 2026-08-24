@@ -1,0 +1,127 @@
+import { PLOT_MAPS } from './catalog';
+import type {
+  PlotMapCellView,
+  PlotMapId,
+  PlotMapLayoutCell,
+  PlotMapOverlayPlot,
+  PlotMapStatus,
+} from './types';
+
+const FULLWIDTH = /[\uFF01-\uFF5E]/g;
+
+export function toHalfWidth(value: string): string {
+  return value.replace(FULLWIDTH, (ch) => String.fromCharCode(ch.charCodeAt(0) - 0xfee0));
+}
+
+export function normalizeSectionKey(section: string): string {
+  return toHalfWidth(section)
+    .replace(/区$/u, '')
+    .trim()
+    .toUpperCase();
+}
+
+export function normalizePlotLabel(label: string): string {
+  return toHalfWidth(String(label)).trim();
+}
+
+export function expectedDisplayNumber(section: string, plotLabel: string): string {
+  return `${normalizeSectionKey(section)}-${normalizePlotLabel(plotLabel)}`;
+}
+
+export function findMapId(period: string, section: string): PlotMapId | null {
+  const sectionKey = normalizeSectionKey(section);
+  for (const map of Object.values(PLOT_MAPS)) {
+    if (map.period !== period) continue;
+    if (map.sectionKeys.some((key) => normalizeSectionKey(key) === sectionKey)) {
+      return map.id;
+    }
+  }
+  return null;
+}
+
+export function hasPlotMap(period: string, section: string): boolean {
+  return findMapId(period, section) !== null;
+}
+
+export function parseMapId(value: string | null | undefined): PlotMapId | null {
+  if (!value) return null;
+  return Object.prototype.hasOwnProperty.call(PLOT_MAPS, value) ? value : null;
+}
+
+function normalizeId(value: string): string {
+  return toHalfWidth(value).replace(/\s+/g, '').toUpperCase();
+}
+
+export function matchLayoutCellToPlot(
+  plotLabel: string,
+  section: string,
+  plot: PlotMapOverlayPlot
+): boolean {
+  const expected = expectedDisplayNumber(section, plotLabel);
+  const compact = expected.replace('-', '');
+  const candidates = [plot.displayNumber, plot.plotNumber]
+    .filter((value): value is string => !!value)
+    .map(normalizeId);
+
+  if (candidates.includes(normalizeId(expected)) || candidates.includes(normalizeId(compact))) {
+    return true;
+  }
+
+  const areaMatches = normalizeSectionKey(plot.areaName) === normalizeSectionKey(section);
+  const labelOnly = normalizePlotLabel(plot.displayNumber ?? plot.plotNumber);
+  return areaMatches && labelOnly === normalizePlotLabel(plotLabel);
+}
+
+export function deriveOverlayStatus(
+  plot: PlotMapOverlayPlot | null,
+  unsellable: boolean
+): PlotMapStatus {
+  if (unsellable) return 'unsellable';
+  if (!plot) return 'vacant';
+  return plot.overlayStatus;
+}
+
+export function shortContractorName(name: string | null): string | null {
+  if (!name) return null;
+  const head = name.trim().split(/\s+/)[0] ?? name.trim();
+  return head.slice(0, 4);
+}
+
+const STATUS_LABEL: Record<PlotMapStatus, string> = {
+  vacant: '空き',
+  reserved: '予約',
+  contracted: '契約',
+  unsellable: '売却不可',
+};
+
+export function overlayLayoutWithPlots(
+  cells: PlotMapLayoutCell[],
+  section: string | string[],
+  plots: PlotMapOverlayPlot[]
+): PlotMapCellView[] {
+  const sections = Array.isArray(section) ? section : [section];
+  return cells.map((cell) => {
+    const matched =
+      plots.find((plot) => sections.some((key) => matchLayoutCellToPlot(cell.plotLabel, key, plot))) ??
+      null;
+    const status = deriveOverlayStatus(matched, cell.unsellable === true);
+    const contractorName = matched?.contractorName ?? null;
+    const shortName = shortContractorName(contractorName);
+    let displayLabel = STATUS_LABEL[status];
+    if (status === 'contracted' && shortName) displayLabel = shortName;
+    if (status === 'reserved' && shortName) displayLabel = shortName;
+
+    return {
+      row: cell.row,
+      col: cell.col,
+      plotLabel: cell.plotLabel,
+      status,
+      displayLabel,
+      areaSqm: matched?.areaSqm ?? null,
+      contractorName,
+      reservationDate: matched?.reservationDate ?? null,
+      physicalPlotId: matched?.id ?? null,
+      contractPlotId: matched?.contractPlotId ?? null,
+    };
+  });
+}

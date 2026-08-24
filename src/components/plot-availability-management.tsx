@@ -1,12 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { ClipboardList, Check, X, BarChart3, Hash, Layers, PieChart, Grid3X3, ChevronDown, ChevronUp, Plus } from 'lucide-react';
+import { ClipboardList, Check, X, BarChart3, Hash, Layers, PieChart, Grid3X3, ChevronDown, ChevronUp, Plus, Map } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { CreateVacantPlotDialog } from '@/components/create-vacant-plot-dialog';
+import { PlotMapSection } from '@/components/plot-map/PlotMapSection';
+import { findMapId, hasPlotMap, parseMapId } from '@/lib/plot-maps/overlay';
+import type { PlotMapId } from '@/lib/plot-maps/types';
 import {
   Select,
   SelectContent,
@@ -48,6 +52,10 @@ const menuItems = [
 ];
 
 export default function PlotAvailabilityManagement() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const activeMapId = parseMapId(searchParams.get('map'));
   const [viewMode, setViewMode] = useState<ViewMode>('all');
   const [displayMode, setDisplayMode] = useState<DisplayMode>('section'); // 区画別 or 面積別
   const [selectedPeriod, setSelectedPeriod] = useState<SelectedPeriod>('all');
@@ -193,6 +201,27 @@ export default function PlotAvailabilityManagement() {
     }
   };
 
+  const openPlotMap = (mapId: PlotMapId) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('map', mapId);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  };
+
+  const closePlotMap = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('map');
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+  };
+
+  useEffect(() => {
+    if (!activeMapId) return;
+    const timer = window.setTimeout(() => {
+      document.getElementById('plot-section-map')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 80);
+    return () => window.clearTimeout(timer);
+  }, [activeMapId]);
+
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       <PageHeader
@@ -284,9 +313,19 @@ export default function PlotAvailabilityManagement() {
           )}
         </div>
 
+        {displayMode === 'section' && (
+          <div className="mx-3 md:mx-6 mt-3 flex items-start gap-2 rounded-elegant border border-matsu-200 bg-matsu-50 px-3 py-2 text-sm text-matsu-dark">
+            <Map className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+            <p>
+              各区の「地図を見る」から、Excel と同じ区画図で空きを確認できます。
+            </p>
+          </div>
+        )}
+
         {/* メインコンテンツ */}
-        <div className="p-3 md:p-6 relative">
-          {/* ローディングオーバーレイ */}
+        <div className="p-3 md:p-6">
+          <div className="relative">
+          {/* ローディングオーバーレイ（区画図は外に出し、クリックを遮らない） */}
           {isLoading && (
             <div className="absolute inset-0 bg-white/60 z-10 flex items-center justify-center">
               <div className="flex flex-col items-center">
@@ -525,6 +564,9 @@ export default function PlotAvailabilityManagement() {
                           )}
                         </div>
                       </th>
+                      <th className="px-2 md:px-4 py-3 md:py-4 text-center text-xs md:text-sm font-bold text-sumi">
+                        地図
+                      </th>
                       <th
                         className={cn(
                           "px-2 md:px-4 py-3 md:py-4 text-right text-xs md:text-sm font-bold text-sumi cursor-pointer hover:bg-cha-50 transition-colors",
@@ -626,6 +668,25 @@ export default function PlotAvailabilityManagement() {
                               <span className="ml-1 md:ml-2 text-xs text-hai font-normal">({item.category})</span>
                             )}
                           </td>
+                          <td className="px-2 md:px-4 py-2 md:py-3 text-center">
+                            {hasPlotMap(item.period, item.section) ? (
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                className="h-8 cursor-pointer px-2 text-xs"
+                                onClick={() => {
+                                  const mapId = findMapId(item.period, item.section);
+                                  if (mapId) openPlotMap(mapId);
+                                }}
+                              >
+                                <Map className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
+                                地図を見る
+                              </Button>
+                            ) : (
+                              <span className="text-xs text-hai">-</span>
+                            )}
+                          </td>
                           <td className="px-2 md:px-4 py-2 md:py-3 text-xs md:text-sm text-right text-hai">
                             {item.totalCount}
                           </td>
@@ -684,7 +745,7 @@ export default function PlotAvailabilityManagement() {
                   {/* 合計行 */}
                   <tfoot className="bg-kinari font-bold border-t-2 border-gin">
                     <tr>
-                      <td className="px-2 md:px-4 py-3 md:py-4 text-xs md:text-sm text-sumi" colSpan={2}>
+                      <td className="px-2 md:px-4 py-3 md:py-4 text-xs md:text-sm text-sumi" colSpan={3}>
                         合計 {selectedPeriod !== 'all' ? `(${selectedPeriod})` : ''}
                       </td>
                       <td className="px-2 md:px-4 py-3 md:py-4 text-xs md:text-sm text-right text-sumi">
@@ -923,6 +984,11 @@ export default function PlotAvailabilityManagement() {
               </div>
             )}
           </div>
+          </div>
+
+          {displayMode === 'section' && activeMapId && (
+            <PlotMapSection mapId={activeMapId} onClose={closePlotMap} />
+          )}
 
           {/* フッター情報（凡例）— 状況（残数）と使用率（%）は別軸である点を明示（#183） */}
           <div className="mt-5 text-sm text-hai bg-white rounded-elegant-lg p-4 border border-gin space-y-3">
