@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { CreateVacantPlotDialog } from '@/components/create-vacant-plot-dialog';
 import { BulkCreateVacantPlotsDialog } from '@/components/bulk-create-vacant-plots-dialog';
 import { PlotMapSection } from '@/components/plot-map/PlotMapSection';
+import MonthlyReportView from '@/components/plot-availability/monthly-report-view';
 import { findMapId, hasPlotMap, parseMapId } from '@/lib/plot-maps/overlay';
 import type { PlotMapId } from '@/lib/plot-maps/types';
 import {
@@ -35,10 +36,12 @@ import {
   usePlotInventoryPeriods,
   usePlotInventorySections,
   usePlotInventoryAreas,
+  usePlotInventoryMonthlyReport,
 } from '@/hooks/usePlotInventory';
 
 type ViewMode = 'all' | 'available' | 'soldout' | 'usage-rate' | 'remaining';
-type DisplayMode = 'section' | 'area'; // 区画別 or 面積別
+// 区画別 / 面積別 / 月次報告（税理士提出用 Excel の配置を再現。議事録 2026-07-21 §6）
+type DisplayMode = 'section' | 'area' | 'monthly';
 type SelectedPeriod = PlotPeriod | 'all';
 type SortKey = 'period' | 'section' | 'totalCount' | 'usedCount' | 'remainingCount' | 'usageRate';
 type AreaSortKey = 'period' | 'areaSqm' | 'totalCount' | 'usedCount' | 'remainingCount' | 'remainingAreaSqm' | 'plotType';
@@ -58,7 +61,7 @@ export default function PlotAvailabilityManagement() {
   const searchParams = useSearchParams();
   const activeMapId = parseMapId(searchParams.get('map'));
   const [viewMode, setViewMode] = useState<ViewMode>('all');
-  const [displayMode, setDisplayMode] = useState<DisplayMode>('section'); // 区画別 or 面積別
+  const [displayMode, setDisplayMode] = useState<DisplayMode>('section');
   const [selectedPeriod, setSelectedPeriod] = useState<SelectedPeriod>('all');
   const [sortKey, setSortKey] = useState<SortKey>('period');
   const [areaSortKey, setAreaSortKey] = useState<AreaSortKey>('period');
@@ -72,6 +75,8 @@ export default function PlotAvailabilityManagement() {
   const { periods: periodSummaries, isLoading: isPeriodsLoading, refresh: refreshPeriods } = usePlotInventoryPeriods();
   const sectionsHook = usePlotInventorySections();
   const areasHook = usePlotInventoryAreas();
+  // 月次報告は開いたときだけ集計する（全区画を舐めるので初期表示では走らせない）
+  const monthlyHook = usePlotInventoryMonthlyReport({ autoFetch: displayMode === 'monthly' });
 
   // 空き区画の先行登録（システム確認 項目⑦）。閲覧のみ（viewer）には出さない
   const { user } = useAuth();
@@ -84,6 +89,7 @@ export default function PlotAvailabilityManagement() {
     refreshPeriods();
     sectionsHook.refresh();
     areasHook.refresh();
+    if (displayMode === 'monthly') monthlyHook.refresh();
   };
 
   // useCallback 済みで安定した setter 群を取り出す。フックの戻り値オブジェクト自体は
@@ -268,10 +274,23 @@ export default function PlotAvailabilityManagement() {
               >
                 面積別
               </button>
+              <button
+                onClick={() => setDisplayMode('monthly')}
+                title="税理士提出用の月次報告Excelと同じ配置で表示します"
+                className={cn(
+                  'px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200',
+                  displayMode === 'monthly'
+                    ? 'bg-ai text-white shadow-elegant'
+                    : 'text-hai hover:text-sumi hover:bg-white'
+                )}
+              >
+                月次報告
+              </button>
             </div>
           </div>
 
-          {/* フィルター（viewMode） */}
+          {/* フィルター（viewMode）。月次報告は帳票の固定レイアウトなので絞り込みは効かない */}
+          {displayMode !== 'monthly' && (
           <div className="flex items-center gap-2 min-w-0">
             <span className="text-xs font-semibold text-hai whitespace-nowrap">絞り込み</span>
             <Select value={viewMode} onValueChange={(v) => setViewMode(v as ViewMode)}>
@@ -290,6 +309,7 @@ export default function PlotAvailabilityManagement() {
               </SelectContent>
             </Select>
           </div>
+          )}
 
           {/* 期フィルタバッジ（選択中のみ表示、期別カードで期選択） */}
           {selectedPeriod !== 'all' && (
@@ -334,6 +354,17 @@ export default function PlotAvailabilityManagement() {
           </div>
         )}
 
+        {displayMode === 'monthly' ? (
+          <MonthlyReportView
+            report={monthlyHook.report}
+            isLoading={monthlyHook.isLoading}
+            error={monthlyHook.error}
+            includeOther={monthlyHook.includeOther}
+            onIncludeOtherChange={monthlyHook.setIncludeOther}
+            onRefresh={monthlyHook.refresh}
+          />
+        ) : (
+        <>
         {/* メインコンテンツ */}
         <div className="p-3 md:p-6">
           <div className="relative">
@@ -1058,6 +1089,8 @@ export default function PlotAvailabilityManagement() {
             </p>
           </div>
         </div>
+        </>
+        )}
       </div>
 
       {/* 空き区画の先行登録ダイアログ（項目⑦） */}

@@ -405,3 +405,61 @@ export async function getInventoryAreas(
 
   return apiGet<InventoryAreasResponse>('/plots/inventory/areas', queryParams);
 }
+
+// ==================== 月次報告（区画残数）帳票 ====================
+
+/**
+ * 月次報告帳票の1行。業務が税理士へ提出している Excel の「区」行に対応する。
+ */
+export interface MonthlyReportRow {
+  label: string;
+  totalCount: number;
+  usedCount: number;
+  remainingCount: number;
+}
+
+export interface MonthlyReportBlock {
+  period: string;
+  /** 帳票の見出し表記（「第　1　期」のように全角スペース入り） */
+  title: string;
+  rows: MonthlyReportRow[];
+  total: MonthlyReportRow;
+}
+
+export interface MonthlyReportSummary {
+  totalCount: number;
+  usedCount: number;
+  remainingCount: number;
+  soldThisFiscalYear: number;
+  cumulativeSoldCount: number;
+  /** 年度表記。2026 は 2026年6月〜2027年5月（5月決算） */
+  fiscalYear: number;
+}
+
+export interface MonthlyReportResponse {
+  /** 集計を実行した時刻。過去月の再現は行わない */
+  asOfDate: string;
+  blocks: MonthlyReportBlock[];
+  /** 帳票のレイアウトに載らない区画。0件なら null */
+  otherBlock: MonthlyReportBlock | null;
+  summary: MonthlyReportSummary;
+}
+
+export interface MonthlyReportParams {
+  /** レイアウト外の区画を「その他」ブロックとして含めるか（既定 true） */
+  includeOther?: boolean;
+}
+
+/**
+ * 月次報告（区画残数）帳票データを取得
+ *
+ * 画面表示と Excel ダウンロードがこの同じレスポンスを使うので、両者の数字はズレない。
+ */
+export async function getInventoryMonthlyReport(
+  params: MonthlyReportParams = {}
+): Promise<ApiResponse<MonthlyReportResponse>> {
+  const queryParams: Record<string, string | undefined> = {};
+  if (params.includeOther === false) queryParams.includeOther = 'false';
+
+  return apiGet<MonthlyReportResponse>('/plots/inventory/monthly-report', queryParams);
+}
