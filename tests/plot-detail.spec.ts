@@ -13,12 +13,12 @@ test.describe('区画詳細表示', () => {
 
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    const sidebar = page.locator('.w-64');
+    const sidebar = page.getByTestId('global-sidebar');
     await expect(sidebar.getByText('台帳問い合わせ', { exact: true })).toBeVisible({ timeout: 20_000 });
   });
 
   test('5-1: 区画詳細の情報が表示される', async ({ page }) => {
-    await page.locator('.w-64').getByText('台帳問い合わせ', { exact: true }).click();
+    await page.getByTestId('global-sidebar').getByText('台帳問い合わせ', { exact: true }).click();
     await page.waitForTimeout(1_000);
 
     const table = page.locator('table').first();
@@ -45,7 +45,7 @@ test.describe('区画詳細表示', () => {
   });
 
   test('5-2: 区画詳細のツールバーに書類作成・書類履歴リンクが表示', async ({ page }) => {
-    await page.locator('.w-64').getByText('台帳問い合わせ', { exact: true }).click();
+    await page.getByTestId('global-sidebar').getByText('台帳問い合わせ', { exact: true }).click();
     await page.waitForTimeout(1_000);
 
     const table = page.locator('table').first();
@@ -67,7 +67,7 @@ test.describe('区画詳細表示', () => {
   });
 
   test('5-3: admin は区画詳細で「区画情報を削除」がドロップダウンに表示される', async ({ page }) => {
-    await page.locator('.w-64').getByText('台帳問い合わせ', { exact: true }).click();
+    await page.getByTestId('global-sidebar').getByText('台帳問い合わせ', { exact: true }).click();
     await page.waitForTimeout(1_000);
 
     const table = page.locator('table').first();
@@ -98,7 +98,7 @@ test.describe('区画詳細 - viewer ロール', () => {
 
   test('5-4: viewer は区画詳細で削除ボタンが非表示', async ({ page }) => {
     await page.goto('/');
-    const sidebar = page.locator('.w-64');
+    const sidebar = page.getByTestId('global-sidebar');
     await expect(sidebar.getByText('台帳問い合わせ', { exact: true })).toBeVisible({ timeout: 20_000 });
 
     await sidebar.getByText('台帳問い合わせ', { exact: true }).click();
@@ -127,7 +127,7 @@ test.describe('区画詳細ナビゲーション', () => {
 
   test('5-5: 区画詳細画面でもグローバルナビが維持される', async ({ page }) => {
     await page.goto('/');
-    const sidebar = page.locator('.w-64');
+    const sidebar = page.getByTestId('global-sidebar');
     await expect(sidebar.getByText('台帳問い合わせ', { exact: true })).toBeVisible({ timeout: 20_000 });
 
     // メインメニューが表示されている

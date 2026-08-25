@@ -9,7 +9,7 @@ import { test as base, expect, type Page } from '@playwright/test';
  */
 export async function getVisibleMenuItems(page: Page): Promise<string[]> {
   // サイドバー内のメニューボタンのテキストを全取得
-  const sidebar = page.locator('.w-64');
+  const sidebar = page.getByTestId('global-sidebar');
   const buttons = sidebar.locator('button');
   const count = await buttons.count();
 
@@ -27,7 +27,7 @@ export async function getVisibleMenuItems(page: Page): Promise<string[]> {
  * サイドバーでメニュー項目をクリック
  */
 export async function clickMenuItem(page: Page, label: string): Promise<void> {
-  const sidebar = page.locator('.w-64');
+  const sidebar = page.getByTestId('global-sidebar');
   await sidebar.getByText(label, { exact: true }).click();
 }
 

@@ -12,7 +12,7 @@ test.describe('サイドバーナビゲーション', () => {
 
   test('3-1: メインメニューから各画面への遷移', async ({ page }) => {
     await page.goto('/');
-    const sidebar = page.locator('.w-64');
+    const sidebar = page.getByTestId('global-sidebar');
     // サイドバーの実際のメニュー項目が描画されるまで待機
     await expect(sidebar.getByText('台帳問い合わせ', { exact: true })).toBeVisible({ timeout: 20_000 });
 
@@ -48,14 +48,14 @@ test.describe('サイドバーナビゲーション', () => {
 
   test('3-2: サイドバーのタイトルが「小嶺霊園CRM」と表示される', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('.w-64 h2').filter({ hasText: '小嶺霊園CRM' })).toBeVisible({
+    await expect(page.getByTestId('global-sidebar').locator('h2').filter({ hasText: '小嶺霊園CRM' })).toBeVisible({
       timeout: 20_000,
     });
   });
 
   test('3-3: ユーザー情報がUserMenuドロップダウンに表示される', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('.w-64').getByText('台帳問い合わせ', { exact: true })).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByTestId('global-sidebar').getByText('台帳問い合わせ', { exact: true })).toBeVisible({ timeout: 20_000 });
 
     // UserMenuボタンをクリック
     const userMenuButton = page.getByRole('button', { name: 'ユーザーメニュー' });
@@ -68,7 +68,7 @@ test.describe('サイドバーナビゲーション', () => {
 
   test('3-5: メニュー項目クリック時にアクティブ状態が反映される', async ({ page }) => {
     await page.goto('/');
-    const sidebar = page.locator('.w-64');
+    const sidebar = page.getByTestId('global-sidebar');
     await expect(sidebar.getByText('台帳問い合わせ', { exact: true })).toBeVisible({ timeout: 20_000 });
 
     // 合祀管理をクリック（Link要素）。exact 指定で同名テキストを含む他要素との衝突を防ぐ
