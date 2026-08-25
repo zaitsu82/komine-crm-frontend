@@ -3,6 +3,13 @@
  */
 
 import { DOCUMENT_TEMPLATE_TYPES } from '@komine/types/api';
+import type {
+  BulkInvoiceTarget,
+  BulkInvoiceTargetsQuery,
+  BulkInvoiceTargetsResponse,
+  GenerateBulkInvoiceRequest,
+  GenerateBulkInvoiceResponse,
+} from '@komine/types';
 import { ApiResponse } from './types';
 import {
   apiGet,
@@ -1029,6 +1036,115 @@ export async function regenerateDocumentPdf(
   }
 
   return apiPost<GeneratePdfResponse>(`/documents/${id}/regenerate-pdf`);
+}
+
+// =============================================================================
+// 請求書（護持費のお知らせ）の一括印刷
+// =============================================================================
+
+/**
+ * 一括印刷の対象一覧を取得する（プレビュー）。
+ *
+ * `billingYears` はクエリ文字列に載せるため `"5,10"` に畳む（backend の Zod が
+ * カンマ区切りと配列の両方を受ける）。
+ */
+export async function getBulkInvoiceTargets(
+  query: BulkInvoiceTargetsQuery
+): Promise<ApiResponse<BulkInvoiceTargetsResponse>> {
+  if (shouldUseMockData()) {
+    return mockGetBulkInvoiceTargets(query);
+  }
+
+  return apiGet<BulkInvoiceTargetsResponse>('/documents/bulk-invoice/targets', {
+    year: query.year,
+    month: query.month,
+    billingYears: query.billingYears?.join(','),
+    includeOverdue: query.includeOverdue === undefined ? undefined : String(query.includeOverdue),
+  });
+}
+
+/**
+ * 対象の請求書を 1 ファイルの PDF にまとめて生成する
+ */
+export async function generateBulkInvoice(
+  request: GenerateBulkInvoiceRequest
+): Promise<ApiResponse<GenerateBulkInvoiceResponse>> {
+  if (shouldUseMockData()) {
+    return mockGenerateBulkInvoice(request);
+  }
+
+  return apiPost<GenerateBulkInvoiceResponse>('/documents/bulk-invoice/generate', request);
+}
+
+async function mockGetBulkInvoiceTargets(
+  query: BulkInvoiceTargetsQuery
+): Promise<ApiResponse<BulkInvoiceTargetsResponse>> {
+  await new Promise((resolve) => setTimeout(resolve, 300));
+
+  const month = query.month ?? 3;
+  const targets: BulkInvoiceTarget[] = [
+    {
+      contractPlotId: 'cp-001',
+      customerId: 'cust-001',
+      customerName: '山田 太郎',
+      customerNameKana: 'ヤマダ タロウ',
+      areaName: '第1期',
+      plotNumber: 'A-56',
+      displayNumber: 'A-56',
+      billingYears: 10,
+      billingMonth: month,
+      lastBillingMonth: `${query.year - 10}-${String(month).padStart(2, '0')}`,
+      targetYear: query.year,
+      amount: 82800,
+      nextNoticeDate: `${query.year + 10}年${month}月`,
+      overdue: false,
+    },
+    {
+      contractPlotId: 'cp-002',
+      customerId: 'cust-002',
+      customerName: '佐藤 花子',
+      customerNameKana: 'サトウ ハナコ',
+      areaName: '第2期',
+      plotNumber: 'B-12',
+      displayNumber: 'B-12',
+      billingYears: 5,
+      billingMonth: month,
+      lastBillingMonth: `${query.year - 5}-${String(month).padStart(2, '0')}`,
+      targetYear: query.year,
+      amount: 31820,
+      nextNoticeDate: `${query.year + 5}年${month}月`,
+      overdue: false,
+    },
+  ];
+
+  return {
+    success: true,
+    data: {
+      targets,
+      total: targets.length,
+      totalAmount: targets.reduce((sum, t) => sum + t.amount, 0),
+    },
+  };
+}
+
+async function mockGenerateBulkInvoice(
+  request: GenerateBulkInvoiceRequest
+): Promise<ApiResponse<GenerateBulkInvoiceResponse>> {
+  await new Promise((resolve) => setTimeout(resolve, 500));
+
+  const mockPdf = 'JVBERi0xLjQKJeLjz9MKMSAwIG9iago8PAovVHlwZSAvQ2F0YWxvZwovUGFnZXMgMiAwIFIKPj4KZW5kb2Jq';
+  const count = request.contractPlotIds?.length ?? 2;
+
+  return {
+    success: true,
+    data: {
+      pdf: mockPdf,
+      mimeType: 'application/pdf',
+      fileName: `護持費のお知らせ_${request.year}03_${count}件.pdf`,
+      fileSize: mockPdf.length,
+      count,
+    },
+  };
 }
 
 /**
