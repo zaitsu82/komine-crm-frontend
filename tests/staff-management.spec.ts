@@ -10,7 +10,7 @@ test.describe('スタッフ管理 - admin', () => {
 
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    const sidebar = page.locator('.w-64');
+    const sidebar = page.getByTestId('global-sidebar');
     await expect(sidebar.getByText('台帳問い合わせ', { exact: true })).toBeVisible({ timeout: 20_000 });
     await sidebar.getByText('スタッフ管理', { exact: true }).click();
     await page.waitForTimeout(1_000);
@@ -86,7 +86,7 @@ test.describe('スタッフ管理 - manager', () => {
 
   test('7-7: manager でスタッフ管理画面にアクセス可能', async ({ page }) => {
     await page.goto('/');
-    const sidebar = page.locator('.w-64');
+    const sidebar = page.getByTestId('global-sidebar');
     await expect(sidebar.getByText('台帳問い合わせ', { exact: true })).toBeVisible({ timeout: 20_000 });
 
     const menuItem = sidebar.getByText('スタッフ管理', { exact: true });
@@ -106,7 +106,7 @@ test.describe('スタッフ管理 - viewer/operator', () => {
     });
     const page = await context.newPage();
     await page.goto('/');
-    const sidebar = page.locator('.w-64');
+    const sidebar = page.getByTestId('global-sidebar');
     await expect(sidebar.getByText('台帳問い合わせ', { exact: true })).toBeVisible({ timeout: 20_000 });
 
     await expect(
@@ -122,7 +122,7 @@ test.describe('スタッフ管理 - viewer/operator', () => {
     });
     const page = await context.newPage();
     await page.goto('/');
-    const sidebar = page.locator('.w-64');
+    const sidebar = page.getByTestId('global-sidebar');
     await expect(sidebar.getByText('台帳問い合わせ', { exact: true })).toBeVisible({ timeout: 20_000 });
 
     await expect(

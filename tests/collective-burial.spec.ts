@@ -11,7 +11,7 @@ import { storageStatePath } from './config/test-accounts';
 /** サイドバーから合祀管理画面へ遷移 */
 async function navigateToCollectiveBurial(page: import('@playwright/test').Page) {
   await page.goto('/');
-  const sidebar = page.locator('.w-64');
+  const sidebar = page.getByTestId('global-sidebar');
   await expect(sidebar.getByText('台帳問い合わせ', { exact: true })).toBeVisible({ timeout: 20_000 });
   await sidebar.getByText('合祀管理', { exact: true }).click();
   await page.waitForTimeout(1_000);
@@ -183,7 +183,7 @@ test.describe('合祀管理 - viewer アクセス制限', () => {
   // viewer にはメニューを出さず、直接URLアクセス時は /plots へリダイレクトする（403を出さない）
   test('viewer には合祀管理メニューが表示されない', async ({ page }) => {
     await page.goto('/');
-    const sidebar = page.locator('.w-64');
+    const sidebar = page.getByTestId('global-sidebar');
     await expect(sidebar.getByText('台帳問い合わせ', { exact: true })).toBeVisible({ timeout: 20_000 });
 
     await expect(sidebar.getByText('合祀管理', { exact: true })).toHaveCount(0);
@@ -200,7 +200,7 @@ test.describe('合祀管理 - manager アクセス', () => {
 
   test('manager で合祀管理画面にアクセス可能', async ({ page }) => {
     await page.goto('/');
-    const sidebar = page.locator('.w-64');
+    const sidebar = page.getByTestId('global-sidebar');
     await expect(sidebar.getByText('台帳問い合わせ', { exact: true })).toBeVisible({ timeout: 20_000 });
 
     await sidebar.getByText('合祀管理', { exact: true }).click();

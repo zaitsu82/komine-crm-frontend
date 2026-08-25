@@ -29,7 +29,7 @@ const HIDDEN_MENU_ITEMS: Record<TestRole, string[]> = {
  * GlobalSidebar は Link (a要素) でメニューを描画
  */
 async function getSidebarMenuTexts(page: Page): Promise<string[]> {
-  const sidebar = page.locator('.w-64');
+  const sidebar = page.getByTestId('global-sidebar');
   await expect(sidebar).toBeVisible({ timeout: 15_000 });
 
   // メニューリンク（a要素）のテキストを取得
@@ -82,7 +82,7 @@ test.describe('ロール別操作権限', () => {
     await page.goto('/');
 
     // サイドバーが表示されている
-    await expect(page.locator('.w-64')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId('global-sidebar')).toBeVisible({ timeout: 15_000 });
 
     // 「区画情報を削除」ボタンが存在しない（ページ内ツールバーのドロップダウン）
     await expect(page.getByText('区画情報を削除')).not.toBeVisible();
@@ -98,7 +98,7 @@ test.describe('ロール別操作権限', () => {
     await page.goto('/');
 
     // サイドバーが表示されるまで待機
-    await expect(page.locator('.w-64')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId('global-sidebar')).toBeVisible({ timeout: 15_000 });
 
     // UserMenuを開いてロールラベルを確認
     const userMenuButton = page.getByRole('button', { name: 'ユーザーメニュー' });
@@ -117,7 +117,7 @@ test.describe('ロール別操作権限', () => {
     await page.goto('/');
 
     // サイドバーが表示されるまで待機
-    await expect(page.locator('.w-64')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId('global-sidebar')).toBeVisible({ timeout: 15_000 });
 
     // UserMenuを開いてロールラベルを確認
     const userMenuButton = page.getByRole('button', { name: 'ユーザーメニュー' });

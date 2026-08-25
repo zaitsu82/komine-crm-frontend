@@ -11,7 +11,7 @@ test.describe('台帳問い合わせ（区画一覧）', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     // サイドバーのメニュー項目が描画されるまで待機（認証完了の確認）
-    const sidebar = page.locator('.w-64');
+    const sidebar = page.getByTestId('global-sidebar');
     await expect(sidebar.getByText('台帳問い合わせ', { exact: true })).toBeVisible({ timeout: 20_000 });
     await sidebar.getByText('台帳問い合わせ', { exact: true }).click();
     await page.waitForTimeout(1_000);
