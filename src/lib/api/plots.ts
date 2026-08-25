@@ -25,6 +25,8 @@ import {
   VacantPlotItem,
   VacantPlotsParams,
   VacantPlotsResponse,
+  CreatePhysicalPlotsBulkRequest,
+  CreatePhysicalPlotsBulkResponse,
 } from '@komine/types';
 import { apiGet, apiPost, apiPut, apiDelete, shouldUseMockData } from './client';
 import { ApiResponse } from './types';
@@ -690,6 +692,40 @@ export async function createPhysicalPlot(
     };
   }
   return apiPost<CreatePhysicalPlotResponse>('/plots/physical', request);
+}
+
+/**
+ * 空き区画の範囲一括登録（議事録 2026-07-21 §6）
+ *
+ * 「何番から何番まで」で空き区画をまとめて登録する。既に登録済みの番号は
+ * スキップされ、何をスキップしたかがレスポンスに入る。
+ */
+export async function createPhysicalPlotsBulk(
+  request: CreatePhysicalPlotsBulkRequest
+): Promise<ApiResponse<CreatePhysicalPlotsBulkResponse>> {
+  if (shouldUseMockData()) {
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    const prefix = request.prefix ?? '';
+    const created = [];
+    for (let n = request.startNumber; n <= request.endNumber; n += 1) {
+      const displayNumber = `${prefix}${n}`;
+      created.push({
+        id: `mock-bulk-${displayNumber}`,
+        plotNumber: `${request.areaName}-${displayNumber}`,
+        displayNumber,
+        areaName: request.areaName,
+        areaSqm: request.areaSqm ?? 3.6,
+        status: PhysicalPlotStatus.Available,
+        notes: request.notes ?? null,
+        createdAt: new Date().toISOString(),
+      });
+    }
+    return {
+      success: true,
+      data: { created, createdCount: created.length, skipped: [], skippedCount: 0 },
+    };
+  }
+  return apiPost<CreatePhysicalPlotsBulkResponse>('/plots/physical/bulk', request);
 }
 
 /**
