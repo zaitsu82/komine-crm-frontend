@@ -81,6 +81,13 @@ describe('GlobalSidebar アクティブ項目判定', () => {
     expect(isLinkActive('台帳問い合わせ')).toBe(false);
   });
 
+  it('/bulk-invoice では請求書一括印刷がアクティブ（書類管理と取り違えない）', () => {
+    mockPathname = '/bulk-invoice';
+    renderSidebar();
+    expect(isLinkActive('請求書一括印刷')).toBe(true);
+    expect(isLinkActive('書類管理')).toBe(false);
+  });
+
   it('/collective-burials では合祀管理がアクティブ', () => {
     mockPathname = '/collective-burials';
     renderSidebar();

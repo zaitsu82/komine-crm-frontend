@@ -49,4 +49,10 @@ test.describe('主要画面 smoke（#140）', () => {
     await page.goto('/yucho');
     await expect(page.getByText('ゆうちょ連携').first()).toBeVisible({ timeout: TIMEOUT });
   });
+
+  test('140-7: 請求書一括印刷の見出しと対象一覧が表示される', async ({ page }) => {
+    await page.goto('/bulk-invoice');
+    await expect(page.getByText('請求書一括印刷').first()).toBeVisible({ timeout: TIMEOUT });
+    await expect(page.getByLabel('請求対象年')).toBeVisible({ timeout: TIMEOUT });
+  });
 });
