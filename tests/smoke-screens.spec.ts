@@ -55,4 +55,15 @@ test.describe('主要画面 smoke（#140）', () => {
     await expect(page.getByText('請求書一括印刷').first()).toBeVisible({ timeout: TIMEOUT });
     await expect(page.getByLabel('請求対象年')).toBeVisible({ timeout: TIMEOUT });
   });
+
+  test('140-8: 区画詳細の請求タブから前受金ダイアログを開ける', async ({ page }) => {
+    // 区画詳細に直接遷移（smoke テストは画面表示確認が主目的）
+    await page.goto('/plots/mock-plot-1');
+    await page.waitForTimeout(2_000);
+    
+    // タブ名には件数バッジが付くため部分一致で拾う
+    await page.getByRole('tab', { name: /請求/ }).first().click();
+    await page.getByRole('button', { name: '前受金を一括登録' }).click();
+    await expect(page.getByLabel('受領額')).toBeVisible({ timeout: 10_000 });
+  });
 });

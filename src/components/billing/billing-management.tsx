@@ -27,6 +27,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { BillingListTable } from './billing-list-table';
 import { BillingFormDialog } from './billing-form-dialog';
 import { BillingDetailDialog } from './billing-detail-dialog';
+import { PrepaidBillingDialog } from './prepaid-billing-dialog';
 
 const PAGE_SIZE = 50;
 
@@ -67,6 +68,8 @@ export default function BillingManagement({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletingTarget, setDeletingTarget] = useState<Billing | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const [showPrepaidDialog, setShowPrepaidDialog] = useState(false);
 
   const fetchList = useCallback(async () => {
     setIsLoading(true);
@@ -195,6 +198,14 @@ export default function BillingManagement({
 
       <div className="flex-1 overflow-auto">
         <div className="flex items-center justify-end gap-2 px-3 md:px-6 py-3 border-b border-gin bg-kinari">
+          {contractPlotId && (
+            <button
+              onClick={() => setShowPrepaidDialog(true)}
+              className="inline-flex items-center border border-matsu text-matsu hover:bg-matsu-50 rounded-elegant px-3 py-1.5 text-sm font-medium"
+            >
+              前受金を一括登録
+            </button>
+          )}
           <button
             onClick={() => {
               setEditing(null);
@@ -325,6 +336,19 @@ export default function BillingManagement({
         onSubmit={handleSubmit}
         isSubmitting={isSaving}
       />
+
+      {contractPlotId && (
+        <PrepaidBillingDialog
+          open={showPrepaidDialog}
+          contractPlotId={contractPlotId}
+          onClose={() => setShowPrepaidDialog(false)}
+          onCreated={() => {
+            setShowPrepaidDialog(false);
+            void fetchList();
+            void fetchSummary();
+          }}
+        />
+      )}
 
       <BillingDetailDialog
         open={detailId !== null}
