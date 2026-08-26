@@ -15,7 +15,18 @@ export interface PrepaidBillingDialogProps {
   onCreated: () => void;
 }
 
-const today = (): string => new Date().toISOString().slice(0, 10);
+/**
+ * 入金日の既定値。
+ *
+ * `toISOString()` は UTC なので、JST の午前 0〜9 時に開くと前日になる。
+ * 窓口の始業時刻に直撃し、30 件の入金レコードが黙って前日付で作られるため、
+ * ローカル日付から組み立てる。
+ */
+const today = (): string => {
+  const d = new Date();
+  const pad = (n: number): string => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+};
 
 const parseIntOrNull = (s: string): number | null => {
   const t = s.trim();
@@ -62,7 +73,10 @@ export function PrepaidBillingDialog({
   if (!open) return null;
 
   // 入力を変えたら確認をやり直させる。古いプレビューのまま登録させない
-  const invalidatePreview = () => setPreview(null);
+  const invalidatePreview = () => {
+    setPreview(null);
+    setFormError('');
+  };
 
   const handlePreview = async () => {
     const amount = parseIntOrNull(receivedAmount);
@@ -84,14 +98,13 @@ export function PrepaidBillingDialog({
         years: yearCount,
         startYear: parseIntOrNull(startYear),
       });
-      if (res.success && res.data) {
-        setPreview(res.data);
-        // 推定結果を入力欄へ反映し、登録時に同じ年が使われることを見せる
-        if (!startYear.trim()) setStartYear(String(res.data.startYear));
-      } else {
-        const errorRes = res as { success: false; error: { code: string; message: string; details?: Array<{ field?: string; message: string }> } };
-        showApiError('内訳の取得', errorRes.error?.message, errorRes.error?.details);
+      if (!res.success) {
+        showApiError('内訳の取得', res.error.message, res.error.details);
+        return;
       }
+      setPreview(res.data);
+      // 推定結果を入力欄へ反映し、登録時に同じ年が使われることを見せる
+      if (!startYear.trim()) setStartYear(String(res.data.startYear));
     } finally {
       setIsLoading(false);
     }
@@ -112,14 +125,13 @@ export function PrepaidBillingDialog({
         startYear: preview.startYear,
         paymentDate,
       });
-      if (res.success && res.data) {
-        showSuccess(`前受金を登録しました（請求${res.data.billingCount}件）`);
-        onCreated();
-        onClose();
-      } else {
-        const errorRes = res as { success: false; error: { code: string; message: string; details?: Array<{ field?: string; message: string }> } };
-        showApiError('前受金の登録', errorRes.error?.message, errorRes.error?.details);
+      if (!res.success) {
+        showApiError('前受金の登録', res.error.message, res.error.details);
+        return;
       }
+      showSuccess(`前受金を登録しました（請求${res.data.billingCount}件）`);
+      onCreated();
+      onClose();
     } finally {
       setIsSaving(false);
     }
@@ -211,7 +223,7 @@ export function PrepaidBillingDialog({
           <div className="mt-4">
             <button
               onClick={handlePreview}
-              disabled={isLoading}
+              disabled={isLoading || isSaving}
               className="inline-flex items-center border border-matsu text-matsu hover:bg-matsu-50 disabled:opacity-50 rounded-elegant px-3 py-1.5 text-sm font-medium"
             >
               確認
@@ -221,20 +233,20 @@ export function PrepaidBillingDialog({
           {preview && (
             <div className="mt-4 space-y-3">
               {preview.startYearEstimated === false && (
-                <div className="p-3 bg-kohaku-50 border border-kohaku-200 text-sm text-sumi rounded-elegant">
+                <div role="alert" className="p-3 bg-kohaku-50 border border-kohaku-200 text-sm text-sumi rounded-elegant">
                   既存請求から開始年を推定できません。開始年を入力してください。
                 </div>
               )}
 
               {hasDuplicates && (
-                <div className="p-3 bg-beni-50 border border-beni-200 text-sm text-beni rounded-elegant">
+                <div role="alert" className="p-3 bg-beni-50 border border-beni-200 text-sm text-beni rounded-elegant">
                   既に請求がある年が含まれています（{preview.duplicatedYears.join('、')}年）。
                   開始年か年数を調整してください。
                 </div>
               )}
 
               {preview.needsReviewYears.length > 0 && (
-                <div className="p-3 bg-kohaku-50 border border-kohaku-200 text-sm text-sumi rounded-elegant">
+                <div role="alert" className="p-3 bg-kohaku-50 border border-kohaku-200 text-sm text-sumi rounded-elegant">
                   年が入っていない既存請求があるため、請求済みか判定できない年があります（
                   {preview.needsReviewYears.join('、')}年）。
                   既存の請求を確認してから登録してください。

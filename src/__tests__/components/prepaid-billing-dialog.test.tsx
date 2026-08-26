@@ -149,4 +149,41 @@ describe('PrepaidBillingDialog', () => {
 
     expect(await screen.findByText(/年額との差額/)).toBeInTheDocument();
   });
+
+  it('入力を変更するとプレビューが破棄され登録ボタンが無効になる', async () => {
+    previewMock.mockResolvedValue(previewOk);
+    const user = userEvent.setup();
+    openDialog();
+
+    // 確認して内訳を表示
+    await user.type(screen.getByLabelText(/受領額/), '20000');
+    await user.type(screen.getByLabelText(/年数/), '2');
+    await user.click(screen.getByRole('button', { name: '確認' }));
+    expect(await screen.findByText('2026年')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '登録' })).toBeEnabled();
+
+    // 受領額を変更すると内訳が消え、登録ボタンが無効になる
+    await user.clear(screen.getByLabelText(/受領額/));
+    await user.type(screen.getByLabelText(/受領額/), '30000');
+    expect(screen.queryByText('2026年')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '登録' })).toBeDisabled();
+  });
+
+  it('開始年が空のとき startYear に null が渡り、推定結果が入力欄に反映される', async () => {
+    previewMock.mockResolvedValue(previewOk);
+    const user = userEvent.setup();
+    openDialog();
+
+    await user.type(screen.getByLabelText(/受領額/), '20000');
+    await user.type(screen.getByLabelText(/年数/), '2');
+    await user.click(screen.getByRole('button', { name: '確認' }));
+
+    await waitFor(() => expect(previewMock).toHaveBeenCalled());
+    expect(previewMock.mock.calls[0][0]).toMatchObject({
+      startYear: null,
+    });
+
+    // 推定結果が開始年の入力欄に反映される
+    expect(screen.getByLabelText(/開始年/)).toHaveValue('2026');
+  });
 });
