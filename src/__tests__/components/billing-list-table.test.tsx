@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import { BillingListTable } from '@/components/billing/billing-list-table';
 import type { Billing } from '@komine/types';
@@ -105,5 +106,63 @@ describe('BillingListTable の areaName 表示 (#307)', () => {
     const el = screen.getByText('1-29');
     expect(el).toHaveAttribute('title', LEGACY_VALUE_NOTE);
     expect(el.className).toContain('italic');
+  });
+});
+
+/**
+ * 前受金の行は 1 年だけ消すとまとまりが壊れるため、
+ * 「前受取り消し」だけ出し、通常の削除・編集は出さない。
+ */
+describe('BillingListTable の前受取り消し', () => {
+  const makeBilling = (overrides: Partial<Billing>): Billing =>
+    ({
+      id: 'b1',
+      amount: 1250,
+      paidAmount: 1250,
+      category: 'management_fee',
+      status: 'paid',
+      plotNumber: 'A-12',
+      displayNumber: 'A-12',
+      areaName: '第1期',
+      customer: null,
+      prepaidBatchId: null,
+      ...overrides,
+    } as unknown as Billing);
+
+  it('前受の行には「前受取り消し」を出し、削除と編集は出さない', () => {
+    render(
+      <BillingListTable
+        items={[makeBilling({ prepaidBatchId: 'batch-1' })]}
+        onEdit={jest.fn()}
+        onDelete={jest.fn()}
+        onCancelPrepaid={jest.fn()}
+      />
+    );
+    expect(screen.getByRole('button', { name: '前受取り消し' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '削除' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '編集' })).not.toBeInTheDocument();
+  });
+
+  it('通常の請求行には「前受取り消し」を出さない', () => {
+    render(
+      <BillingListTable
+        items={[makeBilling({ prepaidBatchId: null })]}
+        onDelete={jest.fn()}
+        onCancelPrepaid={jest.fn()}
+      />
+    );
+    expect(screen.queryByRole('button', { name: '前受取り消し' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '削除' })).toBeInTheDocument();
+  });
+
+  it('前受取り消しを押すとその行を渡す', async () => {
+    const user = userEvent.setup();
+    const onCancelPrepaid = jest.fn();
+    const billing = makeBilling({ prepaidBatchId: 'batch-1' });
+    render(
+      <BillingListTable items={[billing]} onCancelPrepaid={onCancelPrepaid} />
+    );
+    await user.click(screen.getByRole('button', { name: '前受取り消し' }));
+    expect(onCancelPrepaid).toHaveBeenCalledWith(billing);
   });
 });
