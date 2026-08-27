@@ -32,6 +32,8 @@ export interface BillingListTableProps {
   onEdit?: (billing: Billing) => void;
   onDelete?: (billing: Billing) => void;
   onView?: (billing: Billing) => void;
+  /** 前受金の一括取り消し（prepaidBatchId がある行だけ出す） */
+  onCancelPrepaid?: (billing: Billing) => void;
   /** 区画コンテキストで表示するときは true → 区画情報カラムを非表示 */
   hidePlotColumns?: boolean;
   /** 一覧が空のときに表示するノード（未指定時は既定メッセージ）。#171 で文脈付き説明を差し込む用 */
@@ -44,6 +46,7 @@ export function BillingListTable({
   onEdit,
   onDelete,
   onView,
+  onCancelPrepaid,
   hidePlotColumns = false,
   emptyState,
 }: BillingListTableProps) {
@@ -95,7 +98,7 @@ export function BillingListTable({
             <th className="px-2 md:px-4 py-3 text-left text-sm font-semibold text-sumi">
               ステータス
             </th>
-            {(onEdit || onDelete || onView) && (
+            {(onEdit || onDelete || onView || onCancelPrepaid) && (
               <th className="px-2 md:px-4 py-3 text-center text-sm font-semibold text-sumi">
                 操作
               </th>
@@ -145,7 +148,7 @@ export function BillingListTable({
                   {BILLING_RECORD_STATUS_LABELS[b.status]}
                 </span>
               </td>
-              {(onEdit || onDelete || onView) && (
+              {(onEdit || onDelete || onView || onCancelPrepaid) && (
                 <td className="px-2 md:px-4 py-3 text-center">
                   <div className="flex items-center justify-center gap-2 flex-wrap">
                     {onView && (
@@ -156,7 +159,7 @@ export function BillingListTable({
                         詳細
                       </button>
                     )}
-                    {onEdit && (
+                    {onEdit && !b.prepaidBatchId && (
                       <button
                         onClick={() => onEdit(b)}
                         className="border border-gin text-sumi hover:bg-kinari rounded-elegant px-3 py-1 text-xs font-medium"
@@ -164,7 +167,15 @@ export function BillingListTable({
                         編集
                       </button>
                     )}
-                    {onDelete && (
+                    {onCancelPrepaid && b.prepaidBatchId && (
+                      <button
+                        onClick={() => onCancelPrepaid(b)}
+                        className="border border-beni text-beni hover:bg-beni-50 rounded-elegant px-3 py-1 text-xs font-medium"
+                      >
+                        前受取り消し
+                      </button>
+                    )}
+                    {onDelete && !b.prepaidBatchId && (
                       <button
                         onClick={() => onDelete(b)}
                         className="border border-beni text-beni hover:bg-beni-50 rounded-elegant px-3 py-1 text-xs font-medium"

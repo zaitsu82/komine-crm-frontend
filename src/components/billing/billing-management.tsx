@@ -17,10 +17,12 @@ import {
   createBilling as apiCreate,
   updateBilling as apiUpdate,
   deleteBilling as apiDelete,
+  deletePrepaidBilling,
   BILLING_CATEGORY_LABELS,
   BILLING_RECORD_STATUS_LABELS,
 } from '@/lib/api/billings';
 import { showSuccess, showApiError, showError } from '@/lib/toast';
+import { useHasPermission } from '@/hooks';
 import PageHeader from '@/components/page-header';
 import { StatCard } from '@/components/ui/stat-card';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
@@ -70,6 +72,12 @@ export default function BillingManagement({
   const [isDeleting, setIsDeleting] = useState(false);
 
   const [showPrepaidDialog, setShowPrepaidDialog] = useState(false);
+
+  const [showCancelPrepaidConfirm, setShowCancelPrepaidConfirm] = useState(false);
+  const [cancelPrepaidTarget, setCancelPrepaidTarget] = useState<Billing | null>(null);
+  const [isCancellingPrepaid, setIsCancellingPrepaid] = useState(false);
+
+  const canCancelPrepaid = useHasPermission(['manager', 'admin']);
 
   const fetchList = useCallback(async () => {
     setIsLoading(true);
@@ -176,6 +184,27 @@ export default function BillingManagement({
       showError(e instanceof Error ? e.message : 'エラーが発生しました');
     } finally {
       setIsDeleting(false);
+    }
+  };
+
+  const handleCancelPrepaid = async () => {
+    const batchId = cancelPrepaidTarget?.prepaidBatchId;
+    if (!batchId) return;
+    setIsCancellingPrepaid(true);
+    try {
+      const res = await deletePrepaidBilling(batchId);
+      if (res.success) {
+        showSuccess(res.data.message);
+        setShowCancelPrepaidConfirm(false);
+        setCancelPrepaidTarget(null);
+        await Promise.all([fetchList(), fetchSummary()]);
+      } else {
+        showApiError('前受金の取り消し', res.error?.message, res.error?.details);
+      }
+    } catch (e) {
+      showError(e instanceof Error ? e.message : 'エラーが発生しました');
+    } finally {
+      setIsCancellingPrepaid(false);
     }
   };
 
@@ -299,6 +328,14 @@ export default function BillingManagement({
               setDeletingTarget(b);
               setShowDeleteConfirm(true);
             }}
+            onCancelPrepaid={
+              canCancelPrepaid
+                ? (b) => {
+                    setCancelPrepaidTarget(b);
+                    setShowCancelPrepaidConfirm(true);
+                  }
+                : undefined
+            }
           />
 
           {totalPages > 1 && (
@@ -369,6 +406,21 @@ export default function BillingManagement({
         confirmLabel="削除"
         variant="destructive"
         onConfirm={handleDelete}
+      />
+
+      <ConfirmDialog
+        open={showCancelPrepaidConfirm}
+        onOpenChange={(o) => {
+          setShowCancelPrepaidConfirm(o);
+          if (!o) setCancelPrepaidTarget(null);
+        }}
+        title="前受金の取り消し"
+        description={`同じ前受で作った請求と入金をまとめて取り消します。この操作は取り消せません。${
+          isCancellingPrepaid ? '\n取り消し中...' : ''
+        }`}
+        confirmLabel="取り消す"
+        variant="destructive"
+        onConfirm={handleCancelPrepaid}
       />
     </div>
   );
