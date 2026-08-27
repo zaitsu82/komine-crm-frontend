@@ -17,6 +17,11 @@ import {
   BillingSummaryResponse,
   BillingCategory,
   BillingRecordStatus,
+  PrepaidBillingPreviewRequest,
+  PrepaidBillingPreviewResponse,
+  CreatePrepaidBillingRequest,
+  CreatePrepaidBillingResponse,
+  DeletePrepaidBillingResponse,
 } from '@komine/types';
 import { apiDelete, apiGet, apiPost, apiPut } from './client';
 import { ApiResponse } from './types';
@@ -83,6 +88,31 @@ export function updateBilling(
 
 export function deleteBilling(id: string): Promise<ApiResponse<DeleteBillingResponse>> {
   return apiDelete<DeleteBillingResponse>(`${BASE}/${id}`);
+}
+
+/**
+ * 前受金の内訳プレビュー（#6）
+ *
+ * 登録前に年ごとの割当額と重複年を確認するための API。DB は変更されない。
+ */
+export function previewPrepaidBilling(
+  body: PrepaidBillingPreviewRequest
+): Promise<ApiResponse<PrepaidBillingPreviewResponse>> {
+  return apiPost<PrepaidBillingPreviewResponse>(`${BASE}/prepaid/preview`, body);
+}
+
+/** 前受金の一括登録（年数分の請求と入金を作成） */
+export function createPrepaidBilling(
+  body: CreatePrepaidBillingRequest
+): Promise<ApiResponse<CreatePrepaidBillingResponse>> {
+  return apiPost<CreatePrepaidBillingResponse>(`${BASE}/prepaid`, body);
+}
+
+/** 前受金の一括取り消し（同じ登録単位の請求と入金をまとめて削除） */
+export function deletePrepaidBilling(
+  batchId: string
+): Promise<ApiResponse<DeletePrepaidBillingResponse>> {
+  return apiDelete<DeletePrepaidBillingResponse>(`${BASE}/prepaid/${batchId}`);
 }
 
 // ===== ラベル定義（UI 表示用） =====
